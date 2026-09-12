@@ -1,0 +1,603 @@
+
+--- PAGE 7 ---
+Table 3. Ablation experiments for FatFormer. Evaluated on GANs dataset. Default settings are marked in gray .
+(a) Forgery-aware adapter implementations. In the
+proposed framework, both image (img) and frequency
+(freq) domains are essential for building generalized
+forgery representation.
+w/ img domain w/ freq domainACCM APM
+✓ ✓ 98.4 99.7
+✓ × 95.4 99 .6
+× ✓ 97.3 99 .6
+(b) Frequency band interactions.
+Both inter- and intra-band attentions
+are important for modeling forgery
+traces in the frequency domain.
+interaction ACCM APM
+intra 97.4 99 .7
+inter 96.6 99 .6
+intra & inter 98.4 99.7
+(c) Benefits of supervision in vision-language space.
+On the model only with img input, text is first added
+for building contrastive (contra) objectives. Then, we
+apply the proposed augmented (aug) contra strategy.
+input modality strategy ACCM APM
+only img linear probe 95.3 99 .2
+img&text contra 96.4 99 .6
+img&text aug contra 98.4 99.7
+(d) Text prompt designs.The auto embedding and img condition
+can benefit the performance, especially by considering the corre-
+lation between prompt and img patch tokens.
+prompt designs w/ img conditionACCM APM
+fixed template × 95.5 99 .6
+auto embedding × 96.4 99 .6
+auto embedding CLS token 98.1 99 .7
+auto embedding patch tokens 98.4 99.7
+(e) Model components. Both components are essential in our FatFormer. We also
+conduct an extra experiment to test the zero-shot performance by removing the
+forgery-aware adapter and language-guided alignment.
+module components ACCM APM
+none for zero-shot 66.6 74 .3
+forgery-aware adapter 95.3 99 .2
+language-guided alignment 91.5 98 .1
+forgery-aware adapter&language-guided alignment98.4 99.7
+over, we find that even with powerful CLIP as the pre-
+trained model, UniFD only achieves a similar result (about
+85% ACC) like PatchFor [3]. We argue this is mainly be-
+cause the fixed pre-trained paradigm is prone to yield de-
+tectors with insufficient learning regarding forgery artifacts.
+Thus, our FatFormer, which presents an adaptive trans-
+former framework with forgery adaptation and reasonable
+contrastive objectives, can achieve much better results.
+4.3. Ablation study
+We conduct several ablation experiments to verify the effec-
+tiveness of key elements in our FatFormer. Unless specified,
+we report the mean of accuracy (ACCM ) and average preci-
+sion (APM ) on the GANs dataset under the training setting
+of 4-class ProGAN data.
+Forgery-aware adapter implementations. We ablate the
+effects of considering the image domain and frequency do-
+main in the forgery-aware adapter. The results are shown
+in Table 3a. We observe severe performance degradation
+when removing either of these two domains, especially for
+the frequency domain with over −3.0% ACC gaps. We
+conclude that both image and frequency domains are essen-
+tial in FatFormer for synthetic image detection. The image
+forgery extractor collects the local low-level forgery arti-
+facts, e.g., blur textures, while the frequency forgery extrac-
+tor explores and gathers the forgery clues among different
+frequency bands, together building a comprehensive local
+viewpoint for the adaptation of image features.
+For the frequency forgery extractor, both interactions
+built by inter-band and intra-band attentions are important
+in our FatFormer. Table 3b shows the ablation.
+Benefits of supervision in vision-language space. Ta-
+ble 3c provides the comparisons between different super-
+vising strategies for FatFormer, including (i) linear prob-
+ing with image modality, (ii) vanilla contrastive objectives
+between image CLS token and text prompt embeddings,
+which masked out the text-guided interactor, and (iii) our
+augmented contrastive objectives. The results demonstrate
+that introducing text prompts for contrastive supervision
+benefits the generalization of detection. We conjecture this
+is mainly because CLIP provides a stable alignment be-
+tween real image and text representation with pre-training,
+thus yielding a mismatching when handling a fake image
+with text prompts. As potential evidence, we find that only
+adopting LGA can still achieve an accuracy of 91.5% ACC
+(Table 3e). Besides, we observe that the proposed aug-
+mented contrastive objectives can further boost generaliz-
+ability by directing the image encoder to concentrate on
+forgery-related representations, bringing a 2.0% ACC gain
+over the vanilla implementation.
+Text prompt designs. Table 3d gives the results of con-
+structing the text prompt with different prompt designs and
+image conditions. The results validate that both auto con-
+text embeddings and image conditions are important in text
+prompt designs. Compared with using a fixed hand-crafted
+template, e.g., ‘this photo is’, the design of auto context em-
+bedding improves by 0.9% ACC, due to its abstract explo-
+ration in word embedding spaces. Besides, it is better to
+adopt image patch tokens as conditions to enhance these
+auto context embeddings, containing more local context de-
+tails, rather than the global image CLS token.
+Model components. Tabel 3e gives the ablation of two
+proposed model components, i.e., forgery-aware adapter
+and language-guided alignment. Large performance drops
+(−6.9% ACC and −1.6% AP) are observed when adopt-
+ing the previous fixed pre-trained paradigm by removing
+the forgery-aware adapter. This explains the necessity of
+forgery adaptation of pre-trained models. On the other
+hand, the proposed language-guided alignment, which con-
+siders the augmented contrastive objectives in the vision-
+language space, also provides better supervision for the
+forgery adaptation than simply adopting binary labels,
+bringing 3.1% ACC and 0.5% AP gains.
+As shown in Figure 4, using language-guided align-
+7
+--- PAGE 8 ---
+StyleGAN LDMCycleGANGlideStarGAN
+Real
+w/o LGAw/  LGA
+Figure 4. Comparison of model attention with (w/ ) and without (w/o) language-guided alignment. We visualize the gradient norm of
+FatFormer (second row) and FatFormer without language-guided alignment (first row) by [43]. FatFormer provides more responses among
+semantic foreground patches in fake images, while almost no response for real ones. The salient region is visualized by bright color.
+ment obtains more concentration on semantic foreground
+patches, where anomalies, e.g., unrealistic objects, textures,
+or structures often occur. Therefore, our FatFormer can ob-
+tain generalized forgery representations by focusing on lo-
+cal forgery details, resulting in the improvement of the gen-
+eralizability of synthetic image detection.
+4.4. More analysis
+Here, we analyze our FatFormer on different architectures
+and pre-training strategies.
+Analysis on different architectures. While FatFormer
+is constructed upon the identical CLIP framework [38] as
+employed in UniFD [35], the proposed forgery adaptation
+strategy is transferrable to alternative architectures. Pre-
+sented in the upper section of Table 4 are the ACC M and
+APM scores for four distinct architectures, including two
+variations of multi-modal structures pre-trained by CLIP
+and two variants of image-based Swin transformer [31] pre-
+trained on ImageNet 22k [8]. The comparisons between
+models with and without FatFormer verify the efficacy of
+integrating forgery adaptation among different pre-trained
+architectures, significantly facilitating the performance of
+synthetic image detection.
+Analysis on different pre-training strategies. We further
+conduct an assessment of the efficacy of forgery adaptation
+across models employing different pre-training strategies.
+Utilizing ViT-L [10] as the baseline, we validate two well-
+known pre-training approaches: MAE [15] and CAE [6].
+The evaluations are shown in the lower segment of Table 4.
+We observe that incorporating the forgery adaptation in our
+FatFormer can lead to a consistent increase in performance
+across diverse pre-training strategies, demonstrating the ro-
+bustness and transferability of our approach.
+5. Conclusion
+In this paper, we present a novel adaptive transformer, Fat-
+Former, for generalizable synthetic image detection. With
+two core designs, including the forgery-aware adapter and
+Table 4. Analysis on different architectures and pre-training
+strategies. Beyond UniFD, the forgery adaptation in FatFormer
+can also consistently boost various architectures and different pre-
+training strategies. We report the mean of ACC and AP (in the
+formulation of ACCM / APM ) on both GANs and diffusion model
+(DMs) datasets. ‘IN-22K’= ImageNet 22k.
+Architecture Pre-training w/ Ours GANs DMs
+ViT-B/16
+Text-512 CLIP [38] × 83.8 / 94.4 77 .2 / 91.1
+✓ 95.3 / 99.5 91 .6 / 97.8
+ViT-L/14
+Text-768 CLIP [38] × 89.1 / 98.3 85 .4 / 94.6
+✓ 98.4 / 99.7 95 .0 / 98.8
+Swin-B IN-22K [8] × 82.5 / 93.8 72 .2 / 88.8
+✓ 89.6 / 98.2 76 .1 / 96.1
+Swin-L IN-22K [8] × 86.4 / 95.7 74 .4 / 90.8
+✓ 90.7 / 98.4 79 .3 / 96.7
+ViT-L/16
+MAE [15] × 75.7 / 92.8 70 .9 / 92.3
+✓ 85.2 / 96.7 88 .5 / 98.4
+CAE [6] × 76.1 / 95.9 64 .9 / 91.7
+✓ 88.1 / 98.0 76 .1 / 96.2
+language-guided alignment, for the forgery adaption of pre-
+trained models, the proposed approach outperforms the pre-
+vious fixed pre-trained paradigm by a large margin. Be-
+sides, the forgery adaption in FatFormer is also flexible,
+which can be applied in various pre-trained architectures
+with different pre-training strategies. We hope FatFormer
+can provide insights for exploring better utilization of pre-
+trained models in the synthetic image detection field.
+Limitations and future works.FatFormer generalizes well
+on most generative methods, while we still have space to
+improve in diffusion models, e.g., Guided [9]. Elucidating
+the distinctions and associations among images produced
+by diffusion models and GANs is needed to build stronger
+forgery detectors. The investigation of this problem is left
+in future work. Besides, how to construct a better pretext
+task special for synthetic image detection in pre-training is
+also worth a deeper study.
+8
+--- PAGE 9 ---
+References
+[1] E Oran Brigham and RE Morrow. The fast fourier transform.
+IEEE Spectrum, 4(12):63–70, 1967. 4
+[2] Andrew Brock, Jeff Donahue, and Karen Simonyan. Large
+scale gan training for high fidelity natural image synthesis.
+In International Conference on Learning Representations ,
+2018. 5
+[3] Lucy Chai, David Bau, Ser-Nam Lim, and Phillip Isola.
+What makes fake images detectable? understanding prop-
+erties that generalize. In Proceedings of the European Con-
+ference on Computer Vision, pages 103–120. Springer, 2020.
+1, 5, 6, 7
+[4] Shen Chen, Taiping Yao, Yang Chen, Shouhong Ding, Jilin
+Li, and Rongrong Ji. Local relation learning for face forgery
+detection. In Proceedings of the AAAI conference on artifi-
+cial intelligence, pages 1081–1088, 2021. 4
+[5] Shoufa Chen, Chongjian Ge, Zhan Tong, Jiangliu Wang,
+Yibing Song, Jue Wang, and Ping Luo. Adaptformer:
+Adapting vision transformers for scalable visual recogni-
+tion. Advances in Neural Information Processing Systems ,
+35:16664–16678, 2022. 3
+[6] Xiaokang Chen, Mingyu Ding, Xiaodi Wang, Ying Xin,
+Shentong Mo, Yunhao Wang, Shumin Han, Ping Luo, Gang
+Zeng, and Jingdong Wang. Context autoencoder for self-
+supervised representation learning. International Journal of
+Computer Vision, pages 1–16, 2023. 8
+[7] Yunjey Choi, Minje Choi, Munyoung Kim, Jung-Woo Ha,
+Sunghun Kim, and Jaegul Choo. Stargan: Unified genera-
+tive adversarial networks for multi-domain image-to-image
+translation. In Proceedings of the IEEE/CVF Conference
+on Computer Vision and Pattern Recognition , pages 8789–
+8797, 2018. 5
+[8] Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li,
+and Li Fei-Fei. Imagenet: A large-scale hierarchical image
+database. In Proceedings of the IEEE/CVF Conference on
+Computer Vision and Pattern Recognition , pages 248–255.
+Ieee, 2009. 8
+[9] Prafulla Dhariwal and Alexander Nichol. Diffusion models
+beat gans on image synthesis. Advances in Neural Informa-
+tion Processing Systems, 34:8780–8794, 2021. 1, 5, 8
+[10] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov,
+Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner,
+Mostafa Dehghani, Matthias Minderer, Georg Heigold, Syl-
+vain Gelly, et al. An image is worth 16x16 words: Trans-
+formers for image recognition at scale. InInternational Con-
+ference on Learning Representations, 2020. 1, 2, 3, 4, 8
+[11] Ricard Durall, Margret Keuper, and Janis Keuper. Watch
+your up-convolution: Cnn based generative deep neural net-
+works are failing to reproduce spectral distributions. In Pro-
+ceedings of the IEEE/CVF Conference on Computer Vision
+and Pattern Recognition, pages 7890–7899, 2020. 1, 5, 6
+[12] Joel Frank, Thorsten Eisenhofer, Lea Sch ¨onherr, Asja Fis-
+cher, Dorothea Kolossa, and Thorsten Holz. Leveraging fre-
+quency analysis for deep fake image recognition. In Interna-
+tional Conference on Machine Learning , pages 3247–3258.
+PMLR, 2020. 1, 3, 5, 6
+[13] Ian Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing
+Xu, David Warde-Farley, Sherjil Ozair, Aaron Courville, and
+Yoshua Bengio. Generative adversarial nets. Advances in
+Neural Information Processing Systems, 27, 2014. 1
+[14] Shuyang Gu, Dong Chen, Jianmin Bao, Fang Wen, Bo
+Zhang, Dongdong Chen, Lu Yuan, and Baining Guo. Vec-
+tor quantized diffusion model for text-to-image synthesis. In
+Proceedings of the IEEE/CVF Conference on Computer Vi-
+sion and Pattern Recognition, pages 10696–10706, 2022. 1,
+5
+[15] Kaiming He, Xinlei Chen, Saining Xie, Yanghao Li, Piotr
+Doll´ar, and Ross Girshick. Masked autoencoders are scalable
+vision learners. In Proceedings of the IEEE/CVF Conference
+on Computer Vision and Pattern Recognition, pages 16000–
+16009, 2022. 3, 8
+[16] Jonathan Ho, Ajay Jain, and Pieter Abbeel. Denoising diffu-
+sion probabilistic models. Advances in Neural Information
+Processing Systems, 33:6840–6851, 2020. 1
+[17] Neil Houlsby, Andrei Giurgiu, Stanislaw Jastrzebski, Bruna
+Morrone, Quentin De Laroussilhe, Andrea Gesmundo, Mona
+Attariyan, and Sylvain Gelly. Parameter-efficient transfer
+learning for nlp. In International Conference on Machine
+Learning, pages 2790–2799. PMLR, 2019. 3
+[18] Dapeng Hu, Shipeng Yan, Qizhengqiu Lu, HONG Lanqing,
+Hailin Hu, Yifan Zhang, Zhenguo Li, Xinchao Wang, and
+Jiashi Feng. How well does self-supervised pre-training per-
+form with streaming data? In International Conference on
+Learning Representations, 2021. 2
+[19] Edward J Hu, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li,
+Shean Wang, Lu Wang, Weizhu Chen, et al. Lora: Low-
+rank adaptation of large language models. In International
+Conference on Learning Representations, 2021. 3
+[20] Yonghyun Jeong, Doyeon Kim, Seungjai Min, Seongho Joe,
+Youngjune Gwon, and Jongwon Choi. Bihpf: Bilateral high-
+pass filters for robust deepfake detection. In Proceedings of
+the IEEE/CVF Winter Conference on Applications of Com-
+puter Vision, pages 48–57, 2022. 1, 3, 5, 6
+[21] Yonghyun Jeong, Doyeon Kim, Youngmin Ro, and Jongwon
+Choi. Frepgan: robust deepfake detection using frequency-
+level perturbations. In Proceedings of the AAAI Conference
+on Artificial Intelligence, pages 1060–1068, 2022. 1, 3, 4, 5,
+6
+[22] Menglin Jia, Luming Tang, Bor-Chun Chen, Claire Cardie,
+Serge Belongie, Bharath Hariharan, and Ser-Nam Lim. Vi-
+sual prompt tuning. In European Conference on Computer
+Vision, pages 709–727. Springer, 2022. 3
+[23] Tero Karras, Timo Aila, Samuli Laine, and Jaakko Lehtinen.
+Progressive growing of gans for improved quality, stability,
+and variation. In International Conference on Learning Rep-
+resentations, 2018. 1, 2, 5
+[24] Tero Karras, Samuli Laine, and Timo Aila. A style-based
+generator architecture for generative adversarial networks.
+In Proceedings of the IEEE/CVF Conference on Computer
+Vision and Pattern Recognition, pages 4401–4410, 2019. 2,
+5
+[25] Tero Karras, Samuli Laine, Miika Aittala, Janne Hellsten,
+Jaakko Lehtinen, and Timo Aila. Analyzing and improv-
+ing the image quality of stylegan. In Proceedings of the
+9
+--- PAGE 10 ---
+IEEE/CVF Conference on Computer Vision and Pattern
+Recognition, pages 8110–8119, 2020. 1, 5
+[26] Diederik P Kingma and Jimmy Ba. Adam: A method for
+stochastic optimization. arXiv preprint arXiv:1412.6980 ,
+2014. 5
+[27] Brian Lester, Rami Al-Rfou, and Noah Constant. The power
+of scale for parameter-efficient prompt tuning. In Proceed-
+ings of the 2021 Conference on Empirical Methods in Natu-
+ral Language Processing, pages 3045–3059, 2021. 3
+[28] Qiufu Li, Linlin Shen, Sheng Guo, and Zhihui Lai. Wavelet
+integrated cnns for noise-robust image classification. InPro-
+ceedings of the IEEE/CVF Conference on Computer Vision
+and Pattern Recognition, pages 7245–7254, 2020. 4
+[29] Yuezun Li, Xin Yang, Pu Sun, Honggang Qi, and Siwei
+Lyu. Celeb-df: A large-scale challenging dataset for deep-
+fake forensics. In Proceedings of the IEEE/CVF Conference
+on Computer Vision and Pattern Recognition , pages 3207–
+3216, 2020. 2
+[30] Luping Liu, Yi Ren, Zhijie Lin, and Zhou Zhao. Pseudo
+numerical methods for diffusion models on manifolds. InIn-
+ternational Conference on Learning Representations , 2021.
+5
+[31] Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng
+Zhang, Stephen Lin, and Baining Guo. Swin transformer:
+Hierarchical vision transformer using shifted windows. In
+Proceedings of the IEEE/CVF International Conference on
+Computer Vision (ICCV), 2021. 8
+[32] Stephane G Mallat. A theory for multiresolution signal de-
+composition: the wavelet representation. IEEE Transactions
+on Pattern Analysis and Machine Intelligence , 11(7):674–
+693, 1989. 2, 4
+[33] Francesco Marra, Diego Gragnaniello, Luisa Verdoliva, and
+Giovanni Poggi. Do gans leave artificial fingerprints? In
+IEEE Conference on Multimedia Information Processing
+and Retrieval, pages 506–511. IEEE, 2019. 3
+[34] Alexander Quinn Nichol, Prafulla Dhariwal, Aditya Ramesh,
+Pranav Shyam, Pamela Mishkin, Bob Mcgrew, Ilya
+Sutskever, and Mark Chen. Glide: Towards photorealis-
+tic image generation and editing with text-guided diffusion
+models. In International Conference on Machine Learning,
+pages 16784–16804. PMLR, 2022. 1, 5
+[35] Utkarsh Ojha, Yuheng Li, and Yong Jae Lee. Towards uni-
+versal fake image detectors that generalize across genera-
+tive models. In Proceedings of the IEEE/CVF Conference
+on Computer Vision and Pattern Recognition, pages 24480–
+24489, 2023. 1, 2, 3, 5, 6, 8
+[36] Taesung Park, Ming-Yu Liu, Ting-Chun Wang, and Jun-Yan
+Zhu. Semantic image synthesis with spatially-adaptive nor-
+malization. In Proceedings of the IEEE/CVF Conference
+on Computer Vision and Pattern Recognition , pages 2337–
+2346, 2019. 5
+[37] Yuyang Qian, Guojun Yin, Lu Sheng, Zixuan Chen, and Jing
+Shao. Thinking in frequency: Face forgery detection by min-
+ing frequency-aware clues. In Proceedings of the European
+Conference on Computer Vision , pages 86–103. Springer,
+2020. 1, 3, 4, 5, 6
+[38] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya
+Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry,
+Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learning
+transferable visual models from natural language supervi-
+sion. In International conference on machine learning, pages
+8748–8763. PMLR, 2021. 1, 2, 3, 8
+[39] Aditya Ramesh, Mikhail Pavlov, Gabriel Goh, Scott Gray,
+Chelsea V oss, Alec Radford, Mark Chen, and Ilya Sutskever.
+Zero-shot text-to-image generation. In International Confer-
+ence on Machine Learning, pages 8821–8831. PMLR, 2021.
+5
+[40] K Ramamohan Rao and Ping Yip. Discrete cosine transform:
+algorithms, advantages, applications. Academic Press Pro-
+fessional, Inc., USA, 1990. 4
+[41] Robin Rombach, Andreas Blattmann, Dominik Lorenz,
+Patrick Esser, and Bj ¨orn Ommer. High-resolution image
+synthesis with latent diffusion models. In Proceedings of
+the IEEE/CVF Conference on Computer Vision and Pattern
+Recognition, pages 10684–10695, 2022. 2, 5
+[42] Andreas Rossler, Davide Cozzolino, Luisa Verdoliva, Chris-
+tian Riess, Justus Thies, and Matthias Nießner. Faceforen-
+sics++: Learning to detect manipulated facial images. In
+Proceedings of the IEEE/CVF Conference on Computer Vi-
+sion and Pattern Recognition, pages 1–11, 2019. 2, 3, 5, 6
+[43] Ramprasaath R Selvaraju, Michael Cogswell, Abhishek Das,
+Ramakrishna Vedantam, Devi Parikh, and Dhruv Batra.
+Grad-cam: Visual explanations from deep networks via
+gradient-based localization. InProceedings of the IEEE/CVF
+International Conference on Computer Vision , pages 618–
+626, 2017. 8
+[44] Rui Shao, Tianxing Wu, and Ziwei Liu. Detecting and
+grounding multi-modal media manipulation. In Proceedings
+of the IEEE/CVF Conference on Computer Vision and Pat-
+tern Recognition, pages 6904–6913, 2023. 1
+[45] Kaede Shiohara and Toshihiko Yamasaki. Detecting deep-
+fakes with self-blended images. In Proceedings of the
+IEEE/CVF Conference on Computer Vision and Pattern
+Recognition, pages 18720–18729, 2022. 1, 5, 6
+[46] Chuangchuang Tan, Yao Zhao, Shikui Wei, Guanghua Gu,
+and Yunchao Wei. Learning on gradients: Generalized arti-
+facts representation for gan-generated images detection. In
+Proceedings of the IEEE/CVF Conference on Computer Vi-
+sion and Pattern Recognition, pages 12105–12114, 2023. 1,
+3, 5, 6
+[47] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszko-
+reit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia
+Polosukhin. Attention is all you need. Advances in neural
+information processing systems, 30, 2017. 2, 4
+[48] Sheng-Yu Wang, Oliver Wang, Richard Zhang, Andrew
+Owens, and Alexei A Efros. Cnn-generated images are
+surprisingly easy to spot... for now. In Proceedings of
+the IEEE/CVF Conference on Computer Vision and Pattern
+Recognition, pages 8695–8704, 2020. 1, 3, 5, 6
+[49] Zhendong Wang, Jianmin Bao, Wengang Zhou, Weilun
+Wang, Hezhen Hu, Hong Chen, and Houqiang Li. Dire for
+diffusion-generated image detection. In Proceedings of the
+IEEE/CVF International Conference on Computer Vision ,
+2023. 3, 5
+[50] Ning Yu, Larry S Davis, and Mario Fritz. Attributing fake
+images to gans: Learning and analyzing gan fingerprints. In
+10
+--- PAGE 11 ---
+Proceedings of the IEEE/CVF International Conference on
+Computer Vision, pages 7556–7566, 2019. 3
+[51] Hanqing Zhao, Wenbo Zhou, Dongdong Chen, Tianyi Wei,
+Weiming Zhang, and Nenghai Yu. Multi-attentional deep-
+fake detection. In Proceedings of the IEEE/CVF conference
+on computer vision and pattern recognition , pages 2185–
+2194, 2021. 4
+[52] Tianchen Zhao, Xiang Xu, Mingze Xu, Hui Ding, Yuanjun
+Xiong, and Wei Xia. Learning self-consistency for deepfake
+detection. In Proceedings of the IEEE/CVF International
+Conference on Computer Vision, pages 15023–15033, 2021.
+3
+[53] Kaiyang Zhou, Jingkang Yang, Chen Change Loy, and Ziwei
+Liu. Conditional prompt learning for vision-language mod-
+els. In Proceedings of the IEEE/CVF Conference on Com-
+puter Vision and Pattern Recognition , pages 16816–16825,
+2022. 3, 4
+[54] Kaiyang Zhou, Jingkang Yang, Chen Change Loy, and Ziwei
+Liu. Learning to prompt for vision-language models. In-
+ternational Journal of Computer Vision, 130(9):2337–2348,
+2022. 3, 4
+[55] Jun-Yan Zhu, Taesung Park, Phillip Isola, and Alexei A
+Efros. Unpaired image-to-image translation using cycle-
+consistent adversarial networks. In Proceedings of the
+IEEE/CVF International Conference on Computer Vision ,
+pages 2223–2232, 2017. 5
+[56] Fuzhen Zhuang, Zhiyuan Qi, Keyu Duan, Dongbo Xi,
+Yongchun Zhu, Hengshu Zhu, Hui Xiong, and Qing He. A
+comprehensive survey on transfer learning. Proceedings of
+the Institute of Electrical and Electronics Engineers, 109(1):
+43–76, 2021. 3
+11
+--- PAGE 12 ---
+A. Appendix
+In this appendix, we first discuss thepotential negative soci-
+etal impacts (refer to Section A.1) that may arise in practical
+scenarios. Then, an in-depth exploration of ablation studies
+(explicated in Section A.2) is presented, delineating the in-
+fluence of hyper-parameters employed within our approach.
+Lastly, a comprehensive analysis is conducted to assess the
+efficacy of forgery adaptation in enhancingrobustness (out-
+lined in Section A.3) against image perturbations.
+A.1. Broader impacts
+The development of synthetic image detection tools, while
+aiming to combat misinformation, may lead to unintended
+consequences in content moderation. Legitimate content
+that exhibits characteristics similar to forgeries may be mis-
+takenly flagged, impacting normal information (based on
+image modality) sharing. These issues need further research
+and consideration when deploying this work to practical ap-
+plications for content moderation.
+A.2. More Ablations
+We provide more ablation studies on the hyper-parameters
+used in our FatFormer. The training and evaluating settings
+are the same as Section 4.3.
+Number of auto context embeddings. FatFormer com-
+bines the enhanced context embeddings and [CLASS] em-
+beddings to construct the set of possible text prompts. Here,
+we ablate the effects of how a pre-defined number of con-
+text embeddings in text prompts affects the performance in
+the following table:
+#embeddings ACCM APM
+4 97.6 99 .0
+8 98.4 99.7
+16 97.8 99 .6
+One can see that 8 auto context embeddings are good
+enough and achieve better results than 16 embeddings.
+Thus, we set the number as 8 by default in this paper.
+Number of forgery-aware adapters. To achieve effective
+forgery adaptation, FatFormer develops the forgery-aware
+adapter and integrates it with the ViT image encoder. The
+number of inserted forgery-aware adapters is to be explored.
+The following table lists the relevant ablations:
+#adapters ACCM APM
+2 97.2 99 .6
+3 98.4 99.7
+4 96.5 99 .7
+We observe that inserting 3 forgery-aware adapters in the
+image encoder is able to achieve good performance. There-
+fore, we set 3 as the default number of the forgery-aware
+adapter in our FatFormer.
+Kernel size of image forgery extractor. To capture low-
+level image artifacts, we introduce a lightweight image
+forgery extractor in the proposed forgery-aware adapter, in-
+cluding two convolutional layers and a ReLU. We also ex-
+plore settings of the kernel size of convolutional layers, as
+follows:
+kernel size ACCM APM
+1 98.4 99.7
+3 96.4 99 .7
+5 95.6 99 .6
+We find that using 1 × 1 kernel yields superior results in
+constructing the image forgery extractor. We conjecture that
+this is mainly because the intermediate image patch tokens
+in ViT encode high-level semantic information of different
+image patches, which may not provide useful low-level sim-
+ilarity among adjacent positions like the ones in traditional
+convolutional networks. Thus, larger kernels, designed to
+fuse adjacent patch tokens, may introduce disturbance to
+the modeling process of ViT and damage the performance.
+A.3. Robustness on image perturbation
+To evaluate the effects of forgery adaptation in FatFormer
+on robustness, we apply several common image perturba-
+tions to the test images, following [12, 46]. Specifically, we
+adopt random cropping, Gaussian blurring, JPEG compres-
+sion, and Gaussian noising, each with a probability of 50%.
+The detailed perturbation configures can be found in [12].
+Based on the GANs dataset, we compare our FatFormer
+with UniFD [35] and LGrad [46], which adopts the fixed
+pre-trained paradigm. The results are shown in the follow-
+ing table:
+Perturbation Method ACCM APM
+Gaussian blurring LGrad 78.5 83 .2
+UniFD 78.1 93 .0
+FatFormer 90.7 98 .1
+random cropping LGrad 85.0 91 .9
+UniFD 88.9 98 .1
+FatFormer 98.2 99 .7
+JPEG compressionLGrad 69.5 81 .2
+UniFD 88.4 97 .7
+FatFormer 95.9 99 .2
+Gaussian noising LGrad 69.1 79 .4
+UniFD 82.6 93 .9
+FatFormer 88.0 96 .5
+It can be observed that our approach exceeds UniFD by a
+larger margin, e.g., over +12.0% facing Gaussian blurring.
+This is mainly because FatFormer obtains well-generalized
+forgery representations with the proposed forgery adaption,
+as analyzed in Section 4.3.
+Moreover, we also consider a more real-world scenario
+by combining all four types of perturbation. The results
+are illustrated in Figure 5. Compared with UniFD, our Fat-
+Former also beats it on all testing GAN methods, further
+suggesting the robustness improvement brought by forgery
+adaptation.
+12
+--- PAGE 13 ---
+ProGAN StyleGAN StyleGAN2 BigGAN CycleGAN StarGAN GuaGAN Deepfake Mean
+75
+80
+85
+90
+95
+100
+95.6
+85.3
+80.5
+85.5
+84.4 84.4
+87.5
+74.8
+84.7
+97.0
+90.4
+89.0
+93.7
+94.8
+98.2
+95.7
+88.1
+93.4
+Accuracy (%)
+UniFD
+Ours
+Figure 5. Robustness comparisons with combined four image perturbations. We report the accuracy results on the GANs dataset. By
+considering the forgery adaptation, our FatFormer works better on all generative models than UniFD which adopts the fixed pre-trained
+paradigm.
+13
