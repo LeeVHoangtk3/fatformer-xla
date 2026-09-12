@@ -217,6 +217,14 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-
+# Deep Learning Model Checkpoints & Weights
 *.pt
 *.pth
+*.ckpt
+*.bin
+*.safetensors
+*.onnx
+*.engine
+checkpoints/
+weights/
+pretrained/
