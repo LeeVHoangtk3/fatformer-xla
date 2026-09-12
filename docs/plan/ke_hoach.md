@@ -1,100 +1,152 @@
-# KẾ HOẠCH TRIỂN KHAI ĐỒ ÁN: TỐI ƯU HÓA ĐỘ BỀN VỮNG PHÁP Y CHO FATFORMER TRÊN GOOGLE COLAB
-> **Chủ đề**: Nâng cao độ bền phát hiện ảnh AI (Generalizable Synthetic Image Detection) trước biến dạng nén mạng xã hội (JPEG, Blur) và mở rộng nhận diện mô hình Diffusion hiện đại[cite: 4, 6].  
-> **Kiến trúc cốt lõi**: FatFormer (CVPR 2024: CLIP ViT-L/14 + Forgery-Aware Adapter + Language-Guided Alignment)[cite: 1, 8].  
-> **Hạ tầng thực thi**: Google Colab Pro (GPU T4 / A100) kết hợp lưu trữ Google Drive nhóm[cite: 6, 9].  
-> **Quy mô nhân sự**: Nhóm 3 thành viên[cite: 6].
+# KẾ HOẠCH TRIỂN KHAI ĐỒ ÁN: TỐI ƯU HÓA ĐỘ BỀN VỮNG PHÁP Y CHO FATFORMER TRÊN GOOGLE COLAB PRO
+> **Đề tài**: Nâng cao độ bền phát hiện ảnh AI (Generalizable Synthetic Image Detection) trước biến dạng nén mạng xã hội (JPEG, Blur) và mở rộng nhận diện mô hình Diffusion thế hệ mới.  
+> **Kiến trúc đề xuất**: **FatFormer + SRM 3-Kernels + Dynamic Frequency Gating $\lambda(x)$** (Phương án 2).  
+> **Hạ tầng thực thi**: Google Colab Pro (GPU A100 / T4, 300 Compute Units) kết hợp Google Drive 5TB nhóm (Phương án A - Shared Shortcut).  
+> **Nhân sự**: Nhóm 3 thành viên (Lead A, Lead B, Lead C).  
+> **Thời gian thực hiện**: 5 tuần.
 
 ---
 
-## I. PHÂN CÔNG VAI TRÒ & TRÁCH NHIỆM CỐT LÕI (CORE ROLES)
+## I. PHÂN CÔNG VAI TRÒ & TRÁCH NHIỆM KỸ THUẬT (CORE ROLES)
 
-| Thành viên | Vai trò kỹ thuật | Trách nhiệm chính | Tiêu chí bàn giao trọng tâm |
+Để tránh tình trạng "nghẽn phụ thuộc" (Pipeline Blocking), mỗi thành viên nắm giữ một trụ cột độc lập và phối hợp qua giao diện mã nguồn chuẩn:
+
+| Thành viên | Trụ cột kỹ thuật | Trách nhiệm cốt lõi | Tiêu chí bàn giao (Deliverables) |
 | :--- | :--- | :--- | :--- |
-| **A — Data & Infra Lead** | Quản lý dữ liệu, tối ưu I/O & Augmentation | Quản lý Google Drive, viết pipeline giải nén SSD Colab, xây dựng pipeline data augmentation 2 luồng (Clean + Degraded)[cite: 4, 6]. | Không nghẽn I/O (I/O Bottleneck), DataLoader nạp batch mượt mà[cite: 5, 6]. |
-| **B — Architecture & Loss Lead** | Kiến trúc mô hình, SRM & Tối ưu hóa tham số | Kiểm soát nạp state_dict (xử lý lỗi chính tả biến), cấu hình đóng băng CLIP (94.1%), mở khóa Adapter (5.9%), tích hợp bộ lọc SRM đúng kích thước tensor, giám sát hàm mất mát Augmented Contrastive Loss và hệ số $\lambda$[cite: 2, 7, 8]. | Tensors khớp 100%, không lỗi runtime shape[cite: 2, 6], Loss hội tụ ổn định[cite: 5]. |
-| **C — Training & Evaluation Lead** | Huấn luyện AMP FP16, Benchmark & XAI | Thiết lập Notebook Colab, tối ưu bộ nhớ VRAM bằng Gradient Accumulation[cite: 7, 9], chạy benchmark 18 tập test 2 chiều (Clean vs Degraded)[cite: 1, 6], trích xuất Grad-CAM[cite: 3, 6], viết báo cáo[cite: 6]. | Bảng số liệu ACC/AP chuẩn xác[cite: 1, 6], ảnh trực quan hóa Grad-CAM minh bạch[cite: 6, 7]. |
+| **Thành viên A**<br>*(Data & Infra Lead)* | **Hạ tầng I/O, Dữ liệu & Pipeline Tăng Cường** | • Cấu hình thư mục dùng chung từ Google Drive 5TB sang Colab Pro.<br>• Viết script đóng gói `.tar` và hàm `extract_to_local()` giải nén vào SSD `/content/` Colab.<br>• Thu thập tập ProGAN 4-class, GenImage subset (Midjourney, SD v1.5), và tạo 3 biến thể suy biến (JPEG, Blur, Down-Up).<br>• Xây dựng module Data Augmentation 2 luồng (Clean vs Degraded). | • Thư mục Drive 5TB chuẩn hóa.<br>• Module `datasets/transforms.py`.<br>• Script `data/make_degraded.py`.<br>• Tốc độ DataLoader đạt tối đa, 0 nghẽn I/O. |
+| **Thành viên B**<br>*(Architecture & Loss Lead)* | **Kiến trúc Mô hình, SRM 3-Kernels & Cổng Gating $\lambda(x)$** | • Xây dựng mã nguồn mô hình tại `models/` nạp đủ 1,116 tensors (xử lý typo `self.patch_basaed_enhancer`).<br>• Hiện thực hóa khối `SpatialResidualBlock` chứa **3 bộ lọc SRM kinh điển** (Đạo hàm bậc 1, bậc 2, và Square $5 \times 5$).<br>• Thiết kế mạng `DynamicFrequencyGating` dự đoán hệ số thích ứng $\lambda(x)$ dựa trên mức suy biến của ảnh.<br>• Thiết lập cơ chế đóng băng 94.1% CLIP, chỉ mở khóa 5.9% Adapter. | • Module `models/fatformer.py`, `models/srm.py`, `models/gating.py`.<br>• Script `test_model_shapes.py` pass 100% tensors.<br>• Kiểm soát hàm mất mát Augmented Contrastive Loss. |
+| **Thành viên C**<br>*(Training & Evaluation Lead)* | **Huấn luyện Colab Pro, Benchmark & Trực Quan Hóa XAI** | • Quản lý tài nguyên 300 Compute Units, thiết lập Notebook Colab Pro chạy GPU A100 với AMP FP16 + Gradient Accumulation.<br>• Viết script `fast_eval.py` (đánh giá nhanh trên subset 500 ảnh) và `full_eval.py` (đánh giá đủ 18 tập test).<br>• Giám sát quá trình huấn luyện 2 Pha (Adaptive $\rightarrow$ Hard Degradation), tự động backup checkpoint sau mỗi epoch.<br>• Xuất ảnh đối chứng Grad-CAM và tổng hợp báo cáo đồ án. | • Notebooks Colab hoàn chỉnh (`train.ipynb`, `eval.ipynb`).<br>• Checkpoint `fatformer_srm_robust.pth`.<br>• Bảng số liệu Benchmark đa chiều & Ablation Study.<br>• Báo cáo kỹ thuật (PDF) + Slide thuyết trình. |
 
 ---
 
-## II. LỘ TRÌNH 1: GIAI ĐOẠN ĐẦU — THIẾT LẬP, TỐI ƯU HÓA I/O & TÁI LẬP BASELINE
-*Thời lượng: Tuần 1 – Tuần 2 (14 ngày)*  
-*Mục tiêu: Thiết lập môi trường sạch, khắc phục triệt để nghẽn I/O Drive, tái lập chính xác số liệu Baseline gốc (~98.4% GANs, ~95.0% Diffusion) và lập mốc đo lường suy biến (Degraded Baseline)[cite: 1, 6].*
+## II. QUY CHUẨN KỸ THUẬT HẠ TẦNG (INFRASTRUCTURE & DRIVE PROTOCOL)
 
-### Tuần 1: Setup Hạ Tầng, Giải Nén SSD Cục Bộ & Kiểm Định Checkpoint
+### 1. Cơ Chế Kết Nối 2 Tài Khoản (Phương Án A — Google Drive Shortcut)
+* **Tài khoản A (Chính — 5TB Drive)**: Đóng vai trò **Data Hub & Model Registry**.
+  1. Tạo thư mục gốc `FatFormer_Hub/`.
+  2. Bấm **Chia sẻ (Share)** $\rightarrow$ Nhập email của Tài khoản Colab Pro $\rightarrow$ Phân quyền **Người chỉnh sửa (Editor)**.
+* **Tài khoản B (Phụ — Colab Pro 300 CU + 15GB Drive)**: Đóng vai trò **Compute Engine**.
+  1. Vào Google Drive của Tài khoản B $\rightarrow$ Chọn mục **"Được chia sẻ với tôi" (Shared with me)**.
+  2. Click chuột phải vào `FatFormer_Hub` $\rightarrow$ Chọn **"Thêm lối tắt vào Drive" (Add shortcut to Drive)** $\rightarrow$ Lưu vào `MyDrive`.
+  3. Trên Colab Pro:
+     ```python
+     from google.colab import drive
+     drive.mount('/content/drive')
+     DRIVE_DIR = "/content/drive/MyDrive/FatFormer_Hub"
+     ```
+* **Lợi ích cốt lõi**: Tiêu thụ **0 byte** trên tài khoản 15GB, tận dụng trọn vẹn 5TB của tài khoản chính; đọc ghi checkpoint trực tiếp mượt mà.
 
-| Mã việc | Nội dung công việc chi tiết | Người phụ trách | Sản phẩm bàn giao (Deliverables) |
-| :--- | :--- | :---: | :--- |
-| **1.1** | Setup Colab Pro, cài đặt PyTorch, `torchvision`, `pytorch_wavelets`[cite: 6, 8]. **Quy tắc I/O:** Viết script tự động sao chép dataset dạng nén (`.tar`/`.zip`) từ Drive sang `/content/` của máy ảo Colab rồi giải nén tại chỗ (tăng tốc độ đọc lên 10 lần so với đọc trực tiếp qua Drive mount)[cite: 6]. | **A** | Notebook `00_env_setup.ipynb` có hàm `extract_to_local()` tối ưu[cite: 6]. |
-| **1.2** | Tải 2 file trọng số: `ViT-L-14.pt` (OpenAI TorchScript JIT, 932 MB) và `fatformer_4class_ckpt.pth` (1.97 GB)[cite: 2, 8]. Chạy script `check_weights.py` thẩm định nạp đủ 1,116 tensors và 933.16M tham số[cite: 2, 8]. **Bắt buộc:** Giữ nguyên tên biến `patch_basaed_enhancer` trong `models/lga.py` để tránh lỗi missing key khi load state_dict[cite: 2, 7]. | **B** | Script `load_model_test.py` thực thi pass `strict=True`[cite: 2]. |
-| **1.3** | Thu thập và đóng gói dữ liệu kiểm thử: 8 GANs (*ProGAN, StyleGAN2, BigGAN, CycleGAN...*)[cite: 1, 6] và 6 Diffusion (*LDM, Glide, Guided Diffusion, PNDM...*)[cite: 1, 10]. Chuẩn hóa cây thư mục `0_real/` và `1_fake/`[cite: 1, 6]. | **A + C** | Bộ dữ liệu test nén dạng `.tar` lưu trữ sẵn trên Google Drive nhóm[cite: 6]. |
-| **1.4** | Đọc hiểu và viết module `benchmark_metrics.py`: cài đặt các hàm đo lường Accuracy (ACC tại ngưỡng 0.5), Average Precision (AP), AUC-ROC và Equal Error Rate (EER)[cite: 5, 6]. | **C** | Module `benchmark_metrics.py` hoàn chỉnh[cite: 5, 6]. |
-| **1.5** | Trích xuất công thức tensor: Lập bảng truy vết kích thước tensor (Tensor Shape Tracing) qua các khối Haar DWT 2D, Inter/Intra-band Attention, PBE, TGI để chuẩn bị nội dung cho báo cáo[cite: 7, 8]. | **B** | Bảng Tensor Shape Tracing chi tiết[cite: 7]. |
-
-### Tuần 2: Xây Dựng Bộ Test Degraded & Đo Đạc Baseline 2 Chiều
-
-| Mã việc | Nội dung công việc chi tiết | Người phụ trách | Sản phẩm bàn giao (Deliverables) |
-| :--- | :--- | :---: | :--- |
-| **2.1** | Viết script tạo dữ liệu suy biến vật lý `make_degraded_testset.py`: Tự động tạo 3 biến thể trên tập test: (1) JPEG ($Q \in \{30, 50, 70\}$)[cite: 6], (2) Gaussian Blur ($\sigma \in \{1.0, 2.0\}$)[cite: 4, 13], (3) Downsample-Upsample ($224 \rightarrow 112 \rightarrow 224$ mô phỏng nén mạng xã hội)[cite: 6]. | **A** | Bộ test set suy biến cục bộ trên ổ đĩa Colab[cite: 6]. |
-| **2.2** | Chạy `evaluate.py` với Checkpoint gốc trên toàn bộ tập **Clean** (8 GANs + 6 Diffusion)[cite: 1, 6]. | **C** | Bảng số liệu: Tái lập GANs $\approx 98.4\%$, Diffusion $\approx 95.0\%$[cite: 1]. |
-| **2.3** | Chạy `evaluate.py` với Checkpoint gốc trên toàn bộ tập **Degraded** đã tạo ở mục 2.1[cite: 6]. | **C** | Bảng số liệu ghi nhận mức độ sụt giảm hiệu năng của mô hình gốc (Baseline Degraded)[cite: 6]. |
-| **2.4** | Xây dựng pipeline trích xuất Grad-CAM và phổ DWT: Xuất bản đồ nhiệt chú ý trên 5 cặp ảnh Real/Fake ở cả hai trạng thái Clean và Degraded[cite: 6, 7]. | **B** | Script `visualize_cam.py` + 10 ảnh Grad-CAM đối chứng ban đầu[cite: 6, 7]. |
-| **2.5** | **Họp nhóm Milestone 1**: Phân tích mức độ suy giảm của nhánh Wavelet khi gặp nén JPEG, xác định mức suy biến mục tiêu cần khắc phục và thống nhất phương án finetune[cite: 4, 6]. | **Cả 3** | Biên bản kỹ thuật & Bảng số liệu Baseline tổng hợp[cite: 6]. |
-
----
-
-## III. LỘ TRÌNH 2: GIAI ĐOẠN FINETUNE — HUẤN LUYỆN NÂNG CẤP & ĐÁNH GIÁ ĐA CHIỀU
-*Thời lượng: Tuần 3 – Tuần 5 (21 ngày)*  
-*Mục tiêu: Đóng băng CLIP backbone, mở khóa Adapter, tích hợp Data Augmentation 2 luồng và bộ lọc High-Pass SRM, nâng cao độ bền trước nén ảnh mà không làm suy thoái hiệu năng trên ảnh Clean[cite: 4, 6].*
-
-### Tuần 3: Bổ Sung Dữ Liệu Tạo Sinh Hiện Đại & Nâng Cấp Kiến Trúc
-
-| Mã việc | Nội dung công việc chi tiết | Người phụ trách | Sản phẩm bàn giao (Deliverables) |
-| :--- | :--- | :---: | :--- |
-| **3.1** | **Mở rộng dữ liệu:** Tải bổ sung tập con đại diện từ **GenImage** (Midjourney, Stable Diffusion v1.5, khoảng 20k ảnh) để bổ sung đặc trưng của Diffusion hiện đại vào tập train[cite: 4, 8]. | **A** | Tập dữ liệu train hỗn hợp: ProGAN 4-class + GenImage Subset[cite: 4, 8]. |
-| **3.2** | **Xây dựng Data Augmentation 2 luồng:** Cấu hình xác suất: 30% ảnh giữ Clean (để chống sụt giảm hiệu năng trên ảnh gốc), 70% ảnh áp dụng ngẫu nhiên: JPEG ($Q \in [30, 95]$), Gaussian Blur ($\sigma \in [0.0, 3.0]$), và Double-JPEG[cite: 6, 7]. | **A** | Module `datasets/transforms.py` chống hiện tượng "học vẹt nén"[cite: 4, 6]. |
-| **3.3** | **Hiện thực hóa nhánh High-Pass SRM:** Thiết kế module lọc vết dư điểm ảnh trước khi vào Conv của FAA[cite: 4, 7]: dùng ma trận Laplacian cố định để ép nhánh không gian học residual noise thay vì phụ thuộc vào màu sắc nội dung[cite: 4, 7]. | **B** | Module `SpatialResidualBlock` tích hợp an toàn trong `faa.py`[cite: 4, 7]. |
-| **3.4** | **Cấu hình tham số huấn luyện:** Đóng băng 94.1% CLIP ViT-L/14[cite: 2, 7]. Chỉ mở khóa huấn luyện 5.9% (FAA, LGA, soft prompts, hệ số $\lambda$)[cite: 2, 7]. Thiết lập Optimizer AdamW ($lr = 2 \times 10^{-4}$ cho adapter, $lr = 10^{-4}$ cho prompt context) kết hợp Cosine Annealing[cite: 4, 6]. | **B** | File cấu hình `train_config.yaml`[cite: 6]. |
-| **3.5** | Chuẩn bị script đánh giá tự động (validation hook) sau mỗi epoch để phát hiện sớm hiện tượng overfitting[cite: 6]. | **C** | Hook đánh giá tự động trong `train.py`[cite: 6]. |
-
-### Tuần 4: Thực Thi Huấn Luyện Phân Tầng & Giám Sát Hội Tụ
-
-| Mã việc | Nội dung công việc chi tiết | Người phụ trách | Sản phẩm bàn giao (Deliverables) |
-| :--- | :--- | :---: | :--- |
-| **4.1** | **Huấn luyện Phiên bản 1 (Robust Augment-Only):** Chạy 5–8 epoch trên tập dữ liệu hỗn hợp với pipeline tăng cường 2 luồng[cite: 6]. Bật Mixed Precision AMP FP16 kết hợp Gradient Accumulation (`batch_size = 16`, steps = 4 $\rightarrow$ `effective_batch_size = 64`)[cite: 7, 8]. | **B + C** | Checkpoint `fatformer_robust_v1.pth` + Log hội tụ Loss[cite: 6]. |
-| **4.2** | **Huấn luyện Phiên bản 2 (Robust + SRM Filter):** Huấn luyện phiên bản có tích hợp bộ lọc vết dư không gian SRM trong FAA[cite: 4, 6]. | **B + C** | Checkpoint `fatformer_srm_v2.pth` + Log[cite: 6]. |
-| **4.3** | Giám sát biến thiên của hệ số $\lambda$ (`freq_scale`): Kiểm chứng sự thích ứng của mô hình khi gặp ảnh nén nặng (hệ số $\lambda$ tự động giảm để chuyển ưu tiên sang nhánh không gian)[cite: 2, 4]. | **B** | Biểu đồ biến thiên giá trị trọng số $\lambda$ qua các epoch[cite: 2]. |
-| **4.4** | Thiết lập cơ chế tự động sao lưu checkpoint `.pth` sau mỗi epoch sang Google Drive để phòng ngừa Colab ngắt kết nối session đột ngột[cite: 6, 8]. | **A** | Thư mục checkpoint backup tự động trên Google Drive[cite: 6, 8]. |
-
-### Tuần 5: Đánh Giá Đa Chiều, Trực Quan Hóa XAI & Đóng Gói Đồ Án
-
-| Mã việc | Nội dung công việc chi tiết | Người phụ trách | Sản phẩm bàn giao (Deliverables) |
-| :--- | :--- | :---: | :--- |
-| **5.1** | Chạy benchmark hoàn chỉnh so sánh 3 mô hình: (1) Baseline gốc, (2) Robust v1, (3) Robust SRM v2 trên toàn bộ 18 tập test ở cả 2 trạng thái: **Clean** và **Degraded ($Q \in \{30, 50, 70\}$)**[cite: 1, 6]. | **C** | Bảng ma trận số liệu tổng hợp cuối cùng[cite: 6]. |
-| **5.2** | Phân tích triệt tiêu (Ablation Study): Định lượng mức đóng góp riêng rẽ của kỹ thuật Data Augmentation đa luồng và nhánh lọc vết dư SRM[cite: 1, 6]. | **B + C** | Bảng số liệu Ablation Study hoàn chỉnh cho báo cáo[cite: 6]. |
-| **5.3** | Trực quan hóa XAI (Explainable AI): Xuất Grad-CAM so sánh cạnh nhau giữa mô hình gốc và mô hình finetuned khi gặp ảnh nén nặng để chứng minh mô hình mới tập trung đúng vào dị thường tạo tác thay vì viền khối nén (blocking artifacts)[cite: 6, 7]. | **C** | Bộ ảnh so sánh Grad-CAM độ phân giải cao[cite: 6, 7]. |
-| **5.4** | Soạn thảo báo cáo kỹ thuật đồ án: Đặt vấn đề $\rightarrow$ Phương pháp thích ứng đa miền $\rightarrow$ Thiết kế chống suy biến $\rightarrow$ Thực nghiệm & Đánh giá định lượng[cite: 6]. | **Cả 3** *(C tổng hợp)* | Báo cáo đồ án hoàn chỉnh (PDF)[cite: 6]. |
-| **5.5** | Thiết kế slide thuyết trình, kịch bản trả lời phản biện và chuẩn bị script `inference.py` chạy suy luận live trên ảnh tải từ Facebook/Telegram để demo trực tiếp[cite: 4, 6]. | **Cả 3** | Slide thuyết trình + Demo chạy trực tiếp[cite: 6]. |
+### 2. Quy Tắc I/O Chống Nghẽn Bắt Buộc (SSD Local Extraction)
+* **Tuyệt đối không** đọc từng ảnh trực tiếp từ đường dẫn `/content/drive/MyDrive/...` (sẽ gây sập I/O Colab).
+* **Quy trình chuẩn**:
+  1. Dữ liệu trên Drive luôn được nén thành file `.tar` (ví dụ: `genimage_subset.tar`, `test_degraded.tar`).
+  2. Đầu notebook, script copy file `.tar` về `/content/` của máy ảo Colab:
+     ```bash
+     cp /content/drive/MyDrive/FatFormer_Hub/datasets/progan_train.tar /content/
+     tar -xf /content/progan_train.tar -C /content/dataset_local/
+     ```
+  3. DataLoader chỉ đọc dữ liệu từ `/content/dataset_local/` (tốc độ SSD NVMe của Colab tăng gấp 10 lần).
 
 ---
 
-## IV. BẢNG DỰ PHÒNG RỦI RO KỸ THUẬT TRÊN GOOGLE COLAB
+## III. NÂNG CẤP KIẾN TRÚC: PHƯƠNG ÁN 2 (SRM 3-KERNELS + FREQUENCY GATING)
 
-| Rủi ro kỹ thuật | Mức độ | Biện pháp xử lý kỹ thuật |
-| :--- | :---: | :--- |
-| **Đọc Drive chậm (I/O Bottleneck)** | Rất cao | Tuyệt đối không đọc trực tiếp từng ảnh từ Drive mount. Luôn nén dataset thành 1 file `.tar`, copy về `/content/` của máy ảo Colab rồi mới giải nén ra đĩa SSD nội bộ[cite: 6]. |
-| **Tràn RAM / VRAM GPU** | Cao | Đóng băng tuyệt đối 100% ViT và Text Encoder (`requires_grad = False`)[cite: 2, 7]. Bật PyTorch AMP FP16, dùng `batch_size = 16` kết hợp `gradient_accumulation_steps = 4`[cite: 7, 8]. |
-| **Tụt hiệu năng trên ảnh Clean** | Trung bình | Giữ tỷ lệ 30% ảnh Clean không nén trong pipeline huấn luyện để neo giữ không gian phân tách gốc, tránh việc mô hình chỉ học phát hiện vết nén JPEG[cite: 6]. |
-| **Mất kết nối Colab giữa chừng** | Cao | Trong vòng lặp train, sau mỗi epoch lưu `state_dict` vào local và gọi lệnh copy ngay file `.pth` sang Google Drive[cite: 6, 8]. Hỗ trợ cờ `--resume` nạp lại checkpoint gần nhất[cite: 6]. |
-| **Lỗi nạp trọng số missing key** | Trung bình | Kiểm tra biến `patch_basaed_enhancer` trong `models/lga.py` (giữ nguyên lỗi chính tả chữ `a` thừa) để tương thích 100% với checkpoint gốc[cite: 2, 7]. |
+Nhằm nâng tầm đồ án đạt mức **Xử lý ảnh chuyên sâu**, nhóm hiện thực hóa 2 cải tiến kiến trúc:
+
+### 1. Khối Lọc Vết Dư Không Gian SRM (`SpatialResidualBlock`)
+Trước khi đưa đặc trưng vào nhánh tích chập của FAA, áp dụng 3 bộ lọc vi sai pháp y cố định (`requires_grad = False`):
+* **Kernel 1 ($1^{st}$ order)**: Bắt vết nứt vi sai điểm ảnh liền kề do nội suy:
+  $$K_1 = \begin{bmatrix} 0 & 0 & 0 \\ -1 & 1 & 0 \\ 0 & 0 & 0 \end{bmatrix}$$
+* **Kernel 2 ($2^{nd}$ order - Laplacian)**: Bắt độ cong vi sai điểm ảnh:
+  $$K_2 = \begin{bmatrix} 0 & -1 & 0 \\ -1 & 4 & -1 \\ 0 & -1 & 0 \end{bmatrix}$$
+* **Kernel 3 (Square $5 \times 5$)**: Bắt vết nội suy song tuyến tính (Bilinear/Bicubic):
+  $$K_3 = \frac{1}{12} \begin{bmatrix} -1 & 2 & -2 & 2 & -1 \\ 2 & -6 & 8 & -6 & 2 \\ -2 & 8 & -12 & 8 & -2 \\ 2 & -6 & 8 & -6 & 2 \\ -1 & 2 & -2 & 2 & -1 \end{bmatrix}$$
+* *Tác dụng*: Triệt tiêu hoàn toàn thông tin ngữ nghĩa (màu sắc con người, cảnh vật), chỉ giữ lại dấu vết nhiễu vi mô của quá trình sinh ảnh.
+
+### 2. Cổng Thích Ứng Tần Số Động (`DynamicFrequencyGating` $\lambda(x)$)
+* Thay thế hệ số $\lambda$ cố định trong bài báo gốc bằng hàm thích ứng phụ thuộc mức suy biến ảnh:
+  $$\lambda(x) = \text{Sigmoid}\Big(\mathbf{W}_2 \cdot \text{GELU}\big(\mathbf{W}_1 \cdot \text{GAP}(x) + \mathbf{b}_1\big) + b_2\Big) \times 2.0$$
+* *Cơ chế hoạt động*:
+  * **Ảnh sạch (Clean)**: Cổng giữ $\lambda(x) \approx 1.0 \sim 1.5$ (khai thác trọn vẹn dải tần DWT).
+  * **Ảnh nén sâu ($Q \le 50$) hoặc mờ (Blur)**: Tần số cao bị phá hủy thành nhiễu khối, cổng tự động hạ $\lambda(x) \rightarrow 0.05 \sim 0.1$ (đóng cổng tần số, ngăn "nhiễu độc" xâm nhập mô hình, chuyển ưu tiên 95% sang nhánh không gian SRM).
 
 ---
 
-## V. CHECKLIST TIÊU CHUẨN NGHIỆM THU ĐỒ ÁN (DONE CRITERIA)
+## IV. LỘ TRÌNH 5 TUẦN CHI TIẾT (5-WEEK SPRINT PLAN)
 
-- [ ] Bảng số liệu Baseline gốc chạy trên cả 2 tập Clean và Degraded ($Q \in \{30, 50, 70\}$)[cite: 6].
-- [ ] Checkpoint đã finetune (`fatformer_robust_v1.pth` và `fatformer_srm_v2.pth`)[cite: 6].
-- [ ] Bảng số liệu đối chứng trước và sau finetune, chứng minh độ bền tăng rõ rệt trên ảnh nén/mờ mà không làm sụt giảm tập Clean[cite: 6].
-- [ ] Bảng Ablation Study định lượng vai trò của Augmentation và SRM[cite: 1, 6].
-- [ ] Bộ ảnh trực quan hóa Grad-CAM so sánh đối đầu[cite: 6, 7].
-- [ ] Mã nguồn dự án sạch sẽ, có file `README.md` hướng dẫn chạy lại từ đầu[cite: 6].
-- [ ] Báo cáo đồ án hoàn chỉnh + Slide thuyết trình + Demo chạy suy luận ảnh thực tế[cite: 6].
+### 🗓️ TUẦN 1: THIẾT LẬP HẠ TẦNG, SANITY CHECK & TẠO PIPELINE DUMMY
+*Mục tiêu: Hoàn tất kết nối Drive 5TB sang Colab Pro, xây dựng mã nguồn mô hình nạp khớp 100% weights và tạo pipeline dummy để 3 thành viên làm việc song song.*
+
+| Mã việc | Nhiệm vụ kỹ thuật | Người phụ trách | Sản phẩm bàn giao (Deliverables) |
+| :---: | :--- | :---: | :--- |
+| **1.1** | Thiết lập thư mục `FatFormer_Hub` trên Drive 5TB, chia sẻ shortcut sang tài khoản Colab Pro. Tạo Dummy Dataset (20 ảnh) để test code. | **A** | Thư mục Drive hoạt động, notebook `00_setup_env.ipynb`. |
+| **1.2** | Viết module mô hình trong thư mục `models/` (`fatformer.py`, `faa.py`, `lga.py`, `srm.py`, `gating.py`). Xử lý typo `self.patch_basaed_enhancer`. Chạy `tools/check_weights.py` nạp pass `strict=True` trên CPU/T4. | **B** | Mã nguồn mô hình hoàn chỉnh, script `verify_model.py` pass 1,116 tensors. |
+| **1.3** | Thiết lập notebook huấn luyện `train.ipynb` trên Colab Pro (GPU A100) với AMP FP16 và Gradient Accumulation. Chạy thử 1 step dummy forward-backward-optimizer. | **C** | Notebook `train.ipynb` chạy mượt mà trên A100, đo thời gian 1 step. |
+| **1.4** | Xây dựng script `fast_eval.py`: Lấy ngẫu nhiên 500 ảnh/tập test để đánh giá nhanh trong < 8 phút thay vì chạy cả ngày. | **C** | Script `fast_eval.py` kèm các hàm đo ACC, AP, AUC. |
+
+---
+
+### 🗓️ TUẦN 2: XÂY DỰNG BỘ TEST DEGRADED & THIẾT LẬP BASELINE GỐC
+*Mục tiêu: Đo đạc số liệu của mô hình gốc trên cả ảnh Clean và ảnh Degraded để làm mốc đối chứng khoa học.*
+
+| Mã việc | Nhiệm vụ kỹ thuật | Người phụ trách | Sản phẩm bàn giao (Deliverables) |
+| :---: | :--- | :---: | :--- |
+| **2.1** | Viết script `data/make_degraded.py` sinh 3 biến thể suy biến: (1) JPEG ($Q \in \{30, 50, 70\}$), (2) Gaussian Blur ($\sigma \in \{1.0, 2.0\}$), (3) Down-Up ($224 \rightarrow 112 \rightarrow 224$). Đóng gói thành `test_degraded.tar`. | **A** | Tệp dữ liệu kiểm thử suy biến chuẩn hóa trên Drive 5TB. |
+| **2.2** | Chạy `fast_eval.py` và `full_eval.py` với Checkpoint gốc trên tập **Clean** (8 GANs + 6 Diffusion). | **C** | Bảng số liệu Baseline Clean (tái lập GANs $\approx 98.4\%$, Diffusion $\approx 95.0\%$). |
+| **2.3** | Chạy benchmark Checkpoint gốc trên tập **Degraded** ($Q=30, 50, 70$). Ghi nhận mức độ sụt giảm hiệu năng nghiêm trọng của mô hình gốc. | **C** | Bảng số liệu Baseline Degraded (chứng minh tử huyệt của FatFormer gốc khi gặp nén). |
+| **2.4** | Trích xuất Grad-CAM ban đầu trên 5 cặp ảnh Real/Fake ở cả hai trạng thái Clean và Degraded. | **B** | Script `visualize_cam.py` + Bộ ảnh Grad-CAM đối chứng ban đầu. |
+| **2.5** | **Họp nhóm Milestone 1**: Chốt bảng số liệu Baseline, xác định mục tiêu bù đắp sụt giảm hiệu năng cho giai đoạn finetune. | **Cả 3** | Biên bản kỹ thuật Milestone 1. |
+
+---
+
+### 🗓️ TUẦN 3: TỔNG HỢP DỮ LIỆU ĐA NGUỒN & NÂNG CẤP KIẾN TRÚC MÔ HÌNH
+*Mục tiêu: Đưa dữ liệu sinh hiện đại vào tập train và tích hợp hoàn chỉnh SRM 3-Kernels + Cổng Gating.*
+
+| Mã việc | Nhiệm vụ kỹ thuật | Người phụ trách | Sản phẩm bàn giao (Deliverables) |
+| :---: | :--- | :---: | :--- |
+| **3.1** | Tải và đóng gói tập con **GenImage** (Midjourney + SD v1.5, khoảng 25k ảnh) đưa lên Drive 5TB, kết hợp với ProGAN 4-class gốc tạo tập train hỗn hợp `train_mixed.tar`. | **A** | Bộ dữ liệu huấn luyện hỗn hợp chuẩn hóa trên Drive. |
+| **3.2** | Xây dựng pipeline Data Augmentation 2 luồng trong `datasets/transforms.py`: 30% ảnh Clean, 70% ảnh áp dụng ngẫu nhiên JPEG ($Q \in [40, 95]$) và Gaussian Blur. | **A** | Module `datasets/transforms.py` chống học vẹt nén. |
+| **3.3** | Tích hợp module `SpatialResidualBlock` (3 kernels) và `DynamicFrequencyGating` vào class `FatFormer` trong `models/fatformer.py`. | **B** | Kiến trúc hoàn thiện của Phương Án 2, sẵn sàng nhận gradient. |
+| **3.4** | Thiết lập cấu hình đóng băng 94.1% CLIP ViT-L/14, chỉ mở khóa 5.9% tham số (FAA, SRM projection, Gating, LGA, soft prompts). | **B** | File cấu hình `train_config.yaml`. |
+| **3.5** | Thiết lập hook tự động lưu checkpoint `.pth` sau mỗi epoch về Drive 5TB và cơ chế `--resume` phòng ngừa Colab ngắt kết nối. | **C** | Checkpoint auto-saving pipeline hoàn thiện. |
+
+---
+
+### 🗓️ TUẦN 4: CHIẾN DỊCH HUẤN LUYỆN 2 PHA TRÊN A100 (COLAB PRO)
+*Mục tiêu: Huấn luyện mô hình đạt trạng thái hội tụ tối ưu, vừa bền trước nén vừa không tụt hiệu năng ảnh Clean.*
+
+| Mã việc | Nhiệm vụ kỹ thuật | Người phụ trách | Sản phẩm bàn giao (Deliverables) |
+| :---: | :--- | :---: | :--- |
+| **4.1** | **Huấn luyện Pha 1 (Adaptive Generalization)**: Chạy 4 epoch trên GPU A100 (tiêu tốn ~35 CU). Batch size = 32, Accumulation = 2 (Effective = 64). LR adapter = $2 \times 10^{-4}$, LR gating = $10^{-3}$. Áp dụng biến dạng nén nhẹ. | **B + C** | Checkpoint `fatformer_srm_phase1.pth` + Log hội tụ Loss. |
+| **4.2** | **Huấn luyện Pha 2 (Hard Degradation Hardening)**: Chạy 4 epoch tiếp theo trên A100 (~35 CU). Tăng tỷ lệ nén sâu ($Q \in [30, 60]$), giảm LR xuống $5 \times 10^{-5}$ để tinh chỉnh mịn. | **B + C** | Checkpoint hoàn thiện `fatformer_srm_robust_final.pth`. |
+| **4.3** | Giám sát và vẽ biểu đồ phân bố giá trị đầu ra của cổng thích ứng $\lambda(x)$ trên các dải chất lượng $Q=30, 50, 70, 100$. | **B** | Biểu đồ chứng minh cơ chế tự động đóng cổng tần số khi ảnh nén sâu. |
+| **4.4** | Chạy `fast_eval.py` sau mỗi epoch để phát hiện sớm overfitting. | **C** | Biểu đồ Validation ACC/AP theo từng epoch. |
+
+---
+
+### 🗓️ TUẦN 5: BENCHMARK ĐA CHIỀU, XAI GRAD-CAM & ĐÓNG GÓI ĐỒ ÁN
+*Mục tiêu: Chạy kiểm thử toàn diện, hoàn thiện bảng so sánh Ablation Study đạt điểm 10 và đóng gói sản phẩm.*
+
+| Mã việc | Nhiệm vụ kỹ thuật | Người phụ trách | Sản phẩm bàn giao (Deliverables) |
+| :---: | :--- | :---: | :--- |
+| **5.1** | Chạy **Full-Benchmark** trên toàn bộ 18 tập test ở cả 2 trạng thái Clean và Degraded ($Q \in \{30, 50, 70\}$). | **C** | Bảng ma trận kết quả tổng hợp cuối cùng. |
+| **5.2** | **Lập bảng Ablation Study 4 phiên bản**: (1) Baseline gốc, (2) Augmentation thuần, (3) Thêm SRM 3 Kernels, (4) Mô hình hoàn chỉnh (+ Dynamic Gating). | **B + C** | Bảng phân tích triệt tiêu chứng minh giá trị từng module cải tiến. |
+| **5.3** | Xuất bộ ảnh trực quan hóa **Grad-CAM so sánh đối đầu**: Chứng minh mô hình cải tiến tập trung chuẩn xác vào dị thường tạo tác AI thay vì viền khối nén JPEG. | **C** | Bộ ảnh XAI độ phân giải cao đưa vào báo cáo. |
+| **5.4** | Soạn thảo Báo cáo kỹ thuật đồ án (PDF chuẩn IEEE/CVPR) và Slide thuyết trình. | **Cả 3** | Báo cáo đồ án hoàn chỉnh + Slide bảo vệ. |
+| **5.5** | Xây dựng script `inference_demo.py` hỗ trợ kéo ảnh từ Facebook/Telegram chạy suy luận trực tiếp để demo trước hội đồng. | **A + B** | Ứng dụng Demo suy luận thực chiến. |
+
+---
+
+## V. BẢNG TIÊU CHUẨN NGHIỆM THU ĐỒ ÁN (DONE CRITERIA)
+
+Dự án được đánh giá là hoàn thành xuất sắc khi đạt đủ 7 tiêu chuẩn sau:
+- [ ] Khắc phục 100% nghẽn I/O qua cơ chế giải nén SSD Colab và liên kết Drive 5TB không tốn dung lượng tài khoản phụ.
+- [ ] Bảng số liệu Baseline gốc tái lập trên cả 2 miền Clean và Degraded ($Q=30, 50, 70$).
+- [ ] Hai checkpoint chất lượng cao: `fatformer_srm_phase1.pth` và `fatformer_srm_robust_final.pth`.
+- [ ] Bảng số liệu đối chứng chứng minh độ bền tăng vượt bậc ($> 15–20\%$ trên ảnh nén nặng $Q=30$) trong khi độ chính xác trên ảnh Clean không bị sụt giảm quá $0.5\%$.
+- [ ] Bảng Ablation Study định lượng rõ rệt công năng của SRM 3-Kernels và Dynamic Frequency Gating $\lambda(x)$.
+- [ ] Bộ ảnh trực quan hóa Grad-CAM phân giải cao minh chứng tính giải thích được (XAI).
+- [ ] Kho mã nguồn sạch sẽ, kèm script `inference_demo.py` và tài liệu hướng dẫn tái lập kết quả từ đầu (`README.md`).
+
+---
+*Kế hoạch này là tài liệu kỹ thuật chuẩn của nhóm, phân công rõ trách nhiệm và lộ trình thực thi theo từng mốc thời gian.*
