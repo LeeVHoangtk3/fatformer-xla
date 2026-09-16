@@ -1,0 +1,288 @@
+\begin{thebibliography}{56}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Brigham and Morrow(1967)]{brigham1967fast}
+E~Oran Brigham and RE Morrow.
+\newblock The fast fourier transform.
+\newblock \emph{IEEE Spectrum}, 4\penalty0 (12):\penalty0 63--70, 1967.
+
+\bibitem[Brock et~al.(2018)Brock, Donahue, and Simonyan]{brock2018large}
+Andrew Brock, Jeff Donahue, and Karen Simonyan.
+\newblock Large scale gan training for high fidelity natural image synthesis.
+\newblock In \emph{International Conference on Learning Representations}, 2018.
+
+\bibitem[Chai et~al.(2020)Chai, Bau, Lim, and Isola]{chai2020makes}
+Lucy Chai, David Bau, Ser-Nam Lim, and Phillip Isola.
+\newblock What makes fake images detectable? understanding properties that generalize.
+\newblock In \emph{Proceedings of the European Conference on Computer Vision}, pages 103--120. Springer, 2020.
+
+\bibitem[Chen et~al.(2021)Chen, Yao, Chen, Ding, Li, and Ji]{chen2021local}
+Shen Chen, Taiping Yao, Yang Chen, Shouhong Ding, Jilin Li, and Rongrong Ji.
+\newblock Local relation learning for face forgery detection.
+\newblock In \emph{Proceedings of the AAAI conference on artificial intelligence}, pages 1081--1088, 2021.
+
+\bibitem[Chen et~al.(2022)Chen, Ge, Tong, Wang, Song, Wang, and Luo]{chen2022adaptformer}
+Shoufa Chen, Chongjian Ge, Zhan Tong, Jiangliu Wang, Yibing Song, Jue Wang, and Ping Luo.
+\newblock Adaptformer: Adapting vision transformers for scalable visual recognition.
+\newblock \emph{Advances in Neural Information Processing Systems}, 35:\penalty0 16664--16678, 2022.
+
+\bibitem[Chen et~al.(2023)Chen, Ding, Wang, Xin, Mo, Wang, Han, Luo, Zeng, and Wang]{chen2023context}
+Xiaokang Chen, Mingyu Ding, Xiaodi Wang, Ying Xin, Shentong Mo, Yunhao Wang, Shumin Han, Ping Luo, Gang Zeng, and Jingdong Wang.
+\newblock Context autoencoder for self-supervised representation learning.
+\newblock \emph{International Journal of Computer Vision}, pages 1--16, 2023.
+
+\bibitem[Choi et~al.(2018)Choi, Choi, Kim, Ha, Kim, and Choo]{choi2018stargan}
+Yunjey Choi, Minje Choi, Munyoung Kim, Jung-Woo Ha, Sunghun Kim, and Jaegul Choo.
+\newblock Stargan: Unified generative adversarial networks for multi-domain image-to-image translation.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 8789--8797, 2018.
+
+\bibitem[Deng et~al.(2009)Deng, Dong, Socher, Li, Li, and Fei-Fei]{deng2009imagenet}
+Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li, and Li Fei-Fei.
+\newblock Imagenet: A large-scale hierarchical image database.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 248--255. Ieee, 2009.
+
+\bibitem[Dhariwal and Nichol(2021)]{dhariwal2021diffusion}
+Prafulla Dhariwal and Alexander Nichol.
+\newblock Diffusion models beat gans on image synthesis.
+\newblock \emph{Advances in Neural Information Processing Systems}, 34:\penalty0 8780--8794, 2021.
+
+\bibitem[Dosovitskiy et~al.(2020)Dosovitskiy, Beyer, Kolesnikov, Weissenborn, Zhai, Unterthiner, Dehghani, Minderer, Heigold, Gelly, et~al.]{dosovitskiy2020image}
+Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, et~al.
+\newblock An image is worth 16x16 words: Transformers for image recognition at scale.
+\newblock In \emph{International Conference on Learning Representations}, 2020.
+
+\bibitem[Durall et~al.(2020)Durall, Keuper, and Keuper]{durall2020watch}
+Ricard Durall, Margret Keuper, and Janis Keuper.
+\newblock Watch your up-convolution: Cnn based generative deep neural networks are failing to reproduce spectral distributions.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 7890--7899, 2020.
+
+\bibitem[Frank et~al.(2020)Frank, Eisenhofer, Sch{\"o}nherr, Fischer, Kolossa, and Holz]{frank2020leveraging}
+Joel Frank, Thorsten Eisenhofer, Lea Sch{\"o}nherr, Asja Fischer, Dorothea Kolossa, and Thorsten Holz.
+\newblock Leveraging frequency analysis for deep fake image recognition.
+\newblock In \emph{International Conference on Machine Learning}, pages 3247--3258. PMLR, 2020.
+
+\bibitem[Goodfellow et~al.(2014)Goodfellow, Pouget-Abadie, Mirza, Xu, Warde-Farley, Ozair, Courville, and Bengio]{goodfellow2014generative}
+Ian Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing Xu, David Warde-Farley, Sherjil Ozair, Aaron Courville, and Yoshua Bengio.
+\newblock Generative adversarial nets.
+\newblock \emph{Advances in Neural Information Processing Systems}, 27, 2014.
+
+\bibitem[Gu et~al.(2022)Gu, Chen, Bao, Wen, Zhang, Chen, Yuan, and Guo]{gu2022vector}
+Shuyang Gu, Dong Chen, Jianmin Bao, Fang Wen, Bo Zhang, Dongdong Chen, Lu Yuan, and Baining Guo.
+\newblock Vector quantized diffusion model for text-to-image synthesis.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 10696--10706, 2022.
+
+\bibitem[He et~al.(2022)He, Chen, Xie, Li, Doll{\'a}r, and Girshick]{he2022masked}
+Kaiming He, Xinlei Chen, Saining Xie, Yanghao Li, Piotr Doll{\'a}r, and Ross Girshick.
+\newblock Masked autoencoders are scalable vision learners.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 16000--16009, 2022.
+
+\bibitem[Ho et~al.(2020)Ho, Jain, and Abbeel]{ho2020denoising}
+Jonathan Ho, Ajay Jain, and Pieter Abbeel.
+\newblock Denoising diffusion probabilistic models.
+\newblock \emph{Advances in Neural Information Processing Systems}, 33:\penalty0 6840--6851, 2020.
+
+\bibitem[Houlsby et~al.(2019)Houlsby, Giurgiu, Jastrzebski, Morrone, De~Laroussilhe, Gesmundo, Attariyan, and Gelly]{houlsby2019parameter}
+Neil Houlsby, Andrei Giurgiu, Stanislaw Jastrzebski, Bruna Morrone, Quentin De~Laroussilhe, Andrea Gesmundo, Mona Attariyan, and Sylvain Gelly.
+\newblock Parameter-efficient transfer learning for nlp.
+\newblock In \emph{International Conference on Machine Learning}, pages 2790--2799. PMLR, 2019.
+
+\bibitem[Hu et~al.(2021{\natexlab{a}})Hu, Yan, Lu, Lanqing, Hu, Zhang, Li, Wang, and Feng]{hu2021well}
+Dapeng Hu, Shipeng Yan, Qizhengqiu Lu, HONG Lanqing, Hailin Hu, Yifan Zhang, Zhenguo Li, Xinchao Wang, and Jiashi Feng.
+\newblock How well does self-supervised pre-training perform with streaming data?
+\newblock In \emph{International Conference on Learning Representations}, 2021{\natexlab{a}}.
+
+\bibitem[Hu et~al.(2021{\natexlab{b}})Hu, Wallis, Allen-Zhu, Li, Wang, Wang, Chen, et~al.]{hu2021lora}
+Edward~J Hu, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, Weizhu Chen, et~al.
+\newblock Lora: Low-rank adaptation of large language models.
+\newblock In \emph{International Conference on Learning Representations}, 2021{\natexlab{b}}.
+
+\bibitem[Jeong et~al.(2022{\natexlab{a}})Jeong, Kim, Min, Joe, Gwon, and Choi]{jeong2022bihpf}
+Yonghyun Jeong, Doyeon Kim, Seungjai Min, Seongho Joe, Youngjune Gwon, and Jongwon Choi.
+\newblock Bihpf: Bilateral high-pass filters for robust deepfake detection.
+\newblock In \emph{Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision}, pages 48--57, 2022{\natexlab{a}}.
+
+\bibitem[Jeong et~al.(2022{\natexlab{b}})Jeong, Kim, Ro, and Choi]{jeong2022frepgan}
+Yonghyun Jeong, Doyeon Kim, Youngmin Ro, and Jongwon Choi.
+\newblock Frepgan: robust deepfake detection using frequency-level perturbations.
+\newblock In \emph{Proceedings of the AAAI Conference on Artificial Intelligence}, pages 1060--1068, 2022{\natexlab{b}}.
+
+\bibitem[Jia et~al.(2022)Jia, Tang, Chen, Cardie, Belongie, Hariharan, and Lim]{jia2022visual}
+Menglin Jia, Luming Tang, Bor-Chun Chen, Claire Cardie, Serge Belongie, Bharath Hariharan, and Ser-Nam Lim.
+\newblock Visual prompt tuning.
+\newblock In \emph{European Conference on Computer Vision}, pages 709--727. Springer, 2022.
+
+\bibitem[Karras et~al.(2018)Karras, Aila, Laine, and Lehtinen]{karras2018progressive}
+Tero Karras, Timo Aila, Samuli Laine, and Jaakko Lehtinen.
+\newblock Progressive growing of gans for improved quality, stability, and variation.
+\newblock In \emph{International Conference on Learning Representations}, 2018.
+
+\bibitem[Karras et~al.(2019)Karras, Laine, and Aila]{karras2019style}
+Tero Karras, Samuli Laine, and Timo Aila.
+\newblock A style-based generator architecture for generative adversarial networks.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 4401--4410, 2019.
+
+\bibitem[Karras et~al.(2020)Karras, Laine, Aittala, Hellsten, Lehtinen, and Aila]{karras2020analyzing}
+Tero Karras, Samuli Laine, Miika Aittala, Janne Hellsten, Jaakko Lehtinen, and Timo Aila.
+\newblock Analyzing and improving the image quality of stylegan.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 8110--8119, 2020.
+
+\bibitem[Kingma and Ba(2014)]{kingma2014adam}
+Diederik~P Kingma and Jimmy Ba.
+\newblock Adam: A method for stochastic optimization.
+\newblock \emph{arXiv preprint arXiv:1412.6980}, 2014.
+
+\bibitem[Lester et~al.(2021)Lester, Al-Rfou, and Constant]{lester2021power}
+Brian Lester, Rami Al-Rfou, and Noah Constant.
+\newblock The power of scale for parameter-efficient prompt tuning.
+\newblock In \emph{Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing}, pages 3045--3059, 2021.
+
+\bibitem[Li et~al.(2020{\natexlab{a}})Li, Shen, Guo, and Lai]{li2020wavelet}
+Qiufu Li, Linlin Shen, Sheng Guo, and Zhihui Lai.
+\newblock Wavelet integrated cnns for noise-robust image classification.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 7245--7254, 2020{\natexlab{a}}.
+
+\bibitem[Li et~al.(2020{\natexlab{b}})Li, Yang, Sun, Qi, and Lyu]{li2020celeb}
+Yuezun Li, Xin Yang, Pu Sun, Honggang Qi, and Siwei Lyu.
+\newblock Celeb-df: A large-scale challenging dataset for deepfake forensics.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 3207--3216, 2020{\natexlab{b}}.
+
+\bibitem[Liu et~al.(2021{\natexlab{a}})Liu, Ren, Lin, and Zhao]{liu2021pseudo}
+Luping Liu, Yi Ren, Zhijie Lin, and Zhou Zhao.
+\newblock Pseudo numerical methods for diffusion models on manifolds.
+\newblock In \emph{International Conference on Learning Representations}, 2021{\natexlab{a}}.
+
+\bibitem[Liu et~al.(2021{\natexlab{b}})Liu, Lin, Cao, Hu, Wei, Zhang, Lin, and Guo]{liu2021Swin}
+Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng Zhang, Stephen Lin, and Baining Guo.
+\newblock Swin transformer: Hierarchical vision transformer using shifted windows.
+\newblock In \emph{Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)}, 2021{\natexlab{b}}.
+
+\bibitem[Mallat(1989)]{mallat1989theory}
+Stephane~G Mallat.
+\newblock A theory for multiresolution signal decomposition: the wavelet representation.
+\newblock \emph{IEEE Transactions on Pattern Analysis and Machine Intelligence}, 11\penalty0 (7):\penalty0 674--693, 1989.
+
+\bibitem[Marra et~al.(2019)Marra, Gragnaniello, Verdoliva, and Poggi]{marra2019gans}
+Francesco Marra, Diego Gragnaniello, Luisa Verdoliva, and Giovanni Poggi.
+\newblock Do gans leave artificial fingerprints?
+\newblock In \emph{IEEE Conference on Multimedia Information Processing and Retrieval}, pages 506--511. IEEE, 2019.
+
+\bibitem[Nichol et~al.(2022)Nichol, Dhariwal, Ramesh, Shyam, Mishkin, Mcgrew, Sutskever, and Chen]{nichol2022glide}
+Alexander~Quinn Nichol, Prafulla Dhariwal, Aditya Ramesh, Pranav Shyam, Pamela Mishkin, Bob Mcgrew, Ilya Sutskever, and Mark Chen.
+\newblock Glide: Towards photorealistic image generation and editing with text-guided diffusion models.
+\newblock In \emph{International Conference on Machine Learning}, pages 16784--16804. PMLR, 2022.
+
+\bibitem[Ojha et~al.(2023)Ojha, Li, and Lee]{ojha2023towards}
+Utkarsh Ojha, Yuheng Li, and Yong~Jae Lee.
+\newblock Towards universal fake image detectors that generalize across generative models.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 24480--24489, 2023.
+
+\bibitem[Park et~al.(2019)Park, Liu, Wang, and Zhu]{park2019semantic}
+Taesung Park, Ming-Yu Liu, Ting-Chun Wang, and Jun-Yan Zhu.
+\newblock Semantic image synthesis with spatially-adaptive normalization.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 2337--2346, 2019.
+
+\bibitem[Qian et~al.(2020)Qian, Yin, Sheng, Chen, and Shao]{qian2020thinking}
+Yuyang Qian, Guojun Yin, Lu Sheng, Zixuan Chen, and Jing Shao.
+\newblock Thinking in frequency: Face forgery detection by mining frequency-aware clues.
+\newblock In \emph{Proceedings of the European Conference on Computer Vision}, pages 86--103. Springer, 2020.
+
+\bibitem[Radford et~al.(2021)Radford, Kim, Hallacy, Ramesh, Goh, Agarwal, Sastry, Askell, Mishkin, Clark, et~al.]{radford2021learning}
+Alec Radford, Jong~Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, et~al.
+\newblock Learning transferable visual models from natural language supervision.
+\newblock In \emph{International conference on machine learning}, pages 8748--8763. PMLR, 2021.
+
+\bibitem[Ramesh et~al.(2021)Ramesh, Pavlov, Goh, Gray, Voss, Radford, Chen, and Sutskever]{ramesh2021zero}
+Aditya Ramesh, Mikhail Pavlov, Gabriel Goh, Scott Gray, Chelsea Voss, Alec Radford, Mark Chen, and Ilya Sutskever.
+\newblock Zero-shot text-to-image generation.
+\newblock In \emph{International Conference on Machine Learning}, pages 8821--8831. PMLR, 2021.
+
+\bibitem[Rao and Yip(1990)]{rao2014discrete}
+K~Ramamohan Rao and Ping Yip.
+\newblock \emph{Discrete cosine transform: algorithms, advantages, applications}.
+\newblock Academic Press Professional, Inc., USA, 1990.
+
+\bibitem[Rombach et~al.(2022)Rombach, Blattmann, Lorenz, Esser, and Ommer]{rombach2022high}
+Robin Rombach, Andreas Blattmann, Dominik Lorenz, Patrick Esser, and Bj{\"o}rn Ommer.
+\newblock High-resolution image synthesis with latent diffusion models.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 10684--10695, 2022.
+
+\bibitem[Rossler et~al.(2019)Rossler, Cozzolino, Verdoliva, Riess, Thies, and Nie{\ss}ner]{rossler2019faceforensics}
+Andreas Rossler, Davide Cozzolino, Luisa Verdoliva, Christian Riess, Justus Thies, and Matthias Nie{\ss}ner.
+\newblock Faceforensics++: Learning to detect manipulated facial images.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 1--11, 2019.
+
+\bibitem[Selvaraju et~al.(2017)Selvaraju, Cogswell, Das, Vedantam, Parikh, and Batra]{selvaraju2017grad}
+Ramprasaath~R Selvaraju, Michael Cogswell, Abhishek Das, Ramakrishna Vedantam, Devi Parikh, and Dhruv Batra.
+\newblock Grad-cam: Visual explanations from deep networks via gradient-based localization.
+\newblock In \emph{Proceedings of the IEEE/CVF International Conference on Computer Vision}, pages 618--626, 2017.
+
+\bibitem[Shao et~al.(2023)Shao, Wu, and Liu]{shao2023detecting}
+Rui Shao, Tianxing Wu, and Ziwei Liu.
+\newblock Detecting and grounding multi-modal media manipulation.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 6904--6913, 2023.
+
+\bibitem[Shiohara and Yamasaki(2022)]{shiohara2022detecting}
+Kaede Shiohara and Toshihiko Yamasaki.
+\newblock Detecting deepfakes with self-blended images.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 18720--18729, 2022.
+
+\bibitem[Tan et~al.(2023)Tan, Zhao, Wei, Gu, and Wei]{tan2023learning}
+Chuangchuang Tan, Yao Zhao, Shikui Wei, Guanghua Gu, and Yunchao Wei.
+\newblock Learning on gradients: Generalized artifacts representation for gan-generated images detection.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 12105--12114, 2023.
+
+\bibitem[Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser, and Polosukhin]{vaswani2017attention}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan~N Gomez, {\L}ukasz Kaiser, and Illia Polosukhin.
+\newblock Attention is all you need.
+\newblock \emph{Advances in neural information processing systems}, 30, 2017.
+
+\bibitem[Wang et~al.(2020)Wang, Wang, Zhang, Owens, and Efros]{wang2020cnn}
+Sheng-Yu Wang, Oliver Wang, Richard Zhang, Andrew Owens, and Alexei~A Efros.
+\newblock Cnn-generated images are surprisingly easy to spot... for now.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 8695--8704, 2020.
+
+\bibitem[Wang et~al.(2023)Wang, Bao, Zhou, Wang, Hu, Chen, and Li]{wang2023dire}
+Zhendong Wang, Jianmin Bao, Wengang Zhou, Weilun Wang, Hezhen Hu, Hong Chen, and Houqiang Li.
+\newblock Dire for diffusion-generated image detection.
+\newblock In \emph{Proceedings of the IEEE/CVF International Conference on Computer Vision}, 2023.
+
+\bibitem[Yu et~al.(2019)Yu, Davis, and Fritz]{yu2019attributing}
+Ning Yu, Larry~S Davis, and Mario Fritz.
+\newblock Attributing fake images to gans: Learning and analyzing gan fingerprints.
+\newblock In \emph{Proceedings of the IEEE/CVF International Conference on Computer Vision}, pages 7556--7566, 2019.
+
+\bibitem[Zhao et~al.(2021{\natexlab{a}})Zhao, Zhou, Chen, Wei, Zhang, and Yu]{zhao2021multi}
+Hanqing Zhao, Wenbo Zhou, Dongdong Chen, Tianyi Wei, Weiming Zhang, and Nenghai Yu.
+\newblock Multi-attentional deepfake detection.
+\newblock In \emph{Proceedings of the IEEE/CVF conference on computer vision and pattern recognition}, pages 2185--2194, 2021{\natexlab{a}}.
+
+\bibitem[Zhao et~al.(2021{\natexlab{b}})Zhao, Xu, Xu, Ding, Xiong, and Xia]{zhao2021learning}
+Tianchen Zhao, Xiang Xu, Mingze Xu, Hui Ding, Yuanjun Xiong, and Wei Xia.
+\newblock Learning self-consistency for deepfake detection.
+\newblock In \emph{Proceedings of the IEEE/CVF International Conference on Computer Vision}, pages 15023--15033, 2021{\natexlab{b}}.
+
+\bibitem[Zhou et~al.(2022{\natexlab{a}})Zhou, Yang, Loy, and Liu]{zhou2022conditional}
+Kaiyang Zhou, Jingkang Yang, Chen~Change Loy, and Ziwei Liu.
+\newblock Conditional prompt learning for vision-language models.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}, pages 16816--16825, 2022{\natexlab{a}}.
+
+\bibitem[Zhou et~al.(2022{\natexlab{b}})Zhou, Yang, Loy, and Liu]{zhou2022learning}
+Kaiyang Zhou, Jingkang Yang, Chen~Change Loy, and Ziwei Liu.
+\newblock Learning to prompt for vision-language models.
+\newblock \emph{International Journal of Computer Vision}, 130\penalty0 (9):\penalty0 2337--2348, 2022{\natexlab{b}}.
+
+\bibitem[Zhu et~al.(2017)Zhu, Park, Isola, and Efros]{zhu2017unpaired}
+Jun-Yan Zhu, Taesung Park, Phillip Isola, and Alexei~A Efros.
+\newblock Unpaired image-to-image translation using cycle-consistent adversarial networks.
+\newblock In \emph{Proceedings of the IEEE/CVF International Conference on Computer Vision}, pages 2223--2232, 2017.
+
+\bibitem[Zhuang et~al.(2021)Zhuang, Qi, Duan, Xi, Zhu, Zhu, Xiong, and He]{zhuang2021comprehensive}
+Fuzhen Zhuang, Zhiyuan Qi, Keyu Duan, Dongbo Xi, Yongchun Zhu, Hengshu Zhu, Hui Xiong, and Qing He.
+\newblock A comprehensive survey on transfer learning.
+\newblock \emph{Proceedings of the Institute of Electrical and Electronics Engineers}, 109\penalty0 (1):\penalty0 43--76, 2021.
+
+\end{thebibliography}
