@@ -24,8 +24,7 @@
 ```mermaid
 flowchart TD
     subgraph G0 ["GIAI ĐOẠN 0: SETUP HẠ TẦNG"]
-        A0["Tài khoản A: Drive 5TB (Data Hub)"] -->|Share Shortcut| B0["Tài khoản B: Colab Pro (Compute Engine)"]
-        B0 --> C0["Clone Repo & Test Load Mã Nguồn (Pass 1.116 tensor)"]
+        A0["Tài khoản Google AI Pro (GPU A100/L4 + Drive 5TB)"] --> C0["Clone Repo & Test Load Mã Nguồn (Pass 1.116 tensor)"]
     end
 
     subgraph G1 ["GIAI ĐOẠN 1: DỮ LIỆU & I/O"]
@@ -78,11 +77,11 @@ flowchart TD
 <a name="2-giai-doan-0-khoi-tao-ha-tang--moi-truong"></a>
 ## 2. GIAI ĐOẠN 0: KHỞI TẠO HẠ TẦNG & MÔI TRƯỜNG (DAY 0 SETUP)
 
-### 2.1 Cấu Hình Liên Kết 2 Tài Khoản (Phương Án A — Google Drive Shortcut)
-Dự án sử dụng cơ chế liên kết **Zero-Byte Consumption** để khai thác tối đa tài nguyên:
-* **Tài khoản A (Chính - 5TB Drive)**: Lưu trữ toàn bộ dữ liệu thô, các file `.tar`, checkpoint và logs.
-  1. Tạo thư mục gốc `FatFormer_Hub/` trên `MyDrive`.
-  2. Tạo các thư mục con:
+### 2.1 Hạ Tầng Siêu Nút Hợp Nhất (Google AI Pro Unified Super-Node)
+Dự án sử dụng cơ chế **Siêu Nút Hợp Nhất (Unified Super-Node)** trên một tài khoản Google AI Pro duy nhất:
+* **Tài khoản Google AI Pro**: Tích hợp toàn diện tài nguyên tính toán cao cấp (**GPU A100 SXM4 / L4**), kho lưu trữ đám mây khổng lồ (**Google Drive 5TB**) và các ưu đãi đặc quyền AI.
+  1. Tạo thư mục gốc `FatFormer_Hub/` trực tiếp trên `MyDrive`.
+  2. Tạo các thư mục con quản trị:
      ```
      FatFormer_Hub/
      ├── datasets/       # Chứa các file .tar (progan_train.tar, test_degraded.tar,...)
@@ -90,15 +89,11 @@ Dự án sử dụng cơ chế liên kết **Zero-Byte Consumption** để khai 
      ├── checkpoints/    # Nơi tự động lưu trọng số sau mỗi epoch
      └── logs/           # Log huấn luyện, tensorboard, csv metrics
      ```
-  3. Bấm **Share** thư mục `FatFormer_Hub` $\rightarrow$ Nhập email Tài khoản B (Colab Pro) $\rightarrow$ Cấp quyền **Editor**.
-* **Tài khoản B (Phụ - Colab Pro 300 CUs + 15GB Drive)**:
-  1. Mở Drive của Tài khoản B $\rightarrow$ Vào mục **"Được chia sẻ với tôi" (Shared with me)**.
-  2. Click chuột phải vào `FatFormer_Hub` $\rightarrow$ Chọn **"Thêm lối tắt vào Drive" (Add shortcut to Drive)** $\rightarrow$ Đặt vào `MyDrive`.
-  3. Khi mount Drive trên Colab:
+  3. Khi mount Drive trên Colab (truy cập trực tiếp, không qua phân quyền shortcut chéo):
      ```python
      from google.colab import drive
      drive.mount('/content/drive')
-     # Đường dẫn truy cập dữ liệu không tốn 1 byte nào của tài khoản B:
+     # Đường dẫn truy cập trực tiếp trên Drive 5TB:
      HUB_DIR = "/content/drive/MyDrive/FatFormer_Hub"
      ```
 

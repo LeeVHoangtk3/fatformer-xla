@@ -1,11 +1,11 @@
 ---
 trigger: always_on
-description: Mandatory interaction rules for all agents - Ask before execute with explanation, multi-option visual evaluation, and proactive workflow setup questions.
+description: Mandatory interaction rules for all agents - Ask before execute with explanation, multi-option visual evaluation, proactive workflow setup questions, and mandatory review of prior task results.
 ---
 
 # Agent Interaction Rules & Working Protocol (Quy Tắc Tương Tác Của Agent)
 
-Bộ quy tắc này là bắt buộc đối với tất cả Agent hoạt động trong dự án. Mọi hành vi tương tác, lập kế hoạch và thực thi đều phải tuân thủ nghiêm ngặt 3 nguyên tắc cốt lõi sau:
+Bộ quy tắc này là bắt buộc đối với tất cả Agent hoạt động trong dự án. Mọi hành vi tương tác, lập kế hoạch và thực thi đều phải tuân thủ nghiêm ngặt 4 nguyên tắc cốt lõi sau:
 
 ---
 
@@ -71,6 +71,26 @@ Agent cần rà soát và đặt câu hỏi xoay quanh các phương diện:
    - Kích thước batch, độ phân giải ảnh, hoặc định dạng nhãn mong muốn?
 4. **Quy trình phối hợp (Phased Workflow Milestones)**:
    - Các mốc kiểm tra (checkpoints) cần xác nhận từng bước trước khi chuyển sang giai đoạn tiếp theo.
+
+---
+
+## Nguyên Tắc 4: Bắt Buộc Đọc Lại Báo Cáo & Kết Quả Của Các Task Cũ Trước Khi Thực Hiện Task Mới
+*(Rule 4: Mandatory Review of Prior Task Results & Reports Before Executing Any New Task)*
+
+### 4.1. Yêu Cầu Bắt Buộc (Mandatory Requirement)
+- Trước khi bắt đầu lập kế hoạch, đề xuất giải pháp, viết mã nguồn hoặc thực thi bất kỳ task nào (dù thuộc Thành viên A, B, hay C), Agent **BẮT BUỘC PHẢI**:
+  1. **Tra cứu cây báo cáo nghiệm thu**: Mở và đọc kỹ các tệp báo cáo đã có trong thư mục `docs/bao_cao/` (bao gồm `docs/bao_cao/A/`, `docs/bao_cao/B/`, `docs/bao_cao/C/`, và `docs/bao_cao/overall/`).
+  2. **Đọc lại các task tiền đề**: Rà soát các task phụ thuộc (*dependencies*) và các task đã được tick `[x] Đã hoàn thành` trong `README.md` của các thành viên.
+  3. **Kế thừa thông số thực tế đã nghiệm thu**: Tuyệt đối không được dùng giả định cũ hoặc suy đoán chủ quan mâu thuẫn với kết quả thực tế đã được nghiệm thu (ví dụ: đường dẫn Drive thực tế, tên thư mục, danh sách file `.tar`, checkpoint đã tạo, cấu hình phần cứng, số liệu baseline).
+
+### 4.2. Quy Trình Kiểm Tra Ngữ Cảnh 3 Bước (Required Context Verification Flow)
+Mỗi khi bắt tay vào một task mới, Agent phải thực hiện theo đúng trình tự:
+1. **Bước 1 - Tra Cứu (Inspect Prior Reports & Tasks)**:
+   - Sử dụng công cụ đọc file (`view_file`, `list_dir`, `grep_search`) để kiểm tra các file báo cáo và task liên quan trực tiếp đến công việc chuẩn bị làm.
+2. **Bước 2 - Đối Chiếu & Kế Thừa (Reconcile & Inherit Validated Context)**:
+   - Trích xuất chính xác các thông số kỹ thuật thực tế (đường dẫn lưu trữ, tên checkpoint, kích thước batch, danh sách tập dữ liệu) từ báo cáo task trước để đưa vào task hiện tại.
+3. **Bước 3 - Trích Dẫn Minh Bạch (Explicit Context Citation)**:
+   - Trong phần giải thích theo **Nguyên Tắc 1**, Agent phải trích dẫn rõ nguồn gốc thông số kế thừa: *"Dựa trên kết quả đã nghiệm thu tại Task X.X ([tên_file_báo_cáo.md]), thông số kế thừa cho task này là..."*.
 
 ---
 

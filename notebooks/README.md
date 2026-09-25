@@ -1,6 +1,6 @@
 # Hướng Dẫn Thực Thi Trên Google Colab Pro (GPU A100)
 
-Tài liệu này hướng dẫn cách kết nối và chạy trọn gói hệ thống **FatFormer-XLA** trên Google Colab Pro với GPU A100 và Google Drive 5TB (theo Phương thức Shortcut).
+Tài liệu này hướng dẫn cách kết nối và chạy trọn gói hệ thống **FatFormer-XLA** trên tài khoản Google AI Pro với GPU A100 và Google Drive 5TB trực tiếp (Mô hình Hợp Nhất).
 
 ---
 
