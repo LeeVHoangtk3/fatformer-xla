@@ -74,3 +74,24 @@ notebooks/train.ipynb
 2. **Khuyến nghị cho cả nhóm**:
    - Khi chạy notebook trên Google Colab, luôn chọn Runtime loại **T4 GPU** để tránh hao phí Compute Units.
    - Đối với tác vụ huấn luyện thử nghiệm, luôn giữ `GRAD_ACCUM_STEPS = 2` để giữ mức VRAM ổn định ở ngưỡng ~5.2 GB, dự phòng hơn 10 GB VRAM trống cho hệ điều hành và DataLoader.
+
+---
+
+## V. TIẾP THU ĐÁNH GIÁ CODE REVIEW & NÂNG CẤP CHUẨN PYTORCH 2.X (REVISION 2)
+
+Dựa trên quá trình rà soát mã nguồn chuyên sâu và tiếp thu phản hồi phản biện kỹ thuật, nhóm đã triển khai bản nâng cấp **Revision 2 (Phương án 2 - Khuyến nghị)** đồng bộ trên [`notebooks/train.ipynb`](../../notebooks/train.ipynb):
+
+1. **Làm rõ tính hợp lệ của `CheckpointManager.load`**:
+   - Đối chiếu mã nguồn tại [`src/training/checkpoint_manager.py`](../../src/training/checkpoint_manager.py#L85-L93) xác nhận hàm `load` đã được định nghĩa với decorator `@staticmethod`. Cách gọi tĩnh `CheckpointManager.load(ckpt_file, model, ...)` là hoàn toàn chính xác theo thiết kế hướng đối tượng của module.
+2. **Cơ chế tìm kiếm đường dẫn trọng số đa điểm (`candidate_paths`)**:
+   - Bổ sung danh sách fallback tự động: `[PRETRAINED_PATH, 'DATASET/pretrained', 'pretrained', '.']` cho cả `ViT-L-14.pt` và `fatformer_4class_ckpt.pth`, bảo đảm notebook chạy thông suốt trên cả Google Drive (Colab) và thư mục cục bộ (Local).
+3. **Khắc phục triệt để lỗi crash tại Cell 4 (PEFT Freeze Backbone)**:
+   - Bổ sung bộ lọc đóng băng tham số cho Backbone CLIP ViT-L/14 ngay sau khi khởi tạo (`build_model`), đóng băng 427.62M tham số (86.74%), chỉ mở khóa 65.38M tham số Adapter (13.26%).
+   - Vượt qua 100% điều kiện an toàn `assert frozen_params > 0`, ngăn ngừa triệt để nguy cơ tràn VRAM (OOM) khi khởi tạo Optimizer.
+4. **Hiện đại hóa toàn diện API AMP theo chuẩn PyTorch 2.x**:
+   - Chuyển đổi từ `torch.cuda.amp` cũ sang `torch.amp.autocast(device_type=device.type, enabled=use_amp)` và `torch.amp.GradScaler(device=device.type, enabled=use_amp)`.
+   - Xóa bỏ hoàn toàn các cảnh báo `FutureWarning` màu vàng trên Google Colab Pro, hỗ trợ fallback CPU linh hoạt.
+5. **Chuẩn hóa chu trình Gradient Accumulation thực thụ**:
+   - Tái cấu trúc Cell 6 với vòng lặp `for accum_step in range(GRAD_ACCUM_STEPS):`, thực sự tích lũy gradient qua 2 micro-batches trước khi gọi `scaler.step(optimizer)`, phản ánh chính xác cơ chế huấn luyện thực tế.
+6. **Cổng kiểm tra Autograd tinh gọn (Cell 7)**:
+   - Kiểm tra tính toàn vẹn đạo hàm tự động với `autocast` chuẩn mới, xác nhận 100% tham số Adapter nhận gradient và 0 tham số Backbone bị rò rỉ gradient.
