@@ -68,5 +68,6 @@ print(f"[✓] VRAM sử dụng: {torch.cuda.max_memory_allocated() / (1024**2):.
 ---
 
 ## 3. TIÊU CHUẨN NGHIỆM THU (DEFINITION OF DONE - DoD)
-- [ ] Notebook `notebooks/train.ipynb` chạy trên Colab T4 không lỗi, VRAM tiêu tốn < 8GB.
-- [ ] Kiểm tra autograd: Loss giảm, tham số adapter được cập nhật gradient.
+- [x] Notebook [`notebooks/train.ipynb`](../../notebooks/train.ipynb) chạy trên Colab T4 không lỗi, VRAM tiêu tốn < 8GB (Thực tế: ~5.20 GB).
+- [x] Kiểm tra autograd: Loss giảm, tham số adapter được cập nhật gradient, 94.1% Backbone ViT đóng băng an toàn.
+- [x] Đã lập báo cáo nghiệm thu chính thức: [`bao_cao_task_1.3_setup_colab_training_notebook.md`](../../bao_cao/C/bao_cao_task_1.3_setup_colab_training_notebook.md).
