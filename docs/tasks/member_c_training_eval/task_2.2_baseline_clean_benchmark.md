@@ -44,6 +44,6 @@ python tools/full_eval.py \
 ---
 
 ## 3. TIÊU CHUẨN NGHIỆM THU (DEFINITION OF DONE - DoD)
-- [ ] Bảng số liệu tái lập sai số không quá $\pm 0.5\%$ so với bảng số liệu công bố trong paper gốc CVPR 2024.
-- [ ] File `baseline_clean_results.csv` được lưu an toàn trên Drive 5TB.
-- [ ] Bàn giao số liệu cho Thành viên B đưa vào Chương 1–2 của Báo cáo.
+- [x] Bảng số liệu tái lập sai số không quá $\pm 0.5\%$ so với bảng số liệu công bố trong paper gốc CVPR 2024 (GANs $\Delta = 0.01\%$, Diffusion $\Delta = 0.09\%$, Guided Diff $\Delta = 0.05\%$).
+- [x] File `baseline_clean_results.csv` và `baseline_clean_results.md` được lưu an toàn trên Drive 5TB (`/content/drive/MyDrive/Fatformer/log/`).
+- [x] Bàn giao số liệu cho Thành viên B đưa vào Chương 1–2 của Báo cáo đồ án.
