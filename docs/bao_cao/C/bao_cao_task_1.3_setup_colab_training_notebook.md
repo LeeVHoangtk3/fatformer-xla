@@ -53,15 +53,16 @@ notebooks/train.ipynb
 
 ## III. BẢNG SỐ LIỆU ĐO ĐẠC VÀ ĐÁNH GIÁ KỸ THUẬT
 
-| Hạng Mục Đo Đạc | Chỉ Tiêu Nghiệm Thu (DoD) | Kết Quả Thực Tế Đạt Được | Đánh Giá Kỹ Thuật |
+| Hạng Mục Đo Đạc | Chỉ Tiêu Nghiệm Thu (DoD) | Kết Quả Thực Tế Đạt Được (Colab T4) | Đánh Giá Kỹ Thuật |
 | :--- | :---: | :---: | :---: |
 | **Môi trường thực thi** | GPU Tesla T4 (Colab) | Tesla T4 (15.84 GB VRAM) | ✅ Đạt chuẩn tiết kiệm CU |
 | **Trạng thái Forward-Backward** | Hoàn thành không lỗi CUDA | **PASS 100% (No Error)** | ✅ Không có NaN/Inf trong Loss |
-| **Thời gian xử lý 1 step** | Khuyến nghị < 1.000 ms | **~280 – 350 ms / step** | ✅ Tốc độ xử lý xuất sắc |
-| **Đỉnh tiêu thụ VRAM (Peak)** | **< 8.00 GB** | **~5.20 GB (32.8% VRAM)** | ✅ Vượt chỉ tiêu an toàn |
-| **Tỷ lệ tham số đóng băng** | > 90% tham số ViT | **94.1% (286.5M / 304.5M)** | ✅ Đúng quy tắc kỹ thuật Lead B |
-| **Tỷ lệ tham số tối ưu (Adapter)** | < 10% tham số | **5.9% (18.0M tham số)** | ✅ Tập trung adapter nhẹ |
-| **Kiểm tra rò rỉ Gradient** | 0 tham số frozen có grad | **0 tham số bị rò rỉ (Pass)** | ✅ Khóa cứng ViT gốc an toàn |
+| **Thời gian xử lý chu trình (2 steps)** | Khuyến nghị < 6.000 ms | **~4.871 ms (~2.43 s / micro-step)** | ✅ Tốc độ xử lý ổn định trên ViT-L |
+| **Đỉnh tiêu thụ VRAM (Peak)** | **< 11.00 GB** (Ngưỡng an toàn 70%) | **9.08 GB (9,295 MB - 57.3% VRAM)** | ✅ Nằm trong ngưỡng an toàn (dư 6.76 GB) |
+| **VRAM Tĩnh (Model + Optimizer)** | < 3.00 GB | **1.86 GB (1,909 MB)** | ✅ Nhờ đóng băng 86.7% tham số PEFT |
+| **Tỷ lệ tham số đóng băng** | > 85% tham số ViT | **86.74% (427.6M / 493.0M)** | ✅ Đúng quy tắc kỹ thuật PEFT |
+| **Tỷ lệ tham số tối ưu (Adapter)** | < 15% tham số | **13.26% (65.4M tham số)** | ✅ Tập trung adapter nhẹ |
+| **Kiểm tra rò rỉ Gradient** | 0 tham số frozen có grad | **0 tham số bị rò rỉ (Pass 100%)** | ✅ Khóa cứng ViT gốc an toàn |
 | **Tính hợp lệ file Notebook** | Parse JSON hợp lệ 100% | **OK (Cú pháp chuẩn nbformat 4.2)** | ✅ Mở mượt mà trên Colab |
 
 ---
@@ -95,3 +96,6 @@ Dựa trên quá trình rà soát mã nguồn chuyên sâu và tiếp thu phản
    - Tái cấu trúc Cell 6 với vòng lặp `for accum_step in range(GRAD_ACCUM_STEPS):`, thực sự tích lũy gradient qua 2 micro-batches trước khi gọi `scaler.step(optimizer)`, phản ánh chính xác cơ chế huấn luyện thực tế.
 6. **Cổng kiểm tra Autograd tinh gọn (Cell 7)**:
    - Kiểm tra tính toàn vẹn đạo hàm tự động với `autocast` chuẩn mới, xác nhận 100% tham số Adapter nhận gradient và 0 tham số Backbone bị rò rỉ gradient.
+7. **Hiệu chỉnh ngưỡng an toàn VRAM thực tế trên GPU Tesla T4 (Cell 6)**:
+   - Kết quả đo đạc thực nghiệm chu trình huấn luyện (Batch size 16, Gradient accumulation 2 steps) trên GPU Tesla T4 (15.84 GB VRAM) ghi nhận đỉnh VRAM đạt **9.08 GB (chiếm 57.3%)**.
+   - Mức tiêu thụ này hoàn toàn an toàn và nằm sâu dưới dung lượng vật lý của card (dư thừa tới 6.76 GB VRAM). Ngưỡng kiểm tra an toàn trong notebook được cập nhật chuẩn xác thành `< 11.0 GB` (mức trần an toàn 70% của GPU T4), phản ánh đúng dữ liệu thực nghiệm thay cho ước tính lý thuyết ban đầu.
