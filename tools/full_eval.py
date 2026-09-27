@@ -85,9 +85,35 @@ def parse_args():
     # Output & Verification
     parser.add_argument("--output_csv", type=str, default="", help="Đường dẫn file CSV xuất kết quả")
     parser.add_argument("--output_markdown", type=str, default="", help="Đường dẫn file Markdown xuất kết quả")
+    parser.add_argument("--skip_existing", action="store_true", help="Bỏ qua các subset đã có kết quả trong output_csv")
+    parser.add_argument("--no_merge", action="store_true", help="Không tự động gộp kết quả từ file output_csv cũ")
     parser.add_argument("--test_dummy", action="store_true", help="Chạy Smoke Test với dữ liệu giả lập")
 
     return parser.parse_args()
+
+
+def load_existing_results_from_csv(csv_path: str) -> Dict[str, Dict[str, float]]:
+    """Đọc lại kết quả các subset đã đánh giá trước đó từ file CSV nếu có."""
+    existing = {}
+    if not os.path.exists(csv_path):
+        return existing
+    try:
+        with open(csv_path, mode="r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                subset = row.get("subset", "")
+                if subset and not subset.startswith("MEAN"):
+                    existing[subset] = {
+                        "acc": float(row.get("acc", 0.0)),
+                        "ap": float(row.get("ap", 0.0)),
+                        "auc": float(row.get("auc", 0.0)),
+                        "r_acc": float(row.get("r_acc", 0.0)),
+                        "f_acc": float(row.get("f_acc", 0.0)),
+                        "elapsed_sec": float(row.get("elapsed_sec", 0.0)) if row.get("elapsed_sec") not in ["-", ""] else 0.0
+                    }
+    except Exception as e:
+        print(f"[CẢNH BÁO] Không đọc được file CSV cũ ({csv_path}): {e}")
+    return existing
 
 
 def calculate_group_mean(metrics_dict: Dict[str, Dict[str, float]], group_subsets: List[str]) -> Optional[Dict[str, float]]:
@@ -437,6 +463,13 @@ def run_full_eval():
             shutil.rmtree(temp_dir, ignore_errors=True)
 
     # 6. Chạy đánh giá trên Dataset thật
+    existing_results = {}
+    if args.output_csv and not args.no_merge and os.path.exists(args.output_csv):
+        existing_results = load_existing_results_from_csv(args.output_csv)
+        if existing_results:
+            print(f"\n[*] Phát hiện {len(existing_results)} subset đã có kết quả trong: {args.output_csv}")
+            print(f"    -> Danh sách: {list(existing_results.keys())}")
+
     if not args.dataset_root:
         candidates = [
             "/content/dataset_local/test_clean",
@@ -464,20 +497,34 @@ def run_full_eval():
     else:
         selected_subsets = [s.strip() for s in args.subsets.split(",") if s.strip()]
 
+    if args.skip_existing and existing_results:
+        subsets_to_run = [s for s in selected_subsets if s not in existing_results]
+        print(f"[*] Chế độ --skip_existing: Bỏ qua {len(selected_subsets) - len(subsets_to_run)} tập đã có, chỉ đánh giá {len(subsets_to_run)} tập còn thiếu.")
+        selected_subsets = subsets_to_run
+
     print(f"[*] Tập dữ liệu test root: {args.dataset_root}")
     print(f"[*] Danh sách subsets ({len(selected_subsets)} tập): {selected_subsets}")
 
     start_benchmark_time = time.time()
-    results = run_benchmark(
-        model=model,
-        dataset_path=args.dataset_root,
-        device=device,
-        selected_subsets=selected_subsets,
-        max_samples_per_subset=None, # Đánh giá toàn bộ tập
-        batch_size=args.batch_size,
-        num_workers=args.num_workers
-    )
+    results = {}
+    if selected_subsets:
+        results = run_benchmark(
+            model=model,
+            dataset_path=args.dataset_root,
+            device=device,
+            selected_subsets=selected_subsets,
+            max_samples_per_subset=None, # Đánh giá toàn bộ tập
+            batch_size=args.batch_size,
+            num_workers=args.num_workers
+        )
     total_benchmark_time = time.time() - start_benchmark_time
+
+    # Tự động gộp kết quả từ phiên trước (Auto-Merge)
+    if existing_results:
+        print(f"\n[*] Đang tự động gộp {len(existing_results)} subset phiên trước và {len(results)} subset phiên mới...")
+        merged_results = dict(existing_results)
+        merged_results.update(results)
+        results = merged_results
 
     # 7. Định dạng phân nhóm kết quả và in bảng
     table_text, summary_dict = format_grouped_summary(results)

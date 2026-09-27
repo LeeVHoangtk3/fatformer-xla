@@ -116,13 +116,25 @@ class DatasetCreator:
         valid_subset_names = []
 
         for subset_name in subsets:
-            # Thử tìm theo cấu trúc: dataset_path/test/subset_name hoặc dataset_path/subset_name
-            subset_path = os.path.join(self.dataset_path, "test", subset_name)
-            if not os.path.exists(subset_path):
-                subset_path = os.path.join(self.dataset_path, subset_name)
+            # Thử tìm theo cấu trúc linh hoạt (hỗ trợ cả trường hợp giải nén có tiền tố diffusion_test/)
+            candidate_paths = [
+                os.path.join(self.dataset_path, "test", subset_name),
+                os.path.join(self.dataset_path, subset_name),
+                os.path.join(self.dataset_path, "diffusion_test", subset_name),
+                os.path.join(self.dataset_path, "diffusion", subset_name),
+                os.path.join(self.dataset_path, "test_diffusion", subset_name),
+                os.path.join(self.dataset_path, "gans", subset_name),
+                os.path.join(self.dataset_path, "test_gans", subset_name),
+                os.path.join(self.dataset_path, "test_clean", subset_name),
+            ]
+            subset_path = None
+            for p in candidate_paths:
+                if os.path.exists(p) and os.path.isdir(p):
+                    subset_path = p
+                    break
             
-            if not os.path.exists(subset_path):
-                print(f"[CẢNH BÁO] Không tìm thấy thư mục dữ liệu cho subset: '{subset_name}' tại {subset_path}")
+            if subset_path is None:
+                print(f"[CẢNH BÁO] Không tìm thấy thư mục dữ liệu cho subset: '{subset_name}' tại {os.path.join(self.dataset_path, subset_name)}")
                 continue
 
             sub_dir_contents = os.listdir(subset_path)
