@@ -228,6 +228,8 @@ __marimo__/
 checkpoints/
 weights/
 pretrained/
-DATASET/
-datasets/
-progan_val.zip
+DATASET/*
+!DATASET/logs/
+datasets/*
+!datasets/logs/
+progan_val.zip
