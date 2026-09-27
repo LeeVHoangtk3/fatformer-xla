@@ -229,3 +229,5 @@ checkpoints/
 weights/
 pretrained/
 DATASET/
+datasets/
+progan_val.zip
