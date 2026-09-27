@@ -80,6 +80,6 @@ python tools/visualize_cam.py \
 ---
 
 ## 3. TIÊU CHUẨN NGHIỆM THU (DEFINITION OF DONE - DoD)
-- [ ] Xuất đủ 10 ảnh Grad-CAM nhiệt phân giải cao phủ lên ảnh gốc.
-- [ ] Quan sát thấy hiện tượng: Khi ảnh bị nén $Q=30$, vùng kích hoạt của mô hình gốc bị phân rã, bám theo các góc cạnh khối vuông JPEG $8 \times 8$ thay vì đặc trưng khuôn mặt/chủ thể.
-- [ ] Bàn giao ảnh vào Báo cáo Chương 1–2.
+- [x] Xuất đủ 10 ảnh Grad-CAM nhiệt phân giải cao phủ lên ảnh gốc (thực tế xuất 15 ảnh: 10 Clean + 5 Degraded).
+- [x] Quan sát thấy hiện tượng: Khi ảnh bị nén $Q=30$, vùng kích hoạt của mô hình gốc bị phân rã, bám theo các góc cạnh khối vuông JPEG $8 \times 8$ thay vì đặc trưng khuôn mặt/chủ thể (Ảnh #12 và #14 đoán sai thành REAL với P(real) lên tới 1.0000).
+- [x] Bàn giao ảnh vào Báo cáo Chương 1–2 (Đã lưu tại `docs/assets/gradcam_baseline/`).
