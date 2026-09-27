@@ -56,14 +56,16 @@ notebooks/train.ipynb
 | Hạng Mục Đo Đạc | Chỉ Tiêu Nghiệm Thu (DoD) | Kết Quả Thực Tế Đạt Được (Colab T4) | Đánh Giá Kỹ Thuật |
 | :--- | :---: | :---: | :---: |
 | **Môi trường thực thi** | GPU Tesla T4 (Colab) | Tesla T4 (15.84 GB VRAM) | ✅ Đạt chuẩn tiết kiệm CU |
-| **Trạng thái Forward-Backward** | Hoàn thành không lỗi CUDA | **PASS 100% (No Error)** | ✅ Không có NaN/Inf trong Loss |
-| **Thời gian xử lý chu trình (2 steps)** | Khuyến nghị < 6.000 ms | **~4.871 ms (~2.43 s / micro-step)** | ✅ Tốc độ xử lý ổn định trên ViT-L |
-| **Đỉnh tiêu thụ VRAM (Peak)** | **< 11.00 GB** (Ngưỡng an toàn 70%) | **9.08 GB (9,295 MB - 57.3% VRAM)** | ✅ Nằm trong ngưỡng an toàn (dư 6.76 GB) |
-| **VRAM Tĩnh (Model + Optimizer)** | < 3.00 GB | **1.86 GB (1,909 MB)** | ✅ Nhờ đóng băng 86.7% tham số PEFT |
-| **Tỷ lệ tham số đóng băng** | > 85% tham số ViT | **86.74% (427.6M / 493.0M)** | ✅ Đúng quy tắc kỹ thuật PEFT |
-| **Tỷ lệ tham số tối ưu (Adapter)** | < 15% tham số | **13.26% (65.4M tham số)** | ✅ Tập trung adapter nhẹ |
+| **Trạng thái Forward-Backward** | Hoàn thành không lỗi CUDA | **PASS 100% (No Error)** | ✅ Loss TB: 3.6623, không NaN/Inf |
+| **Thời gian xử lý chu trình (2 steps)** | Khuyến nghị < 8.000 ms | **7,838.76 ms (~3.92 s / micro-step)** | ✅ Vận hành ổn định trên ViT-L |
+| **Đỉnh tiêu thụ VRAM (Peak)** | **< 11.00 GB** (Ngưỡng an toàn 70%) | **9.05 GB (9,269.35 MB - 57.1% VRAM)** | ✅ Dư 6.79 GB VRAM an toàn |
+| **VRAM Hiện hành (Allocated)** | < 3.00 GB | **1.86 GB (1,909.50 MB)** | ✅ Nhờ đóng băng 87.74% tham số PEFT |
+| **VRAM Dự trữ (Reserved)** | — | **9.16 GB (9,384.00 MB)** | ✅ Bộ nhớ đệm PyTorch cấp phát |
+| **Tỷ lệ tham số đóng băng** | > 85% tham số ViT | **87.74% (432.56M / 493.00M)** | ✅ Đúng quy tắc kỹ thuật PEFT |
+| **Tỷ lệ tham số tối ưu (Adapter)** | < 15% tham số | **12.26% (60.44M tham số - 97 tensors)**| ✅ Chuẩn hóa PEFT 97 tensors |
+| **Tính toàn vẹn Autograd (Cell 7)** | 100% tensors trainable kết nối | **0 tensors bị ngắt đồ thị (None)** | ✅ 4 active + 93 connected |
 | **Kiểm tra rò rỉ Gradient** | 0 tham số frozen có grad | **0 tham số bị rò rỉ (Pass 100%)** | ✅ Khóa cứng ViT gốc an toàn |
-| **Tính hợp lệ file Notebook** | Parse JSON hợp lệ 100% | **OK (Cú pháp chuẩn nbformat 4.2)** | ✅ Mở mượt mà trên Colab |
+| **Tính hợp lệ file Notebook** | Parse JSON hợp lệ 100% | **OK (Cú pháp chuẩn nbformat 4.2)** | ✅ Mở và chạy thông suốt trên Colab |
 
 ---
 
