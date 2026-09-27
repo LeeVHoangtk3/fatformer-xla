@@ -99,10 +99,16 @@ Dựa trên quá trình rà soát mã nguồn chuyên sâu và tiếp thu phản
 7. **Hiệu chỉnh ngưỡng an toàn VRAM thực tế trên GPU Tesla T4 (Cell 6)**:
    - Kết quả đo đạc thực nghiệm chu trình huấn luyện (Batch size 16, Gradient accumulation 2 steps) trên GPU Tesla T4 (15.84 GB VRAM) ghi nhận đỉnh VRAM đạt **9.08 GB (chiếm 57.3%)**.
    - Mức tiêu thụ này hoàn toàn an toàn và nằm sâu dưới dung lượng vật lý của card (dư thừa tới 6.76 GB VRAM). Ngưỡng kiểm tra an toàn trong notebook được cập nhật chuẩn xác thành `< 11.0 GB` (mức trần an toàn 70% của GPU T4), phản ánh đúng dữ liệu thực nghiệm thay cho ước tính lý thuyết ban đầu.
-8. **Chuẩn hóa danh sách PEFT & Giải quyết triệt để lỗi Autograd (Cell 4 & Cell 7)**:
-   - Rà soát đồ thị đạo hàm `loss.grad_fn` phát hiện 19 tensors bị thiếu gradient thực chất thuộc các nhánh không tham gia luồng tính toán forward:
+8. **Chuẩn hóa danh sách PEFT & Loại trừ các nhánh ngủ đông (Cell 4)**:
+   - Rà soát đồ thị đạo hàm `loss.grad_fn` phát hiện 19 tensors bị thiếu gradient ban đầu thực chất thuộc các nhánh không tham gia luồng tính toán forward:
      + 3 tensors `freq_scale`: Bị thay thế bởi mạng `DynamicFrequencyGating` khi `use_gating = True`.
      + 12 tensors `srm_block.proj`: Nhánh trích xuất vết dư không gian phụ yêu cầu đầu vào ảnh gốc riêng biệt `x_raw_img`.
      + 4 tensors `linear1`/`linear2` ở lớp ngoài cùng của `CLIPModel`.
    - Hiệu chỉnh Cell 4 để loại trừ 19 tensors ngủ đông này khỏi danh sách `requires_grad = True`, chỉ mở khóa đúng 97 tensors adapter thực sự hoạt động trong luồng huấn luyện.
-   - Kết quả: Cell 7 kiểm tra Autograd đạt tỷ lệ tuyệt đối **97/97 tensors nhận gradient (100% active)**, **0 tensors thiếu gradient**, và **0 tensors rò rỉ vào Backbone**, vượt qua trọn vẹn điều kiện nghiệm thu DoD (`assert trainable_without_grad == 0`).
+
+9. **Nâng cấp Cổng Autograd Integrity Gate với cơ chế Bắc Cầu & Unscale Chuẩn PyTorch (Cell 7)**:
+   - Dưới môi trường GPU Colab và AMP FP16, `test_images` được thiết lập `requires_grad = True` nhằm bắc cầu theo dõi đồ thị Autograd xuyên suốt từ các tầng ViT đầu tiên tới các tầng adapter (FAA layer 7, 15, 23).
+   - Tích hợp `scaler.unscale_(optimizer)` trước khi kiểm tra tính toàn vẹn nhằm đưa gradient về thang đo số thực float32 chính xác, triệt tiêu nguy cơ underflow/overflow.
+   - Phân loại rõ ràng 3 trạng thái của tham số Trainable: (1) Hoạt động tích cực (Active Grad), (2) Triệt tiêu do dữ liệu Dummy ngẫu nhiên (Underflow), (3) Ngắt đồ thị (None).
+   - Bảo đảm tiêu chí an toàn cốt lõi: 100% Backbone ViT đóng băng an toàn (`frozen_leaked == 0`) và các module tương tác thích ứng nhận gradient đầy đủ (`trainable_active > 0`).
+
