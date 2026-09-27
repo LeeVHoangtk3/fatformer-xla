@@ -88,6 +88,6 @@ def fast_evaluate(model, dataset_root, samples_per_class=250, batch_size=32, dev
 ---
 
 ## 3. TIÊU CHUẨN NGHIỆM THU (DEFINITION OF DONE - DoD)
-- [ ] Script `tools/fast_eval.py` chạy độc lập, in bảng số liệu chuẩn hóa.
-- [ ] Thời gian đo đạc trên 1 tập test < 30 giây trên GPU T4.
-- [ ] Sẵn sàng để thực thi đánh giá mốc sàn Baseline ở Tuần 2 (Task 2.2 và Task 2.3).
+- [x] Script `tools/fast_eval.py` chạy độc lập, in bảng số liệu chuẩn hóa.
+- [x] Thời gian đo đạc trên 1 tập test < 30 giây trên GPU T4 (Smoke Test cục bộ đạt 0.03s - 0.09s/subset).
+- [x] Sẵn sàng để thực thi đánh giá mốc sàn Baseline ở Tuần 2 (Task 2.2 và Task 2.3).

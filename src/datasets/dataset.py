@@ -6,6 +6,9 @@ from torchvision.datasets import ImageFolder
 from .transforms import get_eval_transforms, get_train_transforms
 
 
+import numpy as np
+
+
 GAN_SUBSETS = [
     "progan", "stylegan", "stylegan2", "biggan", 
     "cyclegan", "stargan", "gaugan", "deepfake"
@@ -13,10 +16,50 @@ GAN_SUBSETS = [
 
 DIFFUSION_SUBSETS = [
     "guided", "ldm_200", "ldm_200_cfg", "ldm_100", 
-    "glide_50_27", "glide_100_10", "glide_100_27", "dalle"
+    "glide_50_27", "glide_100_10", "glide_100_27", "dalle",
+    "pndm", "vqdiffusion"
 ]
 
 ALL_TEST_SUBSETS = GAN_SUBSETS + DIFFUSION_SUBSETS
+
+
+def _get_balanced_subset_indices(ds, max_samples: int, seed: int = 42) -> List[int]:
+    """
+    Trích xuất chỉ số cân bằng nhãn (real=0, fake=1) phục vụ Fast-Eval với seed cố định.
+    """
+    targets = None
+    if hasattr(ds, "targets"):
+        targets = np.array(ds.targets)
+    elif isinstance(ds, ConcatDataset):
+        child_targets = []
+        for child in ds.datasets:
+            if hasattr(child, "targets"):
+                child_targets.append(np.array(child.targets))
+        if child_targets:
+            targets = np.concatenate(child_targets)
+
+    if targets is not None and len(targets) == len(ds):
+        idx_real = np.where(targets == 0)[0]
+        idx_fake = np.where(targets == 1)[0]
+        samples_per_class = max_samples // 2
+
+        rng = np.random.RandomState(seed)
+        n_real = min(samples_per_class, len(idx_real))
+        n_fake = min(samples_per_class, len(idx_fake))
+
+        sel_real = rng.choice(idx_real, n_real, replace=False) if len(idx_real) > 0 else np.array([], dtype=int)
+        sel_fake = rng.choice(idx_fake, n_fake, replace=False) if len(idx_fake) > 0 else np.array([], dtype=int)
+
+        selected_idx = np.concatenate([sel_real, sel_fake])
+        selected_idx.sort()
+        return selected_idx.tolist()
+    else:
+        # Fallback lấy mẫu ngẫu nhiên có kiểm soát seed
+        rng = np.random.RandomState(seed)
+        n_sample = min(max_samples, len(ds))
+        indices = rng.choice(len(ds), n_sample, replace=False)
+        indices.sort()
+        return indices.tolist()
 
 
 class DatasetCreator:
@@ -98,9 +141,9 @@ class DatasetCreator:
                     continue
                 ds = ConcatDataset(child_datasets)
 
-            # Lấy mẫu con nếu có yêu cầu (Fast-Eval)
+            # Lấy mẫu con cân bằng nếu có yêu cầu (Fast-Eval: 250 real + 250 fake, seed=42)
             if max_samples_per_subset is not None and len(ds) > max_samples_per_subset:
-                indices = torch.linspace(0, len(ds) - 1, max_samples_per_subset).long().tolist()
+                indices = _get_balanced_subset_indices(ds, max_samples=max_samples_per_subset, seed=42)
                 ds = Subset(ds, indices)
 
             sub_datasets.append(ds)

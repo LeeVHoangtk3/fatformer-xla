@@ -2,7 +2,7 @@ import numpy as np
 from typing import Dict, Tuple, Union
 
 try:
-    from sklearn.metrics import accuracy_score, average_precision_score
+    from sklearn.metrics import accuracy_score, average_precision_score, roc_auc_score
 except ImportError:
     # Fallback thuần numpy nếu môi trường thiếu scikit-learn
     def accuracy_score(y_true, y_pred):
@@ -19,6 +19,18 @@ except ImportError:
         recall = cumsum / max(1, np.sum(y_true))
         return np.sum(precision[y_true == 1]) / max(1, np.sum(y_true))
 
+    def roc_auc_score(y_true, y_score):
+        # Tính xấp xỉ ROC-AUC bằng Mann-Whitney U statistic (thuần numpy)
+        y_true = np.array(y_true)
+        y_score = np.array(y_score)
+        pos = y_score[y_true == 1]
+        neg = y_score[y_true == 0]
+        if len(pos) == 0 or len(neg) == 0:
+            return 0.5
+        # So sánh cặp
+        diff = pos[:, None] - neg[None, :]
+        return float(np.mean((diff > 0) + 0.5 * (diff == 0)))
+
 
 def compute_binary_metrics(
     y_true: Union[list, np.ndarray], 
@@ -29,6 +41,7 @@ def compute_binary_metrics(
     Tính toán các chỉ số đánh giá tiêu chuẩn của bài báo FatFormer:
     - acc: Độ chính xác tổng hợp (Accuracy)
     - ap: Độ chính xác trung bình (Average Precision)
+    - auc: Diện tích dưới đường cong ROC (ROC-AUC)
     - r_acc: Độ chính xác trên mẫu thật (Real Accuracy)
     - f_acc: Độ chính xác trên mẫu giả (Fake Accuracy)
     """
@@ -41,8 +54,13 @@ def compute_binary_metrics(
     # Xử lý trường hợp nếu tập test chỉ có toàn ảnh thật hoặc toàn ảnh giả
     if len(np.unique(y_true)) > 1:
         ap = float(average_precision_score(y_true, y_score))
+        try:
+            auc = float(roc_auc_score(y_true, y_score))
+        except Exception:
+            auc = 0.5
     else:
         ap = acc
+        auc = 0.5
 
     real_mask = (y_true == 0)
     fake_mask = (y_true == 1)
@@ -53,6 +71,7 @@ def compute_binary_metrics(
     return {
         "acc": acc * 100.0,
         "ap": ap * 100.0,
+        "auc": auc * 100.0,
         "r_acc": r_acc * 100.0,
         "f_acc": f_acc * 100.0,
     }
@@ -65,35 +84,37 @@ def format_evaluation_summary(
     Định dạng bảng tổng kết kết quả đánh giá cho nhiều subset và tính giá trị trung bình (mean).
     """
     lines = []
-    lines.append("=" * 80)
-    lines.append(f"{'Index':<6} {'Subset':<16} {'ACC (%)':<12} {'AP (%)':<12} {'Real ACC (%)':<15} {'Fake ACC (%)':<15}")
-    lines.append("-" * 80)
+    lines.append("=" * 86)
+    lines.append(f"{'Index':<6} {'Subset':<16} {'ACC (%)':<10} {'AP (%)':<10} {'AUC (%)':<10} {'Real ACC (%)':<14} {'Fake ACC (%)':<14}")
+    lines.append("-" * 86)
 
-    accs, aps, r_accs, f_accs = [], [], [], []
+    accs, aps, aucs, r_accs, f_accs = [], [], [], [], []
 
     for idx, (name, metrics) in enumerate(results_by_subset.items()):
         accs.append(metrics["acc"])
         aps.append(metrics["ap"])
+        aucs.append(metrics.get("auc", 0.0))
         r_accs.append(metrics["r_acc"])
         f_accs.append(metrics["f_acc"])
 
         lines.append(
-            f"({idx:<3})  {name:<16} {metrics['acc']:<12.2f} {metrics['ap']:<12.2f} "
-            f"{metrics['r_acc']:<15.2f} {metrics['f_acc']:<15.2f}"
+            f"({idx:<3})  {name:<16} {metrics['acc']:<10.2f} {metrics['ap']:<10.2f} "
+            f"{metrics.get('auc', 0.0):<10.2f} {metrics['r_acc']:<14.2f} {metrics['f_acc']:<14.2f}"
         )
 
     mean_metrics = {
         "acc": float(np.mean(accs)) if accs else 0.0,
         "ap": float(np.mean(aps)) if aps else 0.0,
+        "auc": float(np.mean(aucs)) if aucs else 0.0,
         "r_acc": float(np.mean(r_accs)) if r_accs else 0.0,
         "f_acc": float(np.mean(f_accs)) if f_accs else 0.0,
     }
 
-    lines.append("-" * 80)
+    lines.append("-" * 86)
     lines.append(
-        f"{'MEAN':<23} {mean_metrics['acc']:<12.2f} {mean_metrics['ap']:<12.2f} "
-        f"{mean_metrics['r_acc']:<15.2f} {mean_metrics['f_acc']:<15.2f}"
+        f"{'MEAN':<23} {mean_metrics['acc']:<10.2f} {mean_metrics['ap']:<10.2f} "
+        f"{mean_metrics['auc']:<10.2f} {mean_metrics['r_acc']:<14.2f} {mean_metrics['f_acc']:<14.2f}"
     )
-    lines.append("=" * 80)
+    lines.append("=" * 86)
 
     return "\n".join(lines), mean_metrics

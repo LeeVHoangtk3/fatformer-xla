@@ -26,6 +26,8 @@ def evaluate_dataloader(
     for batch_idx, (images, labels) in enumerate(dataloader):
         images = images.to(device, non_blocking=True)
         outputs = model(images)
+        if isinstance(outputs, tuple):
+            outputs = outputs[0]
         # outputs shape: (B, 2), lấy xác suất lớp 1 (fake)
         scores = outputs.softmax(dim=1)[:, 1].cpu().tolist()
         y_score.extend(scores)
@@ -73,10 +75,10 @@ def run_benchmark(
 
     mode_str = f"Fast-Eval ({max_samples_per_subset} ảnh/subset)" if max_samples_per_subset else "Full-Eval"
     deg_str = f"Suy thoái: {degradation}" if degradation else "Dữ liệu Clean (nguyên bản)"
-    print("\n" + "=" * 80)
+    print("\n" + "=" * 86)
     print(f"BẮT ĐẦU ĐÁNH GIÁ: Chế độ {mode_str} | {deg_str}")
     print(f"Tổng số tập test hợp lệ: {len(subset_names)}")
-    print("=" * 80)
+    print("=" * 86)
 
     results_by_subset = {}
     start_time = time.time()
@@ -93,12 +95,16 @@ def run_benchmark(
         t0 = time.time()
         metrics = evaluate_dataloader(model, loader, device)
         elapsed = time.time() - t0
+        metrics["elapsed_sec"] = round(elapsed, 2)
         results_by_subset[name] = metrics
-        print(f"  -> Hoàn thành '{name}' trong {elapsed:.1f}s | ACC: {metrics['acc']:.2f}% | AP: {metrics['ap']:.2f}%")
+        print(
+            f"  -> Hoàn thành '{name}' trong {elapsed:.2f}s | "
+            f"ACC: {metrics['acc']:.2f}% | AP: {metrics['ap']:.2f}% | AUC: {metrics.get('auc', 0.0):.2f}%"
+        )
 
     total_time = time.time() - start_time
     summary_table, mean_metrics = format_evaluation_summary(results_by_subset)
     print("\n" + summary_table)
-    print(f"Tổng thời gian đánh giá: {total_time:.1f} giây ({total_time / 60:.2f} phút)\n")
+    print(f"Tổng thời gian đánh giá: {total_time:.2f} giây ({total_time / 60:.2f} phút)\n")
 
     return results_by_subset
