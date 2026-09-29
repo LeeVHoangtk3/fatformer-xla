@@ -43,22 +43,22 @@ Script đa tiến trình [`tools/make_degraded.py`](../../../tools/make_degraded
 
 | # | Tên Biến Thể | Quy Chuẩn Vật Lý | Số Lượng Ảnh Tạo Mới | Thời Gian (s) | Tốc Độ Xử Lý | Số Lỗi |
 | :---: | :--- | :--- | :---: | :---: | :---: | :---: |
-| 1 | `jpeg_q30` | Nén lượng tử JPEG $Q=30$ | 130,329 | 908.49 s | 144.11 ảnh/s | 0 |
-| 2 | `jpeg_q50` | Nén lượng tử JPEG $Q=50$ | 130,329 | 929.13 s | 140.97 ảnh/s | 0 |
-| 3 | `jpeg_q70` | Nén lượng tử JPEG $Q=70$ | 130,329 | 944.33 s | 138.46 ảnh/s | 0 |
-| 4 | `blur_s1` | Gaussian Blur $\sigma=1.0$ | 130,329 | 1541.10 s | 84.73 ảnh/s | 0 |
-| 5 | `blur_s2` | Gaussian Blur $\sigma=2.0$ | 130,329 | 1554.00 s | 84.06 ảnh/s | 0 |
-| 6 | `down_up` | Down-Up Bicubic ($224 \rightarrow 112 \rightarrow 224$) | 130,329 | 1213.83 s | 107.63 ảnh/s | 0 |
-| 🏆 | **TỔNG CỘNG** | **6 Biến Thể Suy Biến** | **781,974 ảnh** | **7091.94 s (118.20 phút)** | **~110 ảnh/s** | **0 (PASS)** |
+| 1 | `jpeg_q30` | Nén lượng tử JPEG $Q=30$ | 110,329 | 691.66 s | 160.04 ảnh/s | 0 |
+| 2 | `jpeg_q50` | Nén lượng tử JPEG $Q=50$ | 110,329 | 698.70 s | 158.40 ảnh/s | 0 |
+| 3 | `jpeg_q70` | Nén lượng tử JPEG $Q=70$ | 110,329 | 719.87 s | 153.71 ảnh/s | 0 |
+| 4 | `blur_s1` | Gaussian Blur $\sigma=1.0$ | 110,329 | 1357.02 s | 81.43 ảnh/s | 0 |
+| 5 | `blur_s2` | Gaussian Blur $\sigma=2.0$ | 110,329 | 1356.26 s | 81.48 ảnh/s | 0 |
+| 6 | `down_up` | Down-Up Bicubic ($224 \rightarrow 112 \rightarrow 224$) | 110,329 | 892.47 s | 123.92 ảnh/s | 0 |
+| 🏆 | **TỔNG CỘNG** | **6 Biến Thể Suy Biến** | **661,974 ảnh** | **5716.40 s (95.27 phút)** | **~115.8 ảnh/s** | **0 (PASS)** |
 
 ### 2. Kiểm Toán Tính Toàn Vẹn Cấu Trúc (Audit Verification)
-- Tất cả 6 thư mục biến thể con trong `/content/dataset_local/test_degraded/` đều đạt chính xác tuyệt đối **130.329 ảnh (.jpg)**.
+- Tất cả 6 thư mục biến thể con trong `/content/dataset_local/test_degraded/` đều đạt chính xác tuyệt đối **110.329 ảnh (.jpg)**.
 - Toàn bộ các cặp thư mục `0_real/` và `1_fake/` của 18 subsets được nhân bản nguyên vẹn, không có hiện tượng mất mát nhãn hay lỗi tệp 0 byte.
 
-### 3. Đóng Gói Lưu Trữ Trên Google Drive 5TB
-- **Lệnh đóng gói**: `tar -cf /content/drive/MyDrive/Fatformer/datasets/test_degraded.tar -C /content/dataset_local test_degraded`
+### 3. Đóng Gói Lưu Trữ Trên Google Drive 5TB (Giao Thức SSD NVMe + Flush Cache)
+- **Quy trình thực thi**: Đóng gói nội bộ trên SSD NVMe máy ảo (`/content/test_degraded.tar`, 550.0s) -> Sao chép nguyên khối sang Drive (237.8s) -> Ép đồng bộ bộ nhớ đệm `drive.flush_and_unmount()`.
 - **Đường dẫn tệp**: `/content/drive/MyDrive/Fatformer/datasets/test_degraded.tar`
-- **Dung lượng thực tế**: **21.73 GB** (hoàn toàn nguyên vẹn trên Drive 5TB).
+- **Dung lượng thực tế**: **19.55 GB** (xác nhận tồn tại vĩnh viễn trên Drive 5TB).
 
 ---
 
@@ -66,9 +66,9 @@ Script đa tiến trình [`tools/make_degraded.py`](../../../tools/make_degraded
 
 | Tiêu chuẩn nghiệm thu (DoD) | Yêu cầu thiết kế | Thực nghiệm Colab | Đánh giá nghiệm thu |
 | :--- | :--- | :--- | :---: |
-| **Độ ổn định & Bộ nhớ** | Chạy đa tiến trình không lỗi, không rò rỉ RAM | 781.974 lượt chuyển đổi ảnh thành công với 0 lỗi | ✅ **PASS XUẤT SẮC** |
-| **Bảo toàn nhãn nhị phân** | Đầy đủ `0_real/` và `1_fake/` trên toàn bộ tập | Đạt chính xác 130.329 ảnh / biến thể | ✅ **PASS 100%** |
-| **Lưu trữ Drive 5TB** | Tệp `test_degraded.tar` sẵn sàng trên Drive | Đạt 21.73 GB tại `datasets/test_degraded.tar` | ✅ **ĐÃ LƯU TRỮ** |
+| **Độ ổn định & Bộ nhớ** | Chạy đa tiến trình không lỗi, không rò rỉ RAM | 661.974 lượt chuyển đổi ảnh thành công với 0 lỗi | ✅ **PASS XUẤT SẮC** |
+| **Bảo toàn nhãn nhị phân** | Đầy đủ `0_real/` và `1_fake/` trên toàn bộ tập | Đạt chính xác 110.329 ảnh / biến thể | ✅ **PASS 100%** |
+| **Lưu trữ Drive 5TB** | Tệp `test_degraded.tar` sẵn sàng trên Drive | Đạt 19.55 GB tại `datasets/test_degraded.tar` (Flush verified) | ✅ **ĐÃ LƯU TRỮ VĨNH VIỄN** |
 
 ---
 
