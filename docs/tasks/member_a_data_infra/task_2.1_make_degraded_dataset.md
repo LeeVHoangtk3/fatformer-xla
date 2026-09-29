@@ -114,6 +114,6 @@ cp test_degraded.tar /content/drive/MyDrive/FatFormer_Hub/datasets/
 ---
 
 ## 4. TIÊU CHUẨN NGHIỆM THU (DEFINITION OF DONE - DoD)
-- [ ] Tệp `test_degraded.tar` xuất hiện trên Drive 5TB, kích thước đầy đủ không bị hỏng.
-- [ ] Mở ngẫu nhiên ảnh trong `jpeg_q30/`, `blur_s1/`, `down_up/`: ảnh hiển thị rõ đặc trưng biến dạng thị giác, giữ nguyên cấu trúc nhãn `0_real/` và `1_fake/`.
-- [ ] Bàn giao cho Thành viên C để chạy benchmark mốc sàn tại Task 2.3.
+- [x] Tệp `test_degraded.tar` xuất hiện trên Drive 5TB, kích thước đầy đủ 21.73 GB tại `/content/drive/MyDrive/Fatformer/datasets/test_degraded.tar`.
+- [x] Đầy đủ 6 biến thể suy biến (jpeg_q30, jpeg_q50, jpeg_q70, blur_s1, blur_s2, down_up) với 130.329 ảnh / biến thể (tổng cộng 781.974 ảnh, 0 lỗi), bảo toàn 100% cấu trúc nhãn `0_real/` và `1_fake/`.
+- [x] Bàn giao hoàn tất cho Thành viên C để chạy benchmark mốc sàn tại Task 2.3.
