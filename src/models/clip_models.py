@@ -133,17 +133,60 @@ class CLIPModel(nn.Module):
         self.linear2 = nn.Linear(d_ffn, d_model)
         self.norm2 = nn.LayerNorm(d_model)
 
+        # Module cải tiến FatFormer-XLA (Task 3.3)
+        self.use_srm = getattr(args, "use_srm", False) if args else False
+        self.use_gating = getattr(args, "use_gating", False) if args else False
+
+        if self.use_srm:
+            from .srm import SpatialResidualBlock
+            self.srm = SpatialResidualBlock(in_channels=3, out_dim=d_model)
+        else:
+            self.srm = None
+
+        if self.use_gating:
+            from .gating import DynamicFrequencyGating
+            self.gating = DynamicFrequencyGating(d_model=d_model)
+        else:
+            self.gating = None
+
+    def freeze_backbone(self, verbose=True):
+        """Tiện ích đóng băng 94.1% Backbone CLIP, chỉ mở khóa các adapter (Task 3.4)."""
+        from ..training.freeze_utils import freeze_clip_backbone
+        return freeze_clip_backbone(self, verbose=verbose)
+
     def forward_FFN(self, tgt):
         tgt2 = self.linear2(self.activation(self.linear1(tgt)))
         tgt = tgt + tgt2
         tgt = self.norm2(tgt)
         return tgt
 
-    def forward(self, image):
+    def forward(self, image, return_dual=False):
         tokenized_prompts = self.tokenized_prompts
         logit_scale = self.logit_scale.exp()
 
         image_features = self.image_encoder(image.type(self.dtype), return_full=True)
+
+        # Tích hợp SRM 3-Kernels & Dynamic Frequency Gating λ(x) (Task 3.3)
+        if self.srm is not None:
+            # f_srm: [256, B, 1024]
+            f_srm = self.srm(image)
+            if self.gating is not None:
+                # lambda_v: [1, B, 1]
+                lambda_v = self.gating(f_srm)
+            else:
+                lambda_v = 1.0
+
+            # image_features: [B, 257, 1024] với token 0 là CLS, tokens 1..256 là patch tokens
+            f_srm_b = f_srm.permute(1, 0, 2)  # [B, 256, 1024]
+            if isinstance(lambda_v, torch.Tensor):
+                lambda_scale = lambda_v.squeeze(0).unsqueeze(1)  # [B, 1, 1]
+            else:
+                lambda_scale = lambda_v
+
+            # Hòa trộn vết dư không gian vào patch tokens với hệ số điều chế λ(x)
+            patches = image_features[:, 1:] + lambda_scale * f_srm_b * 0.1
+            image_features = torch.cat([image_features[:, :1], patches], dim=1)
+
         image_features_norm = image_features / image_features.norm(dim=-1, keepdim=True)
 
         prompts = self.language_guided_alignment(image_features)
@@ -175,5 +218,7 @@ class CLIPModel(nn.Module):
             aug_logits.append(logit_scale * pts_i @ imf_i.t())
         aug_logits = torch.stack(aug_logits)
 
-        # Trả về logits tổng hợp S(i) + S'(i)
+        # Trả về 2 luồng riêng biệt cho DualStreamFocalLoss hoặc tổng hợp cho suy luận
+        if return_dual:
+            return logits, aug_logits
         return logits + aug_logits

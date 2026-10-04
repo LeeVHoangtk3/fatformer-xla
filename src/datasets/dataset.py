@@ -166,10 +166,12 @@ class DatasetCreator:
     def build_train_dataset(
         self,
         train_folder_name: str = "train",
-        use_dual_stream: bool = True
+        use_dual_stream: bool = True,
+        scheduler: Optional[Any] = None
     ) -> Dataset:
         """
         Khởi tạo Dataset huấn luyện (ProGAN 4-class hoặc tập tùy chọn).
+        Hỗ trợ gắn CurriculumDegradationScheduler theo 3 giai đoạn epoch.
         """
         train_path = os.path.join(self.dataset_path, train_folder_name)
         if not os.path.exists(train_path):
@@ -178,7 +180,8 @@ class DatasetCreator:
         transform = get_train_transforms(
             img_resolution=self.img_resolution,
             crop_resolution=self.crop_resolution,
-            use_dual_stream=use_dual_stream
+            use_dual_stream=use_dual_stream,
+            scheduler=scheduler
         )
 
         sub_dir_contents = os.listdir(train_path)

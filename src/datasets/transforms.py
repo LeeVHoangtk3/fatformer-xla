@@ -70,16 +70,88 @@ class DualStreamRobustAugmentation:
             return self.down_up(img)
 
 
+class CurriculumDegradationScheduler:
+    """
+    Bộ lập lịch suy thoái động theo giáo trình 3 giai đoạn (Curriculum Learning - Task 3.2):
+    Tác giả: Thành viên A (Data & Infra Lead)
+    Kế thừa thông số: configs/train_config.yaml
+    
+    Quy tắc 3 giai đoạn theo epoch:
+      - Giai đoạn 1 (Epoch 1-2): Nén rất nhẹ JPEG Q ∈ [70, 90], Gaussian Blur σ ∈ [0.5, 1.0], không Down-Up.
+      - Giai đoạn 2 (Epoch 3-5): Nén vừa Q ∈ [45, 70], Gaussian Blur σ ∈ [1.0, 1.5], Down-Up 224 -> 160 -> 224.
+      - Giai đoạn 3 (Epoch 6-8): Nén sâu thử thách Q ∈ [30, 50], Blur σ ∈ [1.5, 2.0], Down-Up 224 -> 112 -> 224.
+    
+    Tỷ lệ phân bổ mẫu: 30% Clean (bảo toàn trần 96.45% ACC), 70% Degraded.
+    """
+    def __init__(self, clean_prob=0.3):
+        self.clean_prob = clean_prob
+        self.epoch = 1
+        self.stage = 1
+        self._update_stage_params()
+
+    def set_epoch(self, epoch: int):
+        self.epoch = max(1, epoch)
+        self._update_stage_params()
+
+    def _update_stage_params(self):
+        if self.epoch <= 2:
+            # Giai đoạn 1: Nén rất nhẹ, ổn định gradient FAA
+            self.stage = 1
+            self.q_range = (70, 90)
+            self.sigma_range = (0.5, 1.0)
+            self.down_size = None
+        elif self.epoch <= 5:
+            # Giai đoạn 2: Nén vừa, rèn luyện mạng cổng Gating λ(x)
+            self.stage = 2
+            self.q_range = (45, 70)
+            self.sigma_range = (1.0, 1.5)
+            self.down_size = (160, 160)
+        else:
+            # Giai đoạn 3: Nén sâu thử thách, tôi luyện biểu diễn vi sai SRM
+            self.stage = 3
+            self.q_range = (30, 50)
+            self.sigma_range = (1.5, 2.0)
+            self.down_size = (112, 112)
+
+    def apply_jpeg(self, img: Image.Image) -> Image.Image:
+        q = random.randint(*self.q_range)
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=q)
+        buf.seek(0)
+        return Image.open(buf).convert("RGB")
+
+    def apply_blur(self, img: Image.Image) -> Image.Image:
+        sigma = random.uniform(*self.sigma_range)
+        return img.filter(ImageFilter.GaussianBlur(radius=sigma))
+
+    def apply_down_up(self, img: Image.Image) -> Image.Image:
+        if self.down_size is None:
+            return img
+        orig_size = img.size
+        resample_mode = getattr(Image, "Resampling", Image).BICUBIC
+        down = img.resize(self.down_size, resample_mode)
+        up = down.resize(orig_size, resample_mode)
+        return up
+
+    def __call__(self, img: Image.Image) -> Image.Image:
+        # 30% giữ sạch nguyên bản
+        if random.random() < self.clean_prob:
+            return img
+
+        # 70% áp dụng suy biến vật lý ngẫu nhiên
+        degrade_choice = random.choice(["jpeg", "blur", "down_up"])
+        if degrade_choice == "jpeg":
+            return self.apply_jpeg(img)
+        elif degrade_choice == "blur":
+            return self.apply_blur(img)
+        else:
+            return self.apply_down_up(img)
+
+
 def get_eval_transforms(img_resolution=256, crop_resolution=224, degradation=None):
     """
     Trả về bộ transforms chuẩn dùng cho pha đánh giá (Validation / Test).
     Hỗ trợ chèn thêm suy thoái tĩnh (degradation) để kiểm thử độ bền vững (robustness test).
-    
-    degradation có thể là:
-      - None (ảnh gốc / clean)
-      - {"type": "jpeg", "quality": 30/50/70}
-      - {"type": "blur", "radius": 1.5}
-      - {"type": "down_up", "ratio": 0.5}
     """
     transform_list = []
     
@@ -104,10 +176,11 @@ def get_eval_transforms(img_resolution=256, crop_resolution=224, degradation=Non
     return transforms.Compose(transform_list)
 
 
-def get_train_transforms(img_resolution=256, crop_resolution=224, use_dual_stream=True):
+def get_train_transforms(img_resolution=256, crop_resolution=224, use_dual_stream=True, scheduler=None):
     """
     Trả về bộ transforms dùng cho huấn luyện / fine-tuning.
-    Nếu use_dual_stream=True: Tích hợp 30% Clean + 70% Degraded.
+    Nếu có scheduler (CurriculumDegradationScheduler): Áp dụng giáo trình suy biến 3 giai đoạn.
+    Nếu use_dual_stream=True và scheduler=None: Áp dụng suy biến tĩnh ngẫu nhiên (30% Clean + 70% Degraded).
     """
     transform_list = [
         transforms.Resize((img_resolution, img_resolution)),
@@ -115,7 +188,9 @@ def get_train_transforms(img_resolution=256, crop_resolution=224, use_dual_strea
         transforms.RandomHorizontalFlip(p=0.5),
     ]
 
-    if use_dual_stream:
+    if scheduler is not None:
+        transform_list.append(scheduler)
+    elif use_dual_stream:
         transform_list.append(DualStreamRobustAugmentation(clean_prob=0.3))
 
     transform_list.extend([

@@ -34,6 +34,7 @@ class CheckpointManager:
         model: nn.Module,
         optimizer: Optional[torch.optim.Optimizer] = None,
         scheduler: Optional[Any] = None,
+        scaler: Optional[Any] = None,
         epoch: int = 0,
         val_metrics: Optional[Dict[str, float]] = None,
         is_best: bool = False,
@@ -41,6 +42,7 @@ class CheckpointManager:
     ) -> str:
         """
         Lưu checkpoint hiện tại và đồng bộ sang Google Drive (nếu có cấu hình).
+        Bao gồm: model weights, optimizer, scheduler, scaler (AMP), epoch, metrics.
         """
         model_to_save = model.module if hasattr(model, "module") else model
         
@@ -49,6 +51,7 @@ class CheckpointManager:
             "model": model_to_save.state_dict(),
             "optimizer": optimizer.state_dict() if optimizer else None,
             "scheduler": scheduler.state_dict() if scheduler else None,
+            "scaler": scaler.state_dict() if scaler else None,
             "val_metrics": val_metrics or {},
         }
 
@@ -80,7 +83,29 @@ class CheckpointManager:
             except Exception as e:
                 print(f"[CẢNH BÁO] Lỗi khi sao lưu sang Google Drive: {e}")
 
+        # Dọn dẹp giữ lại max_to_keep checkpoint gần nhất
+        self._prune_old_checkpoints(self.save_dir)
+        if self.drive_backup_dir and os.path.exists(self.drive_backup_dir):
+            self._prune_old_checkpoints(self.drive_backup_dir)
+
         return local_path
+
+    def _prune_old_checkpoints(self, directory: str):
+        """Giữ lại tối đa self.max_to_keep file checkpoint theo thứ tự epoch."""
+        if not self.max_to_keep or self.max_to_keep <= 0:
+            return
+        try:
+            files = [
+                f for f in os.listdir(directory)
+                if f.startswith("checkpoint_epoch_") and f.endswith(".pth")
+            ]
+            files.sort()
+            if len(files) > self.max_to_keep:
+                to_remove = files[:-self.max_to_keep]
+                for f in to_remove:
+                    os.remove(os.path.join(directory, f))
+        except Exception as e:
+            print(f"[CẢNH BÁO] Không thể dọn dẹp checkpoint cũ tại {directory}: {e}")
 
     @staticmethod
     def load(
@@ -88,6 +113,7 @@ class CheckpointManager:
         model: nn.Module,
         optimizer: Optional[torch.optim.Optimizer] = None,
         scheduler: Optional[Any] = None,
+        scaler: Optional[Any] = None,
         device: torch.device = torch.device("cpu"),
         strict: bool = True
     ) -> Dict[str, Any]:
@@ -123,13 +149,41 @@ class CheckpointManager:
         if optimizer and checkpoint.get("optimizer"):
             try:
                 optimizer.load_state_dict(checkpoint["optimizer"])
+                print("  [✓] Đã khôi phục trạng thái optimizer.")
             except Exception as e:
                 print(f"[CẢNH BÁO] Không thể nạp trạng thái optimizer: {e}")
 
         if scheduler and checkpoint.get("scheduler"):
             try:
                 scheduler.load_state_dict(checkpoint["scheduler"])
+                print("  [✓] Đã khôi phục trạng thái scheduler.")
             except Exception as e:
                 print(f"[CẢNH BÁO] Không thể nạp trạng thái scheduler: {e}")
 
+        if scaler and checkpoint.get("scaler"):
+            try:
+                scaler.load_state_dict(checkpoint["scaler"])
+                print("  [✓] Đã khôi phục trạng thái GradScaler (AMP FP16).")
+            except Exception as e:
+                print(f"[CẢNH BÁO] Không thể nạp trạng thái GradScaler: {e}")
+
         return checkpoint
+
+    @staticmethod
+    def find_latest_checkpoint(dir_path: str) -> Optional[str]:
+        """Tự động tìm kiếm checkpoint mới nhất trong thư mục."""
+        if not os.path.exists(dir_path):
+            return None
+        # Ưu tiên checkpoint_latest.pth
+        latest_file = os.path.join(dir_path, "checkpoint_latest.pth")
+        if os.path.isfile(latest_file):
+            return latest_file
+        # Hoặc tìm checkpoint_epoch_*.pth có số epoch cao nhất
+        epoch_files = [
+            f for f in os.listdir(dir_path)
+            if f.startswith("checkpoint_epoch_") and f.endswith(".pth")
+        ]
+        if epoch_files:
+            epoch_files.sort()
+            return os.path.join(dir_path, epoch_files[-1])
+        return None

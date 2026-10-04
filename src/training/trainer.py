@@ -26,7 +26,8 @@ class Trainer:
         use_amp: bool = True,
         grad_accum_steps: int = 1,
         checkpoint_manager: Optional[CheckpointManager] = None,
-        label_smoothing: float = 0.0
+        label_smoothing: float = 0.0,
+        criterion: Optional[nn.Module] = None
     ):
         self.model = model.to(device)
         self.train_loader = train_loader
@@ -36,8 +37,11 @@ class Trainer:
         self.grad_accum_steps = grad_accum_steps
         self.checkpoint_manager = checkpoint_manager or CheckpointManager()
 
-        # Cấu hình Loss
-        self.criterion = FatFormerLoss(label_smoothing=label_smoothing)
+        # Cấu hình Loss: Hỗ trợ DualStreamFocalLoss hoặc FatFormerLoss mặc định
+        if criterion is not None:
+            self.criterion = criterion
+        else:
+            self.criterion = FatFormerLoss(label_smoothing=label_smoothing)
 
         # Lọc các tham số cần huấn luyện (requires_grad=True)
         trainable_params = [p for p in self.model.parameters() if p.requires_grad]
@@ -68,8 +72,15 @@ class Trainer:
             batch_size = images.size(0)
 
             with torch.cuda.amp.autocast(enabled=self.use_amp):
-                outputs = self.model(images)
-                loss = self.criterion(outputs, labels)
+                try:
+                    outputs = self.model(images, return_dual=True)
+                except TypeError:
+                    outputs = self.model(images)
+
+                if isinstance(outputs, (tuple, list)) and len(outputs) == 2:
+                    loss = self.criterion(outputs[0], outputs[1], labels)
+                else:
+                    loss = self.criterion(outputs, labels)
                 loss_to_backward = loss / self.grad_accum_steps
 
             self.scaler.scale(loss_to_backward).backward()
@@ -125,11 +136,12 @@ class Trainer:
             if scheduler:
                 scheduler.step()
 
-            # Lưu checkpoint
+            # Lưu checkpoint đồng bộ kèm GradScaler (Task 3.5)
             self.checkpoint_manager.save(
                 model=self.model,
                 optimizer=self.optimizer,
                 scheduler=scheduler,
+                scaler=self.scaler,
                 epoch=epoch,
                 val_metrics=val_metrics,
                 is_best=is_best
