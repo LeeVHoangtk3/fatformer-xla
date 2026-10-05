@@ -59,15 +59,30 @@ class CheckpointManager:
             filename = f"checkpoint_epoch_{epoch:03d}.pth"
 
         local_path = os.path.join(self.save_dir, filename)
+        if os.path.exists(local_path):
+            try:
+                os.remove(local_path)
+            except Exception:
+                pass
         torch.save(state, local_path)
         print(f"[CHECKPOINT] Đã lưu checkpoint tại: {local_path}")
 
         # Cập nhật latest
         latest_path = os.path.join(self.save_dir, "checkpoint_latest.pth")
+        if os.path.exists(latest_path):
+            try:
+                os.remove(latest_path)
+            except Exception:
+                pass
         torch.save(state, latest_path)
 
         if is_best:
             best_path = os.path.join(self.save_dir, "model_best.pth")
+            if os.path.exists(best_path):
+                try:
+                    os.remove(best_path)
+                except Exception:
+                    pass
             shutil.copyfile(local_path, best_path)
             print(f"[CHECKPOINT] Đã cập nhật mô hình tốt nhất (Best Model) tại: {best_path}")
 
