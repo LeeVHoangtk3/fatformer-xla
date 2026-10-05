@@ -157,4 +157,17 @@ class Trainer:
                 is_best=is_best
             )
 
+            # Lưu mốc nghiệm thu Chuyên biệt Giai đoạn 2 (Task 4.1 DoD) tại Epoch 5
+            if epoch == 5:
+                self.checkpoint_manager.save(
+                    model=self.model,
+                    optimizer=self.optimizer,
+                    scheduler=scheduler,
+                    scaler=self.scaler,
+                    epoch=epoch,
+                    val_metrics=val_metrics,
+                    filename="fatformer_srm_phase2.pth"
+                )
+                print(f"[CHECKPOINT] Đã lưu cố định mốc Giai đoạn 2: fatformer_srm_phase2.pth (Task 4.1 DoD)")
+
             print(f"Epoch {epoch} hoàn thành trong {epoch_time:.1f}s | Train Loss: {train_loss:.4f}\n")

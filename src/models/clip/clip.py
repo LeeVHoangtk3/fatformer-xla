@@ -93,6 +93,8 @@ def _resolve_clip_path(name: str, args=None) -> str:
     target_filename = "ViT-L-14.pt" if "ViT-L/14" in name else (name.replace("/", "-") + ".pt")
     candidate_paths = [
         target_filename,
+        "/content/drive/MyDrive/Fatformer/pretrained/" + target_filename,
+        "/content/drive/MyDrive/FatFormer_Hub/pretrained/" + target_filename,
         os.path.join("pretrained", target_filename),
         os.path.join("..", target_filename),
         os.path.join("FatFormer-main", "pretrained", target_filename),

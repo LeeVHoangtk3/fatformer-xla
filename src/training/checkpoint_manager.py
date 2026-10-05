@@ -71,15 +71,16 @@ class CheckpointManager:
             shutil.copyfile(local_path, best_path)
             print(f"[CHECKPOINT] Đã cập nhật mô hình tốt nhất (Best Model) tại: {best_path}")
 
-        # Đồng bộ sang Google Drive
+        # Đồng bộ sang Google Drive (nếu thư mục đích khác thư mục lưu cục bộ)
         if self.drive_backup_dir and os.path.exists(self.drive_backup_dir):
             try:
                 drive_path = os.path.join(self.drive_backup_dir, filename)
-                shutil.copyfile(local_path, drive_path)
-                shutil.copyfile(latest_path, os.path.join(self.drive_backup_dir, "checkpoint_latest.pth"))
-                if is_best:
-                    shutil.copyfile(local_path, os.path.join(self.drive_backup_dir, "model_best.pth"))
-                print(f"[GOOGLE DRIVE] Đã sao lưu thành công sang Drive: {drive_path}")
+                if os.path.abspath(local_path) != os.path.abspath(drive_path):
+                    shutil.copyfile(local_path, drive_path)
+                    shutil.copyfile(latest_path, os.path.join(self.drive_backup_dir, "checkpoint_latest.pth"))
+                    if is_best:
+                        shutil.copyfile(local_path, os.path.join(self.drive_backup_dir, "model_best.pth"))
+                    print(f"[GOOGLE DRIVE] Đã sao lưu thành công sang Drive: {drive_path}")
             except Exception as e:
                 print(f"[CẢNH BÁO] Lỗi khi sao lưu sang Google Drive: {e}")
 

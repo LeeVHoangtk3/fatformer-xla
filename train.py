@@ -153,16 +153,32 @@ def main():
     if data_path and os.path.isdir(data_path):
         train_transforms = get_train_transforms(scheduler=curr_scheduler)
         train_ds = None
-        if os.path.exists(os.path.join(data_path, "0_real")):
+
+        # 1.1 Kiểm tra cấu trúc phân lớp trực tiếp
+        if os.path.exists(os.path.join(data_path, "0_real")) and os.path.exists(os.path.join(data_path, "1_fake")):
             train_ds = ImageFolder(data_path, transform=train_transforms)
-        elif os.path.exists(os.path.join(data_path, "train", "0_real")):
+        elif os.path.exists(os.path.join(data_path, "train", "0_real")) and os.path.exists(os.path.join(data_path, "train", "1_fake")):
             train_ds = ImageFolder(os.path.join(data_path, "train"), transform=train_transforms)
         else:
-            try:
-                creator = DatasetCreator(dataset_path=data_path, batch_size=args.batch_size, num_workers=args.num_workers)
-                train_ds = creator.build_train_dataset(scheduler=curr_scheduler)
-            except Exception as e:
-                print(f"  [!] Ghi chú nạp qua DatasetCreator: {e}")
+            # 1.2 Quét đệ quy tìm tất cả thư mục chứa đồng thời 0_real và 1_fake
+            matched_dirs = []
+            for dirpath, dirnames, filenames in os.walk(data_path):
+                if "0_real" in dirnames and "1_fake" in dirnames:
+                    matched_dirs.append(dirpath)
+
+            if len(matched_dirs) == 1:
+                print(f"[*] Tự động phát hiện cấu trúc tập dữ liệu tại: {matched_dirs[0]}")
+                train_ds = ImageFolder(matched_dirs[0], transform=train_transforms)
+            elif len(matched_dirs) > 1:
+                print(f"[*] Tự động phát hiện {len(matched_dirs)} nhóm dữ liệu phân lớp. Đang hợp nhất ConcatDataset...")
+                child_ds_list = [ImageFolder(d, transform=train_transforms) for d in matched_dirs]
+                train_ds = ConcatDataset(child_ds_list)
+            else:
+                try:
+                    creator = DatasetCreator(dataset_path=data_path, batch_size=args.batch_size, num_workers=args.num_workers)
+                    train_ds = creator.build_train_dataset(scheduler=curr_scheduler)
+                except Exception as e:
+                    print(f"  [!] Ghi chú nạp qua DatasetCreator: {e}")
 
         if train_ds is not None and len(train_ds) > 0:
             train_loader = DataLoader(
@@ -172,7 +188,7 @@ def main():
                 num_workers=args.num_workers,
                 pin_memory=(device.type == "cuda")
             )
-            print(f"[✓] Nạp DataLoader thành công: {len(train_ds):,} mẫu ảnh huấn luyện!")
+            print(f"[✓] Nạp DataLoader thành công: {len(train_ds):,} mẫu ảnh huấn luyện thật!")
 
     if train_loader is None:
         # Giả lập DataLoader cho dry-run testing
@@ -182,19 +198,50 @@ def main():
         dummy_dataset = torch.utils.data.TensorDataset(dummy_inputs, dummy_targets)
         train_loader = DataLoader(dummy_dataset, batch_size=args.batch_size, shuffle=True)
 
-    # 2. Khởi tạo Mô hình
+    # 2. Khởi tạo Mô hình FatFormer-XLA
+    resolved_clip_path = args.clip_path
+    if not resolved_clip_path or not os.path.isfile(resolved_clip_path):
+        clip_candidates = [
+            "/content/drive/MyDrive/Fatformer/pretrained/ViT-L-14.pt",
+            "/content/drive/MyDrive/FatFormer_Hub/pretrained/ViT-L-14.pt",
+            "pretrained/ViT-L-14.pt",
+            os.path.join(PROJECT_ROOT, "pretrained", "ViT-L-14.pt"),
+            "ViT-L-14.pt"
+        ]
+        for cp in clip_candidates:
+            if cp and os.path.isfile(cp):
+                resolved_clip_path = cp
+                print(f"  [✓] Tự động phát hiện file trọng số CLIP: {resolved_clip_path}")
+                break
+
     model_args = argparse.Namespace()
     model_args.backbone = "CLIP:ViT-L/14"
     model_args.num_classes = 2
     model_args.num_context_embedding = 8
     model_args.use_srm = args.use_srm
     model_args.use_gating = args.use_gating
-    model_args.clip_path = args.clip_path
+    model_args.clip_path = resolved_clip_path
 
     print("\n[*] Đang khởi tạo mô hình FatFormer-XLA...")
     try:
         model = build_model(model_args).to(device)
         print("  [✓] Khởi tạo kiến trúc CLIP ViT-L/14 thành công!")
+
+        # Kế thừa trọng số Baseline ban đầu (Task 1.2) nếu có trên Drive
+        if not args.resume:
+            init_candidates = [
+                "/content/drive/MyDrive/Fatformer/pretrained/fatformer_4class_ckpt.pth",
+                "/content/drive/MyDrive/FatFormer_Hub/pretrained/fatformer_4class_ckpt.pth",
+                "pretrained/fatformer_4class_ckpt.pth"
+            ]
+            for init_p in init_candidates:
+                if os.path.isfile(init_p):
+                    print(f"  [*] Nạp trọng số Baseline khởi tạo từ: {init_p}...")
+                    init_data = torch.load(init_p, map_location=device)
+                    init_sd = init_data.get("model", init_data.get("state_dict", init_data))
+                    msg = model.load_state_dict(init_sd, strict=False)
+                    print(f"  [✓] Đã nạp thành công trọng số Baseline (Missing keys mới: {len(msg.missing_keys)} cho SRM/Gating)!")
+                    break
     except Exception as e:
         print(f"  [!] Thông báo nạp CLIP ViT: {e}")
         print("  [*] Sử dụng mô hình kiểm thử cấu trúc tương thích dự phòng...")
