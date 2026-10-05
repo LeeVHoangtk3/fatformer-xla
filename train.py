@@ -290,16 +290,35 @@ def main():
         curr_scheduler=curr_scheduler
     )
 
-    # Lưu checkpoint hoàn thành của giai đoạn
-    final_save_path = os.path.join(args.output_dir, args.checkpoint_name)
+    # Lưu checkpoint hoàn thành của giai đoạn (Mô hình chính thức)
     os.makedirs(args.output_dir, exist_ok=True)
     checkpoint_mgr.save(
         model=model,
         optimizer=optimizer,
         scaler=trainer.scaler,
         epoch=args.epochs,
-        is_best=True
+        is_best=True,
+        filename=args.checkpoint_name
     )
+
+    # Tự động sao lưu fatformer_srm_phase2.pth nếu chiến dịch chạy qua Epoch 5 (Nghiệm thu Task 4.1 DoD)
+    ep5_candidates = [
+        os.path.join(args.output_dir, "checkpoint_epoch_005.pth"),
+        os.path.join(drive_backup, "checkpoint_epoch_005.pth") if drive_backup else None
+    ]
+    for ep5_file in ep5_candidates:
+        if ep5_file and os.path.exists(ep5_file):
+            phase2_local = os.path.join(args.output_dir, "fatformer_srm_phase2.pth")
+            if not os.path.exists(phase2_local):
+                shutil.copyfile(ep5_file, phase2_local)
+                print(f"[CHECKPOINT] Đã tự động đồng bộ Phase 2 Checkpoint: {phase2_local}")
+            if drive_backup and os.path.exists(drive_backup):
+                phase2_drive = os.path.join(drive_backup, "fatformer_srm_phase2.pth")
+                if not os.path.exists(phase2_drive):
+                    shutil.copyfile(ep5_file, phase2_drive)
+                    print(f"[GOOGLE DRIVE] Đã tự động sao lưu Phase 2 Checkpoint sang Drive: {phase2_drive}")
+            break
+
     print(f"\n[✓] CHIẾN DỊCH HUẤN LUYỆN HOÀN TẤT THÀNH CÔNG!")
     print(f"  • Checkpoint đã lưu an toàn tại: {args.output_dir}")
     print(f"  • Tên file: {args.checkpoint_name}")

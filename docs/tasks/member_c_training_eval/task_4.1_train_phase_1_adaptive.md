@@ -31,28 +31,50 @@
 
 ## 2. HƯỚNG DẪN TRIỂN KHAI CHI TIẾT (STEP-BY-STEP)
 
-### Lệnh chạy huấn luyện Giai đoạn 1 & 2:
+### Cách 1 (Khuyến nghị tối ưu - One-Shot 8-Epoch Campaign):
+Với môi trường GPU cao cấp (8.9 CU/giờ), toàn bộ 8 epoch của mô hình chính chỉ mất **~32–35 phút**. Hệ thống cho phép chạy liền mạch 8 epoch qua notebook [`notebooks/task/task_4.1/task_4.1_train_phase_1.ipynb`](../../../notebooks/task/task_4.1/task_4.1_train_phase_1.ipynb):
 ```bash
 python train.py \
-    --config configs/train_config.yaml \
-    --data_tar /content/dataset_local/diffusion_staging.tar \
+    --data_tar /content/drive/MyDrive/Fatformer/datasets/diffusion_staging.tar \
+    --epochs 8 \
+    --batch_size 32 \
+    --grad_accum 2 \
+    --lr 1e-4 \
+    --lr_gating 1e-3 \
+    --use_srm True \
+    --use_gating True \
+    --use_curriculum True \
+    --loss_type focal \
+    --output_dir /content/drive/MyDrive/Fatformer/checkpoint \
+    --checkpoint_name fatformer_srm_robust_final.pth
+```
+*Lưu ý*: Script `train.py` tự động phát hiện và trích xuất checkpoint Epoch 5 thành `fatformer_srm_phase2.pth` lưu trực tiếp trên Drive 5TB để phục vụ nghiệm thu độc lập cho Task 4.1.
+
+### Cách 2 (Dự phòng ngắt quãng - 5 Epochs riêng lẻ):
+Nếu muốn kiểm tra điểm dừng tại Epoch 5 trước khi chạy tiếp Giai đoạn 3:
+```bash
+python train.py \
+    --data_tar /content/drive/MyDrive/Fatformer/datasets/diffusion_staging.tar \
     --epochs 5 \
     --batch_size 32 \
     --grad_accum 2 \
-    --lr_adapter 1e-4 \
+    --lr 1e-4 \
     --lr_gating 1e-3 \
-    --output_dir /content/drive/MyDrive/FatFormer_Hub/checkpoints/ \
+    --use_srm True \
+    --use_gating True \
+    --use_curriculum True \
+    --loss_type focal \
+    --output_dir /content/drive/MyDrive/Fatformer/checkpoint \
     --checkpoint_name fatformer_srm_phase2.pth
 ```
 
 ### Quy trình theo dõi sau mỗi epoch:
-1. Ghi nhận `Loss_total`, `Loss_visual`, `Loss_align`.
-2. Chạy `tools/fast_eval.py` trên 2 tập test Clean và Degraded $Q=30$ để ghi nhận xu hướng tăng tiến của Accuracy.
-3. Kiểm tra file `fatformer_epoch_{epoch}.pth` đã tự động đồng bộ sang Drive 5TB.
+1. Ghi nhận `Loss_total`, `Loss_visual`, `Loss_align` qua thanh tiến trình tqdm.
+2. Kiểm tra các file `fatformer_epoch_{epoch}.pth` tự động đồng bộ sang Google Drive 5TB `/content/drive/MyDrive/Fatformer/checkpoint/`.
 
 ---
 
 ## 3. TIÊU CHUẨN NGHIỆM THU (DEFINITION OF DONE - DoD)
-- [ ] Hoàn tất 5 epoch mà không gặp sự cố crash, tổng thời gian chạy ~50–60 phút trên A100.
+- [ ] Hoàn tất 5 epoch đầu tiên mà không gặp sự cố crash/OOM, tổng thời gian ~20–25 phút trên GPU cao cấp (hoặc nằm trong phiên chạy 8 epoch liên tục).
 - [ ] Loss giảm đều đặn, không có biểu hiện phân kỳ hay sốc gradient.
-- [ ] Checkpoint `fatformer_srm_phase2.pth` có sẵn trên Drive 5TB, sẵn sàng chuyển tiếp sang Giai đoạn 3 (Task 4.2).
+- [ ] Checkpoint `fatformer_srm_phase2.pth` (hoặc `fatformer_epoch_5.pth`) có sẵn và toàn vẹn trên Google Drive 5TB, sẵn sàng chuyển tiếp sang Giai đoạn 3 (Task 4.2).
