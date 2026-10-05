@@ -15,12 +15,14 @@ Mục đích:
 import os
 import sys
 import time
+import shutil
 import tarfile
 import argparse
 import yaml
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, ConcatDataset, TensorDataset
+from torchvision.datasets import ImageFolder
 
 # Bảo đảm nạp module từ thư mục gốc
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
