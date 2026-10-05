@@ -73,7 +73,7 @@ def parse_args():
     parser.add_argument("--use_srm", type=str2bool, default=True, help="Bật/Tắt khối vi sai không gian SRM 3-Kernels (Ablation 2: tắt)")
     parser.add_argument("--use_gating", type=str2bool, default=True, help="Bật/Tắt cổng thích ứng tần số động lambda(x) (Ablation 2 & 3: tắt)")
     parser.add_argument("--use_curriculum", type=str2bool, default=True, help="Bật/Tắt lập lịch suy thoái Curriculum 3 giai đoạn")
-    parser.add_argument("--loss_type", type=str, default="dual_stream_focal", choices=["dual_stream_focal", "ce"], help="Loại hàm mất mát (dual_stream_focal hoặc ce)")
+    parser.add_argument("--loss_type", type=str, default="dual_stream_focal", choices=["dual_stream_focal", "focal", "ce", "cross_entropy"], help="Loại hàm mất mát (dual_stream_focal/focal hoặc ce/cross_entropy)")
 
     # 4. Quản lý Checkpoint & Hạ tầng
     parser.add_argument("--output_dir", type=str, default="checkpoints", help="Thư mục lưu trữ Checkpoint (nên trỏ sang Drive 5TB trên Colab)")
@@ -244,7 +244,7 @@ def main():
     )
 
     # 5. Hàm mục tiêu Loss Function
-    if args.loss_type == "dual_stream_focal" and args.use_gating:
+    if args.loss_type in ["dual_stream_focal", "focal"] and args.use_gating:
         criterion = DualStreamFocalLoss(alpha=0.25, gamma=2.0)
         print("  [✓] Kích hoạt hàm mục tiêu: DualStreamFocalLoss (alpha=0.25, gamma=2.0)")
     else:
