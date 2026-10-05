@@ -99,10 +99,10 @@ flowchart TD
 #### 🛑 Hoạt Động Chốt Tại Điểm Dừng 2 (Task 3.6 - Cổng Kiểm Thử Tích Hợp Smoke Gate):
 1. **Thực thi kiểm thử thực tế**: Trưởng dự án (Lead C) cùng Lead B chạy thử nghiệm forward + backward pass trên 1 batch 16 ảnh trên **GPU T4 trong đúng 30 giây** (tiêu tốn < 0.05 CU).
 2. **Tiêu chí phê duyệt**:
-   - [ ] Shape tensor qua SRM, Gating và LGA chuẩn xác $100\%$.
-   - [ ] Loss và gradient không xuất hiện `NaN` hoặc `Inf`.
-   - [ ] Không xảy ra lỗi tràn bộ nhớ (Out-Of-Memory).
-3. **Quyết định của Trưởng dự án**: Chỉ khi pass $100\%$ các tiêu chí trên, Trưởng dự án mới ký biên bản cấp lệnh mở GPU A100 cho chiến dịch huấn luyện Tuần 4.
+   - [x] Shape tensor qua SRM, Gating và LGA chuẩn xác $100\%$.
+   - [x] Loss và gradient không xuất hiện `NaN` hoặc `Inf`.
+   - [x] Không xảy ra lỗi tràn bộ nhớ (Out-Of-Memory).
+3. **Quyết định của Trưởng dự án**: Đã pass $100\%$ các tiêu chí trên (Biên bản nghiệm thu [Task 3.6](../bao_cao/C/bao_cao_task_3.6_integration_smoke_test_gate.md)), Trưởng dự án đã ký biên bản chính thức cấp lệnh mở GPU A100 cho chiến dịch huấn luyện Tuần 4.
 
 ---
 
