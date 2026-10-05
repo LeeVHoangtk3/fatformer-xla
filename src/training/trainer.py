@@ -78,7 +78,10 @@ class Trainer:
                     outputs = self.model(images)
 
                 if isinstance(outputs, (tuple, list)) and len(outputs) == 2:
-                    loss = self.criterion(outputs[0], outputs[1], labels)
+                    try:
+                        loss = self.criterion(outputs[0], outputs[1], labels)
+                    except TypeError:
+                        loss = self.criterion(outputs[0] + outputs[1], labels)
                 else:
                     loss = self.criterion(outputs, labels)
                 loss_to_backward = loss / self.grad_accum_steps
@@ -107,16 +110,23 @@ class Trainer:
         self,
         epochs: int = 20,
         val_freq: int = 1,
-        scheduler: Optional[torch.optim.lr_scheduler._LRScheduler] = None
+        scheduler: Optional[torch.optim.lr_scheduler._LRScheduler] = None,
+        curr_scheduler: Optional[object] = None,
+        start_epoch: int = 1
     ):
         """
         Thực hiện toàn bộ quá trình huấn luyện qua các epoch.
         """
         print("\n" + "=" * 80)
-        print(f"BẮT ĐẦU HUẤN LUYỆN: {epochs} EPOCHS | Thiết bị: {self.device} | AMP: {self.use_amp}")
+        print(f"BẮT ĐẦU HUẤN LUYỆN: EPOCHS {start_epoch} -> {epochs} | Thiết bị: {self.device} | AMP: {self.use_amp}")
         print("=" * 80)
 
-        for epoch in range(1, epochs + 1):
+        for epoch in range(start_epoch, epochs + 1):
+            if curr_scheduler and hasattr(curr_scheduler, "set_epoch"):
+                curr_scheduler.set_epoch(epoch)
+                stage_idx = getattr(curr_scheduler, "stage", 1)
+                print(f"[CURRICULUM] Epoch {epoch}: Thiết lập Giáo trình Giai đoạn {stage_idx}")
+
             t0 = time.time()
             train_loss = self.train_epoch(epoch)
             epoch_time = time.time() - t0
