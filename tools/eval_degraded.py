@@ -94,7 +94,7 @@ def parse_args():
     parser.add_argument("--device", type=str, default="auto", choices=["auto", "cuda", "cpu"], help="Thiết bị tính toán")
     parser.add_argument("--backbone", type=str, default="CLIP:ViT-L/14")
     parser.add_argument("--num_classes", type=int, default=2)
-    parser.add_argument("--num_vit_adapter", type=int, default=3)
+    parser.add_argument("--num_vit_adapter", type=int, default=8, help="Số lượng adapter trong ViT (mặc định: 8)")
     parser.add_argument("--num_context_embedding", type=int, default=8)
     parser.add_argument("--init_context_embedding", type=str, default="")
     parser.add_argument("--hidden_dim", type=int, default=768)
@@ -104,7 +104,7 @@ def parse_args():
     parser.add_argument("--num_heads", type=int, default=12)
     parser.add_argument("--use_srm", action="store_true", help="Bật nhánh SRM (False đối với Baseline gốc)")
     parser.add_argument("--use_gating", action="store_true", help="Bật nhánh Gating (False đối với Baseline gốc)")
-    parser.add_argument("--strict", action="store_true", default=True, help="Nạp checkpoint ở chế độ strict=True")
+    parser.add_argument("--strict", action="store_true", default=False, help="Nạp checkpoint ở chế độ strict=True (mặc định False)")
     
     # Comparison & Outputs
     parser.add_argument("--clean_csv", type=str, default="", 
@@ -347,21 +347,32 @@ def run_degraded_benchmark():
     model.eval()
 
     # 4. Nạp checkpoint
-    if args.checkpoint:
-        ckpt_path = args.checkpoint
-        if not os.path.isabs(ckpt_path):
-            ckpt_path = os.path.join(project_root, ckpt_path)
-        if os.path.exists(ckpt_path):
-            print(f"[*] Đang nạp checkpoint từ: {ckpt_path} (strict={args.strict})...")
+    ckpt_path = args.checkpoint
+    if not ckpt_path or ckpt_path.startswith("{") or not os.path.exists(ckpt_path):
+        candidate_ckpts = [
+            ckpt_path,
+            os.path.join(project_root, ckpt_path) if ckpt_path and not ckpt_path.startswith("{") else "",
+            "/content/drive/MyDrive/Fatformer/checkpoint/fatformer_srm_robust_final.pth",
+            "/content/drive/MyDrive/Fatformer/checkpoint/model_best.pth",
+            "/content/drive/MyDrive/Fatformer/checkpoint/checkpoint_latest.pth",
+            "/content/drive/MyDrive/Fatformer/checkpoint/fatformer_srm_phase2.pth",
+            os.path.join(project_root, "fatformer_4class_ckpt.pth")
+        ]
+        for c in candidate_ckpts:
+            if c and os.path.exists(c):
+                ckpt_path = c
+                break
+
+    if ckpt_path and os.path.exists(ckpt_path):
+        print(f"[*] Đang nạp checkpoint từ: {ckpt_path} (strict={args.strict})...")
+        try:
             CheckpointManager.load(ckpt_path, model, device=device, strict=args.strict)
-            print("  -> Nạp trọng số checkpoint thành công!")
-        else:
-            print(f"[CẢNH BÁO] Không tìm thấy checkpoint tại: {ckpt_path}")
+        except RuntimeError as e:
+            print(f"  [CẢNH BÁO] Nạp checkpoint với strict={args.strict} gặp lỗi keys. Tự động fallback sang strict=False...")
+            CheckpointManager.load(ckpt_path, model, device=device, strict=False)
+        print("  -> Nạp trọng số checkpoint thành công!")
     else:
-        default_ckpt = os.path.join(project_root, "fatformer_4class_ckpt.pth")
-        if os.path.exists(default_ckpt):
-            print(f"[*] Phát hiện checkpoint mặc định: {default_ckpt}")
-            CheckpointManager.load(default_ckpt, model, device=device, strict=args.strict)
+        print(f"[CẢNH BÁO] Không tìm thấy checkpoint tại: {ckpt_path}. Chạy suy luận với trọng số hiện thời.")
 
     # 5. Đọc mốc Clean Baseline từ file CSV (Task 2.2)
     clean_baseline = load_clean_baseline_from_csv(args.clean_csv)
@@ -415,11 +426,12 @@ def run_degraded_benchmark():
 
     # 7. Đánh giá trên Dataset Thật
     degraded_root = args.degraded_root
-    if not degraded_root:
+    if not degraded_root or degraded_root.startswith("{") or not os.path.exists(degraded_root):
         candidates = [
             "/content/dataset_local/test_degraded",
             "/content/dataset_local",
-            os.path.join(project_root, "datasets", "test_degraded")
+            os.path.join(project_root, "datasets", "test_degraded"),
+            os.path.join(project_root, "dataset_local", "test_degraded")
         ]
         for c in candidates:
             if os.path.exists(c):

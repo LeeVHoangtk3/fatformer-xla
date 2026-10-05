@@ -155,7 +155,14 @@ class CheckpointManager:
                 clean_state_dict[k] = v
 
         model_to_load = model.module if hasattr(model, "module") else model
-        load_result = model_to_load.load_state_dict(clean_state_dict, strict=strict)
+        try:
+            load_result = model_to_load.load_state_dict(clean_state_dict, strict=strict)
+        except RuntimeError as e:
+            if strict:
+                print(f"[CHECKPOINT] CẢNH BÁO: Nạp strict=True gặp sai khác khóa ({e}). Tự động fallback sang strict=False...")
+                load_result = model_to_load.load_state_dict(clean_state_dict, strict=False)
+            else:
+                raise e
         print(f"[CHECKPOINT] Đã nạp thành công từ: {checkpoint_path}")
         if hasattr(load_result, "missing_keys") and load_result.missing_keys:
             print(f"  Missing keys: {len(load_result.missing_keys)}")

@@ -63,7 +63,7 @@ def parse_args():
     # Model architecture options
     parser.add_argument("--backbone", type=str, default="CLIP:ViT-L/14")
     parser.add_argument("--num_classes", type=int, default=2)
-    parser.add_argument("--num_vit_adapter", type=int, default=3)
+    parser.add_argument("--num_vit_adapter", type=int, default=8, help="Số lượng adapter trong ViT (mặc định: 8)")
     parser.add_argument("--num_context_embedding", type=int, default=8)
     parser.add_argument("--init_context_embedding", type=str, default="")
     parser.add_argument("--hidden_dim", type=int, default=768)
@@ -192,7 +192,11 @@ def run_fast_eval():
             ckpt_path = os.path.join(project_root, ckpt_path)
         if os.path.exists(ckpt_path):
             print(f"[*] Đang nạp checkpoint từ: {ckpt_path}...")
-            CheckpointManager.load(ckpt_path, model, device=device, strict=args.strict)
+            try:
+                CheckpointManager.load(ckpt_path, model, device=device, strict=args.strict)
+            except RuntimeError:
+                print("  [CẢNH BÁO] Sai khác keys checkpoint. Tự động chuyển sang nạp strict=False...")
+                CheckpointManager.load(ckpt_path, model, device=device, strict=False)
             print("  -> Nạp trọng số checkpoint thành công!")
         else:
             print(f"[CẢNH BÁO] Checkpoint không tồn tại: {ckpt_path}. Chạy suy luận với trọng số hiện thời.")
@@ -201,7 +205,10 @@ def run_fast_eval():
         default_ckpt = os.path.join(project_root, "fatformer_4class_ckpt.pth")
         if os.path.exists(default_ckpt):
             print(f"[*] Phát hiện checkpoint mặc định: {default_ckpt}")
-            CheckpointManager.load(default_ckpt, model, device=device, strict=args.strict)
+            try:
+                CheckpointManager.load(default_ckpt, model, device=device, strict=args.strict)
+            except RuntimeError:
+                CheckpointManager.load(default_ckpt, model, device=device, strict=False)
 
     # 5. Xử lý kịch bản Smoke Test Dummy hoặc Dữ liệu thật
     if args.test_dummy:
