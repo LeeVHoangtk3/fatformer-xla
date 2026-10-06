@@ -439,6 +439,36 @@ def run_degraded_benchmark():
                 break
 
     if not degraded_root or not os.path.exists(degraded_root):
+        # Tự động giải nén dự phòng từ Drive nếu có test_degraded.tar
+        tar_candidates = [
+            "/content/drive/MyDrive/Fatformer/datasets/test_degraded.tar",
+            "/content/drive/MyDrive/FatFormer_Hub/datasets/test_degraded.tar",
+            os.path.join(project_root, "datasets", "test_degraded.tar"),
+            os.path.join(project_root, "test_degraded.tar")
+        ]
+        tar_found = None
+        for tc in tar_candidates:
+            if os.path.exists(tc):
+                tar_found = tc
+                break
+
+        if tar_found:
+            print(f"\n[*] Chưa tìm thấy thư mục cục bộ, nhưng phát hiện tệp nén trên Drive: {tar_found}")
+            print(f"[*] Đang tự động giải nén nhanh sang /content/dataset_local...")
+            dest_dir = "/content/dataset_local"
+            os.makedirs(dest_dir, exist_ok=True)
+            import subprocess
+            if args.variants != "all" and "," not in args.variants:
+                target_member = f"test_degraded/{args.variants}"
+                subprocess.run(["tar", "-xf", tar_found, "-C", dest_dir, target_member], check=False)
+            else:
+                subprocess.run(["tar", "-xf", tar_found, "-C", dest_dir], check=False)
+
+            if os.path.exists("/content/dataset_local/test_degraded"):
+                degraded_root = "/content/dataset_local/test_degraded"
+                print(f"[✓] Tự động giải nén thành công! Dữ liệu sẵn sàng tại: {degraded_root}")
+
+    if not degraded_root or not os.path.exists(degraded_root):
         print(f"\n[LỖI] Không tìm thấy thư mục suy biến: '{degraded_root}'.")
         print("Gợi ý: Cung cấp --degraded_root /content/dataset_local/test_degraded hoặc sử dụng --test_dummy.")
         return 1
