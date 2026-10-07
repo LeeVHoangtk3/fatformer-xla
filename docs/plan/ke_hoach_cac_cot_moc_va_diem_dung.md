@@ -109,33 +109,34 @@ flowchart TD
 ### ❄️ ĐIỂM DỪNG 3: MỐC 3 (CUỐI TUẦN 4) - ĐÓNG BĂNG 4 CHECKPOINT ABLATION & KHOẢNG ĐỆM
 *Mục đích: Hoàn tất 100% khối lượng tính toán nặng của toàn bộ đồ án; triệt tiêu nguy cơ trễ hạn nhờ khoảng đệm 2 ngày.*
 
-| Phân công | Mã Task | Tên Nhiệm Vụ | GPU Thực Thi | Sản Phẩm Checkpoint Nghiệm Thu |
-| :--- | :---: | :--- | :---: | :--- |
-| **Thành viên C (Lead)**| **Task 4.1** | Train Mô hình Chính Giai đoạn 1 & 2 (Ep 1-5) | ☁️ **A100 SXM4** | `fatformer_srm_phase2.pth` trên Drive 5TB |
-| **Thành viên C (Lead)**| **Task 4.2** | Train Mô hình Chính Giai đoạn 3 (Ep 6-8) | ☁️ **A100 SXM4** | `fatformer_srm_robust_final.pth` (Mô hình chính) |
-| **Thành viên A** | **Task 4.3** | Train Checkpoint Ablation 2 (Aug-only) | ☁️ **T4 / L4** | `fatformer_aug_only.pth` trên Drive 5TB |
-| **Thành viên B** | **Task 4.4** | Train Checkpoint Ablation 3 (SRM-only) | ☁️ **L4 / A100** | `fatformer_srm_only.pth` trên Drive 5TB |
-| **Thành viên B** | **Task 4.6** | Soạn thảo Báo cáo Chương 4 | 🖥️ **Local** | Bản thảo Chương 4 (Thiết lập thực nghiệm) |
+| Phân công | Mã Task | Tên Nhiệm Vụ | GPU Thực Thi | Sản Phẩm Checkpoint Nghiệm Thu | Trạng Thái |
+| :--- | :---: | :--- | :---: | :--- | :---: |
+| **Thành viên C (Lead)**| **Task 4.1** | Train Mô hình Chính Giai đoạn 1 & 2 (Ep 1-5) | ☁️ **A100 SXM4** | `fatformer_srm_phase2.pth` trên Drive 5TB | `[x] Đã xong` |
+| **Thành viên C (Lead)**| **Task 4.2** | Train Mô hình Chính Giai đoạn 3 (Ep 6-8) | ☁️ **A100 SXM4** | `fatformer_srm_robust_final.pth` (Mô hình chính) | `[x] Đã xong` |
+| **Thành viên A** | **Task 4.3** | Train Checkpoint Ablation 2 (Aug-only) | ☁️ **T4 / L4** | Đã bãi bỏ theo Phương án 1 (Chuyển sang Phase Ablation) | `[x] Đã bãi bỏ` |
+| **Thành viên B** | **Task 4.4** | Train Checkpoint Ablation 3 (SRM-only) | ☁️ **L4 / A100** | Đã bãi bỏ theo Phương án 1 (Chuyển sang Phase Ablation) | `[x] Đã bãi bỏ` |
+| **Thành viên B** | **Task 4.6** | Soạn thảo Báo cáo Chương 4 | 🖥️ **Local** | Bản thảo Chương 4 (Thiết lập thực nghiệm) | `[x] Đã xong` |
 
 #### 🛑 Hoạt Động Chốt Tại Điểm Dừng 3 (Task 4.5 - Quản Lý Khoảng Đệm & Kiểm Toán Checkpoint):
 1. **Kiểm toán kho checkpoint**: Trưởng dự án kiểm tra trực tiếp thư mục `MyDrive/Fatformer/checkpoint/`.
 2. **Tiêu chuẩn nghiệm thu điểm dừng**:
-   - [ ] Có đầy đủ 4 checkpoint đối chứng: `baseline.pth`, `aug_only.pth`, `srm_only.pth`, `robust_final.pth`.
-   - [ ] Nạp thử nghiệm cả 4 checkpoint thành công trên GPU T4, xác nhận không file nào bị lỗi Corrupted weights.
-3. **Ý nghĩa chiến lược**: Giải phóng $100\%$ gánh nặng huấn luyện mô hình. Bước sang Tuần 5, toàn bộ nhóm chỉ tập trung chạy suy luận nhẹ, trích xuất ảnh XAI và hoàn thiện văn bản báo cáo.
+   - [x] Có đầy đủ hệ thống checkpoint tiến trình: `fatformer_4class_ckpt.pth`, `fatformer_srm_phase2.pth`, `fatformer_srm_robust_final.pth`.
+   - [x] Nạp thử nghiệm cả 3 checkpoint thành công trên GPU/CPU, xác nhận không file nào bị lỗi Corrupted weights.
+   - [x] **NGHIỆM THU MỐC 3: ĐÃ PASS 100% VÀ ĐÓNG BĂNG CHECKPOINT.**
+3. **Ý nghĩa chiến lược**: Giải phóng 100% gánh nặng huấn luyện mô hình. Chính thức kích hoạt Tuần 5 để thực hiện Full Benchmark và hoàn tất đồ án.
 
 ---
 
 ### 🎓 ĐIỂM DỪNG 4: MỐC 4 (CUỐI TUẦN 5) - TỔNG DUYỆT NGHIỆM THU ĐỒ ÁN & DIỄN TẬP BẢO VỆ
 *Mục đích: Lắp ráp các sản phẩm thành quả của 5 tuần thành tài liệu học thuật hoàn chỉnh và bài thuyết trình xuất sắc trước Hội đồng.*
 
-| Phân công | Mã Task | Tên Nhiệm Vụ | Sản Phẩm Bàn Giao |
-| :--- | :---: | :--- | :--- |
-| **Thành viên C (Lead)**| **Task 5.1** | Chạy Full-Benchmark trên 18 tập test hai chiều | Ma trận kết quả chi tiết `final_full_benchmark_matrix.csv` |
-| **Thành viên C (Lead)**| **Task 5.2** | Lập Bảng Ablation Study 4 phiên bản & Khai báo học thuật | Bảng triệt tiêu định lượng + Tuyên bố giới hạn 300 CUs |
-| **Thành viên B** | **Task 5.3** | Xuất bộ 10 ảnh Grad-CAM đối đầu XAI | Bộ ảnh Grad-CAM độ phân giải cao phân tích cơ chế đóng cổng |
-| **Thành viên A** | **Task 5.5** | Xây dựng ứng dụng Live Demo Web kéo thả ảnh | App Streamlit `tools/inference_demo.py` hoạt động mượt mà |
-| **Cả 3 thành viên** | **Task 5.4** | Lắp ráp hoàn thiện Báo cáo đồ án (PDF) và Slide bảo vệ | Báo cáo đồ án hoàn chỉnh (~40 trang) + Bộ Slide thuyết trình |
+| Phân công | Mã Task | Tên Nhiệm Vụ | Sản Phẩm Bàn Giao | Trạng Thái |
+| :--- | :---: | :--- | :--- | :---: |
+| **Thành viên C (Lead)**| **Task 5.1** | Chạy Full-Benchmark trên 18 tập test hai chiều | Ma trận kết quả chi tiết `final_full_benchmark_matrix.csv` | `[🔄] Đang thực hiện` |
+| **Thành viên C (Lead)**| **Task 5.2** | Lập Bảng Ablation Study 4 phiên bản & Khai báo học thuật | Bảng triệt tiêu định lượng (Phase Ablation) | `[ ] Chưa xong` |
+| **Thành viên B** | **Task 5.3** | Xuất bộ 10 ảnh Grad-CAM đối đầu XAI | Bộ ảnh Grad-CAM độ phân giải cao phân tích cơ chế đóng cổng | `[ ] Chưa xong` |
+| **Thành viên A** | **Task 5.5** | Xây dựng ứng dụng Live Demo Web kéo thả ảnh | App Streamlit `tools/inference_demo.py` hoạt động mượt mà | `[ ] Chưa xong` |
+| **Cả 3 thành viên** | **Task 5.4** | Lắp ráp hoàn thiện Báo cáo đồ án (PDF) và Slide bảo vệ | Báo cáo đồ án hoàn chỉnh (~40 trang) + Bộ Slide thuyết trình | `[ ] Chưa xong` |
 
 #### 🛑 Hoạt Động Chốt Tại Điểm Dừng 4 (Tổng Duyệt Nghiệm Thu & Diễn Tập):
 1. **Nghiệm thu Báo cáo đồ án**: Rà soát lần cuối toàn bộ 5 chương, kiểm tra mục lục, bảng biểu và danh mục tài liệu tham khảo.
@@ -147,8 +148,8 @@ flowchart TD
 
 ## IV. BẢNG CHECKLIST ĐIỀU HÀNH DÀNH RIÊNG CHO TRƯỞNG DỰ ÁN (LEAD C)
 
-- [ ] **Giai đoạn hiện tại (Tuần 1)**: Đôn đốc Thành viên B hoàn thành Task 1.2; bản thân tập trung hoàn thành Task 1.3 và 1.4.
-- [ ] **Trước khi chốt Mốc 1 (Ngày 14)**: Kiểm tra file `test_degraded.tar` của A và số liệu baseline của C đã khớp chưa trước khi họp Task 2.5.
-- [ ] **Trước khi mở GPU A100 (Ngày 21)**: Trực tiếp giám sát và ký biên bản Smoke Test Gate (Task 3.6).
-- [ ] **Cuối Tuần 4 (Ngày 28)**: Chạy script kiểm toán 4 checkpoint trên Drive 5TB, đảm bảo không có task train nào bị dồn sang Tuần 5.
-- [ ] **Tuần 5 (Ngày 34)**: Chủ trì buổi tổng duyệt diễn tập bảo vệ thử trước hội đồng.
+- [x] **Mốc 1 (Cuối Tuần 2)**: Kiểm tra file `test_degraded.tar` của A và số liệu baseline của C đã khớp, hoàn tất họp Task 2.5 đóng băng Baseline.
+- [x] **Mốc 2 (Cuối Tuần 3)**: Trực tiếp giám sát và ký biên bản Smoke Test Gate (Task 3.6), cấp lệnh mở GPU A100.
+- [x] **Mốc 3 (Cuối Tuần 4)**: Nghiệm thu hoàn tất huấn luyện 8 epoch (Task 4.1 & 4.2), kiểm toán 3 checkpoint chủ lực trên Drive 5TB (Task 4.5).
+- [🔄] **Mốc 4 (Tuần 5 - Hiện tại)**: Đang chủ trì thực thi Full-Benchmark trên 18 tập test hai chiều (Task 5.1).
+- [ ] **Chốt Mốc 4 (Ngày 34)**: Chủ trì buổi tổng duyệt diễn tập bảo vệ thử trước hội đồng.

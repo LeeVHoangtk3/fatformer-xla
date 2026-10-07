@@ -1,0 +1,3 @@
+session_id,timestamp,image_name,image_dims,checkpoint_name,model_type,mode,grid_size,verdict,max_fake_pct,mean_fake_pct,flagged_count,total_patches,run_dir
+SESSION_20261007_172952_GIRL3_CHECK02,2026-10-07 17:29:52,girl3.png,1320x1192,fatformer_srm_robust_final.pth,FatFormer-XLA Robust (Task 4.2 Final),grid,4x4,PHÁT HIỆN CAN THIỆP AI CỤC BỘ (Local Forgery Detected),99.78,93.90,16,16,D:\GIT REPO\.nam4\fatformer-xla\DATASET\inspection_results\girl3\check_02
+SESSION_20261007_173128_BOY2_CHECK01,2026-10-07 17:31:28,boy2.jpg,1601x2560,fatformer_srm_robust_final.pth,FatFormer-XLA Robust (Task 4.2 Final),grid,4x4,PHÁT HIỆN CAN THIỆP AI CỤC BỘ (Local Forgery Detected),85.26,26.47,3,16,D:\GIT REPO\.nam4\fatformer-xla\DATASET\inspection_results\boy2\check_01
