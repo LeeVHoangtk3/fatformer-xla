@@ -132,7 +132,7 @@ flowchart TD
 
 | Phân công | Mã Task | Tên Nhiệm Vụ | Sản Phẩm Bàn Giao | Trạng Thái |
 | :--- | :---: | :--- | :--- | :---: |
-| **Thành viên C (Lead)**| **Task 5.1** | Chạy Full-Benchmark trên 18 tập test hai chiều | Ma trận kết quả chi tiết `final_full_benchmark_matrix.csv` | `[🔄] Đang thực hiện` |
+| **Thành viên C (Lead)**| **Task 5.1** | Chạy Full-Benchmark trên 18 tập test hai chiều | Ma trận kết quả chi tiết `final_full_benchmark_matrix.csv` | `[x] Đã xong` ([Báo cáo](../bao_cao/C/bao_cao_task_5.1_full_benchmark_18_datasets.md)) |
 | **Thành viên C (Lead)**| **Task 5.2** | Lập Bảng Ablation Study 4 phiên bản & Khai báo học thuật | Bảng triệt tiêu định lượng (Phase Ablation) | `[ ] Chưa xong` |
 | **Thành viên B** | **Task 5.3** | Xuất bộ 10 ảnh Grad-CAM đối đầu XAI | Bộ ảnh Grad-CAM độ phân giải cao phân tích cơ chế đóng cổng | `[ ] Chưa xong` |
 | **Thành viên A** | **Task 5.5** | Xây dựng ứng dụng Live Demo Web kéo thả ảnh | App Streamlit `tools/inference_demo.py` hoạt động mượt mà | `[ ] Chưa xong` |

@@ -62,8 +62,16 @@ DATASET/logs/
 ---
 
 ### 3. Thư mục `m4_full_benchmark/` (Mốc 4 - Tuần 5)
-*Mục đích: Sẵn sàng tiếp nhận ma trận Full-Benchmark hai chiều (18 tập Clean + 6 biến thể Degraded) của Task 5.1.*
-* **Tệp đầu ra dự kiến**: `task_5.1_final_full_benchmark_matrix.csv`.
+*Mục đích: Lưu trữ toàn bộ kết quả đo đạc Full-Benchmark hai chiều (18 tập Clean + 6 biến thể Degraded) của Task 5.1.*
+
+| Tên Tệp | Mã Task | Ngày Tạo | Ý Nghĩa Kỹ Thuật |
+| :--- | :---: | :---: | :--- |
+| `final_full_benchmark_matrix.csv` | Task 5.1 | 2026-10-08 | **Ma trận Master 2 chiều**: 137 dòng, 126 lượt đo đạc phân tầng (Clean + 6 Degraded). |
+| `task_5.1_clean_results.csv` | Task 5.1 | 2026-10-08 | Kết quả chi tiết trên 18 tập test sạch phòng lab (Overall ACC: 50.31%). |
+| `task_5.1_clean_report.md` | Task 5.1 | 2026-10-08 | Báo cáo Markdown chi tiết kết quả Clean Benchmark. |
+| `task_5.1_degraded_results.csv` | Task 5.1 | 2026-10-08 | Kết quả đo đạc trên 6 biến thể suy biến ($Q=30, 50, 70$, Blur, Down-Up). |
+| `task_5.1_degraded_report.md` | Task 5.1 | 2026-10-08 | Báo cáo Markdown chi tiết ma trận sụt giảm $\Delta$ so với Clean. |
+| `task_5.1_master_benchmark_chart.png` | Task 5.1 | 2026-10-08 | Biểu đồ đối chứng trực quan 7 nhóm cột phục vụ Slide và Báo cáo. |
 
 ---
 
