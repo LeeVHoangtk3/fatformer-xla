@@ -232,4 +232,5 @@ DATASET/*
 !DATASET/logs/
 datasets/*
 !datasets/logs/
-progan_val.zip
+progan_val.zip
+*.zip

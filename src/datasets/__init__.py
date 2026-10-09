@@ -11,6 +11,9 @@ from .dataset import (
     GAN_SUBSETS,
     DIFFUSION_SUBSETS,
     ALL_TEST_SUBSETS,
+    collect_sub_imagefolders,
+    build_multi_domain_train_dataloader,
+    build_val_dataloader,
 )
 
 __all__ = [
@@ -24,4 +27,7 @@ __all__ = [
     "GAN_SUBSETS",
     "DIFFUSION_SUBSETS",
     "ALL_TEST_SUBSETS",
+    "collect_sub_imagefolders",
+    "build_multi_domain_train_dataloader",
+    "build_val_dataloader",
 ]

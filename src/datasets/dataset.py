@@ -1,7 +1,7 @@
 import os
 from typing import List, Optional, Tuple, Union, Any, Dict
 import torch
-from torch.utils.data import Dataset, DataLoader, ConcatDataset, Subset
+from torch.utils.data import Dataset, DataLoader, ConcatDataset, Subset, WeightedRandomSampler
 from torchvision.datasets import ImageFolder
 from .transforms import get_eval_transforms, get_train_transforms
 
@@ -196,3 +196,141 @@ class DatasetCreator:
                 child_datasets.append(ImageFolder(sub_class_path, transform=transform))
         
         return ConcatDataset(child_datasets)
+
+
+def collect_sub_imagefolders(root_dir: str, transform=None) -> List[ImageFolder]:
+    """
+    Quét và gom toàn bộ các thư mục có định dạng ImageFolder (chứa 0_real và 1_fake)
+    từ thư mục gốc root_dir. Hỗ trợ cả cấu trúc 1 cấp lẫn đa cấp phân lớp.
+    """
+    if not root_dir or not os.path.exists(root_dir):
+        return []
+
+    try:
+        top_contents = os.listdir(root_dir)
+    except Exception:
+        return []
+
+    if "0_real" in top_contents and "1_fake" in top_contents:
+        return [ImageFolder(root_dir, transform=transform)]
+
+    image_folders = []
+    for dirpath, dirnames, _ in os.walk(root_dir):
+        if "0_real" in dirnames and "1_fake" in dirnames:
+            image_folders.append(ImageFolder(dirpath, transform=transform))
+
+    return image_folders
+
+
+def build_multi_domain_train_dataloader(
+    progan_dir: Optional[str] = None,
+    staging_dir: Optional[str] = None,
+    batch_size: int = 32,
+    num_workers: int = 4,
+    progan_ratio: float = 0.85,
+    staging_ratio: float = 0.15,
+    transform: Optional[Any] = None,
+    pin_memory: bool = True
+) -> Tuple[Optional[DataLoader], int, int]:
+    """
+    Khởi tạo DataLoader huấn luyện cân bằng đa miền (Multi-Domain Balanced DataLoader)
+    cho Phương Án A: Kết hợp kho ProGAN (144.024 ảnh) và Diffusion Staging (3.600 ảnh)
+    sử dụng WeightedRandomSampler.
+
+    Args:
+        progan_dir: Đường dẫn thư mục dữ liệu ProGAN.
+        staging_dir: Đường dẫn thư mục dữ liệu Diffusion Staging.
+        batch_size: Kích thước batch.
+        num_workers: Số luồng nạp dữ liệu.
+        progan_ratio: Tỷ lệ phân bổ mẫu ProGAN mong muốn trong mỗi batch (mặc định 0.85).
+        staging_ratio: Tỷ lệ phân bổ mẫu Staging mong muốn trong mỗi batch (mặc định 0.15).
+        transform: Bộ tiền xử lý ảnh (Dual-Stream Augmentation).
+        pin_memory: Ghim bộ nhớ CUDA.
+
+    Returns:
+        (DataLoader, n_progan, n_staging)
+    """
+    progan_sub_ds = collect_sub_imagefolders(progan_dir, transform=transform) if progan_dir else []
+    staging_sub_ds = collect_sub_imagefolders(staging_dir, transform=transform) if staging_dir else []
+
+    progan_ds = ConcatDataset(progan_sub_ds) if len(progan_sub_ds) > 1 else (progan_sub_ds[0] if len(progan_sub_ds) == 1 else None)
+    staging_ds = ConcatDataset(staging_sub_ds) if len(staging_sub_ds) > 1 else (staging_sub_ds[0] if len(staging_sub_ds) == 1 else None)
+
+    n_progan = len(progan_ds) if progan_ds is not None else 0
+    n_staging = len(staging_ds) if staging_ds is not None else 0
+
+    if n_progan == 0 and n_staging == 0:
+        return None, 0, 0
+
+    if n_progan > 0 and n_staging > 0:
+        combined_ds = ConcatDataset([progan_ds, staging_ds])
+        total_ratio = progan_ratio + staging_ratio
+        p1 = progan_ratio / total_ratio
+        p2 = staging_ratio / total_ratio
+
+        w1 = p1 / n_progan
+        w2 = p2 / n_staging
+        sample_weights = torch.DoubleTensor([w1] * n_progan + [w2] * n_staging)
+
+        sampler = WeightedRandomSampler(
+            weights=sample_weights,
+            num_samples=len(combined_ds),
+            replacement=True
+        )
+
+        loader = DataLoader(
+            combined_ds,
+            batch_size=batch_size,
+            sampler=sampler,
+            num_workers=num_workers,
+            pin_memory=pin_memory,
+            drop_last=True
+        )
+        print(f"[DATASET] Kích hoạt Balanced DataLoader:")
+        print(f"  • ProGAN: {n_progan:,} ảnh (tỷ lệ mục tiêu: {p1*100:.1f}%)")
+        print(f"  • Staging: {n_staging:,} ảnh (tỷ lệ mục tiêu: {p2*100:.1f}%)")
+        print(f"  • Tổng mẫu khả dụng: {len(combined_ds):,} ảnh | Batch: {batch_size}")
+        return loader, n_progan, n_staging
+
+    single_ds = progan_ds if n_progan > 0 else staging_ds
+    loader = DataLoader(
+        single_ds,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
+        drop_last=True
+    )
+    print(f"[DATASET] Chỉ tìm thấy 1 nguồn dữ liệu ({n_progan + n_staging:,} ảnh). Dùng Shuffle DataLoader thông thường.")
+    return loader, n_progan, n_staging
+
+
+def build_val_dataloader(
+    val_dir: str,
+    batch_size: int = 32,
+    num_workers: int = 4,
+    pin_memory: bool = True,
+    transform: Optional[Any] = None
+) -> Optional[DataLoader]:
+    """
+    Khởi tạo DataLoader validation độc lập (vd: progan_val 8.000 ảnh).
+    """
+    if not val_dir or not os.path.exists(val_dir):
+        return None
+
+    if transform is None:
+        transform = get_eval_transforms()
+
+    sub_ds = collect_sub_imagefolders(val_dir, transform=transform)
+    if not sub_ds:
+        return None
+
+    val_ds = ConcatDataset(sub_ds) if len(sub_ds) > 1 else sub_ds[0]
+    print(f"[DATASET] Khởi tạo Validation DataLoader thành công: {len(val_ds):,} ảnh từ {val_dir}")
+    return DataLoader(
+        val_ds,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=pin_memory
+    )

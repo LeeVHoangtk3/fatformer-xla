@@ -56,6 +56,7 @@ class Trainer:
 
         self.scaler = torch.cuda.amp.GradScaler(enabled=self.use_amp)
         self.best_val_ap = 0.0
+        self.best_val_score = 0.0
 
     def train_epoch(self, epoch: int, print_freq: int = 50) -> float:
         self.model.train()
@@ -121,6 +122,17 @@ class Trainer:
         print(f"BẮT ĐẦU HUẤN LUYỆN: EPOCHS {start_epoch} -> {epochs} | Thiết bị: {self.device} | AMP: {self.use_amp}")
         print("=" * 80)
 
+        history_csv_path = None
+        if hasattr(self.checkpoint_manager, "save_dir"):
+            import os
+            history_csv_path = os.path.join(self.checkpoint_manager.save_dir, "train_val_history.csv")
+            if not os.path.exists(history_csv_path):
+                try:
+                    with open(history_csv_path, "w", encoding="utf-8") as f:
+                        f.write("epoch,train_loss,val_acc,val_ap,val_auc,val_r_acc,val_f_acc,epoch_time_s\n")
+                except Exception:
+                    pass
+
         for epoch in range(start_epoch, epochs + 1):
             if curr_scheduler and hasattr(curr_scheduler, "set_epoch"):
                 curr_scheduler.set_epoch(epoch)
@@ -137,14 +149,39 @@ class Trainer:
             if self.val_loader and (epoch % val_freq == 0 or epoch == epochs):
                 print(f"[EVALUATION] Đang kiểm tra validation cho Epoch {epoch}...")
                 val_metrics = evaluate_dataloader(self.model, self.val_loader, self.device)
-                print(f"  -> Validation ACC: {val_metrics['acc']:.2f}% | AP: {val_metrics['ap']:.2f}%")
+                val_acc = val_metrics.get("acc", 0.0)
+                val_ap = val_metrics.get("ap", 0.0)
+                val_auc = val_metrics.get("auc", 0.0)
+                print(f"  -> Validation ACC: {val_acc:.2f}% | AP: {val_ap:.2f}% | AUC: {val_auc:.2f}%")
                 
-                if val_metrics.get("ap", 0.0) > self.best_val_ap:
-                    self.best_val_ap = val_metrics["ap"]
+                # Điểm tổng hợp chọn Best Checkpoint: Cân bằng giữa ACC và AP
+                val_score = 0.5 * val_acc + 0.5 * val_ap
+                if val_score > self.best_val_score:
+                    self.best_val_score = val_score
+                    self.best_val_ap = val_ap
                     is_best = True
+                    print(f"  [★ BEST] Kỷ lục Validation mới: Score={val_score:.2f}% (ACC={val_acc:.2f}%, AP={val_ap:.2f}%)!")
 
             if scheduler:
                 scheduler.step()
+
+            # Ghi nhật ký vào file CSV
+            if history_csv_path:
+                try:
+                    with open(history_csv_path, "a", encoding="utf-8") as f:
+                        f.write(
+                            f"{epoch},{train_loss:.6f},"
+                            f"{val_metrics.get('acc', 0.0):.2f},{val_metrics.get('ap', 0.0):.2f},"
+                            f"{val_metrics.get('auc', 0.0):.2f},{val_metrics.get('r_acc', 0.0):.2f},"
+                            f"{val_metrics.get('f_acc', 0.0):.2f},{epoch_time:.2f}\n"
+                        )
+                    # Đồng bộ sang Google Drive nếu có
+                    if hasattr(self.checkpoint_manager, "drive_backup_dir") and self.checkpoint_manager.drive_backup_dir:
+                        import shutil
+                        drive_csv = os.path.join(self.checkpoint_manager.drive_backup_dir, "train_val_history.csv")
+                        shutil.copyfile(history_csv_path, drive_csv)
+                except Exception as e:
+                    print(f"  [!] Lưu lịch sử CSV: {e}")
 
             # Lưu checkpoint đồng bộ kèm GradScaler (Task 3.5)
             self.checkpoint_manager.save(

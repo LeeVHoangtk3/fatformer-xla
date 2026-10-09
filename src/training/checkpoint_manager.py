@@ -68,6 +68,11 @@ class CheckpointManager:
             "val_metrics": val_metrics or {},
         }
 
+        # 1. Dọn dẹp trước để giải phóng đĩa cứng trước khi ghi file mới
+        self._prune_old_checkpoints(self.save_dir)
+        if self.drive_backup_dir and os.path.exists(self.drive_backup_dir):
+            self._prune_old_checkpoints(self.drive_backup_dir)
+
         if filename is None:
             filename = f"checkpoint_epoch_{epoch:03d}.pth"
 
@@ -80,15 +85,20 @@ class CheckpointManager:
         torch.save(state, local_path)
         print(f"[CHECKPOINT] Đã lưu checkpoint tại: {local_path}")
 
-        # Cập nhật latest
+        # 2. Tạo symlink cho latest thay vì nhân bản 3.35GB lãng phí
         latest_path = os.path.join(self.save_dir, "checkpoint_latest.pth")
         if os.path.exists(latest_path):
             try:
                 os.remove(latest_path)
             except Exception:
                 pass
-        torch.save(state, latest_path)
+        try:
+            os.symlink(filename, latest_path)
+        except Exception:
+            # Fallback nếu OS không cho tạo symlink
+            pass
 
+        # 3. Cập nhật model_best nếu đạt kỷ lục
         if is_best:
             best_path = os.path.join(self.save_dir, "model_best.pth")
             if os.path.exists(best_path):

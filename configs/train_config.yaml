@@ -49,20 +49,20 @@ freeze:
   target_trainable_ratio_max: 0.060
 
 # ------------------------------------------------------------------------------
-# 3. CẤU HÌNH HÀM MẤT MÁT (Loss Configuration — Task 3.3)
+# 3. CẤU HÌNH HÀM MẤT MÁT (Loss Configuration — Task Finetune Phương Án A)
 # ------------------------------------------------------------------------------
 loss:
-  type: "DualStreamFocalLoss"          # Thay thế FatFormerLoss gốc
-  alpha: 0.25                          # Trọng số cân bằng lớp (Lin et al., 2017)
-  gamma: 2.0                           # Hệ số tập trung vào mẫu khó
-  # Lý do: Focal Loss giải quyết mất cân bằng Fake ACC = 5.78% tại Q=30
+  type: "DualStreamCELoss"             # Dual-Stream Cross-Entropy với Label Smoothing
+  label_smoothing: 0.1                 # Chống over-fitting trên tập Staging và ổn định logits
+  # Dành cho thực nghiệm so sánh Ablation:
+  # type: "DualStreamFocalLoss", alpha: 0.25, gamma: 1.0
 
 # ------------------------------------------------------------------------------
 # 4. CẤU HÌNH HUẤN LUYỆN TỔNG QUÁT (General Training Configuration)
 # ------------------------------------------------------------------------------
 training:
-  total_epochs: 8
-  batch_size: 32                       # Trên GPU A100 SXM4 40GB
+  total_epochs: 5
+  batch_size: 32                       # Trên GPU A100 SXM4 40GB hoặc RTX 6000
   grad_accumulation_steps: 2           # Effective batch size = 32 × 2 = 64
   amp_fp16: true                       # Automatic Mixed Precision FP16
   # Peak VRAM nghiệm thu (Task 1.3): 9.05 GB trên T4; ~18-22 GB trên A100
@@ -73,13 +73,13 @@ training:
     lr_adapter: 1.0e-4                 # FAA adapters và LGA modules
     lr_gating: 1.0e-3                  # Dynamic Gating λ(x) — học nhanh hơn
     lr_prompt: 1.0e-3                  # Soft prompt vector ctx
-    weight_decay: 1.0e-2
+    weight_decay: 1.0e-4
     betas: [0.9, 0.999]
     eps: 1.0e-8
 
   scheduler:
     type: "CosineAnnealingLR"
-    T_max: 8                           # Cosine period = tổng số epoch
+    T_max: 5                           # Cosine period = tổng số epoch
     eta_min: 1.0e-6                    # Learning rate tối thiểu
 
   gradient_clipping:
@@ -88,8 +88,7 @@ training:
 
 # ------------------------------------------------------------------------------
 # 5. GIÁO TRÌNH SUY BIẾN 3 GIAI ĐOẠN (Curriculum Degradation Schedule)
-# Tác giả: Thành viên A (Data Lead) — Task 3.2 (CurriculumDegradationScheduler)
-# Kế thừa vào file này để CLIPModel.train() và train.ipynb dùng chung
+# Đã khóa cứng clean_ratio = 0.50 xuyên suốt các giai đoạn chống Catastrophic Forgetting
 # ------------------------------------------------------------------------------
 curriculum:
   # Giai đoạn 1: Làm quen nhẹ nhàng — Suy biến mức thấp (Epoch 1-2)
@@ -98,44 +97,49 @@ curriculum:
     jpeg_quality_range: [70, 90]       # Nén nhẹ JPEG Q ∈ [70, 90]
     blur_sigma_range: [0.5, 1.0]       # Gaussian Blur σ ∈ [0.5, 1.0]
     downsample: false                  # Chưa dùng Down-Up ở giai đoạn này
-    clean_ratio: 0.5                   # 50% mẫu không suy biến
+    clean_ratio: 0.5                   # 50% mẫu không suy biến (bảo toàn kiến thức sạch)
 
-  # Giai đoạn 2: Tăng áp lực trung bình — Suy biến vừa phải (Epoch 3-5)
+  # Giai đoạn 2: Tăng áp lực trung bình — Suy biến vừa phải (Epoch 3-4)
   phase2:
-    epochs: [3, 5]
+    epochs: [3, 4]
     jpeg_quality_range: [45, 70]       # Nén trung bình Q ∈ [45, 70]
     blur_sigma_range: [1.0, 1.5]
     downsample: true
     downsample_target_size: 160        # Down-Up 224 → 160 → 224
-    clean_ratio: 0.3                   # 30% mẫu sạch
+    clean_ratio: 0.5                   # KHÓA CỨNG: 50% mẫu sạch
 
-  # Giai đoạn 3: Hardening cực hạn — Suy biến sâu (Epoch 6-8)
+  # Giai đoạn 3: Hardening cực hạn — Suy biến sâu (Epoch 5)
   phase3:
-    epochs: [6, 8]
+    epochs: [5, 5]
     jpeg_quality_range: [30, 50]       # Nén sâu Q ∈ [30, 50] — tử huyệt Q=30
     blur_sigma_range: [1.5, 2.0]
     downsample: true
     downsample_target_size: 112        # Down-Up 224 → 112 → 224
-    clean_ratio: 0.2                   # 20% mẫu sạch
+    clean_ratio: 0.5                   # KHÓA CỨNG: 50% mẫu sạch
     lr_multiplier: 0.5                 # Giảm học tốc thêm 50% cho ổn định
 
 # ------------------------------------------------------------------------------
-# 6. CẤU HÌNH DỮ LIỆU (Data Configuration)
-# Thư mục Drive 5TB: /content/drive/MyDrive/Fatformer/ (Task 1.1 - Lead A)
+# 6. CẤU HÌNH DỮ LIỆU ĐA MIỀN (Multi-Domain Data Configuration - Phương Án A)
+# Thư mục Drive 5TB: /content/drive/MyDrive/Fatformer/ (Task 1.1)
 # ------------------------------------------------------------------------------
 data:
-  # Đường dẫn SSD Colab sau khi giải nén từ Drive (KHÔNG đọc trực tiếp từ Drive)
-  train_data_dir: "/content/dataset_local/progan_train/"   # ProGAN 4-class gốc
-  staging_tar: "/content/drive/MyDrive/Fatformer/datasets/diffusion_staging.tar"  # Task 3.1
-  test_data_dir: "/content/dataset_local/test_clean/"      # 18 tập Clean gốc
+  # Đường dẫn file nén trên Drive 5TB
+  progan_tar: "/content/drive/MyDrive/Fatformer/datasets/progan_train.tar"      # 144.024 ảnh
+  staging_tar: "/content/drive/MyDrive/Fatformer/datasets/diffusion_staging.tar" # 3.600 ảnh
+  val_tar: "/content/drive/MyDrive/Fatformer/datasets/progan_val.tar"           # 8.000 ảnh
+
+  # Đường dẫn SSD Colab sau khi giải nén
+  train_data_dir: "/content/dataset_local/progan_train/"
+  staging_data_dir: "/content/dataset_local/diffusion_staging/"
+  val_data_dir: "/content/dataset_local/progan_val/"
 
   image_size: 224                      # Kích thước đầu vào ViT-L/14
   num_workers: 4
   pin_memory: true
 
-  # Tỉ lệ dữ liệu Staging (Task 3.1 - Lead A)
-  staging_ratio: 0.10                  # 10% GenImage Catalyst (3,600 ảnh)
-  progan_ratio: 0.90                   # 90% ProGAN 4-class gốc
+  # Tỉ lệ phân bổ lấy mẫu trong mỗi batch (WeightedRandomSampler)
+  progan_ratio: 0.85                   # 85% ProGAN (~54 ảnh / batch 64)
+  staging_ratio: 0.15                  # 15% Diffusion Staging (~10 ảnh / batch 64)
 
 # ------------------------------------------------------------------------------
 # 7. CẤU HÌNH CHECKPOINT & LOGGING

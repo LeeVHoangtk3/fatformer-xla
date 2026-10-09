@@ -25,16 +25,17 @@ Tài liệu này cung cấp **đầy đủ 100% các liên kết tải trực ti
 <a name="1-bang-tra-cuu-nhanh"></a>
 ## 1. BẢNG TRA CỨU NHANH LIÊN KẾT & DUNG LƯỢNG
 
-| Thành phần | Nguồn tải chính | Định dạng | Dung lượng thực tế | Vị trí lưu trên Google Drive |
-| :--- | :--- | :---: | :---: | :--- |
-| **CLIP Backbone** | OpenAI Azure CDN | `.pt` | **903 MB** | `MyDrive/Fatformer/pretrained/ViT-L-14.pt` |
-| **FatFormer Checkpoint** | Baidu / Tác giả CVPR | `.pth` | **354 MB** | `MyDrive/Fatformer/pretrained/fatformer_4class_ckpt.pth` |
-| **Validation Set** | Hugging Face CNNDetection | `.zip` $\rightarrow$ `.tar` | **792 MB** | `MyDrive/Fatformer/datasets/progan_val.tar` |
-| **GANs Testset** | Hugging Face CNNDetection | `.zip` $\rightarrow$ `.tar` | **18.68 GB** | `MyDrive/Fatformer/datasets/test_benchmark_gans.tar` |
-| **ProGAN Train 4-Class** | Hugging Face CNNDetection | 7 file `.7z` $\rightarrow$ `.tar` | **~4.8 GB** *(Lọc 4 lớp)* | `MyDrive/Fatformer/datasets/progan_train.tar` |
-| **Diffusion Testset** | OneDrive Tác giả FatFormer | `.zip` $\rightarrow$ `.tar` | **~6.5 GB** | `MyDrive/Fatformer/datasets/test_benchmark_diffusion.tar` |
-| **GenImage Staging** | Google Drive Official | `.zip` $\rightarrow$ `.tar` | **~720 MB** | `MyDrive/Fatformer/datasets/diffusion_staging.tar` |
-| **TỔNG KHO TRÊN DRIVE** | Đóng gói nguyên khối | `.tar` | **~25.8 GB** | Chiếm **< 0.6%** dung lượng gói Drive 5TB |
+| Thành phần | Nguồn tải chính | Định dạng | Dung lượng thực tế | Số lượng ảnh kiểm toán | Vị trí lưu trên Google Drive |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| **CLIP Backbone** | OpenAI Azure CDN | `.pt` | **903 MB** | - | `MyDrive/Fatformer/pretrained/ViT-L-14.pt` |
+| **FatFormer Checkpoint** | Baidu / Tác giả CVPR | `.pth` | **354 MB** | - | `MyDrive/Fatformer/pretrained/fatformer_4class_ckpt.pth` |
+| **Validation Set** | Hugging Face CNNDetection | `.zip` $\rightarrow$ `.tar` | **798 MB** | **8.000 ảnh** | `MyDrive/Fatformer/datasets/progan_val.tar` |
+| **ProGAN Train 4-Class** | Hugging Face CNNDetection | 7 file `.7z` $\rightarrow$ `.tar` | **13.90 GB** | **144.024 ảnh** | `MyDrive/Fatformer/datasets/progan_train.tar` |
+| **GenImage Staging** | Hugging Face / GenImage | `.zip` $\rightarrow$ `.tar` | **1.80 GB** | **3.600 ảnh** | `MyDrive/Fatformer/datasets/diffusion_staging.tar` |
+| **Diffusion Testset** | OneDrive Tác giả FatFormer | `.zip` $\rightarrow$ `.tar` | **1.22 GB** | **20.000 ảnh** | `MyDrive/Fatformer/datasets/test_benchmark_diffusion.tar` |
+| **GANs Testset** | Hugging Face CNNDetection | `.zip` $\rightarrow$ `.tar` | **18.74 GB** | **90.329 ảnh** | `MyDrive/Fatformer/datasets/test_benchmark_gans.tar` |
+| **Degraded Testset** | Sinh tự động (Task 2.1) | Nén nội bộ $\rightarrow$ `.tar` | **19.55 GB** | **661.974 ảnh** | `MyDrive/Fatformer/datasets/test_degraded.tar` |
+| 🏆 **TỔNG KHO TRÊN DRIVE** | Đóng gói nguyên khối | `.tar` | **55.98 GB** | **927.927 ảnh** | Chiếm **~1.12%** dung lượng gói Drive 5TB |
 
 ---
 
@@ -43,7 +44,7 @@ Tài liệu này cung cấp **đầy đủ 100% các liên kết tải trực ti
 
 <a name="21-cau-truc-drive-5tb"></a>
 ### 2.1. Cấu Trúc Nguyên Khối Trên Google Drive 5TB
-Khớp chính xác 100% với giao diện Google Drive tại: **`Drive của tôi > Fatformer`**
+Khớp chính xác 100% với giao diện Google Drive tại: **`Drive của tôi > Fatformer`** (Kiểm toán ngày 08/10/2026):
 
 ```
 Drive của tôi / Fatformer /
@@ -58,12 +59,13 @@ Drive của tôi / Fatformer /
 ├── log/                             # Thư mục lưu TensorBoard và file nhật ký đào tạo
 │   └── (Tự động tạo: events.out.tfevents.*, train_metrics.csv)
 │
-└── datasets/                        # [KHO DỮ LIỆU ĐÓNG GÓI .TAR - TỔNG ~25.8 GB]
-    ├── progan_val.tar               # 8.000 ảnh validation 20 danh mục (792 MB)
-    ├── progan_train.tar             # 24.000 ảnh huấn luyện 4 lớp car, cat, chair, horse (~4.8 GB)
-    ├── test_benchmark_gans.tar      # 72.000 ảnh kiểm thử 8 họ GANs benchmark (~12.5 GB)
-    ├── test_benchmark_diffusion.tar # 40.000 ảnh kiểm thử 10 biến thể Diffusion (~6.5 GB)
-    └── diffusion_staging.tar        # 3.600 ảnh GenImage xúc tác SRM (~720 MB)
+└── datasets/                        # [KHO DỮ LIỆU ĐÓNG GÓI .TAR - TỔNG 55.98 GB - 927.927 ẢNH]
+    ├── diffusion_staging.tar        # 3.600 ảnh GenImage xúc tác SRM (1.80 GB)
+    ├── progan_train.tar             # 144.024 ảnh huấn luyện 4 lớp car, cat, chair, horse (13.90 GB)
+    ├── progan_val.tar               # 8.000 ảnh validation 20 danh mục (798 MB)
+    ├── test_benchmark_diffusion.tar # 20.000 ảnh kiểm thử 10 biến thể Diffusion (1.22 GB)
+    ├── test_benchmark_gans.tar      # 90.329 ảnh kiểm thử GANs benchmark (18.74 GB)
+    └── test_degraded.tar            # 661.974 ảnh kiểm thử 6 biến thể suy biến (19.55 GB)
 ```
 
 ---

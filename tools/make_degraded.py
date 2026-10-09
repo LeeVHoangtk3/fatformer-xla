@@ -131,7 +131,8 @@ def _worker_process_single_image(task):
         with Image.open(src_file) as img:
             img = img.convert("RGB")
             deg_img = apply_degradation(img, deg_name)
-            deg_img.save(dst_file, "JPEG", quality=95)
+            # Lưu định dạng PNG không nén lossy để tránh lỗi nén kép (double compression)
+            deg_img.save(dst_file, format="PNG")
         return "processed", None
     except Exception as e:
         return "failed", f"{src_file} -> {e}"
@@ -212,8 +213,8 @@ def process_dataset(
         tasks = []
         for rel_file in rel_files:
             src_file = str(input_dir_path / rel_file)
-            # Giữ nguyên cấu trúc thư mục con và đổi đuôi sang .jpg
-            dst_rel = Path(rel_file).with_suffix(".jpg")
+            # Giữ nguyên cấu trúc thư mục con và lưu định dạng .png không suy biến thêm
+            dst_rel = Path(rel_file).with_suffix(".png")
             dst_file = str(deg_out_dir / dst_rel)
             tasks.append((src_file, dst_file, deg_name, force))
 

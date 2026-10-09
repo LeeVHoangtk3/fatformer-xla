@@ -78,3 +78,34 @@ class DualStreamFocalLoss(nn.Module):
         loss_align  = self._focal_loss(logits_align, targets)
         return loss_visual + loss_align
 
+
+class DualStreamCELoss(nn.Module):
+    """
+    Hàm mất mát Dual-Stream Cross-Entropy với Label Smoothing (Task Finetune - Phương Án A).
+    L_total = CE(logits_visual + logits_align, targets) + 0.5 * (CE(logits_visual, targets) + CE(logits_align, targets))
+    - Bảo toàn gradient cho cả hai nhánh Visual (FAA/SRM) và Alignment (LGA).
+    - Tránh hiện tượng triệt tiêu logit của Focal Loss khi số lượng mẫu dữ liệu còn hạn chế.
+    - Label Smoothing 0.1 chống over-fitting và over-confidence trên miền dữ liệu nhỏ.
+    """
+    def __init__(self, label_smoothing: float = 0.1):
+        super().__init__()
+        self.label_smoothing = label_smoothing
+        self.criterion = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
+
+    def forward(
+        self,
+        logits_visual: torch.Tensor,
+        logits_align: torch.Tensor,
+        targets: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Args:
+            logits_visual: Logits từ nhánh FAA/SRM (Visual), shape (B, 2)
+            logits_align:  Logits từ nhánh LGA (Alignment), shape (B, 2)
+            targets:       Nhãn ground-truth, shape (B,), {0=real, 1=fake}
+        """
+        loss_combined = self.criterion(logits_visual + logits_align, targets)
+        loss_v = self.criterion(logits_visual, targets)
+        loss_a = self.criterion(logits_align, targets)
+        return loss_combined + 0.5 * (loss_v + loss_a)
+

@@ -239,18 +239,19 @@ HỆ THỐNG DỮ LIỆU FATFORMER-XLA
   - `chair` (Ghế)
   - `horse` (Ngựa)
 - **Số lượng mẫu**:
-  - *Phương án Đầy đủ*: **72.000 ảnh** (36.000 ảnh Real từ LSUN + 36.000 ảnh Fake từ ProGAN).
-  - *Phương án Thu gọn Chuẩn hóa (Khuyến nghị cho Colab Pro)*: **24.000 ảnh** (12.000 Real + 12.000 Fake), mỗi class gồm 3.000 Real / 3.000 Fake.
-- **Quy cách đóng gói**: Đóng gói thành tệp nén duy nhất `progan_train.tar` (~4.8 GB) trên Google Drive 5TB để giải nén trực tiếp vào `/content/dataset_local` của Colab (tránh lỗi nghẽn I/O qua Drive).
+  - *Số liệu kiểm toán thực tế trên Drive 5TB (2026-10-08)*: Đạt chính xác **144.024 ảnh** (72.012 ảnh Thật từ LSUN + 72.012 ảnh Giả từ ProGAN), trung bình mỗi lớp 36.006 ảnh (18.003 Real + 18.003 Fake) cân bằng tuyệt đối. (Xem chi tiết tại [Báo cáo Kiểm toán Kho Dữ liệu 5TB](bao_cao_kiem_toan_toan_bo_datasets_drive_5tb.md)).
+  - *Phương án Đầy đủ theo thiết kế*: **72.000 – 144.000 ảnh**.
+  - *Phương án Thu gọn Chuẩn hóa*: **24.000 ảnh** (mỗi class 3.000 Real / 3.000 Fake).
+- **Quy cách đóng gói**: Đóng gói thành tệp nén duy nhất `progan_train.tar` (**13.90 GB**) trên Google Drive 5TB để giải nén trực tiếp vào `/content/dataset_local` của Colab (tránh lỗi nghẽn I/O qua Drive).
 - **Cấu trúc thư mục chuẩn**:
   ```
   progan_train/
   ├── train/
-  │   ├── 0_real/   [Chứa toàn bộ ảnh thật định dạng .png/.jpg]
-  │   └── 1_fake/   [Chứa toàn bộ ảnh giả ProGAN]
+  │   ├── 0_real/   [Chứa 72.012 ảnh thật định dạng .png/.jpg]
+  │   └── 1_fake/   [Chứa 72.012 ảnh giả ProGAN]
   └── val/
-      ├── 0_real/   [1.000 ảnh đối chứng validation]
-      └── 1_fake/   [1.000 ảnh đối chứng validation]
+      ├── 0_real/   [4.000 ảnh đối chứng validation]
+      └── 1_fake/   [4.000 ảnh đối chứng validation]
   ```
 
 #### 2. GenImage Modern Diffusion Subset (Tập Huấn Luyện Bổ Sung 10%)

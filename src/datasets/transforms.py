@@ -47,14 +47,14 @@ class RandomDownUpSampling:
 class DualStreamRobustAugmentation:
     """
     Pipeline tăng cường dữ liệu kép (Dual-Stream):
-    - 30% xác suất giữ ảnh nguyên bản (Clean Stream) để bảo toàn đặc trưng ban đầu.
-    - 70% xác suất áp dụng một trong các suy thoái mạng xã hội (Degraded Stream: JPEG, Blur, Down-Up).
+    - 50% xác suất giữ ảnh nguyên bản (Clean Stream) để bảo toàn đặc trưng ban đầu và chống catastrophic forgetting.
+    - 50% xác suất áp dụng một trong các suy thoái mạng xã hội (Degraded Stream: JPEG, Blur, Down-Up).
     """
-    def __init__(self, clean_prob=0.3):
+    def __init__(self, clean_prob=0.5):
         self.clean_prob = clean_prob
         self.jpeg = RandomJPEGCompression(min_q=30, max_q=95)
-        self.blur = RandomGaussianBlur(min_r=0.5, max_r=3.0)
-        self.down_up = RandomDownUpSampling(min_ratio=0.3, max_ratio=0.9)
+        self.blur = RandomGaussianBlur(min_r=0.5, max_r=2.5)
+        self.down_up = RandomDownUpSampling(min_ratio=0.4, max_ratio=0.8)
 
     def __call__(self, img: Image.Image) -> Image.Image:
         if random.random() < self.clean_prob:
@@ -81,9 +81,9 @@ class CurriculumDegradationScheduler:
       - Giai đoạn 2 (Epoch 3-5): Nén vừa Q ∈ [45, 70], Gaussian Blur σ ∈ [1.0, 1.5], Down-Up 224 -> 160 -> 224.
       - Giai đoạn 3 (Epoch 6-8): Nén sâu thử thách Q ∈ [30, 50], Blur σ ∈ [1.5, 2.0], Down-Up 224 -> 112 -> 224.
     
-    Tỷ lệ phân bổ mẫu: 30% Clean (bảo toàn trần 96.45% ACC), 70% Degraded.
+    Tỷ lệ phân bổ mẫu: 50% Clean (bảo toàn trần 96.45% ACC), 50% Degraded.
     """
-    def __init__(self, clean_prob=0.3):
+    def __init__(self, clean_prob=0.5):
         self.clean_prob = clean_prob
         self.epoch = 1
         self.stage = 1
@@ -191,7 +191,7 @@ def get_train_transforms(img_resolution=256, crop_resolution=224, use_dual_strea
     if scheduler is not None:
         transform_list.append(scheduler)
     elif use_dual_stream:
-        transform_list.append(DualStreamRobustAugmentation(clean_prob=0.3))
+        transform_list.append(DualStreamRobustAugmentation(clean_prob=0.5))
 
     transform_list.extend([
         transforms.ToTensor(),
