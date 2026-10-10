@@ -1,136 +1,136 @@
 group,subset,acc,ap,auc,r_acc,f_acc,elapsed_sec,variant,variant_desc,clean_acc,delta_drop
-GANs,progan,50.09,50.33,49.32,41.05,59.13,749.44,clean,,,
-GANs,stylegan,46.24,47.58,44.9,43.5,48.97,1125.62,clean,,,
-GANs,stylegan2,43.25,42.89,40.8,51.36,35.14,1504.03,clean,,,
-GANs,biggan,46.67,44.2,36.92,77.95,15.4,375.69,clean,,,
-GANs,cyclegan,46.93,45.74,47.38,88.72,5.15,249.17,clean,,,
-GANs,stargan,63.33,72.27,71.69,86.64,40.02,375.89,clean,,,
-GANs,gaugan,42.85,36.41,26.87,82.62,3.08,941.70,clean,,,
-GANs,deepfake,67.16,72.54,72.97,72.15,62.16,508.21,clean,,,
-GANs,MEAN_GANS,50.82,51.49,48.86,68.0,33.63,-,clean,,,
-Diffusion,guided,56.8,58.69,54.2,78.6,35.0,188.94,clean,,,
-Diffusion,ldm_200,45.8,51.86,45.54,38.6,53.0,189.01,clean,,,
-Diffusion,ldm_200_cfg,57.75,70.64,66.7,38.6,76.9,189.09,clean,,,
-Diffusion,ldm_100,44.8,49.76,43.99,38.6,51.0,188.66,clean,,,
-Diffusion,glide_50_27,49.35,58.36,52.03,38.6,60.1,188.59,clean,,,
-Diffusion,glide_100_10,50.75,59.18,53.71,38.6,62.9,188.52,clean,,,
-Diffusion,glide_100_27,49.55,57.85,52.18,38.6,60.5,188.68,clean,,,
-Diffusion,dalle,35.1,39.84,29.07,38.6,31.6,188.96,clean,,,
-Diffusion,pndm,36.05,33.57,17.27,67.8,4.3,189.24,clean,,,
-Diffusion,vqdiffusion,73.05,73.89,79.6,67.8,78.3,189.03,clean,,,
-Diffusion,MEAN_DIFFUSION,49.9,55.36,49.43,48.44,51.36,-,clean,,,
-Overall,MEAN_OVERALL,50.31,53.64,49.17,57.13,43.48,-,clean,,,
-GANs,progan,47.0,46.95,45.69,61.6,32.4,43.56,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),50.09,-3.09
-GANs,stylegan,48.4,49.16,45.53,62.4,34.4,42.42,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),46.24,2.16
-GANs,stylegan2,39.4,37.6,29.58,69.6,9.2,47.45,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),43.25,-3.85
-GANs,biggan,48.2,49.7,47.96,71.2,25.2,47.66,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),46.67,1.53
-GANs,cyclegan,44.2,41.34,37.66,82.4,6.0,47.57,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),46.93,-2.73
-GANs,stargan,43.2,40.53,35.84,78.8,7.6,47.37,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),63.33,-20.13
-GANs,gaugan,45.2,44.24,43.61,71.6,18.8,47.78,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),42.85,2.35
-GANs,deepfake,51.2,55.99,57.23,88.0,14.4,47.11,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),67.16,-15.96
-Diffusion,guided,48.6,47.56,49.49,82.4,14.8,48.30,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),56.8,-8.2
-Diffusion,ldm_200,41.0,41.88,37.64,46.8,35.2,47.25,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),45.8,-4.8
-Diffusion,ldm_200_cfg,54.2,57.71,57.3,46.8,61.6,47.24,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),57.75,-3.55
-Diffusion,ldm_100,41.6,43.05,38.67,46.8,36.4,47.71,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),44.8,-3.2
-Diffusion,glide_50_27,44.6,44.14,41.51,46.8,42.4,47.40,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),49.35,-4.75
-Diffusion,glide_100_10,45.6,46.29,44.01,46.8,44.4,47.87,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),50.75,-5.15
-Diffusion,glide_100_27,44.6,46.54,42.89,46.8,42.4,47.59,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),49.55,-4.95
-Diffusion,dalle,50.8,51.03,52.96,46.8,54.8,47.30,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),35.1,15.7
-Diffusion,pndm,46.4,43.62,40.49,78.4,14.4,48.05,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),36.05,10.35
-Diffusion,vqdiffusion,57.8,59.93,67.48,78.4,37.2,47.79,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),73.05,-15.25
-Summary,MEAN_OVERALL,46.78,47.07,45.31,64.02,29.53,-,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),50.31,-3.53
-GANs,progan,47.8,46.83,45.48,59.2,36.4,47.68,jpeg_q50,Nén JPEG trung bình Q=50,50.09,-2.29
-GANs,stylegan,50.2,51.74,48.61,63.6,36.8,47.63,jpeg_q50,Nén JPEG trung bình Q=50,46.24,3.96
-GANs,stylegan2,38.4,38.35,31.71,65.2,11.6,47.73,jpeg_q50,Nén JPEG trung bình Q=50,43.25,-4.85
-GANs,biggan,47.2,48.59,46.84,68.4,26.0,47.53,jpeg_q50,Nén JPEG trung bình Q=50,46.67,0.53
-GANs,cyclegan,46.0,43.0,41.12,85.2,6.8,47.59,jpeg_q50,Nén JPEG trung bình Q=50,46.93,-0.93
-GANs,stargan,43.0,40.67,36.67,78.0,8.0,47.86,jpeg_q50,Nén JPEG trung bình Q=50,63.33,-20.33
-GANs,gaugan,46.2,44.09,43.37,73.2,19.2,47.30,jpeg_q50,Nén JPEG trung bình Q=50,42.85,3.35
-GANs,deepfake,52.8,55.07,56.3,86.0,19.6,47.32,jpeg_q50,Nén JPEG trung bình Q=50,67.16,-14.36
-Diffusion,guided,47.0,49.44,50.74,78.4,15.6,47.70,jpeg_q50,Nén JPEG trung bình Q=50,56.8,-9.8
-Diffusion,ldm_200,42.2,42.14,38.78,46.0,38.4,47.58,jpeg_q50,Nén JPEG trung bình Q=50,45.8,-3.6
-Diffusion,ldm_200_cfg,55.4,58.85,58.16,46.0,64.8,47.62,jpeg_q50,Nén JPEG trung bình Q=50,57.75,-2.35
-Diffusion,ldm_100,43.6,43.36,39.61,46.0,41.2,47.55,jpeg_q50,Nén JPEG trung bình Q=50,44.8,-1.2
-Diffusion,glide_50_27,47.0,45.01,43.18,46.0,48.0,47.35,jpeg_q50,Nén JPEG trung bình Q=50,49.35,-2.35
-Diffusion,glide_100_10,46.0,46.98,44.06,46.0,46.0,47.23,jpeg_q50,Nén JPEG trung bình Q=50,50.75,-4.75
-Diffusion,glide_100_27,45.8,46.47,43.37,46.0,45.6,47.27,jpeg_q50,Nén JPEG trung bình Q=50,49.55,-3.75
-Diffusion,dalle,51.4,50.51,51.78,46.0,56.8,46.14,jpeg_q50,Nén JPEG trung bình Q=50,35.1,16.3
-Diffusion,pndm,49.4,48.48,46.26,88.4,10.4,45.54,jpeg_q50,Nén JPEG trung bình Q=50,36.05,13.35
-Diffusion,vqdiffusion,63.6,74.6,81.1,88.4,38.8,45.33,jpeg_q50,Nén JPEG trung bình Q=50,73.05,-9.45
-Summary,MEAN_OVERALL,47.94,48.57,47.06,64.22,31.67,-,jpeg_q50,Nén JPEG trung bình Q=50,50.31,-2.37
-GANs,progan,45.8,46.25,44.73,56.0,35.6,45.03,jpeg_q70,Nén JPEG nhẹ Q=70,50.09,-4.29
-GANs,stylegan,48.6,51.71,47.48,55.2,42.0,45.04,jpeg_q70,Nén JPEG nhẹ Q=70,46.24,2.36
-GANs,stylegan2,37.6,38.65,32.71,59.6,15.6,44.76,jpeg_q70,Nén JPEG nhẹ Q=70,43.25,-5.65
-GANs,biggan,45.6,47.39,45.6,63.6,27.6,44.49,jpeg_q70,Nén JPEG nhẹ Q=70,46.67,-1.07
-GANs,cyclegan,47.0,44.52,44.68,82.8,11.2,44.45,jpeg_q70,Nén JPEG nhẹ Q=70,46.93,0.07
-GANs,stargan,42.0,41.67,38.29,74.0,10.0,44.38,jpeg_q70,Nén JPEG nhẹ Q=70,63.33,-21.33
-GANs,gaugan,47.4,44.92,44.68,70.0,24.8,44.78,jpeg_q70,Nén JPEG nhẹ Q=70,42.85,4.55
-GANs,deepfake,56.8,58.62,58.82,72.4,41.2,44.51,jpeg_q70,Nén JPEG nhẹ Q=70,67.16,-10.36
-Diffusion,guided,46.8,48.19,48.52,72.4,21.2,44.63,jpeg_q70,Nén JPEG nhẹ Q=70,56.8,-10.0
-Diffusion,ldm_200,43.2,43.91,41.01,42.0,44.4,44.38,jpeg_q70,Nén JPEG nhẹ Q=70,45.8,-2.6
-Diffusion,ldm_200_cfg,55.2,60.32,59.52,42.0,68.4,44.25,jpeg_q70,Nén JPEG nhẹ Q=70,57.75,-2.55
-Diffusion,ldm_100,44.0,44.26,40.7,42.0,46.0,44.29,jpeg_q70,Nén JPEG nhẹ Q=70,44.8,-0.8
-Diffusion,glide_50_27,48.0,46.98,45.08,42.0,54.0,44.46,jpeg_q70,Nén JPEG nhẹ Q=70,49.35,-1.35
-Diffusion,glide_100_10,45.8,48.25,45.51,42.0,49.6,44.23,jpeg_q70,Nén JPEG nhẹ Q=70,50.75,-4.95
-Diffusion,glide_100_27,46.2,48.42,45.38,42.0,50.4,44.36,jpeg_q70,Nén JPEG nhẹ Q=70,49.55,-3.35
-Diffusion,dalle,49.4,50.02,50.84,42.0,56.8,44.37,jpeg_q70,Nén JPEG nhẹ Q=70,35.1,14.3
-Diffusion,pndm,44.4,41.43,35.51,79.2,9.6,45.49,jpeg_q70,Nén JPEG nhẹ Q=70,36.05,8.35
-Diffusion,vqdiffusion,62.6,65.92,74.02,79.2,46.0,47.13,jpeg_q70,Nén JPEG nhẹ Q=70,73.05,-10.45
-Summary,MEAN_OVERALL,47.58,48.41,46.84,58.8,36.36,-,jpeg_q70,Nén JPEG nhẹ Q=70,50.31,-2.73
-GANs,progan,46.6,47.79,45.85,20.8,72.4,44.82,blur_s1,Gaussian Blur (sigma=1.0),50.09,-3.49
-GANs,stylegan,46.8,56.75,51.48,23.2,70.4,45.57,blur_s1,Gaussian Blur (sigma=1.0),46.24,0.56
-GANs,stylegan2,40.8,40.82,35.05,26.4,55.2,45.46,blur_s1,Gaussian Blur (sigma=1.0),43.25,-2.45
-GANs,biggan,49.8,55.04,51.63,40.8,58.8,44.92,blur_s1,Gaussian Blur (sigma=1.0),46.67,3.13
-GANs,cyclegan,37.8,37.1,27.72,55.2,20.4,44.61,blur_s1,Gaussian Blur (sigma=1.0),46.93,-9.13
-GANs,stargan,49.2,50.65,52.14,66.8,31.6,44.27,blur_s1,Gaussian Blur (sigma=1.0),63.33,-14.13
-GANs,gaugan,41.4,42.3,39.33,34.0,48.8,44.50,blur_s1,Gaussian Blur (sigma=1.0),42.85,-1.45
-GANs,deepfake,61.4,66.58,65.44,54.4,68.4,44.43,blur_s1,Gaussian Blur (sigma=1.0),67.16,-5.76
-Diffusion,guided,52.8,53.54,55.07,49.6,56.0,44.89,blur_s1,Gaussian Blur (sigma=1.0),56.8,-4.0
-Diffusion,ldm_200,50.6,50.06,49.88,29.2,72.0,44.32,blur_s1,Gaussian Blur (sigma=1.0),45.8,4.8
-Diffusion,ldm_200_cfg,57.0,64.74,64.79,29.2,84.8,44.27,blur_s1,Gaussian Blur (sigma=1.0),57.75,-0.75
-Diffusion,ldm_100,49.6,51.6,51.2,29.2,70.0,44.30,blur_s1,Gaussian Blur (sigma=1.0),44.8,4.8
-Diffusion,glide_50_27,41.2,44.0,37.92,29.2,53.2,44.45,blur_s1,Gaussian Blur (sigma=1.0),49.35,-8.15
-Diffusion,glide_100_10,40.0,43.53,37.23,29.2,50.8,44.65,blur_s1,Gaussian Blur (sigma=1.0),50.75,-10.75
-Diffusion,glide_100_27,40.2,43.39,36.96,29.2,51.2,44.59,blur_s1,Gaussian Blur (sigma=1.0),49.55,-9.35
-Diffusion,dalle,52.8,52.91,53.54,29.2,76.4,44.37,blur_s1,Gaussian Blur (sigma=1.0),35.1,17.7
-Diffusion,pndm,45.6,44.76,43.23,46.8,44.4,44.46,blur_s1,Gaussian Blur (sigma=1.0),36.05,9.55
-Diffusion,vqdiffusion,70.6,83.91,86.44,46.8,94.4,44.72,blur_s1,Gaussian Blur (sigma=1.0),73.05,-2.45
-Summary,MEAN_OVERALL,48.57,51.64,49.16,37.18,59.96,-,blur_s1,Gaussian Blur (sigma=1.0),50.31,-1.74
-GANs,progan,46.4,45.78,43.72,36.0,56.8,44.70,blur_s2,Gaussian Blur (sigma=2.0),50.09,-3.69
-GANs,stylegan,46.4,52.0,47.59,37.6,55.2,44.64,blur_s2,Gaussian Blur (sigma=2.0),46.24,0.16
-GANs,stylegan2,40.0,40.35,35.02,42.0,38.0,44.60,blur_s2,Gaussian Blur (sigma=2.0),43.25,-3.25
-GANs,biggan,51.0,52.33,50.04,58.4,43.6,44.33,blur_s2,Gaussian Blur (sigma=2.0),46.67,4.33
-GANs,cyclegan,40.0,37.07,27.2,67.2,12.8,44.30,blur_s2,Gaussian Blur (sigma=2.0),46.93,-6.93
-GANs,stargan,43.0,44.21,42.36,58.0,28.0,44.39,blur_s2,Gaussian Blur (sigma=2.0),63.33,-20.33
-GANs,gaugan,43.6,42.08,38.78,55.2,32.0,44.59,blur_s2,Gaussian Blur (sigma=2.0),42.85,0.75
-GANs,deepfake,60.6,63.6,62.74,54.0,67.2,44.34,blur_s2,Gaussian Blur (sigma=2.0),67.16,-6.56
-Diffusion,guided,51.6,52.39,53.83,62.4,40.8,44.39,blur_s2,Gaussian Blur (sigma=2.0),56.8,-5.2
-Diffusion,ldm_200,44.2,42.28,39.37,32.0,56.4,44.27,blur_s2,Gaussian Blur (sigma=2.0),45.8,-1.6
-Diffusion,ldm_200_cfg,53.2,55.15,54.94,32.0,74.4,44.42,blur_s2,Gaussian Blur (sigma=2.0),57.75,-4.55
-Diffusion,ldm_100,43.4,42.93,40.22,32.0,54.8,44.80,blur_s2,Gaussian Blur (sigma=2.0),44.8,-1.4
-Diffusion,glide_50_27,40.4,45.47,39.41,32.0,48.8,44.53,blur_s2,Gaussian Blur (sigma=2.0),49.35,-8.95
-Diffusion,glide_100_10,41.8,44.06,38.34,32.0,51.6,44.33,blur_s2,Gaussian Blur (sigma=2.0),50.75,-8.95
-Diffusion,glide_100_27,40.8,44.09,37.87,32.0,49.6,44.39,blur_s2,Gaussian Blur (sigma=2.0),49.55,-8.75
-Diffusion,dalle,47.2,44.97,43.95,32.0,62.4,44.38,blur_s2,Gaussian Blur (sigma=2.0),35.1,12.1
-Diffusion,pndm,44.8,45.13,45.0,68.8,20.8,44.45,blur_s2,Gaussian Blur (sigma=2.0),36.05,8.75
-Diffusion,vqdiffusion,70.6,73.6,77.13,68.8,72.4,44.66,blur_s2,Gaussian Blur (sigma=2.0),73.05,-2.45
-Summary,MEAN_OVERALL,47.17,48.19,45.42,46.24,48.09,-,blur_s2,Gaussian Blur (sigma=2.0),50.31,-3.14
-GANs,progan,47.4,47.47,46.02,32.0,62.8,44.21,down_up,Down-Up Bicubic (224 -> 112 -> 224),50.09,-2.69
-GANs,stylegan,46.8,52.58,48.4,32.4,61.2,44.27,down_up,Down-Up Bicubic (224 -> 112 -> 224),46.24,0.56
-GANs,stylegan2,36.2,39.4,33.16,34.4,38.0,44.67,down_up,Down-Up Bicubic (224 -> 112 -> 224),43.25,-7.05
-GANs,biggan,51.6,55.0,52.19,54.4,48.8,44.47,down_up,Down-Up Bicubic (224 -> 112 -> 224),46.67,4.93
-GANs,cyclegan,39.4,37.22,27.69,65.6,13.2,44.78,down_up,Down-Up Bicubic (224 -> 112 -> 224),46.93,-7.53
-GANs,stargan,46.6,48.62,49.72,70.8,22.4,44.44,down_up,Down-Up Bicubic (224 -> 112 -> 224),63.33,-16.73
-GANs,gaugan,41.4,42.2,39.45,44.8,38.0,44.33,down_up,Down-Up Bicubic (224 -> 112 -> 224),42.85,-1.45
-GANs,deepfake,59.8,66.03,64.56,53.2,66.4,44.25,down_up,Down-Up Bicubic (224 -> 112 -> 224),67.16,-7.36
-Diffusion,guided,53.2,56.04,56.66,62.0,44.4,44.48,down_up,Down-Up Bicubic (224 -> 112 -> 224),56.8,-3.6
-Diffusion,ldm_200,48.4,48.02,47.31,34.0,62.8,44.28,down_up,Down-Up Bicubic (224 -> 112 -> 224),45.8,2.6
-Diffusion,ldm_200_cfg,57.6,63.35,63.26,34.0,81.2,44.56,down_up,Down-Up Bicubic (224 -> 112 -> 224),57.75,-0.15
-Diffusion,ldm_100,48.2,49.12,48.07,34.0,62.4,44.34,down_up,Down-Up Bicubic (224 -> 112 -> 224),44.8,3.4
-Diffusion,glide_50_27,42.2,45.45,39.42,34.0,50.4,44.37,down_up,Down-Up Bicubic (224 -> 112 -> 224),49.35,-7.15
-Diffusion,glide_100_10,42.2,45.03,39.37,34.0,50.4,44.43,down_up,Down-Up Bicubic (224 -> 112 -> 224),50.75,-8.55
-Diffusion,glide_100_27,42.0,45.74,38.98,34.0,50.0,44.53,down_up,Down-Up Bicubic (224 -> 112 -> 224),49.55,-7.55
-Diffusion,dalle,50.2,50.44,50.15,34.0,66.4,44.61,down_up,Down-Up Bicubic (224 -> 112 -> 224),35.1,15.1
-Diffusion,pndm,42.0,42.13,37.85,51.6,32.4,44.59,down_up,Down-Up Bicubic (224 -> 112 -> 224),36.05,5.95
-Diffusion,vqdiffusion,71.6,82.05,84.14,51.6,91.6,44.35,down_up,Down-Up Bicubic (224 -> 112 -> 224),73.05,-1.45
-Summary,MEAN_OVERALL,48.16,50.88,48.13,43.93,52.38,-,down_up,Down-Up Bicubic (224 -> 112 -> 224),50.31,-2.15
+GANs,progan,99.94,100.0,100.0,99.98,99.9,698.15,clean,,,
+GANs,stylegan,93.01,99.63,99.61,99.77,86.25,1041.02,clean,,,
+GANs,stylegan2,93.2,98.17,98.19,95.74,90.66,1390.45,clean,,,
+GANs,biggan,85.9,92.92,89.74,95.65,76.15,348.58,clean,,,
+GANs,cyclegan,94.63,98.3,97.96,96.29,92.96,231.22,clean,,,
+GANs,stargan,97.0,99.86,99.9,94.1,99.9,348.82,clean,,,
+GANs,gaugan,97.19,99.38,99.16,98.86,95.52,869.74,clean,,,
+GANs,deepfake,91.03,97.65,96.56,99.34,82.69,470.58,clean,,,
+GANs,MEAN_GANS,93.99,98.24,97.64,97.46,90.5,-,clean,,,
+Diffusion,guided,65.85,78.03,72.24,96.7,35.0,174.86,clean,,,
+Diffusion,ldm_200,91.35,97.32,96.35,98.6,84.1,174.74,clean,,,
+Diffusion,ldm_200_cfg,90.3,97.24,96.45,98.6,82.0,175.10,clean,,,
+Diffusion,ldm_100,91.35,97.11,95.95,98.6,84.1,174.86,clean,,,
+Diffusion,glide_50_27,90.0,97.4,96.81,98.6,81.4,174.50,clean,,,
+Diffusion,glide_100_10,89.15,97.12,96.41,98.6,79.7,174.34,clean,,,
+Diffusion,glide_100_27,87.6,96.28,95.31,98.6,76.6,174.05,clean,,,
+Diffusion,dalle,80.0,91.93,89.09,98.6,61.4,173.78,clean,,,
+Diffusion,pndm,87.0,97.97,97.49,99.6,74.4,174.52,clean,,,
+Diffusion,vqdiffusion,98.95,99.93,99.94,99.6,98.3,174.40,clean,,,
+Diffusion,MEAN_DIFFUSION,87.16,95.03,93.6,98.61,75.7,-,clean,,,
+Overall,MEAN_OVERALL,90.19,96.46,95.4,98.1,82.28,-,clean,,,
+GANs,progan,94.8,99.01,98.76,97.2,92.4,46.38,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),99.94,-5.14
+GANs,stylegan,55.4,81.43,80.86,99.6,11.2,43.70,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),93.01,-37.61
+GANs,stylegan2,51.2,63.78,68.27,96.4,6.0,44.76,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),93.2,-42.0
+GANs,biggan,75.8,83.72,80.98,91.2,60.4,43.63,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),85.9,-10.1
+GANs,cyclegan,79.0,90.22,88.19,93.6,64.4,44.61,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),94.63,-15.63
+GANs,stargan,81.8,92.44,91.21,95.6,68.0,44.06,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),97.0,-15.2
+GANs,gaugan,94.4,98.83,98.65,97.6,91.2,44.09,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),97.19,-2.79
+GANs,deepfake,63.6,79.85,79.27,96.4,30.8,44.24,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),91.03,-27.43
+Diffusion,guided,61.2,75.95,74.38,96.4,26.0,44.49,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),65.85,-4.65
+Diffusion,ldm_200,82.2,93.15,91.71,98.0,66.4,43.94,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),91.35,-9.15
+Diffusion,ldm_200_cfg,69.0,87.47,86.07,98.0,40.0,44.07,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),90.3,-21.3
+Diffusion,ldm_100,79.0,92.17,90.85,98.0,60.0,44.13,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),91.35,-12.35
+Diffusion,glide_50_27,60.8,77.41,75.44,98.0,23.6,44.45,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),90.0,-29.2
+Diffusion,glide_100_10,58.8,74.18,71.09,98.0,19.6,44.08,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),89.15,-30.35
+Diffusion,glide_100_27,60.2,77.43,75.83,98.0,22.4,43.86,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),87.6,-27.4
+Diffusion,dalle,77.4,92.71,92.29,98.0,56.8,43.91,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),80.0,-2.6
+Diffusion,pndm,81.8,97.89,97.55,100.0,63.6,44.24,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),87.0,-5.2
+Diffusion,vqdiffusion,52.2,83.85,83.96,100.0,4.4,44.29,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),98.95,-46.75
+Summary,MEAN_OVERALL,71.03,85.64,84.74,97.22,44.84,-,jpeg_q30,Nén JPEG sâu Q=30 (Artifact khối 8x8),90.19,-19.16
+GANs,progan,98.4,99.83,99.8,98.0,98.8,44.39,jpeg_q50,Nén JPEG trung bình Q=50,99.94,-1.54
+GANs,stylegan,62.4,89.5,87.99,99.6,25.2,44.55,jpeg_q50,Nén JPEG trung bình Q=50,93.01,-30.61
+GANs,stylegan2,56.8,74.87,76.2,96.4,17.2,44.48,jpeg_q50,Nén JPEG trung bình Q=50,93.2,-36.4
+GANs,biggan,78.6,89.02,86.13,84.4,72.8,44.14,jpeg_q50,Nén JPEG trung bình Q=50,85.9,-7.3
+GANs,cyclegan,88.2,95.45,94.63,95.2,81.2,43.94,jpeg_q50,Nén JPEG trung bình Q=50,94.63,-6.43
+GANs,stargan,90.8,96.99,96.72,92.4,89.2,44.02,jpeg_q50,Nén JPEG trung bình Q=50,97.0,-6.2
+GANs,gaugan,97.6,99.6,99.56,97.2,98.0,44.10,jpeg_q50,Nén JPEG trung bình Q=50,97.19,0.41
+GANs,deepfake,69.6,86.28,85.28,96.4,42.8,44.15,jpeg_q50,Nén JPEG trung bình Q=50,91.03,-21.43
+Diffusion,guided,64.4,78.92,78.11,95.2,33.6,44.98,jpeg_q50,Nén JPEG trung bình Q=50,65.85,-1.45
+Diffusion,ldm_200,87.8,95.43,94.38,96.8,78.8,44.06,jpeg_q50,Nén JPEG trung bình Q=50,91.35,-3.55
+Diffusion,ldm_200_cfg,76.4,90.71,89.78,96.8,56.0,43.89,jpeg_q50,Nén JPEG trung bình Q=50,90.3,-13.9
+Diffusion,ldm_100,85.2,94.93,93.92,96.8,73.6,44.01,jpeg_q50,Nén JPEG trung bình Q=50,91.35,-6.15
+Diffusion,glide_50_27,67.8,83.02,80.77,96.8,38.8,44.19,jpeg_q50,Nén JPEG trung bình Q=50,90.0,-22.2
+Diffusion,glide_100_10,66.0,80.85,78.14,96.8,35.2,44.27,jpeg_q50,Nén JPEG trung bình Q=50,89.15,-23.15
+Diffusion,glide_100_27,64.6,81.75,80.35,96.8,32.4,44.21,jpeg_q50,Nén JPEG trung bình Q=50,87.6,-23.0
+Diffusion,dalle,85.2,95.0,94.44,96.8,73.6,44.48,jpeg_q50,Nén JPEG trung bình Q=50,80.0,5.2
+Diffusion,pndm,88.6,98.96,98.67,100.0,77.2,44.51,jpeg_q50,Nén JPEG trung bình Q=50,87.0,1.6
+Diffusion,vqdiffusion,59.2,93.93,93.43,100.0,18.4,44.21,jpeg_q50,Nén JPEG trung bình Q=50,98.95,-39.75
+Summary,MEAN_OVERALL,77.09,90.28,89.35,96.24,57.93,-,jpeg_q50,Nén JPEG trung bình Q=50,90.19,-13.1
+GANs,progan,99.0,99.87,99.85,99.2,98.8,44.29,jpeg_q70,Nén JPEG nhẹ Q=70,99.94,-0.94
+GANs,stylegan,68.0,94.96,94.36,100.0,36.0,43.87,jpeg_q70,Nén JPEG nhẹ Q=70,93.01,-25.01
+GANs,stylegan2,60.8,83.77,84.85,96.8,24.8,44.48,jpeg_q70,Nén JPEG nhẹ Q=70,93.2,-32.4
+GANs,biggan,80.6,90.67,87.7,82.8,78.4,44.46,jpeg_q70,Nén JPEG nhẹ Q=70,85.9,-5.3
+GANs,cyclegan,92.0,97.41,96.62,97.2,86.8,44.45,jpeg_q70,Nén JPEG nhẹ Q=70,94.63,-2.63
+GANs,stargan,93.4,98.44,98.11,92.8,94.0,44.03,jpeg_q70,Nén JPEG nhẹ Q=70,97.0,-3.6
+GANs,gaugan,97.4,99.84,99.84,96.8,98.0,44.22,jpeg_q70,Nén JPEG nhẹ Q=70,97.19,0.21
+GANs,deepfake,76.4,92.68,91.1,98.4,54.4,44.23,jpeg_q70,Nén JPEG nhẹ Q=70,91.03,-14.63
+Diffusion,guided,67.4,79.36,77.45,95.2,39.6,44.45,jpeg_q70,Nén JPEG nhẹ Q=70,65.85,1.55
+Diffusion,ldm_200,87.6,95.37,94.22,96.0,79.2,44.18,jpeg_q70,Nén JPEG nhẹ Q=70,91.35,-3.75
+Diffusion,ldm_200_cfg,79.0,90.63,89.64,96.0,62.0,44.55,jpeg_q70,Nén JPEG nhẹ Q=70,90.3,-11.3
+Diffusion,ldm_100,87.0,95.35,94.45,96.0,78.0,44.34,jpeg_q70,Nén JPEG nhẹ Q=70,91.35,-4.35
+Diffusion,glide_50_27,76.0,87.83,86.3,96.0,56.0,44.10,jpeg_q70,Nén JPEG nhẹ Q=70,90.0,-14.0
+Diffusion,glide_100_10,73.0,85.9,84.04,96.0,50.0,44.11,jpeg_q70,Nén JPEG nhẹ Q=70,89.15,-16.15
+Diffusion,glide_100_27,71.6,86.42,85.87,96.0,47.2,44.15,jpeg_q70,Nén JPEG nhẹ Q=70,87.6,-16.0
+Diffusion,dalle,85.4,94.35,93.82,96.0,74.8,44.21,jpeg_q70,Nén JPEG nhẹ Q=70,80.0,5.4
+Diffusion,pndm,86.6,99.17,99.02,100.0,73.2,44.19,jpeg_q70,Nén JPEG nhẹ Q=70,87.0,-0.4
+Diffusion,vqdiffusion,63.2,96.09,95.36,100.0,26.4,44.64,jpeg_q70,Nén JPEG nhẹ Q=70,98.95,-35.75
+Summary,MEAN_OVERALL,80.24,92.67,91.81,96.18,64.31,-,jpeg_q70,Nén JPEG nhẹ Q=70,90.19,-9.95
+GANs,progan,99.6,99.99,99.99,99.6,99.6,44.27,blur_s1,Gaussian Blur (sigma=1.0),99.94,-0.34
+GANs,stylegan,81.0,97.67,97.23,100.0,62.0,44.08,blur_s1,Gaussian Blur (sigma=1.0),93.01,-12.01
+GANs,stylegan2,66.4,84.73,88.07,94.8,38.0,44.41,blur_s1,Gaussian Blur (sigma=1.0),93.2,-26.8
+GANs,biggan,82.4,90.66,87.65,91.6,73.2,44.14,blur_s1,Gaussian Blur (sigma=1.0),85.9,-3.5
+GANs,cyclegan,89.2,96.07,95.91,90.4,88.0,43.98,blur_s1,Gaussian Blur (sigma=1.0),94.63,-5.43
+GANs,stargan,98.2,99.71,99.56,98.0,98.4,44.33,blur_s1,Gaussian Blur (sigma=1.0),97.0,1.2
+GANs,gaugan,96.6,99.64,99.6,95.2,98.0,44.37,blur_s1,Gaussian Blur (sigma=1.0),97.19,-0.59
+GANs,deepfake,83.8,95.62,94.57,98.4,69.2,43.95,blur_s1,Gaussian Blur (sigma=1.0),91.03,-7.23
+Diffusion,guided,58.4,70.07,69.44,94.8,22.0,44.19,blur_s1,Gaussian Blur (sigma=1.0),65.85,-7.45
+Diffusion,ldm_200,83.2,94.78,93.45,97.6,68.8,43.90,blur_s1,Gaussian Blur (sigma=1.0),91.35,-8.15
+Diffusion,ldm_200_cfg,75.6,90.22,88.92,97.6,53.6,44.12,blur_s1,Gaussian Blur (sigma=1.0),90.3,-14.7
+Diffusion,ldm_100,82.6,92.8,90.81,97.6,67.6,44.13,blur_s1,Gaussian Blur (sigma=1.0),91.35,-8.75
+Diffusion,glide_50_27,70.0,86.4,84.55,97.6,42.4,44.36,blur_s1,Gaussian Blur (sigma=1.0),90.0,-20.0
+Diffusion,glide_100_10,69.2,86.0,83.99,97.6,40.8,44.35,blur_s1,Gaussian Blur (sigma=1.0),89.15,-19.95
+Diffusion,glide_100_27,66.2,84.71,83.63,97.6,34.8,43.80,blur_s1,Gaussian Blur (sigma=1.0),87.6,-21.4
+Diffusion,dalle,82.2,93.28,91.82,97.6,66.8,43.99,blur_s1,Gaussian Blur (sigma=1.0),80.0,2.2
+Diffusion,pndm,75.6,93.74,91.02,100.0,51.2,44.28,blur_s1,Gaussian Blur (sigma=1.0),87.0,-11.4
+Diffusion,vqdiffusion,70.6,97.51,97.31,100.0,41.2,43.92,blur_s1,Gaussian Blur (sigma=1.0),98.95,-28.35
+Summary,MEAN_OVERALL,79.49,91.87,90.97,97.0,61.98,-,blur_s1,Gaussian Blur (sigma=1.0),90.19,-10.7
+GANs,progan,96.2,99.59,99.56,98.4,94.0,44.11,blur_s2,Gaussian Blur (sigma=2.0),99.94,-3.74
+GANs,stylegan,66.4,94.61,94.22,100.0,32.8,44.28,blur_s2,Gaussian Blur (sigma=2.0),93.01,-26.61
+GANs,stylegan2,61.4,79.89,84.61,95.6,27.2,44.90,blur_s2,Gaussian Blur (sigma=2.0),93.2,-31.8
+GANs,biggan,79.2,87.29,86.16,86.0,72.4,44.29,blur_s2,Gaussian Blur (sigma=2.0),85.9,-6.7
+GANs,cyclegan,85.2,92.33,94.03,80.0,90.4,44.03,blur_s2,Gaussian Blur (sigma=2.0),94.63,-9.43
+GANs,stargan,95.2,98.92,98.76,96.4,94.0,43.99,blur_s2,Gaussian Blur (sigma=2.0),97.0,-1.8
+GANs,gaugan,95.8,98.98,98.97,95.2,96.4,44.06,blur_s2,Gaussian Blur (sigma=2.0),97.19,-1.39
+GANs,deepfake,77.8,89.14,89.56,95.2,60.4,44.25,blur_s2,Gaussian Blur (sigma=2.0),91.03,-13.23
+Diffusion,guided,62.6,76.71,77.86,92.4,32.8,44.79,blur_s2,Gaussian Blur (sigma=2.0),65.85,-3.25
+Diffusion,ldm_200,79.8,91.24,89.66,95.6,64.0,44.47,blur_s2,Gaussian Blur (sigma=2.0),91.35,-11.55
+Diffusion,ldm_200_cfg,70.4,85.4,84.01,95.6,45.2,43.99,blur_s2,Gaussian Blur (sigma=2.0),90.3,-19.9
+Diffusion,ldm_100,78.4,91.43,90.02,95.6,61.2,44.02,blur_s2,Gaussian Blur (sigma=2.0),91.35,-12.95
+Diffusion,glide_50_27,63.2,77.02,75.71,95.6,30.8,44.05,blur_s2,Gaussian Blur (sigma=2.0),90.0,-26.8
+Diffusion,glide_100_10,64.0,78.27,76.93,95.6,32.4,44.03,blur_s2,Gaussian Blur (sigma=2.0),89.15,-25.15
+Diffusion,glide_100_27,61.0,76.33,74.15,95.6,26.4,44.06,blur_s2,Gaussian Blur (sigma=2.0),87.6,-26.6
+Diffusion,dalle,81.8,92.38,91.34,95.6,68.0,44.30,blur_s2,Gaussian Blur (sigma=2.0),80.0,1.8
+Diffusion,pndm,75.8,93.26,91.65,98.0,53.6,44.02,blur_s2,Gaussian Blur (sigma=2.0),87.0,-11.2
+Diffusion,vqdiffusion,61.0,92.16,94.28,98.0,24.0,43.95,blur_s2,Gaussian Blur (sigma=2.0),98.95,-37.95
+Summary,MEAN_OVERALL,75.29,88.61,88.42,94.69,55.89,-,blur_s2,Gaussian Blur (sigma=2.0),90.19,-14.9
+GANs,progan,97.4,99.86,99.85,100.0,94.8,43.99,down_up,Down-Up Bicubic (224 -> 112 -> 224),99.94,-2.54
+GANs,stylegan,68.6,95.25,94.14,100.0,37.2,44.28,down_up,Down-Up Bicubic (224 -> 112 -> 224),93.01,-24.41
+GANs,stylegan2,58.0,83.35,86.99,96.8,19.2,44.72,down_up,Down-Up Bicubic (224 -> 112 -> 224),93.2,-35.2
+GANs,biggan,79.0,87.79,85.36,90.8,67.2,43.97,down_up,Down-Up Bicubic (224 -> 112 -> 224),85.9,-6.9
+GANs,cyclegan,89.2,95.29,94.76,96.0,82.4,43.93,down_up,Down-Up Bicubic (224 -> 112 -> 224),94.63,-5.43
+GANs,stargan,96.8,99.46,99.23,98.4,95.2,44.05,down_up,Down-Up Bicubic (224 -> 112 -> 224),97.0,-0.2
+GANs,gaugan,96.8,99.29,99.07,96.8,96.8,44.33,down_up,Down-Up Bicubic (224 -> 112 -> 224),97.19,-0.39
+GANs,deepfake,79.6,93.24,92.72,97.2,62.0,44.56,down_up,Down-Up Bicubic (224 -> 112 -> 224),91.03,-11.43
+Diffusion,guided,60.4,70.33,68.8,95.2,25.6,44.45,down_up,Down-Up Bicubic (224 -> 112 -> 224),65.85,-5.45
+Diffusion,ldm_200,75.6,91.01,89.12,98.0,53.2,44.16,down_up,Down-Up Bicubic (224 -> 112 -> 224),91.35,-15.75
+Diffusion,ldm_200_cfg,67.0,85.05,83.17,98.0,36.0,44.01,down_up,Down-Up Bicubic (224 -> 112 -> 224),90.3,-23.3
+Diffusion,ldm_100,74.0,89.02,86.14,98.0,50.0,44.01,down_up,Down-Up Bicubic (224 -> 112 -> 224),91.35,-17.35
+Diffusion,glide_50_27,68.6,86.21,85.21,98.0,39.2,44.29,down_up,Down-Up Bicubic (224 -> 112 -> 224),90.0,-21.4
+Diffusion,glide_100_10,69.0,85.94,83.56,98.0,40.0,44.19,down_up,Down-Up Bicubic (224 -> 112 -> 224),89.15,-20.15
+Diffusion,glide_100_27,67.0,85.6,84.26,98.0,36.0,44.12,down_up,Down-Up Bicubic (224 -> 112 -> 224),87.6,-20.6
+Diffusion,dalle,71.0,88.7,86.74,98.0,44.0,44.06,down_up,Down-Up Bicubic (224 -> 112 -> 224),80.0,-9.0
+Diffusion,pndm,67.0,91.23,87.53,100.0,34.0,44.21,down_up,Down-Up Bicubic (224 -> 112 -> 224),87.0,-20.0
+Diffusion,vqdiffusion,56.6,93.58,92.61,100.0,13.2,44.62,down_up,Down-Up Bicubic (224 -> 112 -> 224),98.95,-42.35
+Summary,MEAN_OVERALL,74.53,90.01,88.85,97.62,51.44,-,down_up,Down-Up Bicubic (224 -> 112 -> 224),90.19,-15.66
