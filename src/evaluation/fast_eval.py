@@ -36,7 +36,10 @@ def evaluate_dataloader(
         if (batch_idx + 1) % print_freq == 0 or (batch_idx + 1) == total_batches:
             print(f"  [Tiến độ: {batch_idx + 1}/{total_batches} batches] Đã xử lý {len(y_true)} ảnh...")
 
-    return compute_binary_metrics(y_true, y_score)
+    metrics = compute_binary_metrics(y_true, y_score)
+    metrics["y_true"] = y_true
+    metrics["y_score"] = y_score
+    return metrics
 
 
 def run_benchmark(

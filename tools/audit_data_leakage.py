@@ -215,20 +215,25 @@ def compute_checkpoint_checksums(checkpoint_dirs: List[str]) -> Dict[str, Dict[s
 
 def main():
     parser = argparse.ArgumentParser(description="Kiểm toán toàn vẹn dữ liệu & Data Leakage Audit")
-    parser.add_argument("--train_dir", type=str, default="DATASET/train", help="Thư mục dữ liệu train")
-    parser.add_argument("--val_dir", type=str, default="DATASET/val", help="Thư mục dữ liệu val")
+    parser.add_argument("--train_dir", type=str, default="DATASET/progan_train", help="Thư mục dữ liệu train ProGAN")
+    parser.add_argument("--staging_dir", type=str, default="DATASET/diffusion_staging", help="Thư mục dữ liệu train Diffusion Staging")
+    parser.add_argument("--val_dir", type=str, default="DATASET/progan_val", help="Thư mục dữ liệu val")
     parser.add_argument("--test_dir", type=str, default="DATASET/test", help="Thư mục dữ liệu test clean/degraded")
-    parser.add_argument("--max_samples", type=int, default=1000, help="Số mẫu kiểm toán tối đa trên mỗi phân vùng (0 để quét 100%%)")
+    parser.add_argument("--max_samples", type=int, default=0, help="Số mẫu kiểm toán tối đa trên mỗi phân vùng (mặc định: 0 để quét 100%% toàn bộ ảnh)")
     parser.add_argument("--output_manifest", type=str, default="DATASET/manifests/dataset_integrity_manifest.json")
     parser.add_argument("--seed", type=int, default=42, help="Seed ngẫu nhiên cố định")
-    parser.add_argument("--test_dummy", action="store_true", help="Chạy kiểm thử với dữ liệu giả lập")
+    parser.add_argument("--test_dummy", action="store_true", help="Chạy kiểm thử với dữ liệu giả lập (chỉ dùng cho smoke test mã nguồn)")
     args = parser.parse_args()
+
+    # Nếu chạy test_dummy mà người dùng không chỉ định file manifest khác, lưu ra file dummy riêng biệt
+    if args.test_dummy and args.output_manifest == "DATASET/manifests/dataset_integrity_manifest.json":
+        args.output_manifest = "DATASET/manifests/dummy_smoke_test_manifest.json"
 
     print("=" * 86)
     print("FATFORMER-XLA: KIỂM TOÁN RÒ RỈ DỮ LIỆU & TOÀN VẸN CHECKPOINT (DATA LEAKAGE AUDIT)")
     print("=" * 86)
     print(f"• Seed cố định kiểm toán:       {args.seed}")
-    print(f"• Số mẫu kiểm toán tối đa:      {args.max_samples if args.max_samples > 0 else 'Toàn bộ 100%'}")
+    print(f"• Số mẫu kiểm toán tối đa:      {args.max_samples if args.max_samples > 0 else 'Toàn bộ 100% (Full Scan)'}")
     print(f"• Tệp Manifest đầu ra:          {args.output_manifest}")
 
     splits = {}
@@ -247,38 +252,61 @@ def main():
                 im.save(os.path.join(sdir, f"sample_{s}_{i}.png"))
             splits[s] = collect_images_from_dir(sdir)
     else:
-        # Tự động tìm đường dẫn
-        cand_train = [args.train_dir, "DATASET/progan_train", "DATASET/train", "/content/dataset_local/progan_train"]
+        # Tự động tìm đường dẫn dữ liệu thật (Quét cả ProGAN Train và Diffusion Staging)
+        cand_progan = [args.train_dir, "DATASET/progan_train", "DATASET/train", "/content/dataset_local/progan_train"]
+        cand_staging = [args.staging_dir, "DATASET/diffusion_staging", "DATASET/staging", "/content/dataset_local/diffusion_staging"]
         cand_val = [args.val_dir, "DATASET/progan_val", "DATASET/val", "/content/dataset_local/progan_val"]
-        cand_test = [args.test_dir, "DATASET/test", "DATASET/test_clean", "/content/dataset_local/test_clean"]
+        cand_test = [args.test_dir, "DATASET/test", "DATASET/test_clean", "DATASET/test_degraded", "/content/dataset_local/test_clean"]
 
-        for c in cand_train:
+        train_images = []
+        for c in cand_progan:
             if os.path.isdir(c):
-                splits["train"] = collect_images_from_dir(c, max_samples=args.max_samples if args.max_samples > 0 else None)
-                print(f"  [✓] Đã nạp Train: {c} ({len(splits['train']):,} ảnh)")
-                break
+                imgs = collect_images_from_dir(c, max_samples=args.max_samples if args.max_samples > 0 else None)
+                if imgs:
+                    train_images.extend(imgs)
+                    print(f"  [✓] Đã nạp Train ProGAN: {c} ({len(imgs):,} ảnh)")
+                    break
+
+        for c in cand_staging:
+            if os.path.isdir(c):
+                rem = max(1, args.max_samples - len(train_images)) if args.max_samples > 0 else None
+                imgs = collect_images_from_dir(c, max_samples=rem)
+                if imgs:
+                    train_images.extend(imgs)
+                    print(f"  [✓] Đã nạp Train Diffusion Staging: {c} ({len(imgs):,} ảnh)")
+                    break
+
+        if train_images:
+            splits["train"] = train_images
+            print(f"  -> Tổng hợp phân vùng Train (ProGAN + Diffusion Staging): {len(train_images):,} ảnh")
+
         for c in cand_val:
             if os.path.isdir(c):
-                splits["val"] = collect_images_from_dir(c, max_samples=args.max_samples if args.max_samples > 0 else None)
-                print(f"  [✓] Đã nạp Val: {c} ({len(splits['val']):,} ảnh)")
-                break
+                imgs = collect_images_from_dir(c, max_samples=args.max_samples if args.max_samples > 0 else None)
+                if imgs:
+                    splits["val"] = imgs
+                    print(f"  [✓] Đã nạp Val: {c} ({len(imgs):,} ảnh)")
+                    break
+
         for c in cand_test:
             if os.path.isdir(c):
-                splits["test"] = collect_images_from_dir(c, max_samples=args.max_samples if args.max_samples > 0 else None)
-                print(f"  [✓] Đã nạp Test: {c} ({len(splits['test']):,} ảnh)")
-                break
+                imgs = collect_images_from_dir(c, max_samples=args.max_samples if args.max_samples > 0 else None)
+                if imgs:
+                    splits["test"] = imgs
+                    print(f"  [✓] Đã nạp Test: {c} ({len(imgs):,} ảnh)")
+                    break
 
-    if not splits:
-        print("[!] Không tìm thấy dữ liệu ảnh thật trên đĩa. Chạy kiểm toán Dummy tự động để xác nhận thuật toán...")
-        import tempfile
-        tmp = tempfile.mkdtemp(prefix="leakage_dummy_")
-        for s in ["train", "val", "test"]:
-            sdir = os.path.join(tmp, s)
-            os.makedirs(sdir, exist_ok=True)
-            for i in range(10):
-                im = Image.new("RGB", (64, 64), color=(i * 25, (i * 35) % 255, (i * 45) % 255))
-                im.save(os.path.join(sdir, f"sample_{s}_{i}.png"))
-            splits[s] = collect_images_from_dir(sdir)
+        # Chặn đứng việc sinh dummy ngầm khi thiếu dữ liệu thật
+        if not splits or len(splits) < 2:
+            print("\n" + "=" * 86)
+            print("[LỖI NGHIÊM TRỌNG] Không tìm thấy dữ liệu ảnh thật trên đĩa để kiểm toán.")
+            print(f"  • Các thư mục train đã quét: {cand_progan + cand_staging}")
+            print(f"  • Các thư mục val đã quét:   {cand_val}")
+            print(f"  • Các thư mục test đã quét:  {cand_test}")
+            print("  • Hủy bỏ xuất manifest chính thức để ngăn ngừa sai lệch dữ liệu!")
+            print("  • Nếu cần chạy thử thuật toán trên dữ liệu giả lập, hãy dùng cờ: --test_dummy")
+            print("=" * 86)
+            return 1
 
     # 1. Chạy audit rò rỉ dữ liệu
     audit_data = audit_splits(splits, verbose=True)
@@ -304,6 +332,7 @@ def main():
             "fixed_seed": args.seed,
             "hash_algorithm": "MD5 + SHA-256 + dHash (64-bit)",
             "hamming_distance_threshold": 3,
+            "mode": "SMOKE_TEST_DUMMY" if args.test_dummy else "FULL_PRODUCTION_AUDIT"
         },
         "audit_summary": {
             "data_leakage_detected": not audit_data["is_clean"],

@@ -83,10 +83,13 @@ class CurriculumDegradationScheduler:
     
     Tỷ lệ phân bổ mẫu: 50% Clean (bảo toàn trần 96.45% ACC), 50% Degraded.
     """
-    def __init__(self, clean_prob=0.5):
-        self.clean_prob = clean_prob
+    def __init__(self, clean_prob=0.5, config: Optional[Dict[str, Any]] = None):
+        self.config = config or {}
+        p1_clean = self.config.get("phase1", {}).get("clean_ratio", clean_prob)
+        self.clean_prob = p1_clean
         self.epoch = 1
         self.stage = 1
+        self.lr_multiplier = 1.0
         self._update_stage_params()
 
     def set_epoch(self, epoch: int):
@@ -94,24 +97,40 @@ class CurriculumDegradationScheduler:
         self._update_stage_params()
 
     def _update_stage_params(self):
-        if self.epoch <= 2:
-            # Giai đoạn 1: Nén rất nhẹ, ổn định gradient FAA (Epoch 1-2)
+        c1 = self.config.get("phase1", {})
+        c2 = self.config.get("phase2", {})
+        c3 = self.config.get("phase3", {})
+
+        p1_epochs = c1.get("epochs", [1, 2])
+        p2_epochs = c2.get("epochs", [3, 4])
+        p3_epochs = c3.get("epochs", [5, 5])
+
+        if self.epoch <= p1_epochs[1]:
+            # Giai đoạn 1: Nén rất nhẹ, ổn định gradient FAA
             self.stage = 1
-            self.q_range = (70, 90)
-            self.sigma_range = (0.5, 1.0)
-            self.down_size = None
-        elif self.epoch <= 4:
-            # Giai đoạn 2: Nén vừa, rèn luyện mạng cổng Gating λ(x) (Epoch 3-4)
+            self.q_range = tuple(c1.get("jpeg_quality_range", [70, 90]))
+            self.sigma_range = tuple(c1.get("blur_sigma_range", [0.5, 1.0]))
+            self.down_size = (c1.get("downsample_target_size", 160), c1.get("downsample_target_size", 160)) if c1.get("downsample", False) else None
+            self.clean_prob = c1.get("clean_ratio", self.clean_prob)
+            self.lr_multiplier = 1.0
+        elif self.epoch <= p2_epochs[1]:
+            # Giai đoạn 2: Nén vừa, rèn luyện mạng cổng Gating λ(x)
             self.stage = 2
-            self.q_range = (45, 70)
-            self.sigma_range = (1.0, 1.5)
-            self.down_size = (160, 160)
+            self.q_range = tuple(c2.get("jpeg_quality_range", [45, 70]))
+            self.sigma_range = tuple(c2.get("blur_sigma_range", [1.0, 1.5]))
+            d_sz = c2.get("downsample_target_size", 160)
+            self.down_size = (d_sz, d_sz) if c2.get("downsample", True) else None
+            self.clean_prob = c2.get("clean_ratio", self.clean_prob)
+            self.lr_multiplier = 1.0
         else:
-            # Giai đoạn 3: Nén sâu thử thách, tôi luyện biểu diễn vi sai SRM (Epoch >= 5, đồng bộ train_config.yaml)
+            # Giai đoạn 3: Nén sâu thử thách, tôi luyện biểu diễn vi sai SRM
             self.stage = 3
-            self.q_range = (30, 50)
-            self.sigma_range = (1.5, 2.0)
-            self.down_size = (112, 112)
+            self.q_range = tuple(c3.get("jpeg_quality_range", [30, 50]))
+            self.sigma_range = tuple(c3.get("blur_sigma_range", [1.5, 2.0]))
+            d_sz = c3.get("downsample_target_size", 112)
+            self.down_size = (d_sz, d_sz) if c3.get("downsample", True) else None
+            self.clean_prob = c3.get("clean_ratio", self.clean_prob)
+            self.lr_multiplier = float(c3.get("lr_multiplier", 0.5))
 
     def apply_jpeg(self, img: Image.Image) -> Image.Image:
         q = random.randint(*self.q_range)

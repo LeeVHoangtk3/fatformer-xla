@@ -61,6 +61,7 @@ def assert_srm_kernels_frozen(model: nn.Module):
 def freeze_clip_backbone(
     model: nn.Module,
     trainable_module_prefixes: Optional[list] = None,
+    target_trainable_ratio_min: Optional[float] = None,
     target_trainable_ratio_max: float = 0.08,
     verbose: bool = True
 ) -> Dict[str, Any]:
@@ -142,6 +143,11 @@ def freeze_clip_backbone(
         print(f"  • Tổng số tham số:        {stats['total_params']:,} ({stats['total_params']/1e6:.2f} M)")
         print(f"  • Tham số đóng băng:      {stats['frozen_params']:,} ({stats['frozen_params']/1e6:.2f} M - {100 - stats['trainable_percent']:.2f}%)")
         print(f"  • Tham số cần tối ưu:     {stats['trainable_params']:,} ({stats['trainable_params']/1e6:.2f} M - {stats['trainable_percent']:.2f}%)")
+        if target_trainable_ratio_min is not None:
+            if stats["trainable_ratio"] < target_trainable_ratio_min:
+                print(f"  • [PEFT CHÚ Ý] Tỷ lệ trainable ({stats['trainable_percent']:.2f}%) < dải lý thuyết ({target_trainable_ratio_min*100:.1f}%). Đạt mức siêu tinh gọn (Ultra-PEFT).")
+            else:
+                print(f"  • [✓ PEFT ĐẠT] Tỷ lệ trainable ({stats['trainable_percent']:.2f}%) nằm trong dải mục tiêu ([{target_trainable_ratio_min*100:.1f}%, {target_trainable_ratio_max*100:.1f}%])!")
         print("=" * 70)
 
     # Xác nhận ngưỡng an toàn: tỷ lệ trainable không được vượt ngưỡng tối đa (mặc định < 8%)

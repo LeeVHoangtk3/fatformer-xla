@@ -141,8 +141,8 @@ class Trainer:
                 
                 # Áp dụng lr_multiplier (0.5) cho Phase 3 theo đúng configs/train_config.yaml
                 if stage_idx == 3 and not getattr(self, "_phase3_lr_scaled", False):
-                    lr_mult = 0.5
-                    print(f"  [CURRICULUM] Giai đoạn 3 (Suy biến sâu): Áp dụng lr_multiplier={lr_mult} cho Optimizer!")
+                    lr_mult = getattr(curr_scheduler, "lr_multiplier", 0.5)
+                    print(f"  [CURRICULUM] Giai đoạn 3 (Suy biến sâu): Áp dụng lr_multiplier={lr_mult} từ cấu hình cho Optimizer!")
                     for param_group in self.optimizer.param_groups:
                         param_group["lr"] = param_group["lr"] * lr_mult
                     self._phase3_lr_scaled = True

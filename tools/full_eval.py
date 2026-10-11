@@ -41,6 +41,7 @@ if hasattr(sys.stderr, "reconfigure"):
 from src.models import build_model
 from src.training.checkpoint_manager import CheckpointManager
 from src.evaluation.fast_eval import run_benchmark
+from src.evaluation.metrics import compute_binary_metrics
 from src.datasets.dataset import ALL_TEST_SUBSETS, GAN_SUBSETS, DIFFUSION_SUBSETS
 
 
@@ -140,8 +141,13 @@ def calculate_group_mean(metrics_dict: Dict[str, Dict[str, float]], group_subset
     }
 
 
-def calculate_sample_weighted_mean(results_by_subset: Dict[str, Dict[str, float]], group_subsets: List[str]) -> Optional[Dict[str, float]]:
-    """Tính trung bình theo trọng số số lượng mẫu (Micro / Sample-Weighted Mean)."""
+def calculate_sample_weighted_mean(results_by_subset: Dict[str, Dict[str, float]], group_subsets: List[str]) -> Optional[Dict[str, Any]]:
+    """
+    Tính trung bình theo trọng số số lượng mẫu (Sample-Weighted Mean):
+    - ACC, Real ACC, Fake ACC: Tính chính xác theo tỷ lệ tổng số mẫu (Micro).
+    - AP, ROC-AUC: Nếu có lưu trữ raw prediction vector (y_true, y_score), tính Global Pooled AP & AUC chuẩn xác;
+      nếu đọc từ CSV tóm tắt không có vector gốc, dùng Macro-average của các subset và đánh dấu rõ cờ is_true_pooled=False.
+    """
     total_samples = 0
     total_correct = 0
     total_real = 0
@@ -149,6 +155,10 @@ def calculate_sample_weighted_mean(results_by_subset: Dict[str, Dict[str, float]
     total_fake = 0
     total_fake_correct = 0
     aps, aucs = [], []
+    pooled_y_true = []
+    pooled_y_score = []
+    has_pooled = True
+
     for sub in group_subsets:
         if sub in results_by_subset:
             m = results_by_subset[sub]
@@ -168,13 +178,30 @@ def calculate_sample_weighted_mean(results_by_subset: Dict[str, Dict[str, float]
             aps.append(m.get("ap", 0.0))
             aucs.append(m.get("auc", 0.0))
 
+            if "y_true" in m and "y_score" in m and len(m["y_true"]) > 0:
+                pooled_y_true.extend(m["y_true"])
+                pooled_y_score.extend(m["y_score"])
+            else:
+                has_pooled = False
+
     if total_samples == 0:
         return None
 
+    if has_pooled and len(pooled_y_true) > 0:
+        pooled_res = compute_binary_metrics(pooled_y_true, pooled_y_score)
+        pooled_ap = pooled_res["ap"]
+        pooled_auc = pooled_res["auc"]
+        is_true_pooled = True
+    else:
+        pooled_ap = float(np.mean(aps)) if aps else 0.0
+        pooled_auc = float(np.mean(aucs)) if aucs else 0.0
+        is_true_pooled = False
+
     return {
         "acc": float(total_correct / total_samples * 100.0),
-        "ap": float(np.mean(aps)) if aps else 0.0,
-        "auc": float(np.mean(aucs)) if aucs else 0.0,
+        "ap": pooled_ap,
+        "auc": pooled_auc,
+        "is_true_pooled": is_true_pooled,
         "r_acc": float(total_real_correct / max(1, total_real) * 100.0),
         "f_acc": float(total_fake_correct / max(1, total_fake) * 100.0),
         "num_samples": total_samples
@@ -184,7 +211,7 @@ def calculate_sample_weighted_mean(results_by_subset: Dict[str, Dict[str, float]
 def format_grouped_summary(results_by_subset: Dict[str, Dict[str, float]]) -> Tuple[str, Dict[str, Optional[Dict[str, float]]]]:
     """
     Tạo bảng tổng hợp kết quả phân nhóm GANs (8 tập) và Diffusion (10 tập)
-    kèm cả Macro-Average lẫn Sample-Weighted (Micro-Average).
+    kèm cả Macro-Average lẫn Sample-Weighted / Global Pooled Micro-Average.
     """
     lines = []
     lines.append("=" * 86)
@@ -214,8 +241,9 @@ def format_grouped_summary(results_by_subset: Dict[str, Dict[str, float]]) -> Tu
             f"{mean_gans['auc']:<10.2f} {mean_gans['r_acc']:<14.2f} {mean_gans['f_acc']:<14.2f}"
         )
         if weighted_gans:
+            tag = "POOLED GANS (Micro)" if weighted_gans.get("is_true_pooled") else "WEIGHTED GANS (ACC-wt)*"
             lines.append(
-                f"{'WEIGHTED GANS (Micro)':<23} {weighted_gans['acc']:<10.2f} {weighted_gans['ap']:<10.2f} "
+                f"{tag:<23} {weighted_gans['acc']:<10.2f} {weighted_gans['ap']:<10.2f} "
                 f"{weighted_gans['auc']:<10.2f} {weighted_gans['r_acc']:<14.2f} {weighted_gans['f_acc']:<14.2f}"
             )
     lines.append("-" * 86)
@@ -242,8 +270,9 @@ def format_grouped_summary(results_by_subset: Dict[str, Dict[str, float]]) -> Tu
             f"{mean_diff['auc']:<10.2f} {mean_diff['r_acc']:<14.2f} {mean_diff['f_acc']:<14.2f}"
         )
         if weighted_diff:
+            tag = "POOLED DIFF (Micro)" if weighted_diff.get("is_true_pooled") else "WEIGHTED DIFF (ACC-wt)*"
             lines.append(
-                f"{'WEIGHTED DIFF (Micro)':<23} {weighted_diff['acc']:<10.2f} {weighted_diff['ap']:<10.2f} "
+                f"{tag:<23} {weighted_diff['acc']:<10.2f} {weighted_diff['ap']:<10.2f} "
                 f"{weighted_diff['auc']:<10.2f} {weighted_diff['r_acc']:<14.2f} {weighted_diff['f_acc']:<14.2f}"
             )
     lines.append("=" * 86)
@@ -270,10 +299,13 @@ def format_grouped_summary(results_by_subset: Dict[str, Dict[str, float]]) -> Tu
             f"{mean_overall['auc']:<10.2f} {mean_overall['r_acc']:<14.2f} {mean_overall['f_acc']:<14.2f}"
         )
         if weighted_overall:
+            tag = "POOLED OVERALL (Micro)" if weighted_overall.get("is_true_pooled") else "WEIGHTED OVERALL (ACC-wt)*"
             lines.append(
-                f"{'WEIGHTED OVERALL':<23} {weighted_overall['acc']:<10.2f} {weighted_overall['ap']:<10.2f} "
+                f"{tag:<23} {weighted_overall['acc']:<10.2f} {weighted_overall['ap']:<10.2f} "
                 f"{weighted_overall['auc']:<10.2f} {weighted_overall['r_acc']:<14.2f} {weighted_overall['f_acc']:<14.2f}"
             )
+            if not weighted_overall.get("is_true_pooled"):
+                lines.append("  *Ghi chú: Dòng WEIGHTED tính chuẩn Micro theo mẫu cho ACC/Real/Fake; AP và AUC là Macro-average do không có raw prediction vector từ CSV cũ.")
     lines.append("=" * 86)
 
     summary_dict = {
@@ -317,6 +349,14 @@ def export_full_results(results_by_subset: Dict[str, Dict[str, float]],
                     "acc": f"{mg['acc']:.2f}", "ap": f"{mg['ap']:.2f}", "auc": f"{mg['auc']:.2f}",
                     "r_acc": f"{mg['r_acc']:.2f}", "f_acc": f"{mg['f_acc']:.2f}", "elapsed_sec": "-"
                 })
+            if summary_dict.get("weighted_gans"):
+                wg = summary_dict["weighted_gans"]
+                sub_name = "POOLED_GANS" if wg.get("is_true_pooled") else "WEIGHTED_GANS"
+                writer.writerow({
+                    "group": "GANs", "subset": sub_name,
+                    "acc": f"{wg['acc']:.2f}", "ap": f"{wg['ap']:.2f}", "auc": f"{wg['auc']:.2f}",
+                    "r_acc": f"{wg['r_acc']:.2f}", "f_acc": f"{wg['f_acc']:.2f}", "elapsed_sec": "-"
+                })
 
             # Ghi Diffusion
             for name in DIFFUSION_SUBSETS:
@@ -334,6 +374,14 @@ def export_full_results(results_by_subset: Dict[str, Dict[str, float]],
                     "group": "Diffusion", "subset": "MEAN_DIFFUSION",
                     "acc": f"{md['acc']:.2f}", "ap": f"{md['ap']:.2f}", "auc": f"{md['auc']:.2f}",
                     "r_acc": f"{md['r_acc']:.2f}", "f_acc": f"{md['f_acc']:.2f}", "elapsed_sec": "-"
+                })
+            if summary_dict.get("weighted_diff"):
+                wd = summary_dict["weighted_diff"]
+                sub_name = "POOLED_DIFFUSION" if wd.get("is_true_pooled") else "WEIGHTED_DIFFUSION"
+                writer.writerow({
+                    "group": "Diffusion", "subset": sub_name,
+                    "acc": f"{wd['acc']:.2f}", "ap": f"{wd['ap']:.2f}", "auc": f"{wd['auc']:.2f}",
+                    "r_acc": f"{wd['r_acc']:.2f}", "f_acc": f"{wd['f_acc']:.2f}", "elapsed_sec": "-"
                 })
 
             # Ghi Other
@@ -353,6 +401,14 @@ def export_full_results(results_by_subset: Dict[str, Dict[str, float]],
                     "group": "Overall", "subset": "MEAN_OVERALL",
                     "acc": f"{mo['acc']:.2f}", "ap": f"{mo['ap']:.2f}", "auc": f"{mo['auc']:.2f}",
                     "r_acc": f"{mo['r_acc']:.2f}", "f_acc": f"{mo['f_acc']:.2f}", "elapsed_sec": "-"
+                })
+            if summary_dict.get("weighted_overall"):
+                wo = summary_dict["weighted_overall"]
+                sub_name = "POOLED_OVERALL" if wo.get("is_true_pooled") else "WEIGHTED_OVERALL"
+                writer.writerow({
+                    "group": "Overall", "subset": sub_name,
+                    "acc": f"{wo['acc']:.2f}", "ap": f"{wo['ap']:.2f}", "auc": f"{wo['auc']:.2f}",
+                    "r_acc": f"{wo['r_acc']:.2f}", "f_acc": f"{wo['f_acc']:.2f}", "elapsed_sec": "-"
                 })
         print(f"[✓] Đã lưu kết quả CSV ra: {csv_path}")
 

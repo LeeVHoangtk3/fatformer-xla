@@ -25,8 +25,8 @@ Theo đặc tả nhiệm vụ tại [task_5.1_full_benchmark_18_datasets.md](../
    - **Chiều thứ hai (Degradation Robustness)**: Khả năng chống chịu trước 6 biến thể suy biến vật lý thực tế trên mạng xã hội ($Q=30, 50, 70$, $\text{Blur}_1, \text{Blur}_2$, $\text{Down-Up}$).
 2. **Tiêu chuẩn hoàn thành (Definition of Done & Expansion Gate)**:
    - [x] Thực thi đầy đủ $100\%$ không sót bất kỳ tập nào trong 18 tập test trên cả 7 trạng thái.
-   - [x] Khôi phục độ chính xác ảnh sạch Clean Overall ACC $\ge 90.0\%$ (xóa bỏ triệt để hiện tượng quên thảm họa).
-   - [x] Độ chính xác kháng nén sâu $Q=30$ Overall ACC $\ge 65.0\%$ và Fake ACC tăng vượt bậc so với Baseline gốc ($5.78\%$).
+   - [!] Clean Overall ACC đạt $90.19\%$ (vượt mốc sàn kỹ thuật $\ge 90.0\%$, nhưng vẫn còn khoảng cách $-6.26\%$ so với Baseline gốc $96.45\%$; chưa thể kết luận "xóa bỏ triệt để" hiện tượng catastrophic forgetting).
+   - [!] Độ chính xác kháng nén sâu $Q=30$ Overall ACC đạt $71.03\%$ (vượt ngưỡng $\ge 65.0\%$) và Fake ACC tăng lên $44.84\%$ (so với $5.78\%$ của Baseline gốc), nhưng vẫn còn tỷ lệ bỏ lọt $>55\%$ đòi hỏi phải finetune nâng cao tiếp.
    - [x] Lưu trữ toàn vẹn tệp ma trận `final_full_benchmark_matrix.csv` và biểu đồ trực quan hóa.
 
 ---
@@ -34,7 +34,8 @@ Theo đặc tả nhiệm vụ tại [task_5.1_full_benchmark_18_datasets.md](../
 ## 2. KẾ THỪA THÔNG SỐ THỰC TẾ (TUÂN THỦ NGUYÊN TẮC 4)
 
 - **Kế thừa từ Task 4.3 ([Báo cáo Task 4.3](bao_cao_task_4.3_train_plan_a_kaggle_blackwell.md))**:
-  - Trọng số mô hình `fatformer_plan_a_final.pth` (nạp `strict=True` cho Clean và `strict=False` cho Degraded) được huấn luyện 4 epoch trên 144k ProGAN (85%) + 3.6k Staging GenImage (15%), sử dụng `DualStreamCELoss(label_smoothing=0.1)`, `clean_prob=0.50`, đạt Val ACC 99.84% tại Epoch 3.
+   - Trọng số mô hình `fatformer_plan_a_final.pth` được huấn luyện 4 epoch trên 144k ProGAN (85%) + 3.6k Staging GenImage (15%), sử dụng `DualStreamCELoss(label_smoothing=0.1)`, `clean_prob=0.50`, đạt Val ACC 99.84% tại Epoch 3.
+   - **Lưu ý phương pháp luận đánh giá cũ**: Đợt chạy thực nghiệm Task 5.1 lịch sử được thực hiện theo pipeline cũ (nhánh Degraded nạp với `strict=False`). Hiện tại mã nguồn đã được sửa đồng bộ bắt buộc `strict=True` và bổ sung cơ chế audit key. Muốn xác nhận tuyệt đối tính đúng đắn của toàn bộ ma trận số liệu, cần rerun benchmark đầy đủ bằng pipeline chuẩn hóa mới khi môi trường GPU khả dụng.
 - **Kế thừa từ Task 1.1 & Task 2.1 ([Báo cáo Task 1.1](../A/bao_cao_task_1.1_ha_tang_drive_io.md) & [Báo cáo Task 2.1](../A/bao_cao_task_2.1_make_degraded_dataset.md))**:
   - Dữ liệu Clean: `test_benchmark_gans.tar` (18.74 GB) + `test_benchmark_diffusion.tar` (1.22 GB).
   - Dữ liệu Degraded: `test_degraded.tar` (19.55 GB, chứa 6 biến thể nén và làm mờ tạo theo chuẩn PNG lossless).

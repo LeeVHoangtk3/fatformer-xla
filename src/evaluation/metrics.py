@@ -141,13 +141,28 @@ def format_evaluation_summary(
         weighted_r_acc = macro_metrics["r_acc"]
         weighted_f_acc = macro_metrics["f_acc"]
 
+    # Kiểm tra xem có đầy đủ vector dự đoán gốc (y_true, y_score) để tính Global Pooled Micro không
+    has_pooled = all(("y_true" in m and "y_score" in m and len(m["y_true"]) > 0) for m in results_by_subset.values())
+    if has_pooled and total_samples > 0:
+        pooled_y_true = np.concatenate([np.array(m["y_true"]).flatten() for m in results_by_subset.values()])
+        pooled_y_score = np.concatenate([np.array(m["y_score"]).flatten() for m in results_by_subset.values()])
+        pooled_calc = compute_binary_metrics(pooled_y_true, pooled_y_score)
+        weighted_ap = pooled_calc["ap"]
+        weighted_auc = pooled_calc["auc"]
+        is_true_pooled = True
+    else:
+        weighted_ap = macro_metrics["ap"]
+        weighted_auc = macro_metrics["auc"]
+        is_true_pooled = False
+
     weighted_metrics = {
         "acc": weighted_acc,
-        "ap": macro_metrics["ap"],
-        "auc": macro_metrics["auc"],
+        "ap": weighted_ap,
+        "auc": weighted_auc,
         "r_acc": weighted_r_acc,
         "f_acc": weighted_f_acc,
         "total_samples": total_samples,
+        "is_true_pooled": is_true_pooled,
     }
 
     lines.append("-" * 86)
@@ -155,10 +170,17 @@ def format_evaluation_summary(
         f"{'MACRO-AVERAGE':<23} {macro_metrics['acc']:<10.2f} {macro_metrics['ap']:<10.2f} "
         f"{macro_metrics['auc']:<10.2f} {macro_metrics['r_acc']:<14.2f} {macro_metrics['f_acc']:<14.2f}"
     )
-    lines.append(
-        f"{'SAMPLE-WEIGHTED (MICRO)':<23} {weighted_metrics['acc']:<10.2f} {weighted_metrics['ap']:<10.2f} "
-        f"{weighted_metrics['auc']:<10.2f} {weighted_metrics['r_acc']:<14.2f} {weighted_metrics['f_acc']:<14.2f}"
-    )
+    if is_true_pooled:
+        lines.append(
+            f"{'GLOBAL POOLED (MICRO)':<23} {weighted_metrics['acc']:<10.2f} {weighted_metrics['ap']:<10.2f} "
+            f"{weighted_metrics['auc']:<10.2f} {weighted_metrics['r_acc']:<14.2f} {weighted_metrics['f_acc']:<14.2f}"
+        )
+    else:
+        lines.append(
+            f"{'SAMPLE-WEIGHTED (ACC)*':<23} {weighted_metrics['acc']:<10.2f} {weighted_metrics['ap']:<10.2f}* "
+            f"{weighted_metrics['auc']:<10.2f}* {weighted_metrics['r_acc']:<14.2f} {weighted_metrics['f_acc']:<14.2f}"
+        )
+        lines.append("  *Ghi chú: Khi không lưu trữ prediction vector gốc, AP và AUC trong dòng này là Macro-mean của các subset.")
     lines.append("=" * 86)
 
     combined_summary = {

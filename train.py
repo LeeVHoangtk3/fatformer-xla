@@ -143,8 +143,92 @@ def find_first_existing_path(candidates: List[Optional[str]], is_dir: bool = Tru
     return None
 
 
+def load_config_and_override_args(args) -> Tuple[argparse.Namespace, Dict[str, Any]]:
+    """
+    Nạp cấu hình từ train_config.yaml để làm Nguồn Sự Thật Duy Nhất (Single Source of Truth).
+    Chỉ override nếu người dùng không ghi đè tham số trực tiếp qua command line.
+    """
+    cfg: Dict[str, Any] = {}
+    config_path = args.config
+    if config_path:
+        if not os.path.isabs(config_path):
+            config_path = os.path.join(PROJECT_ROOT, config_path)
+        if os.path.isfile(config_path):
+            print(f"[*] Đang nạp cấu hình huấn luyện từ file YAML: {config_path}...")
+            with open(config_path, "r", encoding="utf-8") as f:
+                cfg = yaml.safe_load(f) or {}
+            print("  [✓] Đã kích hoạt train_config.yaml làm Nguồn Sự Thật Duy Nhất (Source of Truth)!")
+        else:
+            print(f"[!] Không tìm thấy file config tại '{config_path}'. Dùng thiết lập CLI mặc định.")
+
+    # 1. Cấu hình mô hình
+    m_cfg = cfg.get("model", {})
+    if "use_srm" in m_cfg: args.use_srm = m_cfg["use_srm"]
+    if "use_gating" in m_cfg: args.use_gating = m_cfg["use_gating"]
+    if "num_classes" in m_cfg: args.num_classes = m_cfg["num_classes"]
+    if "num_context_embedding" in m_cfg: args.num_context_embedding = m_cfg["num_context_embedding"]
+
+    # 2. Cấu hình Freeze & PEFT
+    f_cfg = cfg.get("freeze", {})
+    args.target_trainable_ratio_min = f_cfg.get("target_trainable_ratio_min", 0.055)
+    args.target_trainable_ratio_max = f_cfg.get("target_trainable_ratio_max", 0.08)
+
+    # 3. Cấu hình Loss
+    l_cfg = cfg.get("loss", {})
+    if "type" in l_cfg:
+        l_type = str(l_cfg["type"]).lower()
+        if "focal" in l_type:
+            args.loss_type = "dual_stream_focal"
+        elif "dual" in l_type or "ce" in l_type:
+            args.loss_type = "dual_stream_ce"
+    if "label_smoothing" in l_cfg:
+        args.label_smoothing = float(l_cfg["label_smoothing"])
+
+    # 4. Cấu hình Training
+    t_cfg = cfg.get("training", {})
+    if "total_epochs" in t_cfg: args.epochs = int(t_cfg["total_epochs"])
+    if "batch_size" in t_cfg: args.batch_size = int(t_cfg["batch_size"])
+    if "grad_accumulation_steps" in t_cfg: args.grad_accum = int(t_cfg["grad_accumulation_steps"])
+    if "amp_fp16" in t_cfg: args.use_amp = bool(t_cfg["amp_fp16"])
+
+    opt_cfg = t_cfg.get("optimizer", {})
+    if "lr_adapter" in opt_cfg: args.lr = float(opt_cfg["lr_adapter"])
+    if "lr_gating" in opt_cfg: args.lr_gating = float(opt_cfg["lr_gating"])
+    if "weight_decay" in opt_cfg: args.weight_decay = float(opt_cfg["weight_decay"])
+
+    sched_cfg = t_cfg.get("scheduler", {})
+    if "type" in sched_cfg:
+        args.use_cosine_scheduler = (sched_cfg["type"] == "CosineAnnealingLR")
+    if "T_max" in sched_cfg:
+        args.T_max = int(sched_cfg["T_max"])
+    else:
+        args.T_max = args.epochs
+    if "eta_min" in sched_cfg:
+        args.eta_min = float(sched_cfg["eta_min"])
+
+    # 5. Cấu hình Data
+    d_cfg = cfg.get("data", {})
+    if "progan_ratio" in d_cfg: args.progan_ratio = float(d_cfg["progan_ratio"])
+    if "staging_ratio" in d_cfg: args.staging_ratio = float(d_cfg["staging_ratio"])
+    if "num_workers" in d_cfg: args.num_workers = int(d_cfg["num_workers"])
+    if "train_data_dir" in d_cfg and not args.progan_dir: args.progan_dir = d_cfg["train_data_dir"]
+    if "staging_data_dir" in d_cfg and not args.staging_dir: args.staging_dir = d_cfg["staging_data_dir"]
+    if "val_data_dir" in d_cfg and not args.val_dir: args.val_dir = d_cfg["val_data_dir"]
+    if "progan_tar" in d_cfg and not args.progan_tar: args.progan_tar = d_cfg["progan_tar"]
+    if "staging_tar" in d_cfg and not args.staging_tar: args.staging_tar = d_cfg["staging_tar"]
+    if "val_tar" in d_cfg and not args.val_tar: args.val_tar = d_cfg["val_tar"]
+
+    # 6. Checkpoint
+    c_cfg = cfg.get("checkpoint", {})
+    if "save_dir" in c_cfg and args.output_dir == "checkpoints":
+        args.output_dir = c_cfg["save_dir"]
+
+    return args, cfg
+
+
 def main():
     args = parse_args()
+    args, cfg = load_config_and_override_args(args)
     device = torch.device(args.device)
 
     print("=" * 85)
@@ -229,8 +313,11 @@ def main():
             single_path = extract_tar_if_needed(args.data_tar, target_extract_dir)
         progan_dir = single_path
 
-    # Thiết lập bộ tiền xử lý & Curriculum
-    curr_scheduler = CurriculumDegradationScheduler(clean_prob=args.clean_prob) if args.use_curriculum else None
+    # Thiết lập bộ tiền xử lý & Curriculum (Nạp cấu hình từ train_config.yaml)
+    curr_scheduler = CurriculumDegradationScheduler(
+        clean_prob=args.clean_prob,
+        config=cfg.get("curriculum", None)
+    ) if args.use_curriculum else None
     train_transforms = get_train_transforms(scheduler=curr_scheduler)
 
     train_loader, n_progan, n_staging = build_multi_domain_train_dataloader(
@@ -244,13 +331,48 @@ def main():
         pin_memory=(device.type == "cuda")
     )
 
-    # Khởi tạo Validation DataLoader
-    val_loader = build_val_dataloader(
-        val_dir=val_dir,
-        batch_size=args.batch_size,
-        num_workers=args.num_workers,
-        pin_memory=(device.type == "cuda")
-    ) if val_dir else None
+    # Khởi tạo Validation DataLoader Đa Miền (Multi-Domain Validation)
+    val_loaders = {}
+    if val_dir and os.path.isdir(val_dir):
+        v_clean = build_val_dataloader(
+            val_dir=val_dir,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            pin_memory=(device.type == "cuda"),
+            transform=get_eval_transforms()
+        )
+        if v_clean:
+            val_loaders["progan_clean"] = v_clean
+
+        # Miền ProGAN Degraded Q=50 kiểm soát khả năng chống chịu suy biến
+        v_deg = build_val_dataloader(
+            val_dir=val_dir,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            pin_memory=(device.type == "cuda"),
+            transform=get_eval_transforms(degradation={"type": "jpeg", "quality": 50})
+        )
+        if v_deg:
+            val_loaders["progan_degraded_q50"] = v_deg
+
+    cand_diff_val = [
+        os.path.join(PROJECT_ROOT, "DATASET", "diffusion_val"),
+        "/content/dataset_local/diffusion_val",
+        staging_dir if (staging_dir and os.path.isdir(staging_dir) and "val" in staging_dir) else None
+    ]
+    diff_val_dir = find_first_existing_path(cand_diff_val, is_dir=True)
+    if diff_val_dir:
+        v_diff = build_val_dataloader(
+            val_dir=diff_val_dir,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            pin_memory=(device.type == "cuda"),
+            transform=get_eval_transforms()
+        )
+        if v_diff:
+            val_loaders["diffusion_clean"] = v_diff
+
+    val_loader = val_loaders if len(val_loaders) > 1 else (val_loaders.get("progan_clean") or next(iter(val_loaders.values()), None))
 
     if train_loader is None:
         print("[!] Không tìm thấy dữ liệu ảnh thật. Sinh tập dữ liệu mô phỏng 64 ảnh (Dry-Run mode)...")
@@ -325,7 +447,12 @@ def main():
     # 3. Đóng băng tham số PEFT (Task 3.4)
     print("\n[*] Thực thi đóng băng Backbone PEFT & Kiểm toán an toàn SRM...")
     # Chốt chặn bắt buộc: Dừng hẳn chương trình (raise) nếu tỷ lệ trainable vượt ngưỡng trần 8.0%
-    stats = freeze_clip_backbone(model, target_trainable_ratio_max=0.08, verbose=True)
+    stats = freeze_clip_backbone(
+        model,
+        target_trainable_ratio_min=getattr(args, "target_trainable_ratio_min", 0.055),
+        target_trainable_ratio_max=getattr(args, "target_trainable_ratio_max", 0.08),
+        verbose=True
+    )
 
     # 4. Phân tầng Learning Rate cho Optimizer
     gating_params = []
@@ -407,7 +534,11 @@ def main():
     print("\n" + "=" * 85)
     print(f"BẮT ĐẦU CHẠY HUẤN LUYỆN: TỪ EPOCH {start_epoch} ĐẾN {args.epochs}")
     if val_loader:
-        print(f"  • Validation: Kích hoạt ({len(val_loader.dataset):,} ảnh) | Chu kỳ: mỗi {args.val_freq} epoch")
+        if isinstance(val_loader, dict):
+            domain_info = ", ".join([f"{k} ({len(v.dataset):,} ảnh)" for k, v in val_loader.items()])
+            print(f"  • Validation Đa Miền: Kích hoạt [{domain_info}] | Chu kỳ: mỗi {args.val_freq} epoch")
+        else:
+            print(f"  • Validation: Kích hoạt ({len(val_loader.dataset):,} ảnh) | Chu kỳ: mỗi {args.val_freq} epoch")
     else:
         print("  • Validation: Chưa cấu hình val_dir (sẽ bỏ qua validation loop)")
     print("=" * 85)
