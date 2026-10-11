@@ -91,6 +91,8 @@ def parse_args():
     parser.add_argument("--weight_decay", type=float, default=1e-4, help="Hệ số suy giảm trọng số AdamW")
     parser.add_argument("--clean_prob", type=float, default=0.50, help="Tỷ lệ ảnh sạch tối thiểu (khóa cứng 0.50 chống quên biểu diễn cũ)")
     parser.add_argument("--val_freq", type=int, default=1, help="Chu kỳ chạy kiểm định validation (mỗi n epoch)")
+    parser.add_argument("--use_cosine_scheduler", type=str2bool, default=True, help="Kích hoạt CosineAnnealingLR scheduler theo train_config.yaml")
+    parser.add_argument("--eta_min", type=float, default=1.0e-6, help="Tốc độ học tối thiểu eta_min cho CosineAnnealingLR")
 
     # 3. Chuyển đổi kiến trúc & Module Ablation
     parser.add_argument("--use_srm", type=str2bool, default=True, help="Bật/Tắt khối vi sai không gian SRM 3-Kernels (Ablation 2: tắt)")
@@ -101,7 +103,8 @@ def parse_args():
 
     # 4. Quản lý Checkpoint & Hạ tầng
     parser.add_argument("--output_dir", type=str, default="checkpoints", help="Thư mục lưu trữ Checkpoint (nên trỏ sang Drive 5TB trên Colab)")
-    parser.add_argument("--checkpoint_name", type=str, default="fatformer_srm_phase2.pth", help="Tên file checkpoint chính cần lưu")
+    parser.add_argument("--checkpoint_name", type=str, default="fatformer_plan_a_final.pth", help="Tên file checkpoint chính cần lưu")
+    parser.add_argument("--save_only_latest_and_best", type=str2bool, default=True, help="Chỉ lưu 2 file: checkpoint_latest.pth và model_best.pth (tiết kiệm đĩa cứng, chống tràn Kaggle)")
     parser.add_argument("--resume", type=str, default=None, help="Đường dẫn file .pth để tiếp tục huấn luyện ('latest' để tự tìm file mới nhất)")
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", help="Thiết bị thực thi (cuda hoặc cpu)")
     parser.add_argument("--num_workers", type=int, default=4, help="Số luồng nạp dữ liệu DataLoader")
@@ -321,11 +324,8 @@ def main():
 
     # 3. Đóng băng tham số PEFT (Task 3.4)
     print("\n[*] Thực thi đóng băng Backbone PEFT & Kiểm toán an toàn SRM...")
-    try:
-        stats = freeze_clip_backbone(model, verbose=True)
-    except Exception as e:
-        print(f"  [!] Ghi chú kiểm toán PEFT: {e}")
-        stats = count_trainable_parameters(model)
+    # Chốt chặn bắt buộc: Dừng hẳn chương trình (raise) nếu tỷ lệ trainable vượt ngưỡng trần 8.0%
+    stats = freeze_clip_backbone(model, target_trainable_ratio_max=0.08, verbose=True)
 
     # 4. Phân tầng Learning Rate cho Optimizer
     gating_params = []
@@ -348,6 +348,16 @@ def main():
         weight_decay=args.weight_decay
     )
 
+    # Khởi tạo CosineAnnealingLR scheduler theo train_config.yaml
+    scheduler = None
+    if getattr(args, "use_cosine_scheduler", True):
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=args.epochs,
+            eta_min=getattr(args, "eta_min", 1.0e-6)
+        )
+        print(f"  [✓] Kích hoạt CosineAnnealingLR (T_max={args.epochs}, eta_min={getattr(args, 'eta_min', 1.0e-6)})")
+
     # 5. Hàm mục tiêu Loss Function (Phương Án A: DualStreamCELoss)
     if args.loss_type == "dual_stream_ce":
         criterion = DualStreamCELoss(label_smoothing=args.label_smoothing)
@@ -361,7 +371,12 @@ def main():
 
     # 6. Checkpoint Manager & Resume
     drive_backup = "/content/drive/MyDrive/Fatformer/checkpoint" if os.path.exists("/content/drive/MyDrive") else None
-    checkpoint_mgr = CheckpointManager(save_dir=args.output_dir, drive_backup_dir=drive_backup, max_to_keep=3)
+    checkpoint_mgr = CheckpointManager(
+        save_dir=args.output_dir,
+        drive_backup_dir=drive_backup,
+        max_to_keep=3,
+        save_only_latest_and_best=args.save_only_latest_and_best
+    )
     start_epoch = args.start_epoch
 
     if args.resume:
@@ -400,38 +415,29 @@ def main():
     trainer.fit(
         epochs=args.epochs,
         start_epoch=start_epoch,
+        scheduler=scheduler,
         curr_scheduler=curr_scheduler,
         val_freq=args.val_freq
     )
 
-    # Lưu checkpoint hoàn thành của giai đoạn (Mô hình chính thức)
+    # Lưu checkpoint hoàn thành của giai đoạn (Mô hình chính thức từ Best Model)
     os.makedirs(args.output_dir, exist_ok=True)
-    checkpoint_mgr.save(
-        model=model,
-        optimizer=optimizer,
-        scaler=trainer.scaler,
-        epoch=args.epochs,
-        is_best=True,
-        filename=args.checkpoint_name
-    )
-
-    # Tự động sao lưu fatformer_srm_phase2.pth nếu chiến dịch chạy qua Epoch 5 (Nghiệm thu Task 4.1 DoD)
-    ep5_candidates = [
-        os.path.join(args.output_dir, "checkpoint_epoch_005.pth"),
-        os.path.join(drive_backup, "checkpoint_epoch_005.pth") if drive_backup else None
-    ]
-    for ep5_file in ep5_candidates:
-        if ep5_file and os.path.exists(ep5_file):
-            phase2_local = os.path.join(args.output_dir, "fatformer_srm_phase2.pth")
-            if not os.path.exists(phase2_local):
-                shutil.copyfile(ep5_file, phase2_local)
-                print(f"[CHECKPOINT] Đã tự động đồng bộ Phase 2 Checkpoint: {phase2_local}")
-            if drive_backup and os.path.exists(drive_backup):
-                phase2_drive = os.path.join(drive_backup, "fatformer_srm_phase2.pth")
-                if not os.path.exists(phase2_drive):
-                    shutil.copyfile(ep5_file, phase2_drive)
-                    print(f"[GOOGLE DRIVE] Đã tự động sao lưu Phase 2 Checkpoint sang Drive: {phase2_drive}")
-            break
+    best_path = os.path.join(args.output_dir, "model_best.pth")
+    final_path = os.path.join(args.output_dir, args.checkpoint_name)
+    if os.path.exists(best_path) and os.path.abspath(best_path) != os.path.abspath(final_path):
+        shutil.copyfile(best_path, final_path)
+        print(f"[CHECKPOINT] [Final] Đã đồng bộ checkpoint chính thức từ Best Model: {final_path}")
+        if drive_backup and os.path.exists(drive_backup):
+            shutil.copyfile(best_path, os.path.join(drive_backup, args.checkpoint_name))
+            print(f"[GOOGLE DRIVE] Đã sao lưu checkpoint chính thức sang Drive: {os.path.join(drive_backup, args.checkpoint_name)}")
+    elif not os.path.exists(final_path):
+        checkpoint_mgr.save(
+            model=model,
+            optimizer=optimizer,
+            scaler=trainer.scaler,
+            epoch=args.epochs,
+            filename=args.checkpoint_name
+        )
 
     print(f"\n[✓] CHIẾN DỊCH HUẤN LUYỆN HOÀN TẤT THÀNH CÔNG!")
     print(f"  • Checkpoint đã lưu an toàn tại: {args.output_dir}")

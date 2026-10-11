@@ -82,15 +82,20 @@ def freeze_clip_backbone(
         trainable_module_prefixes = [
             "language_guided_alignment",
             "text_guided_interactor",
-            "norm1",
-            "norm2",
             "linear1",
             "linear2",
-            "activation",
+            "norm1",
+            "norm2",
             "srm.proj",
             "gating",
             "ctx",
-            "forgery_aware_adapter",
+            "forgery_aware_adapter.first_conv_layer",
+            "forgery_aware_adapter.second_conv_layer",
+            "forgery_aware_adapter.freq_scale",
+            "forgery_aware_adapter.dwt_norm",
+            "forgery_aware_adapter.norm_intra",
+            "forgery_aware_adapter.norm_inter",
+            "forgery_aware_adapter.norm3",
         ]
 
     # Bước 1: Đóng băng TOÀN BỘ mô hình
@@ -102,6 +107,23 @@ def freeze_clip_backbone(
         # Kiểm tra nếu tên tham số chứa bất kỳ tiền tố whitelist nào
         is_trainable = any(prefix in name for prefix in trainable_module_prefixes)
         
+        # Loại trừ an toàn: các lớp FFN/linear1/linear2/attn bên trong ViT resblocks
+        # không được mở khóa nhầm bởi tiền tố top-level linear1/linear2
+        if ("resblocks" in name or "visual.transformer" in name):
+            is_adapter_param = any(
+                sub in name for sub in [
+                    "forgery_aware_adapter.first_conv_layer",
+                    "forgery_aware_adapter.second_conv_layer",
+                    "forgery_aware_adapter.freq_scale",
+                    "forgery_aware_adapter.dwt_norm",
+                    "forgery_aware_adapter.norm_intra",
+                    "forgery_aware_adapter.norm_inter",
+                    "forgery_aware_adapter.norm3",
+                ]
+            )
+            if not is_adapter_param:
+                is_trainable = False
+
         # Ngoại trừ tuyệt đối: các kernel vi sai SRM bắt buộc phải frozen
         if "srm" in name.lower() and any(k in name.lower() for k in ["k1", "k2", "k3"]):
             is_trainable = False

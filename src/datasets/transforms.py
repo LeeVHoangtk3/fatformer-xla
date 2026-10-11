@@ -95,19 +95,19 @@ class CurriculumDegradationScheduler:
 
     def _update_stage_params(self):
         if self.epoch <= 2:
-            # Giai đoạn 1: Nén rất nhẹ, ổn định gradient FAA
+            # Giai đoạn 1: Nén rất nhẹ, ổn định gradient FAA (Epoch 1-2)
             self.stage = 1
             self.q_range = (70, 90)
             self.sigma_range = (0.5, 1.0)
             self.down_size = None
-        elif self.epoch <= 5:
-            # Giai đoạn 2: Nén vừa, rèn luyện mạng cổng Gating λ(x)
+        elif self.epoch <= 4:
+            # Giai đoạn 2: Nén vừa, rèn luyện mạng cổng Gating λ(x) (Epoch 3-4)
             self.stage = 2
             self.q_range = (45, 70)
             self.sigma_range = (1.0, 1.5)
             self.down_size = (160, 160)
         else:
-            # Giai đoạn 3: Nén sâu thử thách, tôi luyện biểu diễn vi sai SRM
+            # Giai đoạn 3: Nén sâu thử thách, tôi luyện biểu diễn vi sai SRM (Epoch >= 5, đồng bộ train_config.yaml)
             self.stage = 3
             self.q_range = (30, 50)
             self.sigma_range = (1.5, 2.0)

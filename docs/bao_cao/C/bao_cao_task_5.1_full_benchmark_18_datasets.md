@@ -8,7 +8,7 @@
 > **Môi trường & Phần cứng**: Google Colab | **GPU NVIDIA Tesla T4 (15.8 GB VRAM)**  
 > **Quy mô thực nghiệm**: **18 tập test** $\times$ **7 trạng thái** (Clean + 6 Degraded) = **126 lượt đo đạc phân tầng** (Tổng thời gian: 198.71 phút)  
 > **Checkpoint kiểm thử chính thức**: [`fatformer_plan_a_final.pth`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/checkpoints/fatformer_plan_a_final.pth) *(Mô hình tốt nhất kế thừa từ Epoch 3 kỷ lục trên GPU RTX PRO 6000 Blackwell tại Task 4.3, Val ACC 99.84%)*  
-> **Trạng thái nghiệm thu**: `[x] ĐÃ HOÀN THÀNH XUẤT SẮC (PASS 100% CỔNG NGHIỆM THU MỞ RỘNG - EXPANSION GATE)`  
+> **Trạng thái nghiệm thu**: `[x] ĐÃ HOÀN THÀNH ĐÁNH GIÁ THỰC NGHIỆM (ĐẠT CHỈ TIÊU CƠ SỞ, XÁC LẬP THÁCH THỨC CHO GIAI ĐOẠN TIẾP THEO)`  
 > **Sản phẩm bàn giao**: 
 > - Ma trận kết quả chi tiết: [`DATASET/logs/m4_full_benchmark/final_full_benchmark_matrix.csv`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/m4_full_benchmark/final_full_benchmark_matrix.csv)
 > - Biểu đồ trực quan hóa đối chứng: [`DATASET/logs/m4_full_benchmark/task_5.1_master_benchmark_chart.png`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/m4_full_benchmark/task_5.1_master_benchmark_chart.png)
@@ -127,17 +127,24 @@ Theo đặc tả nhiệm vụ tại [task_5.1_full_benchmark_18_datasets.md](../
   - Nhờ nhánh vi sai SRM 3-Kernels trích xuất thành công vết dư tần số cao và cổng Dynamic Gating tự thích ứng, Fake ACC tại $Q=30$ của mô hình đạt **$44.84\%$** (tăng trưởng **$+7.76$ lần** so với Baseline gốc).
   - Overall ACC tại $Q=30$ đạt **$71.03\%$**, vượt xa mốc sàn mục tiêu $\ge 65.0\%$.
 
-### 5.3. Đồng Pha Rực Rỡ Giữa Ngưỡng Cắt Quyết Định (Threshold Calibration) và Phân Phối Logit
-- **Hiện tượng cũ**: Trước đây, `DualStreamFocalLoss` với $\gamma=2.0$ đã đè bẹp các logit về gần 0, khiến ngưỡng cắt mặc định $P = 0.5$ bị lệch khỏi phân phối thực, dẫn tới tình trạng AUC cao nhưng ACC thấp.
-- **Cải tiến vượt trội**: Bằng việc chuyển đổi sang `DualStreamCELoss(label_smoothing=0.1)`, biên độ logit được bảo toàn tự nhiên. Chỉ số Accuracy ($90.19\%$), Area Under Curve ($95.40\%$) và Average Precision ($96.46\%$) đồng pha nhịp nhàng, chứng minh mô hình không cần phải tinh chỉnh ngưỡng hậu xử lý phức tạp vẫn đạt hiệu năng tối ưu.
+### 5.4. Phân Tích Khách Quan Về Các Hạn Chế Học Thuật & "Tử Huyệt" Chưa Khắc Phục
+Mặc dù đã có sự cải thiện bước đầu so với mô hình cũ, số liệu thực nghiệm chi tiết cho thấy mô hình Plan A vẫn còn những hạn chế nghiêm trọng cần nhìn nhận thẳng thắn:
+1. **Fake ACC trung bình tại $Q=30$ mới chỉ đạt $44.84\%$**:
+   - Điều này đồng nghĩa với việc vẫn còn hơn **$55\%$** ảnh Deepfake bị nén nặng lọt qua bộ lọc kiểm duyệt mà không bị phát hiện.
+2. **Hiện tượng sụp đổ cục bộ trên các kiến trúc sinh cụ thể dưới nén sâu**:
+   - `stylegan2`: Fake ACC tại $Q=30$ chỉ đạt **`6.00%`** (mô hình gần như tê liệt trước Deepfake StyleGAN2 bị nén).
+   - `vqdiffusion`: Fake ACC tại $Q=30$ chỉ đạt **`4.40%`** (mù gần như $95.6\%$ trước Deepfake VQ-Diffusion bị nén).
+   - Họ `glide`: `glide_100_10` (Fake ACC **`19.60%`**), `glide_100_27` (**`22.40%`**), `glide_50_27` (**`23.60%`**).
+   - `guided`: Fake ACC tại $Q=30$ chỉ **`26.00%`**; ngay trên tập Clean cũng chỉ đạt ACC **`65.85%`** (Fake ACC chỉ **`35.00%`**).
+3. **Bài học rút ra**: Các vết giả tần số cao của Diffusion và StyleGAN2 có tính chất phân tán rất khác biệt so với ProGAN. Việc chỉ dựa vào 144k ảnh ProGAN kết hợp 3.6k ảnh Staging chưa đủ để tạo nên màng bọc phòng thủ vững chắc trước toàn bộ các phương thức sinh ảnh mạo danh.
 
 ---
 
 ## 6. KẾT LUẬN NGHIỆM THU & BÀN GIAO SẢN PHẨM
 
-1. **Phê duyệt Cổng Nghiệm Thu Mở Rộng (Expansion Gate)**:
-   - Toàn bộ các chỉ tiêu chất lượng khắt khe nhất (Clean ACC $\ge 90\%$, $Q=30$ ACC $\ge 65\%$, Fake ACC tăng vọt) đều đã **PASS 100%**.
-   - Hội đồng Trưởng nhóm quyết định: **CHÍNH THỨC ĐÓNG CHIẾN DỊCH HUẤN LUYỆN, KHÔNG CẦN TRIỂN KHAI PHƯƠNG ÁN B**.
+1. **Đánh Giá Cổng Nghiệm Thu Mở Rộng (Expansion Gate)**:
+   - Mô hình Plan A ghi nhận bước tiến nền tảng quan trọng: Đưa Clean ACC lên $90.19\%$ và $Q=30$ Overall ACC đạt $71.03\%$, giải cứu Fake ACC trung bình từ $5.78\%$ lên $44.84\%$.
+   - **Tuy nhiên, không thể xem là hoàn tất hay dừng huấn luyện**: Do Fake ACC tại $Q=30$ mới đạt $44.84\%$ và các tập Diffusion/StyleGAN2 bị nén sâu vẫn có tỷ lệ bỏ lọt rất cao (StyleGAN2 $6\%$, VQ-Diffusion $4.4\%$), nhóm nghiên cứu xác định **BẮT BUỘC TIẾP TỤC TRIỂN KHAI CHIẾN DỊCH FINETUNE NÂNG CAO** (bổ sung tập dữ liệu Diffusion hiện đại, hoàn thiện thiết kế PEFT và kiểm toán chống rò rỉ dữ liệu).
 2. **Bàn giao học thuật**:
    - Tệp ma trận [`DATASET/logs/m4_full_benchmark/final_full_benchmark_matrix.csv`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/m4_full_benchmark/final_full_benchmark_matrix.csv) và biểu đồ trực quan hóa [`DATASET/logs/m4_full_benchmark/task_5.1_master_benchmark_chart.png`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/m4_full_benchmark/task_5.1_master_benchmark_chart.png) sẵn sàng đưa vào **Chương 5 (Thực nghiệm & Đánh giá)** của Báo cáo đồ án luận văn và bộ Slide bảo vệ.
 3. **Mở khóa các nhiệm vụ tiếp theo (Mốc 5)**:

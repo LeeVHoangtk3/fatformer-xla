@@ -138,6 +138,14 @@ class Trainer:
                 curr_scheduler.set_epoch(epoch)
                 stage_idx = getattr(curr_scheduler, "stage", 1)
                 print(f"[CURRICULUM] Epoch {epoch}: Thiết lập Giáo trình Giai đoạn {stage_idx}")
+                
+                # Áp dụng lr_multiplier (0.5) cho Phase 3 theo đúng configs/train_config.yaml
+                if stage_idx == 3 and not getattr(self, "_phase3_lr_scaled", False):
+                    lr_mult = 0.5
+                    print(f"  [CURRICULUM] Giai đoạn 3 (Suy biến sâu): Áp dụng lr_multiplier={lr_mult} cho Optimizer!")
+                    for param_group in self.optimizer.param_groups:
+                        param_group["lr"] = param_group["lr"] * lr_mult
+                    self._phase3_lr_scaled = True
 
             t0 = time.time()
             train_loss = self.train_epoch(epoch)
@@ -148,14 +156,30 @@ class Trainer:
 
             if self.val_loader and (epoch % val_freq == 0 or epoch == epochs):
                 print(f"[EVALUATION] Đang kiểm tra validation cho Epoch {epoch}...")
-                val_metrics = evaluate_dataloader(self.model, self.val_loader, self.device)
-                val_acc = val_metrics.get("acc", 0.0)
-                val_ap = val_metrics.get("ap", 0.0)
-                val_auc = val_metrics.get("auc", 0.0)
-                print(f"  -> Validation ACC: {val_acc:.2f}% | AP: {val_ap:.2f}% | AUC: {val_auc:.2f}%")
-                
-                # Điểm tổng hợp chọn Best Checkpoint: Cân bằng giữa ACC và AP
-                val_score = 0.5 * val_acc + 0.5 * val_ap
+                if isinstance(self.val_loader, dict):
+                    # Đánh giá đa miền (không thiên vị riêng progan_val)
+                    domain_scores = []
+                    val_metrics = {}
+                    for vname, vloader in self.val_loader.items():
+                        m = evaluate_dataloader(self.model, vloader, self.device)
+                        print(f"  -> [{vname}] ACC: {m.get('acc', 0.0):.2f}% | AP: {m.get('ap', 0.0):.2f}% | AUC: {m.get('auc', 0.0):.2f}%")
+                        val_metrics[f"{vname}_acc"] = m.get("acc", 0.0)
+                        val_metrics[f"{vname}_ap"] = m.get("ap", 0.0)
+                        domain_scores.append(0.5 * m.get("acc", 0.0) + 0.5 * m.get("ap", 0.0))
+                    val_score = float(np.mean(domain_scores)) if domain_scores else 0.0
+                    val_acc = float(np.mean([val_metrics[k] for k in val_metrics if k.endswith("_acc")]))
+                    val_ap = float(np.mean([val_metrics[k] for k in val_metrics if k.endswith("_ap")]))
+                    val_metrics["acc"] = val_acc
+                    val_metrics["ap"] = val_ap
+                    print(f"  -> [MULTI-DOMAIN VAL] Điểm tổng hợp cân bằng đa miền: Score={val_score:.2f}% (ACC={val_acc:.2f}%, AP={val_ap:.2f}%)")
+                else:
+                    val_metrics = evaluate_dataloader(self.model, self.val_loader, self.device)
+                    val_acc = val_metrics.get("acc", 0.0)
+                    val_ap = val_metrics.get("ap", 0.0)
+                    val_auc = val_metrics.get("auc", 0.0)
+                    print(f"  -> Validation ACC: {val_acc:.2f}% | AP: {val_ap:.2f}% | AUC: {val_auc:.2f}%")
+                    val_score = 0.5 * val_acc + 0.5 * val_ap
+
                 if val_score > self.best_val_score:
                     self.best_val_score = val_score
                     self.best_val_ap = val_ap
@@ -193,18 +217,5 @@ class Trainer:
                 val_metrics=val_metrics,
                 is_best=is_best
             )
-
-            # Lưu mốc nghiệm thu Chuyên biệt Giai đoạn 2 (Task 4.1 DoD) tại Epoch 5
-            if epoch == 5:
-                self.checkpoint_manager.save(
-                    model=self.model,
-                    optimizer=self.optimizer,
-                    scheduler=scheduler,
-                    scaler=self.scaler,
-                    epoch=epoch,
-                    val_metrics=val_metrics,
-                    filename="fatformer_srm_phase2.pth"
-                )
-                print(f"[CHECKPOINT] Đã lưu cố định mốc Giai đoạn 2: fatformer_srm_phase2.pth (Task 4.1 DoD)")
 
             print(f"Epoch {epoch} hoàn thành trong {epoch_time:.1f}s | Train Loss: {train_loss:.4f}\n")

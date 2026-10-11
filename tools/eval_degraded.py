@@ -104,7 +104,7 @@ def parse_args():
     parser.add_argument("--num_heads", type=int, default=12)
     parser.add_argument("--use_srm", action="store_true", help="Bật nhánh SRM (False đối với Baseline gốc)")
     parser.add_argument("--use_gating", action="store_true", help="Bật nhánh Gating (False đối với Baseline gốc)")
-    parser.add_argument("--strict", action="store_true", default=False, help="Nạp checkpoint ở chế độ strict=True (mặc định False)")
+    parser.add_argument("--strict", action="store_true", default=True, help="Nạp checkpoint ở chế độ strict=True (mặc định: True)")
     
     # Comparison & Outputs
     parser.add_argument("--clean_csv", type=str, default="", 
@@ -365,11 +365,7 @@ def run_degraded_benchmark():
 
     if ckpt_path and os.path.exists(ckpt_path):
         print(f"[*] Đang nạp checkpoint từ: {ckpt_path} (strict={args.strict})...")
-        try:
-            CheckpointManager.load(ckpt_path, model, device=device, strict=args.strict)
-        except RuntimeError as e:
-            print(f"  [CẢNH BÁO] Nạp checkpoint với strict={args.strict} gặp lỗi keys. Tự động fallback sang strict=False...")
-            CheckpointManager.load(ckpt_path, model, device=device, strict=False)
+        CheckpointManager.load(ckpt_path, model, device=device, strict=args.strict)
         print("  -> Nạp trọng số checkpoint thành công!")
     else:
         print(f"[CẢNH BÁO] Không tìm thấy checkpoint tại: {ckpt_path}. Chạy suy luận với trọng số hiện thời.")

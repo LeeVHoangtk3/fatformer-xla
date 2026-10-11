@@ -140,9 +140,51 @@ def calculate_group_mean(metrics_dict: Dict[str, Dict[str, float]], group_subset
     }
 
 
+def calculate_sample_weighted_mean(results_by_subset: Dict[str, Dict[str, float]], group_subsets: List[str]) -> Optional[Dict[str, float]]:
+    """Tính trung bình theo trọng số số lượng mẫu (Micro / Sample-Weighted Mean)."""
+    total_samples = 0
+    total_correct = 0
+    total_real = 0
+    total_real_correct = 0
+    total_fake = 0
+    total_fake_correct = 0
+    aps, aucs = [], []
+    for sub in group_subsets:
+        if sub in results_by_subset:
+            m = results_by_subset[sub]
+            n_samp = m.get("num_samples", 0)
+            n_corr = m.get("num_correct", round(n_samp * m["acc"] / 100.0) if n_samp > 0 else 0)
+            n_real = m.get("num_real", round(n_samp * 0.5) if n_samp > 0 else 0)
+            n_real_corr = m.get("num_real_correct", round(n_real * m["r_acc"] / 100.0) if n_real > 0 else 0)
+            n_fake = m.get("num_fake", round(n_samp * 0.5) if n_samp > 0 else 0)
+            n_fake_corr = m.get("num_fake_correct", round(n_fake * m["f_acc"] / 100.0) if n_fake > 0 else 0)
+
+            total_samples += n_samp
+            total_correct += n_corr
+            total_real += n_real
+            total_real_correct += n_real_corr
+            total_fake += n_fake
+            total_fake_correct += n_fake_corr
+            aps.append(m.get("ap", 0.0))
+            aucs.append(m.get("auc", 0.0))
+
+    if total_samples == 0:
+        return None
+
+    return {
+        "acc": float(total_correct / total_samples * 100.0),
+        "ap": float(np.mean(aps)) if aps else 0.0,
+        "auc": float(np.mean(aucs)) if aucs else 0.0,
+        "r_acc": float(total_real_correct / max(1, total_real) * 100.0),
+        "f_acc": float(total_fake_correct / max(1, total_fake) * 100.0),
+        "num_samples": total_samples
+    }
+
+
 def format_grouped_summary(results_by_subset: Dict[str, Dict[str, float]]) -> Tuple[str, Dict[str, Optional[Dict[str, float]]]]:
     """
-    Tạo bảng tổng hợp kết quả phân nhóm GANs (8 tập) và Diffusion (10 tập) kèm 3 dòng MEAN.
+    Tạo bảng tổng hợp kết quả phân nhóm GANs (8 tập) và Diffusion (10 tập)
+    kèm cả Macro-Average lẫn Sample-Weighted (Micro-Average).
     """
     lines = []
     lines.append("=" * 86)
@@ -164,12 +206,18 @@ def format_grouped_summary(results_by_subset: Dict[str, Dict[str, float]]) -> Tu
             )
             
     mean_gans = calculate_group_mean(results_by_subset, GAN_SUBSETS)
+    weighted_gans = calculate_sample_weighted_mean(results_by_subset, GAN_SUBSETS)
     if mean_gans:
         lines.append("-" * 86)
         lines.append(
-            f"{'MEAN GANS (8)':<23} {mean_gans['acc']:<10.2f} {mean_gans['ap']:<10.2f} "
+            f"{'MACRO GANS (8)':<23} {mean_gans['acc']:<10.2f} {mean_gans['ap']:<10.2f} "
             f"{mean_gans['auc']:<10.2f} {mean_gans['r_acc']:<14.2f} {mean_gans['f_acc']:<14.2f}"
         )
+        if weighted_gans:
+            lines.append(
+                f"{'WEIGHTED GANS (Micro)':<23} {weighted_gans['acc']:<10.2f} {weighted_gans['ap']:<10.2f} "
+                f"{weighted_gans['auc']:<10.2f} {weighted_gans['r_acc']:<14.2f} {weighted_gans['f_acc']:<14.2f}"
+            )
     lines.append("-" * 86)
 
     # 2. Nhóm Diffusion
@@ -186,12 +234,18 @@ def format_grouped_summary(results_by_subset: Dict[str, Dict[str, float]]) -> Tu
             )
             
     mean_diff = calculate_group_mean(results_by_subset, DIFFUSION_SUBSETS)
+    weighted_diff = calculate_sample_weighted_mean(results_by_subset, DIFFUSION_SUBSETS)
     if mean_diff:
         lines.append("-" * 86)
         lines.append(
-            f"{'MEAN DIFF (10)':<23} {mean_diff['acc']:<10.2f} {mean_diff['ap']:<10.2f} "
+            f"{'MACRO DIFF (10)':<23} {mean_diff['acc']:<10.2f} {mean_diff['ap']:<10.2f} "
             f"{mean_diff['auc']:<10.2f} {mean_diff['r_acc']:<14.2f} {mean_diff['f_acc']:<14.2f}"
         )
+        if weighted_diff:
+            lines.append(
+                f"{'WEIGHTED DIFF (Micro)':<23} {weighted_diff['acc']:<10.2f} {weighted_diff['ap']:<10.2f} "
+                f"{weighted_diff['auc']:<10.2f} {weighted_diff['r_acc']:<14.2f} {weighted_diff['f_acc']:<14.2f}"
+            )
     lines.append("=" * 86)
 
     # 3. Các subset khác (nếu có)
@@ -209,17 +263,26 @@ def format_grouped_summary(results_by_subset: Dict[str, Dict[str, float]]) -> Tu
     # 4. Toàn bộ Overall
     all_evaluated = list(results_by_subset.keys())
     mean_overall = calculate_group_mean(results_by_subset, all_evaluated)
+    weighted_overall = calculate_sample_weighted_mean(results_by_subset, all_evaluated)
     if mean_overall:
         lines.append(
-            f"{'MEAN OVERALL':<23} {mean_overall['acc']:<10.2f} {mean_overall['ap']:<10.2f} "
+            f"{'MACRO OVERALL':<23} {mean_overall['acc']:<10.2f} {mean_overall['ap']:<10.2f} "
             f"{mean_overall['auc']:<10.2f} {mean_overall['r_acc']:<14.2f} {mean_overall['f_acc']:<14.2f}"
         )
+        if weighted_overall:
+            lines.append(
+                f"{'WEIGHTED OVERALL':<23} {weighted_overall['acc']:<10.2f} {weighted_overall['ap']:<10.2f} "
+                f"{weighted_overall['auc']:<10.2f} {weighted_overall['r_acc']:<14.2f} {weighted_overall['f_acc']:<14.2f}"
+            )
     lines.append("=" * 86)
 
     summary_dict = {
         "mean_gans": mean_gans,
+        "weighted_gans": weighted_gans,
         "mean_diff": mean_diff,
-        "mean_overall": mean_overall
+        "weighted_diff": weighted_diff,
+        "mean_overall": mean_overall,
+        "weighted_overall": weighted_overall
     }
     return "\n".join(lines), summary_dict
 

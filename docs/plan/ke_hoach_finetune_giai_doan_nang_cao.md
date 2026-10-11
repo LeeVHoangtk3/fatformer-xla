@@ -14,16 +14,18 @@
 
 ### 1.1. Thành Tựu Đã Đạt Được Của FatFormer-XLA Plan A (Task 5.1)
 Theo báo cáo nghiệm thu [Task 5.1](../bao_cao/C/bao_cao_task_5.1_full_benchmark_18_datasets.md), mô hình Plan A đã đạt được bước nhảy vọt quan trọng:
-- **Khôi phục hoàn toàn mốc sàn ảnh sạch**: Clean Overall ACC đạt **`90.19%`** (khôi phục $+39.88\%$ so với mức sụp đổ $50.31\%$ của lần 1), trong đó 8 họ GANs đạt **`93.99%`**.
-- **Giải cứu tử huyệt nén sâu $Q=30$**: Overall ACC tại $Q=30$ đạt **`71.03%`** (vượt xa mốc sàn bài báo gốc $52.89\%$), khả năng bắt ảnh giả (Fake ACC) đạt **`44.84%`** (tăng **$7.76$ lần** so với Baseline gốc $5.78\%$).
+- **Cải thiện đáng kể mốc sàn ảnh sạch**: Clean Overall ACC đạt **`90.19%`** (tăng $+39.88\%$ so với mức sụp đổ $50.31\%$ của lần 1), trong đó 8 họ GANs đạt **`93.99%`**.
+- **Giải cứu bước đầu tử huyệt nén sâu $Q=30$**: Overall ACC tại $Q=30$ đạt **`71.03%`** (vượt mốc sàn bài báo gốc $52.89\%$), khả năng bắt ảnh giả (Fake ACC) đạt **`44.84%`** (tăng **$7.76$ lần** so với Baseline gốc $5.78\%$).
 
-### 1.2. Hai Điểm Nghẽn Kỹ Thuật (Bottlenecks) Cần Bứt Phá
-Mặc dù đã vượt qua Cổng nghiệm thu tối thiểu (Expansion Gate), việc soi chiếu với bài báo CVPR 2024 chỉ ra 2 dư địa lớn cần chinh phục:
+### 1.2. Hai Điểm Nghẽn Kỹ Thuật (Bottlenecks) & Tử Huyệt Cần Bứt Phá
+Mặc dù đã vượt qua Cổng nghiệm thu cơ sở, việc soi chiếu chi tiết chỉ ra các tử huyệt nghiêm trọng:
 1. **Khoảng cách trên nhóm Diffusion còn $\approx 7.8\%$**:
-   - Clean Diffusion Mean hiện tại đạt **`87.16%`** (Bài báo gốc đạt **$95.00\%$**), đặc biệt là tập `guided` đạt **`65.85%`** (Bài báo gốc đạt **$76.10\%$**).
+   - Clean Diffusion Mean hiện tại đạt **`87.16%`** (Bài báo gốc đạt **$95.00\%$**), đặc biệt là tập `guided` đạt **`65.85%`** (Bài báo gốc đạt **$76.10\%$**, Fake ACC Clean chỉ đạt $35.00\%$).
    - *Nguyên nhân cốt lõi*: Tập huấn luyện Plan A có 144k ảnh ProGAN ($85\%$) nhưng chỉ có duy nhất 3.600 ảnh Diffusion Staging ($15\%$). Mô hình bị thiếu hụt dữ liệu về các vết giả siêu vi mô của các kiến trúc Diffusion hiện đại.
-2. **Fake ACC tại $Q=30$ cần vượt mốc $50\% - 55\%$**:
-   - Mức $44.84\%$ đã cứu được mô hình khỏi bị tê liệt, nhưng vẫn còn $\approx 55\%$ ảnh Deepfake bị nén nặng lọt qua kiểm duyệt. Cần tối ưu hóa cơ chế đóng dứt khoát của Dynamic Gating $\lambda(x)$ để nâng tỷ lệ này lên trên $\mathbf{50\% - 55\%}$.
+2. **Fake ACC tại $Q=30$ mới chỉ $44.84\%$ và sụp đổ cục bộ ở các subset**:
+   - Mức $44.84\%$ đồng nghĩa với hơn **$55\%$** ảnh Deepfake bị nén nặng vẫn lọt lưới.
+   - Nghiêm trọng hơn, các subset cụ thể gần như thất bại: `stylegan2` Fake ACC chỉ **`6.00%`**, `vqdiffusion` chỉ **`4.40%`**, họ `glide` chỉ **`19.6% - 23.6%`**, `guided` chỉ **`26.00%`**.
+   - Cần tối ưu hóa cấu trúc PEFT chuẩn, bổ sung dữ liệu sinh đa miền và cơ chế điều chế tần số để nâng Fake ACC lên trên $\mathbf{65\% - 70\%}$.
 
 ---
 

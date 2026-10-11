@@ -50,9 +50,9 @@ flowchart TD
         C3B --> GATE_EXP{"🛑 CỔNG ĐÁNH GIÁ MỞ RỘNG (EXPANSION GATE):<br>Đạt Clean ACC >= 90.0% & Q=30 ACC >= 65%?"}
     end
 
-    subgraph M4 ["📈 MỐC 4: ĐÃ VƯỢT QUA (BỎ QUA PHƯƠNG ÁN B)"]
+    subgraph M4 ["📈 MỐC 4: NGHIỆM THU BENCHMARK HAI CHIỀU & ĐÁNH GIÁ THÁCH THỨC"]
         direction TB
-        GATE_EXP -->|Đạt xuất sắc: Clean 90.19%, Q=30 71.03%| PASS_EXP["✓ PASS 100% CỔNG MỞ RỘNG<br>Khôi phục ảnh sạch (+39.88%)<br>Fake ACC Q=30 tăng 7.76x<br>Chính thức hủy bỏ Phương Án B"]
+        GATE_EXP -->|Đạt chỉ tiêu cơ sở: Clean 90.19%, Q=30 71.03%| PASS_EXP["ĐẠT TIÊU CHUẨN CƠ SỞ<br>Cải thiện ảnh sạch (+39.88%)<br>Fake ACC Q=30 tăng 7.76x (44.84%)<br>Mở rộng nghiên cứu giai đoạn nâng cao"]
     end
 
     subgraph M5 ["🎓 MỐC 5 (HIỆN TẠI): TỔNG DUYỆT NGHIỆM THU ĐỒ ÁN & DIỄN TẬP"]
@@ -149,10 +149,10 @@ Sau khi hoàn thành huấn luyện Phương Án A (nghiệm thu mô hình đỉ
   - **Clean Overall ACC**: Đạt **90.19%** (GANs: 93.99%, Diff: 87.16%, Real: 98.10%, Fake: 82.28%) $\rightarrow$ **VƯỢT CHỈ TIÊU** (Khôi phục $+39.88\%$, xóa bỏ hoàn toàn hiện tượng quên thảm họa).
   - **$Q=30$ Degraded ACC**: Đạt **71.03%** $\rightarrow$ **VƯỢT CHỈ TIÊU** ($\ge 65.0\%$).
   - **$Q=30$ Fake ACC**: Đạt **44.84%** $\rightarrow$ **TĂNG 7.76 LẦN** so với mốc sàn Baseline gốc ($5.78\%$).
-- **Quyết định chính thức của Hội đồng**:
-  - `[x] PASS 100% CỔNG ĐÁNH GIÁ MỞ RỘNG (EXPANSION GATE)`.
-  - **CHÍNH THỨC HỦY BỎ PHƯƠNG ÁN B (NẠP THÊM GENIMAGE)** do mô hình Plan A đã đạt chất lượng học thuật và thực tiễn xuất sắc.
-  - **CHUYỂN THẲNG SANG MỐC 5 (TỔNG DUYỆT ĐỒ ÁN & DIỄN TẬP)**.
+- **Kết luận đánh giá từ số liệu thực nghiệm**:
+  - `[x] ĐẠT CHỈ TIÊU CƠ SỞ CỦA CỔNG ĐÁNH GIÁ MỞ RỘNG (EXPANSION GATE)`.
+  - **KHÔNG THỂ DỪNG LẠI Ở PLAN A**: Mặc dù Clean ACC đạt $90.19\%$ và $Q=30$ ACC đạt $71.03\%$, phân tích học thuật chỉ ra Fake ACC tại $Q=30$ mới chỉ đạt **$44.84\%$** (hơn $55\%$ ảnh Deepfake nén bị bỏ lọt) và nhiều subset cụ thể gần như thất bại (`stylegan2` 6%, `vqdiffusion` 4.4%, `guided` 26%).
+  - **ĐỊNH HƯỚNG BẮT BUỘC**: Tiếp tục triển khai chiến dịch huấn luyện Finetune giai đoạn nâng cao (bổ sung tập dữ liệu đa miền, kiểm toán leakage và chuẩn hóa PEFT).
 
 ---
 
@@ -183,7 +183,7 @@ Sau khi hoàn thành huấn luyện Phương Án A (nghiệm thu mô hình đỉ
 - [x] **Mốc Kiểm Toán Lỗi Task 5.1**: Phát hiện triệt để nguyên nhân sụp đổ mô hình cũ, hoàn tất thiết kế Phương Án A & B.
 - [x] **Mốc Hạ Tầng Kaggle**: Đẩy thành công 17.75 GB dữ liệu và mã nguồn lên máy chủ Kaggle Server GPU RTX PRO 6000 Blackwell (94.97 GB VRAM).
 - [x] **Mốc 3B**: Hoàn thành xuất sắc chiến dịch huấn luyện Phương Án A trên Kaggle, nghiệm thu kỷ lục Epoch 3 `model_best.pth` (Val ACC 99.84%).
-- [x] **Mốc Cổng Mở Rộng**: Đã PASS 100% (Clean 90.19%, Q=30 71.03%, Fake 44.84%), chính thức hủy bỏ Phương Án B và chuyển thẳng sang Mốc 5.
+- [x] **Mốc Cổng Mở Rộng**: Đạt tiêu chuẩn cơ sở (Clean 90.19%, Q=30 71.03%, Fake 44.84%), nhận diện rõ các tử huyệt còn tồn tại và chuyển tiếp kế hoạch huấn luyện nâng cao.
 - [x] **Mốc 4 (Benchmark Toàn Diện - Task 5.1)**: Hoàn tất 126 lượt đo đạc trên 18 tập test hai chiều, giải cứu thành công Fake ACC tại $Q=30$ tăng 7.76 lần.
 - [ ] **Mốc 5 (Tổng Duyệt)**: Hoàn thiện Bảng Ablation Study (Task 5.2), Grad-CAM (Task 5.3), Web Demo (Task 5.5) và Báo cáo luận văn PDF (Task 5.4).
 - [ ] **Chốt Cuối Cùng**: Chủ trì buổi tổng duyệt diễn tập bảo vệ thử trước hội đồng.

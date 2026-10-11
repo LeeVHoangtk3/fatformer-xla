@@ -68,20 +68,34 @@ def compute_binary_metrics(
     r_acc = float(accuracy_score(y_true[real_mask], y_pred[real_mask])) if np.sum(real_mask) > 0 else 0.0
     f_acc = float(accuracy_score(y_true[fake_mask], y_pred[fake_mask])) if np.sum(fake_mask) > 0 else 0.0
 
+    num_samples = int(len(y_true))
+    num_real = int(np.sum(real_mask))
+    num_fake = int(np.sum(fake_mask))
+    num_correct = int(np.sum(y_true == y_pred))
+    num_real_correct = int(np.sum((y_true == 0) & (y_pred == 0)))
+    num_fake_correct = int(np.sum((y_true == 1) & (y_pred == 1)))
+
     return {
         "acc": acc * 100.0,
         "ap": ap * 100.0,
         "auc": auc * 100.0,
         "r_acc": r_acc * 100.0,
         "f_acc": f_acc * 100.0,
+        "num_samples": num_samples,
+        "num_real": num_real,
+        "num_fake": num_fake,
+        "num_correct": num_correct,
+        "num_real_correct": num_real_correct,
+        "num_fake_correct": num_fake_correct,
     }
 
 
 def format_evaluation_summary(
     results_by_subset: Dict[str, Dict[str, float]]
-) -> Tuple[str, Dict[str, float]]:
+) -> Tuple[str, Dict[str, Any]]:
     """
-    Định dạng bảng tổng kết kết quả đánh giá cho nhiều subset và tính giá trị trung bình (mean).
+    Định dạng bảng tổng kết kết quả đánh giá cho nhiều subset:
+    Báo cáo song song cả Macro-Average (trung bình đồng đều) và Sample-Weighted Micro-Average (theo số lượng mẫu).
     """
     lines = []
     lines.append("=" * 86)
@@ -102,7 +116,7 @@ def format_evaluation_summary(
             f"{metrics.get('auc', 0.0):<10.2f} {metrics['r_acc']:<14.2f} {metrics['f_acc']:<14.2f}"
         )
 
-    mean_metrics = {
+    macro_metrics = {
         "acc": float(np.mean(accs)) if accs else 0.0,
         "ap": float(np.mean(aps)) if aps else 0.0,
         "auc": float(np.mean(aucs)) if aucs else 0.0,
@@ -110,11 +124,46 @@ def format_evaluation_summary(
         "f_acc": float(np.mean(f_accs)) if f_accs else 0.0,
     }
 
+    # Tính Sample-Weighted (Micro-Average)
+    total_samples = sum(m.get("num_samples", 0) for m in results_by_subset.values())
+    total_correct = sum(m.get("num_correct", 0) for m in results_by_subset.values())
+    total_real = sum(m.get("num_real", 0) for m in results_by_subset.values())
+    total_real_correct = sum(m.get("num_real_correct", 0) for m in results_by_subset.values())
+    total_fake = sum(m.get("num_fake", 0) for m in results_by_subset.values())
+    total_fake_correct = sum(m.get("num_fake_correct", 0) for m in results_by_subset.values())
+
+    if total_samples > 0:
+        weighted_acc = (total_correct / total_samples) * 100.0
+        weighted_r_acc = (total_real_correct / max(1, total_real)) * 100.0
+        weighted_f_acc = (total_fake_correct / max(1, total_fake)) * 100.0
+    else:
+        weighted_acc = macro_metrics["acc"]
+        weighted_r_acc = macro_metrics["r_acc"]
+        weighted_f_acc = macro_metrics["f_acc"]
+
+    weighted_metrics = {
+        "acc": weighted_acc,
+        "ap": macro_metrics["ap"],
+        "auc": macro_metrics["auc"],
+        "r_acc": weighted_r_acc,
+        "f_acc": weighted_f_acc,
+        "total_samples": total_samples,
+    }
+
     lines.append("-" * 86)
     lines.append(
-        f"{'MEAN':<23} {mean_metrics['acc']:<10.2f} {mean_metrics['ap']:<10.2f} "
-        f"{mean_metrics['auc']:<10.2f} {mean_metrics['r_acc']:<14.2f} {mean_metrics['f_acc']:<14.2f}"
+        f"{'MACRO-AVERAGE':<23} {macro_metrics['acc']:<10.2f} {macro_metrics['ap']:<10.2f} "
+        f"{macro_metrics['auc']:<10.2f} {macro_metrics['r_acc']:<14.2f} {macro_metrics['f_acc']:<14.2f}"
+    )
+    lines.append(
+        f"{'SAMPLE-WEIGHTED (MICRO)':<23} {weighted_metrics['acc']:<10.2f} {weighted_metrics['ap']:<10.2f} "
+        f"{weighted_metrics['auc']:<10.2f} {weighted_metrics['r_acc']:<14.2f} {weighted_metrics['f_acc']:<14.2f}"
     )
     lines.append("=" * 86)
 
-    return "\n".join(lines), mean_metrics
+    combined_summary = {
+        "macro_metrics": macro_metrics,
+        "weighted_metrics": weighted_metrics,
+        "mean_metrics": macro_metrics  # Tương thích ngược
+    }
+    return "\n".join(lines), combined_summary

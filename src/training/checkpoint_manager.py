@@ -1,6 +1,8 @@
 import os
 import sys
 import shutil
+import json
+import time
 from typing import Optional, Dict, Any
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -29,11 +31,13 @@ class CheckpointManager:
         self,
         save_dir: str = "checkpoints",
         drive_backup_dir: Optional[str] = None,
-        max_to_keep: int = 3
+        max_to_keep: int = 3,
+        save_only_latest_and_best: bool = True
     ):
         self.save_dir = save_dir
         self.drive_backup_dir = drive_backup_dir
         self.max_to_keep = max_to_keep
+        self.save_only_latest_and_best = save_only_latest_and_best
 
         os.makedirs(self.save_dir, exist_ok=True)
         if self.drive_backup_dir:
@@ -56,6 +60,7 @@ class CheckpointManager:
         """
         Lưu checkpoint hiện tại và đồng bộ sang Google Drive (nếu có cấu hình).
         Bao gồm: model weights, optimizer, scheduler, scaler (AMP), epoch, metrics.
+        Mặc định: Chỉ lưu checkpoint_latest.pth và model_best.pth (tiết kiệm đĩa cứng tối đa).
         """
         model_to_save = model.module if hasattr(model, "module") else model
         
@@ -68,7 +73,49 @@ class CheckpointManager:
             "val_metrics": val_metrics or {},
         }
 
-        # 1. Dọn dẹp trước để giải phóng đĩa cứng trước khi ghi file mới
+        # 1. Chế độ tối ưu dung lượng: Chỉ lưu latest và model best
+        if self.save_only_latest_and_best and filename is None:
+            filename = "checkpoint_latest.pth"
+            local_path = os.path.join(self.save_dir, filename)
+
+            # Dọn dẹp bất kỳ file checkpoint_epoch_*.pth cũ nào còn sót
+            self._purge_epoch_checkpoints(self.save_dir)
+            if self.drive_backup_dir and os.path.exists(self.drive_backup_dir):
+                self._purge_epoch_checkpoints(self.drive_backup_dir)
+
+            # Ghi đè an toàn checkpoint_latest.pth
+            temp_path = os.path.join(self.save_dir, "checkpoint_latest.pth.tmp")
+            torch.save(state, temp_path)
+            if os.path.exists(local_path):
+                try:
+                    os.remove(local_path)
+                except Exception:
+                    pass
+            os.replace(temp_path, local_path)
+            print(f"[CHECKPOINT] [Latest] Đã lưu/ghi đè epoch {epoch} tại: {local_path}")
+
+            # Cập nhật model_best nếu đạt kỷ lục
+            if is_best:
+                best_path = os.path.join(self.save_dir, "model_best.pth")
+                shutil.copyfile(local_path, best_path)
+                print(f"[CHECKPOINT] [Best] ★ Đã cập nhật mô hình tốt nhất (Kỷ lục mới) tại: {best_path}")
+
+            # Sao lưu sang Google Drive (nếu có)
+            if self.drive_backup_dir and os.path.exists(self.drive_backup_dir):
+                try:
+                    drive_latest = os.path.join(self.drive_backup_dir, "checkpoint_latest.pth")
+                    shutil.copyfile(local_path, drive_latest)
+                    if is_best:
+                        drive_best = os.path.join(self.drive_backup_dir, "model_best.pth")
+                        shutil.copyfile(local_path, drive_best)
+                    print(f"[GOOGLE DRIVE] Đã sao lưu thành công sang Drive: {drive_latest}")
+                except Exception as e:
+                    print(f"[CẢNH BÁO] Lỗi khi sao lưu sang Google Drive: {e}")
+
+            return local_path
+
+        # 2. Chế độ truyền thống (Lưu riêng từng epoch nếu được yêu cầu rõ ràng)
+        # Dọn dẹp trước để giải phóng đĩa cứng trước khi ghi file mới
         self._prune_old_checkpoints(self.save_dir)
         if self.drive_backup_dir and os.path.exists(self.drive_backup_dir):
             self._prune_old_checkpoints(self.drive_backup_dir)
@@ -85,20 +132,16 @@ class CheckpointManager:
         torch.save(state, local_path)
         print(f"[CHECKPOINT] Đã lưu checkpoint tại: {local_path}")
 
-        # 2. Tạo symlink cho latest thay vì nhân bản 3.35GB lãng phí
+        # Cập nhật latest
         latest_path = os.path.join(self.save_dir, "checkpoint_latest.pth")
         if os.path.exists(latest_path):
             try:
                 os.remove(latest_path)
             except Exception:
                 pass
-        try:
-            os.symlink(filename, latest_path)
-        except Exception:
-            # Fallback nếu OS không cho tạo symlink
-            pass
+        shutil.copyfile(local_path, latest_path)
 
-        # 3. Cập nhật model_best nếu đạt kỷ lục
+        # Cập nhật model_best nếu đạt kỷ lục
         if is_best:
             best_path = os.path.join(self.save_dir, "model_best.pth")
             if os.path.exists(best_path):
@@ -109,7 +152,7 @@ class CheckpointManager:
             shutil.copyfile(local_path, best_path)
             print(f"[CHECKPOINT] Đã cập nhật mô hình tốt nhất (Best Model) tại: {best_path}")
 
-        # Đồng bộ sang Google Drive (nếu thư mục đích khác thư mục lưu cục bộ)
+        # Đồng bộ sang Google Drive
         if self.drive_backup_dir and os.path.exists(self.drive_backup_dir):
             try:
                 drive_path = os.path.join(self.drive_backup_dir, filename)
@@ -128,6 +171,18 @@ class CheckpointManager:
             self._prune_old_checkpoints(self.drive_backup_dir)
 
         return local_path
+
+    def _purge_epoch_checkpoints(self, directory: str):
+        """Xóa sạch các file checkpoint_epoch_*.pth để giải phóng triệt để dung lượng."""
+        try:
+            for f in os.listdir(directory):
+                if f.startswith("checkpoint_epoch_") and f.endswith(".pth"):
+                    try:
+                        os.remove(os.path.join(directory, f))
+                    except Exception:
+                        pass
+        except Exception:
+            pass
 
     def _prune_old_checkpoints(self, directory: str):
         """Giữ lại tối đa self.max_to_keep file checkpoint theo thứ tự epoch."""
@@ -178,19 +233,43 @@ class CheckpointManager:
                 clean_state_dict[k] = v
 
         model_to_load = model.module if hasattr(model, "module") else model
+        load_result = model_to_load.load_state_dict(clean_state_dict, strict=strict)
+        print(f"[CHECKPOINT] Đã nạp thành công từ: {checkpoint_path} (strict={strict})")
+        missing = list(getattr(load_result, "missing_keys", []))
+        unexpected = list(getattr(load_result, "unexpected_keys", []))
+        if missing:
+            print(f"  Missing keys ({len(missing)}): {missing[:5]}{'...' if len(missing) > 5 else ''}")
+        if unexpected:
+            print(f"  Unexpected keys ({len(unexpected)}): {unexpected[:5]}{'...' if len(unexpected) > 5 else ''}")
+
+        # Ghi log kiểm toán missing/unexpected keys ra file JSON phục vụ nghiệm thu
         try:
-            load_result = model_to_load.load_state_dict(clean_state_dict, strict=strict)
-        except RuntimeError as e:
-            if strict:
-                print(f"[CHECKPOINT] CẢNH BÁO: Nạp strict=True gặp sai khác khóa ({e}). Tự động fallback sang strict=False...")
-                load_result = model_to_load.load_state_dict(clean_state_dict, strict=False)
-            else:
-                raise e
-        print(f"[CHECKPOINT] Đã nạp thành công từ: {checkpoint_path}")
-        if hasattr(load_result, "missing_keys") and load_result.missing_keys:
-            print(f"  Missing keys: {len(load_result.missing_keys)}")
-        if hasattr(load_result, "unexpected_keys") and load_result.unexpected_keys:
-            print(f"  Unexpected keys: {len(load_result.unexpected_keys)}")
+            audit_entry = {
+                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "checkpoint_path": str(checkpoint_path),
+                "strict_mode": bool(strict),
+                "missing_keys_count": len(missing),
+                "missing_keys": missing,
+                "unexpected_keys_count": len(unexpected),
+                "unexpected_keys": unexpected,
+            }
+            os.makedirs("logs", exist_ok=True)
+            log_path = os.path.join("logs", "checkpoint_keys_audit.json")
+            history = []
+            if os.path.exists(log_path):
+                try:
+                    with open(log_path, "r", encoding="utf-8") as af:
+                        history = json.load(af)
+                    if not isinstance(history, list):
+                        history = [history]
+                except Exception:
+                    history = []
+            history.append(audit_entry)
+            with open(log_path, "w", encoding="utf-8") as af:
+                json.dump(history, af, indent=2, ensure_ascii=False)
+            print(f"  [✓] Đã ghi log kiểm toán keys vào: {log_path}")
+        except Exception as e_log:
+            print(f"  [!] Ghi log kiểm toán keys thất bại: {e_log}")
 
         if optimizer and checkpoint.get("optimizer"):
             try:
