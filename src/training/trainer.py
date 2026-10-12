@@ -1,5 +1,6 @@
 import time
 from typing import Optional, Dict
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -27,7 +28,10 @@ class Trainer:
         grad_accum_steps: int = 1,
         checkpoint_manager: Optional[CheckpointManager] = None,
         label_smoothing: float = 0.0,
-        criterion: Optional[nn.Module] = None
+        criterion: Optional[nn.Module] = None,
+        grad_clip_norm: Optional[float] = 1.0,
+        best_val_score: float = 0.0,
+        best_val_ap: float = 0.0
     ):
         self.model = model.to(device)
         self.train_loader = train_loader
@@ -36,6 +40,7 @@ class Trainer:
         self.use_amp = use_amp and (device.type == "cuda")
         self.grad_accum_steps = grad_accum_steps
         self.checkpoint_manager = checkpoint_manager or CheckpointManager()
+        self.grad_clip_norm = grad_clip_norm
 
         # Cấu hình Loss: Hỗ trợ DualStreamFocalLoss hoặc FatFormerLoss mặc định
         if criterion is not None:
@@ -55,8 +60,8 @@ class Trainer:
         )
 
         self.scaler = torch.cuda.amp.GradScaler(enabled=self.use_amp)
-        self.best_val_ap = 0.0
-        self.best_val_score = 0.0
+        self.best_val_ap = float(best_val_ap)
+        self.best_val_score = float(best_val_score)
 
     def train_epoch(self, epoch: int, print_freq: int = 50) -> float:
         self.model.train()
@@ -90,6 +95,11 @@ class Trainer:
             self.scaler.scale(loss_to_backward).backward()
 
             if (batch_idx + 1) % self.grad_accum_steps == 0 or (batch_idx + 1) == num_batches:
+                if self.grad_clip_norm is not None and self.grad_clip_norm > 0:
+                    if self.use_amp:
+                        self.scaler.unscale_(self.optimizer)
+                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=self.grad_clip_norm)
+
                 self.scaler.step(self.optimizer)
                 self.scaler.update()
                 self.optimizer.zero_grad()
@@ -157,21 +167,54 @@ class Trainer:
             if self.val_loader and (epoch % val_freq == 0 or epoch == epochs):
                 print(f"[EVALUATION] Đang kiểm tra validation cho Epoch {epoch}...")
                 if isinstance(self.val_loader, dict):
-                    # Đánh giá đa miền (không thiên vị riêng progan_val)
+                    # Đánh giá đa miền đại diện cho cả Clean và Robustness
                     domain_scores = []
+                    clean_scores = []
+                    robust_scores = []
+                    diff_scores = []
                     val_metrics = {}
+
                     for vname, vloader in self.val_loader.items():
                         m = evaluate_dataloader(self.model, vloader, self.device)
-                        print(f"  -> [{vname}] ACC: {m.get('acc', 0.0):.2f}% | AP: {m.get('ap', 0.0):.2f}% | AUC: {m.get('auc', 0.0):.2f}%")
-                        val_metrics[f"{vname}_acc"] = m.get("acc", 0.0)
-                        val_metrics[f"{vname}_ap"] = m.get("ap", 0.0)
-                        domain_scores.append(0.5 * m.get("acc", 0.0) + 0.5 * m.get("ap", 0.0))
-                    val_score = float(np.mean(domain_scores)) if domain_scores else 0.0
-                    val_acc = float(np.mean([val_metrics[k] for k in val_metrics if k.endswith("_acc")]))
+                        acc = m.get("acc", 0.0)
+                        ap = m.get("ap", 0.0)
+                        r_acc = m.get("r_acc", 0.0)
+                        f_acc = m.get("f_acc", 0.0)
+                        auc = m.get("auc", 0.0)
+                        print(f"  -> [{vname}] ACC: {acc:.2f}% | AP: {ap:.2f}% | AUC: {auc:.2f}% | Real: {r_acc:.2f}% | Fake: {f_acc:.2f}%")
+
+                        val_metrics[f"{vname}_acc"] = acc
+                        val_metrics[f"{vname}_ap"] = ap
+                        val_metrics[f"{vname}_r_acc"] = r_acc
+                        val_metrics[f"{vname}_f_acc"] = f_acc
+
+                        # Điểm cân bằng của từng loader
+                        loader_score = 0.5 * acc + 0.5 * ap
+                        domain_scores.append(loader_score)
+
+                        # Phân loại miền để tính trọng số composite
+                        v_lower = vname.lower()
+                        if "deg" in v_lower or "q30" in v_lower or "q50" in v_lower:
+                            robust_scores.append(loader_score)
+                        elif "diff" in v_lower:
+                            diff_scores.append(loader_score)
+                        else:
+                            clean_scores.append(loader_score)
+
+                    # Điểm composite: kết hợp Clean (40%), Robustness Q30/Q50 (40%), Diffusion (20%)
+                    if clean_scores and robust_scores and diff_scores:
+                        val_score = 0.40 * float(np.mean(clean_scores)) + 0.40 * float(np.mean(robust_scores)) + 0.20 * float(np.mean(diff_scores))
+                    elif clean_scores and robust_scores:
+                        val_score = 0.50 * float(np.mean(clean_scores)) + 0.50 * float(np.mean(robust_scores))
+                    else:
+                        val_score = float(np.mean(domain_scores)) if domain_scores else 0.0
+
+                    val_acc = float(np.mean([val_metrics[k] for k in val_metrics if k.endswith("_acc") and not (k.endswith("_r_acc") or k.endswith("_f_acc"))]))
                     val_ap = float(np.mean([val_metrics[k] for k in val_metrics if k.endswith("_ap")]))
                     val_metrics["acc"] = val_acc
                     val_metrics["ap"] = val_ap
-                    print(f"  -> [MULTI-DOMAIN VAL] Điểm tổng hợp cân bằng đa miền: Score={val_score:.2f}% (ACC={val_acc:.2f}%, AP={val_ap:.2f}%)")
+                    val_metrics["val_score"] = val_score
+                    print(f"  -> [MULTI-DOMAIN COMPOSITE] Điểm tổng hợp Robustness: Score={val_score:.2f}% (ACC={val_acc:.2f}%, AP={val_ap:.2f}%)")
                 else:
                     val_metrics = evaluate_dataloader(self.model, self.val_loader, self.device)
                     val_acc = val_metrics.get("acc", 0.0)
@@ -179,6 +222,7 @@ class Trainer:
                     val_auc = val_metrics.get("auc", 0.0)
                     print(f"  -> Validation ACC: {val_acc:.2f}% | AP: {val_ap:.2f}% | AUC: {val_auc:.2f}%")
                     val_score = 0.5 * val_acc + 0.5 * val_ap
+                    val_metrics["val_score"] = val_score
 
                 if val_score > self.best_val_score:
                     self.best_val_score = val_score
@@ -215,7 +259,9 @@ class Trainer:
                 scaler=self.scaler,
                 epoch=epoch,
                 val_metrics=val_metrics,
-                is_best=is_best
+                is_best=is_best,
+                best_val_score=self.best_val_score,
+                best_val_ap=self.best_val_ap
             )
 
             print(f"Epoch {epoch} hoàn thành trong {epoch_time:.1f}s | Train Loss: {train_loss:.4f}\n")

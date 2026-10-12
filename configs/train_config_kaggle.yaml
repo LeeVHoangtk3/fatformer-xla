@@ -1,0 +1,122 @@
+# ==============================================================================
+# FATFORMER-XLA: CẤU HÌNH HUẤN LUYỆN CHUẨN HÓA CHO KAGGLE NOTEBOOK
+# Milestone 3 — Phương Án A Finetune 5 Epoch (Kaggle P100 / Blackwell)
+# ==============================================================================
+# Mục đích: Định nghĩa đường dẫn tối ưu cho môi trường Kaggle:
+#   - Input datasets: /kaggle/input/...
+#   - Output checkpoints: /kaggle/working/checkpoints/ (giới hạn nghiêm ngặt 2 checkpoint)
+#   - Không ghi đè các tham số CLI tường minh.
+# ==============================================================================
+
+# 1. CẤU HÌNH MÔ HÌNH
+model:
+  backbone: "/kaggle/input/fatformer-pretrained/ViT-L-14.pt"
+  checkpoint: "/kaggle/input/fatformer-pretrained/fatformer_4class_ckpt.pth"
+  num_classes: 2
+  num_context_embedding: 8
+  use_srm: true
+  use_gating: true
+  srm_out_dim: 1024
+
+# 2. CẤU HÌNH ĐÓNG BĂNG THAM SỐ (PEFT Task 3.4)
+freeze:
+  trainable_modules:
+    - "language_guided_alignment"
+    - "text_guided_interactor"
+    - "norm1"
+    - "norm2"
+    - "linear1"
+    - "linear2"
+    - "activation"
+    - "srm"
+    - "gating"
+  trainable_params:
+    - "language_guided_alignment.ctx"
+  target_trainable_ratio_min: 0.025
+  target_trainable_ratio_max: 0.035
+
+# 3. CẤU HÌNH HÀM MẤT MÁT
+loss:
+  type: "DualStreamCELoss"
+  label_smoothing: 0.1
+
+# 4. CẤU HÌNH HUẤN LUYỆN TỔNG QUÁT
+training:
+  total_epochs: 5
+  batch_size: 32
+  grad_accumulation_steps: 2
+  amp_fp16: true
+
+  optimizer:
+    name: "AdamW"
+    lr_adapter: 1.0e-4
+    lr_gating: 1.0e-3
+    lr_prompt: 1.0e-3
+    weight_decay: 1.0e-4
+    betas: [0.9, 0.999]
+    eps: 1.0e-8
+
+  scheduler:
+    type: "CosineAnnealingLR"
+    T_max: 5
+    eta_min: 1.0e-6
+
+  gradient_clipping:
+    enabled: true
+    max_norm: 1.0
+
+# 5. GIÁO TRÌNH SUY BIẾN 3 GIAI ĐOẠN (Curriculum Degradation Schedule)
+curriculum:
+  phase1:
+    epochs: [1, 2]
+    jpeg_quality_range: [70, 90]
+    blur_sigma_range: [0.5, 1.0]
+    downsample: false
+    clean_ratio: 0.5
+
+  phase2:
+    epochs: [3, 4]
+    jpeg_quality_range: [45, 70]
+    blur_sigma_range: [1.0, 1.5]
+    downsample: true
+    downsample_target_size: 160
+    clean_ratio: 0.5
+
+  phase3:
+    epochs: [5, 5]
+    jpeg_quality_range: [30, 50]
+    blur_sigma_range: [1.5, 2.0]
+    downsample: true
+    downsample_target_size: 112
+    clean_ratio: 0.5
+    lr_multiplier: 0.5
+
+# 6. CẤU HÌNH DỮ LIỆU ĐA MIỀN (Kaggle paths)
+data:
+  train_data_dir: "/kaggle/input/progan-train/progan_train/"
+  staging_data_dir: "/kaggle/input/diffusion-staging/diffusion_staging/"
+  val_data_dir: "/kaggle/input/progan-val/progan_val/"
+  val_diffusion_dir: "/kaggle/input/diffusion-val/diffusion_val/"
+
+  progan_tar: "/kaggle/input/progan-train/progan_train.tar"
+  staging_tar: "/kaggle/input/diffusion-staging/diffusion_staging.tar"
+  val_tar: "/kaggle/input/progan-val/progan_val.tar"
+
+  image_size: 224
+  num_workers: 4
+  pin_memory: true
+  progan_ratio: 0.85
+  staging_ratio: 0.15
+
+# 7. CẤU HÌNH CHECKPOINT & LOGGING (Kaggle strict 2 checkpoints)
+checkpoint:
+  save_dir: "/kaggle/working/checkpoints/"
+  save_every_epoch: true
+  keep_last_n: 2
+  save_only_latest_and_best: true
+  resume_from: null
+
+logging:
+  log_every_n_steps: 10
+  fast_eval_every_epoch: true
+  wandb: false

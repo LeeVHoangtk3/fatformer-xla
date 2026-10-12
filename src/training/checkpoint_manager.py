@@ -55,11 +55,13 @@ class CheckpointManager:
         epoch: int = 0,
         val_metrics: Optional[Dict[str, float]] = None,
         is_best: bool = False,
-        filename: Optional[str] = None
+        filename: Optional[str] = None,
+        best_val_score: Optional[float] = None,
+        best_val_ap: Optional[float] = None
     ) -> str:
         """
         Lưu checkpoint hiện tại và đồng bộ sang Google Drive (nếu có cấu hình).
-        Bao gồm: model weights, optimizer, scheduler, scaler (AMP), epoch, metrics.
+        Bao gồm: model weights, optimizer, scheduler, scaler (AMP), epoch, metrics, best_val_score.
         Mặc định: Chỉ lưu checkpoint_latest.pth và model_best.pth (tiết kiệm đĩa cứng tối đa).
         """
         model_to_save = model.module if hasattr(model, "module") else model
@@ -71,6 +73,8 @@ class CheckpointManager:
             "scheduler": scheduler.state_dict() if scheduler else None,
             "scaler": scaler.state_dict() if scaler else None,
             "val_metrics": val_metrics or {},
+            "best_val_score": best_val_score,
+            "best_val_ap": best_val_ap,
         }
 
         # 1. Chế độ tối ưu dung lượng: Chỉ lưu latest và model best

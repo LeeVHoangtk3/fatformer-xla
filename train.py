@@ -58,6 +58,19 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Giá trị Boolean không hợp lệ (nhập true/false).')
 
 
+def get_explicit_cli_args() -> set:
+    """Xác định danh sách các cờ được người dùng truyền tường minh qua CLI."""
+    explicit = set()
+    for arg in sys.argv[1:]:
+        if arg.startswith("--"):
+            clean = arg[2:].split("=")[0]
+            explicit.add(clean.replace("-", "_"))
+        elif arg.startswith("-"):
+            clean = arg[1:].split("=")[0]
+            explicit.add(clean.replace("-", "_"))
+    return explicit
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="FatFormer-XLA Unified Training CLI (Milestone 3 / Phương Án A Finetune)")
 
@@ -71,6 +84,8 @@ def parse_args():
     parser.add_argument("--staging_dir", type=str, default=None, help="Đường dẫn thư mục diffusion_staging đã giải nén")
     parser.add_argument("--val_tar", type=str, default=None, help="Đường dẫn file nén progan_val.tar (8k ảnh)")
     parser.add_argument("--val_dir", type=str, default=None, help="Đường dẫn thư mục validation (progan_val) đã giải nén")
+    parser.add_argument("--val_diffusion_dir", type=str, default=None, help="Đường dẫn thư mục validation diffusion độc lập")
+    parser.add_argument("--val_diffusion_tar", type=str, default=None, help="Đường dẫn file nén validation diffusion .tar")
 
     # Tỷ lệ lấy mẫu đa miền (WeightedRandomSampler)
     parser.add_argument("--progan_ratio", type=float, default=0.85, help="Tỷ lệ mẫu ProGAN mong muốn trong mỗi batch (mặc định: 0.85)")
@@ -88,11 +103,14 @@ def parse_args():
     parser.add_argument("--grad_accum", type=int, default=2, help="Số bước tích lũy gradient (mặc định: 2 -> Effective batch size = 64)")
     parser.add_argument("--lr", "--lr_adapter", type=float, default=1e-4, dest="lr", help="Tốc độ học cho các adapter (LGA, Text-interactor, SRM proj)")
     parser.add_argument("--lr_gating", type=float, default=1e-3, help="Tốc độ học riêng cho mạng Gating MLP")
+    parser.add_argument("--lr_prompt", type=float, default=1e-3, help="Tốc độ học riêng cho soft prompt ctx")
     parser.add_argument("--weight_decay", type=float, default=1e-4, help="Hệ số suy giảm trọng số AdamW")
     parser.add_argument("--clean_prob", type=float, default=0.50, help="Tỷ lệ ảnh sạch tối thiểu (khóa cứng 0.50 chống quên biểu diễn cũ)")
     parser.add_argument("--val_freq", type=int, default=1, help="Chu kỳ chạy kiểm định validation (mỗi n epoch)")
     parser.add_argument("--use_cosine_scheduler", type=str2bool, default=True, help="Kích hoạt CosineAnnealingLR scheduler theo train_config.yaml")
     parser.add_argument("--eta_min", type=float, default=1.0e-6, help="Tốc độ học tối thiểu eta_min cho CosineAnnealingLR")
+    parser.add_argument("--grad_clip_norm", type=float, default=1.0, help="Ngưỡng gradient clipping max_norm (mặc định: 1.0)")
+    parser.add_argument("--log_freq", type=int, default=50, help="Tần suất in log tiến độ (mỗi n batch)")
 
     # 3. Chuyển đổi kiến trúc & Module Ablation
     parser.add_argument("--use_srm", type=str2bool, default=True, help="Bật/Tắt khối vi sai không gian SRM 3-Kernels (Ablation 2: tắt)")
@@ -102,8 +120,8 @@ def parse_args():
     parser.add_argument("--label_smoothing", type=float, default=0.1, help="Hệ số làm mượt nhãn Label Smoothing")
 
     # 4. Quản lý Checkpoint & Hạ tầng
-    parser.add_argument("--output_dir", type=str, default="checkpoints", help="Thư mục lưu trữ Checkpoint (nên trỏ sang Drive 5TB trên Colab)")
-    parser.add_argument("--checkpoint_name", type=str, default="fatformer_plan_a_final.pth", help="Tên file checkpoint chính cần lưu")
+    parser.add_argument("--output_dir", type=str, default="checkpoints", help="Thư mục lưu trữ Checkpoint")
+    parser.add_argument("--checkpoint_name", type=str, default="model_best.pth", help="Tên file checkpoint chính cần lưu (mặc định: model_best.pth)")
     parser.add_argument("--save_only_latest_and_best", type=str2bool, default=True, help="Chỉ lưu 2 file: checkpoint_latest.pth và model_best.pth (tiết kiệm đĩa cứng, chống tràn Kaggle)")
     parser.add_argument("--resume", type=str, default=None, help="Đường dẫn file .pth để tiếp tục huấn luyện ('latest' để tự tìm file mới nhất)")
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", help="Thiết bị thực thi (cuda hoặc cpu)")
@@ -146,9 +164,16 @@ def find_first_existing_path(candidates: List[Optional[str]], is_dir: bool = Tru
 def load_config_and_override_args(args) -> Tuple[argparse.Namespace, Dict[str, Any]]:
     """
     Nạp cấu hình từ train_config.yaml để làm Nguồn Sự Thật Duy Nhất (Single Source of Truth).
-    Chỉ override nếu người dùng không ghi đè tham số trực tiếp qua command line.
+    QUY TẮC ƯU TIÊN: Cờ CLI do người dùng truyền tường minh luôn có quyền ưu tiên cao nhất,
+    file YAML chỉ bổ sung/ghi đè các trường mà CLI chưa chỉ định.
     """
     cfg: Dict[str, Any] = {}
+    explicit_cli = get_explicit_cli_args()
+
+    def can_override(arg_name: str) -> bool:
+        """Kiểm tra xem tham số có được phép override từ YAML hay không."""
+        return arg_name not in explicit_cli
+
     config_path = args.config
     if config_path:
         if not os.path.isabs(config_path):
@@ -157,71 +182,104 @@ def load_config_and_override_args(args) -> Tuple[argparse.Namespace, Dict[str, A
             print(f"[*] Đang nạp cấu hình huấn luyện từ file YAML: {config_path}...")
             with open(config_path, "r", encoding="utf-8") as f:
                 cfg = yaml.safe_load(f) or {}
-            print("  [✓] Đã kích hoạt train_config.yaml làm Nguồn Sự Thật Duy Nhất (Source of Truth)!")
+            print("  [✓] Đã kích hoạt file cấu hình làm Source of Truth (ưu tiên CLI flags)!")
         else:
             print(f"[!] Không tìm thấy file config tại '{config_path}'. Dùng thiết lập CLI mặc định.")
 
     # 1. Cấu hình mô hình
     m_cfg = cfg.get("model", {})
-    if "use_srm" in m_cfg: args.use_srm = m_cfg["use_srm"]
-    if "use_gating" in m_cfg: args.use_gating = m_cfg["use_gating"]
-    if "num_classes" in m_cfg: args.num_classes = m_cfg["num_classes"]
-    if "num_context_embedding" in m_cfg: args.num_context_embedding = m_cfg["num_context_embedding"]
+    if "use_srm" in m_cfg and can_override("use_srm"): args.use_srm = m_cfg["use_srm"]
+    if "use_gating" in m_cfg and can_override("use_gating"): args.use_gating = m_cfg["use_gating"]
+    if "num_classes" in m_cfg and can_override("num_classes"): args.num_classes = m_cfg["num_classes"]
+    if "num_context_embedding" in m_cfg and can_override("num_context_embedding"): args.num_context_embedding = m_cfg["num_context_embedding"]
 
     # 2. Cấu hình Freeze & PEFT
     f_cfg = cfg.get("freeze", {})
-    args.target_trainable_ratio_min = f_cfg.get("target_trainable_ratio_min", 0.055)
-    args.target_trainable_ratio_max = f_cfg.get("target_trainable_ratio_max", 0.08)
+    args.trainable_modules = f_cfg.get("trainable_modules", None)
+    args.trainable_params = f_cfg.get("trainable_params", None)
+    if can_override("target_trainable_ratio_min"):
+        args.target_trainable_ratio_min = f_cfg.get("target_trainable_ratio_min", 0.025)
+    if can_override("target_trainable_ratio_max"):
+        args.target_trainable_ratio_max = f_cfg.get("target_trainable_ratio_max", 0.035)
 
     # 3. Cấu hình Loss
     l_cfg = cfg.get("loss", {})
-    if "type" in l_cfg:
+    if "type" in l_cfg and can_override("loss_type"):
         l_type = str(l_cfg["type"]).lower()
-        if "focal" in l_type:
-            args.loss_type = "dual_stream_focal"
-        elif "dual" in l_type or "ce" in l_type:
-            args.loss_type = "dual_stream_ce"
-    if "label_smoothing" in l_cfg:
+        if "focal" in l_type: args.loss_type = "dual_stream_focal"
+        elif "dual" in l_type or "ce" in l_type: args.loss_type = "dual_stream_ce"
+    if "label_smoothing" in l_cfg and can_override("label_smoothing"):
         args.label_smoothing = float(l_cfg["label_smoothing"])
 
     # 4. Cấu hình Training
     t_cfg = cfg.get("training", {})
-    if "total_epochs" in t_cfg: args.epochs = int(t_cfg["total_epochs"])
-    if "batch_size" in t_cfg: args.batch_size = int(t_cfg["batch_size"])
-    if "grad_accumulation_steps" in t_cfg: args.grad_accum = int(t_cfg["grad_accumulation_steps"])
-    if "amp_fp16" in t_cfg: args.use_amp = bool(t_cfg["amp_fp16"])
+    if "total_epochs" in t_cfg and can_override("epochs"): args.epochs = int(t_cfg["total_epochs"])
+    if "batch_size" in t_cfg and can_override("batch_size"): args.batch_size = int(t_cfg["batch_size"])
+    if "grad_accumulation_steps" in t_cfg and can_override("grad_accum"): args.grad_accum = int(t_cfg["grad_accumulation_steps"])
+    if "amp_fp16" in t_cfg and can_override("use_amp"): args.use_amp = bool(t_cfg["amp_fp16"])
 
     opt_cfg = t_cfg.get("optimizer", {})
-    if "lr_adapter" in opt_cfg: args.lr = float(opt_cfg["lr_adapter"])
-    if "lr_gating" in opt_cfg: args.lr_gating = float(opt_cfg["lr_gating"])
-    if "weight_decay" in opt_cfg: args.weight_decay = float(opt_cfg["weight_decay"])
+    if "lr_adapter" in opt_cfg and can_override("lr"): args.lr = float(opt_cfg["lr_adapter"])
+    if "lr_gating" in opt_cfg and can_override("lr_gating"): args.lr_gating = float(opt_cfg["lr_gating"])
+    if "lr_prompt" in opt_cfg and can_override("lr_prompt"): args.lr_prompt = float(opt_cfg["lr_prompt"])
+    if "weight_decay" in opt_cfg and can_override("weight_decay"): args.weight_decay = float(opt_cfg["weight_decay"])
+    args.betas = tuple(opt_cfg.get("betas", [0.9, 0.999]))
+    args.eps = float(opt_cfg.get("eps", 1.0e-8))
 
     sched_cfg = t_cfg.get("scheduler", {})
-    if "type" in sched_cfg:
+    if "type" in sched_cfg and can_override("use_cosine_scheduler"):
         args.use_cosine_scheduler = (sched_cfg["type"] == "CosineAnnealingLR")
     if "T_max" in sched_cfg:
         args.T_max = int(sched_cfg["T_max"])
     else:
         args.T_max = args.epochs
-    if "eta_min" in sched_cfg:
+    if "eta_min" in sched_cfg and can_override("eta_min"):
         args.eta_min = float(sched_cfg["eta_min"])
+
+    # Gradient clipping (max_norm)
+    gc_cfg = t_cfg.get("gradient_clipping", {})
+    args.grad_clip_enabled = gc_cfg.get("enabled", True)
+    if can_override("grad_clip_norm"):
+        args.grad_clip_norm = float(gc_cfg.get("max_norm", 1.0)) if args.grad_clip_enabled else None
+
+    # Logging
+    log_cfg = cfg.get("logging", {})
+    if "log_every_n_steps" in log_cfg and can_override("log_freq"):
+        args.log_freq = int(log_cfg["log_every_n_steps"])
 
     # 5. Cấu hình Data
     d_cfg = cfg.get("data", {})
-    if "progan_ratio" in d_cfg: args.progan_ratio = float(d_cfg["progan_ratio"])
-    if "staging_ratio" in d_cfg: args.staging_ratio = float(d_cfg["staging_ratio"])
-    if "num_workers" in d_cfg: args.num_workers = int(d_cfg["num_workers"])
-    if "train_data_dir" in d_cfg and not args.progan_dir: args.progan_dir = d_cfg["train_data_dir"]
-    if "staging_data_dir" in d_cfg and not args.staging_dir: args.staging_dir = d_cfg["staging_data_dir"]
-    if "val_data_dir" in d_cfg and not args.val_dir: args.val_dir = d_cfg["val_data_dir"]
-    if "progan_tar" in d_cfg and not args.progan_tar: args.progan_tar = d_cfg["progan_tar"]
-    if "staging_tar" in d_cfg and not args.staging_tar: args.staging_tar = d_cfg["staging_tar"]
-    if "val_tar" in d_cfg and not args.val_tar: args.val_tar = d_cfg["val_tar"]
+    if "progan_ratio" in d_cfg and can_override("progan_ratio"): args.progan_ratio = float(d_cfg["progan_ratio"])
+    if "staging_ratio" in d_cfg and can_override("staging_ratio"): args.staging_ratio = float(d_cfg["staging_ratio"])
+    if "num_workers" in d_cfg and can_override("num_workers"): args.num_workers = int(d_cfg["num_workers"])
+    
+    # Chỉ nạp đường dẫn thư mục từ YAML nếu nó tồn tại trên đĩa hoặc CLI chưa chỉ định
+    if "train_data_dir" in d_cfg and not args.progan_dir and os.path.exists(d_cfg["train_data_dir"]):
+        args.progan_dir = d_cfg["train_data_dir"]
+    if "staging_data_dir" in d_cfg and not args.staging_dir and os.path.exists(d_cfg["staging_data_dir"]):
+        args.staging_dir = d_cfg["staging_data_dir"]
+    if "val_data_dir" in d_cfg and not args.val_dir and os.path.exists(d_cfg["val_data_dir"]):
+        args.val_dir = d_cfg["val_data_dir"]
+    if "val_diffusion_dir" in d_cfg and not args.val_diffusion_dir and os.path.exists(d_cfg["val_diffusion_dir"]):
+        args.val_diffusion_dir = d_cfg["val_diffusion_dir"]
+
+    if "progan_tar" in d_cfg and not args.progan_tar and os.path.isfile(d_cfg["progan_tar"]):
+        args.progan_tar = d_cfg["progan_tar"]
+    if "staging_tar" in d_cfg and not args.staging_tar and os.path.isfile(d_cfg["staging_tar"]):
+        args.staging_tar = d_cfg["staging_tar"]
+    if "val_tar" in d_cfg and not args.val_tar and os.path.isfile(d_cfg["val_tar"]):
+        args.val_tar = d_cfg["val_tar"]
+    if "val_diffusion_tar" in d_cfg and not args.val_diffusion_tar and os.path.isfile(d_cfg["val_diffusion_tar"]):
+        args.val_diffusion_tar = d_cfg["val_diffusion_tar"]
 
     # 6. Checkpoint
     c_cfg = cfg.get("checkpoint", {})
-    if "save_dir" in c_cfg and args.output_dir == "checkpoints":
+    if "save_dir" in c_cfg and args.output_dir == "checkpoints" and can_override("output_dir"):
         args.output_dir = c_cfg["save_dir"]
+    if "keep_last_n" in c_cfg:
+        args.keep_last_n = int(c_cfg["keep_last_n"])
+    if "resume_from" in c_cfg and not args.resume:
+        args.resume = c_cfg["resume_from"]
 
     return args, cfg
 
@@ -246,14 +304,33 @@ def main():
     print("-" * 85)
 
     # 1. Chuẩn bị Dữ liệu & Transforms (Phương Án A: Đa miền ProGAN 85% + Staging 15%)
-    target_extract_dir = "/content/dataset_local" if os.path.exists("/content") else os.path.join(PROJECT_ROOT, "scratch", "dataset_local")
-    os.makedirs(target_extract_dir, exist_ok=True)
+    # Tự động nhận diện môi trường làm việc thông minh (Kaggle / Colab / Local)
+    is_kaggle = os.path.exists("/kaggle")
+    is_colab = os.path.exists("/content") and not is_kaggle and os.access("/content", os.W_OK)
+
+    if is_kaggle:
+        target_extract_dir = "/kaggle/temp/dataset_local" if os.path.exists("/kaggle/temp") else "/kaggle/working/dataset_local"
+        if args.output_dir == "checkpoints" or args.output_dir.startswith("/content"):
+            args.output_dir = "/kaggle/working/checkpoints"
+            print(f"  [*] Môi trường Kaggle: Tự động chuyển output_dir sang {args.output_dir}")
+    elif is_colab:
+        target_extract_dir = "/content/dataset_local"
+    else:
+        target_extract_dir = os.path.join(PROJECT_ROOT, "scratch", "dataset_local")
+
+    try:
+        os.makedirs(target_extract_dir, exist_ok=True)
+    except Exception as e_mk:
+        target_extract_dir = os.path.join(PROJECT_ROOT, "scratch", "dataset_local")
+        os.makedirs(target_extract_dir, exist_ok=True)
 
     # 1.1 Tìm kiếm hoặc giải nén ProGAN
     progan_dir = args.progan_dir
     if not progan_dir or not os.path.isdir(progan_dir):
         cand_progan_tars = [
             args.progan_tar,
+            "/kaggle/input/progan-train/progan_train.tar",
+            "/kaggle/input/fatformer-datasets/progan_train.tar",
             "/content/drive/MyDrive/Fatformer/datasets/progan_train.tar",
             "/content/drive/MyDrive/FatFormer_Hub/datasets/progan_train.tar",
             "DATASET/progan_train.tar",
@@ -264,8 +341,15 @@ def main():
                 progan_dir = extract_tar_if_needed(ptar, target_extract_dir)
                 if progan_dir:
                     break
-        if not progan_dir:
-            cand_dirs = ["/content/dataset_local/progan_train", "DATASET/progan_train", "DATASET/train"]
+        if not progan_dir or not os.path.isdir(progan_dir):
+            cand_dirs = [
+                "/kaggle/input/progan-train/progan_train",
+                "/kaggle/input/fatformer-datasets/progan_train",
+                "/kaggle/input/progan_train",
+                "/content/dataset_local/progan_train",
+                "DATASET/progan_train",
+                "DATASET/train"
+            ]
             progan_dir = find_first_existing_path(cand_dirs, is_dir=True)
 
     # 1.2 Tìm kiếm hoặc giải nén Diffusion Staging
@@ -273,6 +357,8 @@ def main():
     if not staging_dir or not os.path.isdir(staging_dir):
         cand_staging_tars = [
             args.staging_tar,
+            "/kaggle/input/diffusion-staging/diffusion_staging.tar",
+            "/kaggle/input/fatformer-datasets/diffusion_staging.tar",
             "/content/drive/MyDrive/Fatformer/datasets/diffusion_staging.tar",
             "/content/drive/MyDrive/FatFormer_Hub/datasets/diffusion_staging.tar",
             "DATASET/diffusion_staging.tar",
@@ -283,15 +369,23 @@ def main():
                 staging_dir = extract_tar_if_needed(star, target_extract_dir)
                 if staging_dir:
                     break
-        if not staging_dir:
-            cand_dirs = ["/content/dataset_local/diffusion_staging", "DATASET/diffusion_staging"]
-            staging_dir = find_first_existing_path(cand_dirs, is_dir=True)
+        if not staging_dir or not os.path.isdir(staging_dir):
+            cand_sdirs = [
+                "/kaggle/input/diffusion-staging/diffusion_staging",
+                "/kaggle/input/fatformer-datasets/diffusion_staging",
+                "/kaggle/input/diffusion_staging",
+                "/content/dataset_local/diffusion_staging",
+                "DATASET/diffusion_staging"
+            ]
+            staging_dir = find_first_existing_path(cand_sdirs, is_dir=True)
 
     # 1.3 Tìm kiếm hoặc giải nén ProGAN Validation
     val_dir = args.val_dir
     if not val_dir or not os.path.isdir(val_dir):
         cand_val_tars = [
             args.val_tar,
+            "/kaggle/input/progan-val/progan_val.tar",
+            "/kaggle/input/fatformer-datasets/progan_val.tar",
             "/content/drive/MyDrive/Fatformer/datasets/progan_val.tar",
             "/content/drive/MyDrive/FatFormer_Hub/datasets/progan_val.tar",
             "DATASET/progan_val.tar",
@@ -302,9 +396,16 @@ def main():
                 val_dir = extract_tar_if_needed(vtar, target_extract_dir)
                 if val_dir:
                     break
-        if not val_dir:
-            cand_dirs = ["/content/dataset_local/progan_val", "DATASET/progan_val", "DATASET/val"]
-            val_dir = find_first_existing_path(cand_dirs, is_dir=True)
+        if not val_dir or not os.path.isdir(val_dir):
+            cand_vdirs = [
+                "/kaggle/input/progan-val/progan_val",
+                "/kaggle/input/fatformer-datasets/progan_val",
+                "/kaggle/input/progan_val",
+                "/content/dataset_local/progan_val",
+                "DATASET/progan_val",
+                "DATASET/val"
+            ]
+            val_dir = find_first_existing_path(cand_vdirs, is_dir=True)
 
     # Fallback cho tùy chọn cũ data_tar/data_dir
     if not progan_dir and not staging_dir:
@@ -331,9 +432,10 @@ def main():
         pin_memory=(device.type == "cuda")
     )
 
-    # Khởi tạo Validation DataLoader Đa Miền (Multi-Domain Validation)
+    # Khởi tạo Validation DataLoader Đa Miền (Multi-Domain Validation bao gồm Clean + Q50 + Q30)
     val_loaders = {}
     if val_dir and os.path.isdir(val_dir):
+        # 1. ProGAN Clean
         v_clean = build_val_dataloader(
             val_dir=val_dir,
             batch_size=args.batch_size,
@@ -344,18 +446,33 @@ def main():
         if v_clean:
             val_loaders["progan_clean"] = v_clean
 
-        # Miền ProGAN Degraded Q=50 kiểm soát khả năng chống chịu suy biến
-        v_deg = build_val_dataloader(
+        # 2. ProGAN Degraded Q=50 kiểm soát khả năng chống chịu suy biến
+        v_deg_50 = build_val_dataloader(
             val_dir=val_dir,
             batch_size=args.batch_size,
             num_workers=args.num_workers,
             pin_memory=(device.type == "cuda"),
             transform=get_eval_transforms(degradation={"type": "jpeg", "quality": 50})
         )
-        if v_deg:
-            val_loaders["progan_degraded_q50"] = v_deg
+        if v_deg_50:
+            val_loaders["progan_degraded_q50"] = v_deg_50
 
+        # 3. ProGAN Degraded Q=30 — Kiểm soát mục tiêu cốt lõi chống nén sâu
+        v_deg_30 = build_val_dataloader(
+            val_dir=val_dir,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            pin_memory=(device.type == "cuda"),
+            transform=get_eval_transforms(degradation={"type": "jpeg", "quality": 30})
+        )
+        if v_deg_30:
+            val_loaders["progan_degraded_q30"] = v_deg_30
+
+    # 4. Tìm kiếm và nạp Diffusion Validation độc lập (nếu có)
     cand_diff_val = [
+        getattr(args, "val_diffusion_dir", None),
+        "/kaggle/input/diffusion-val/diffusion_val",
+        "/kaggle/input/fatformer-datasets/diffusion_val",
         os.path.join(PROJECT_ROOT, "DATASET", "diffusion_val"),
         "/content/dataset_local/diffusion_val",
         staging_dir if (staging_dir and os.path.isdir(staging_dir) and "val" in staging_dir) else None
@@ -399,8 +516,8 @@ def main():
 
     model_args = argparse.Namespace()
     model_args.backbone = "CLIP:ViT-L/14"
-    model_args.num_classes = 2
-    model_args.num_context_embedding = 8
+    model_args.num_classes = getattr(args, "num_classes", 2)
+    model_args.num_context_embedding = getattr(args, "num_context_embedding", 8)
     model_args.use_srm = args.use_srm
     model_args.use_gating = args.use_gating
     model_args.clip_path = resolved_clip_path
@@ -449,17 +566,24 @@ def main():
     # Chốt chặn bắt buộc: Dừng hẳn chương trình (raise) nếu tỷ lệ trainable vượt ngưỡng trần 8.0%
     stats = freeze_clip_backbone(
         model,
-        target_trainable_ratio_min=getattr(args, "target_trainable_ratio_min", 0.055),
-        target_trainable_ratio_max=getattr(args, "target_trainable_ratio_max", 0.08),
+        trainable_module_prefixes=getattr(args, "trainable_modules", None),
+        target_trainable_ratio_min=getattr(args, "target_trainable_ratio_min", 0.025),
+        target_trainable_ratio_max=getattr(args, "target_trainable_ratio_max", 0.035),
         verbose=True
     )
 
     # 4. Phân tầng Learning Rate cho Optimizer
     gating_params = []
+    prompt_params = []
     other_trainable_params = []
+    lr_prompt = getattr(args, "lr_prompt", None) or 1.0e-3
+    trainable_param_names = getattr(args, "trainable_params", None) or ["language_guided_alignment.ctx", "ctx"]
+
     for name, param in model.named_parameters():
         if param.requires_grad:
-            if "gating" in name.lower():
+            if any(p_name in name for p_name in trainable_param_names) or "ctx" in name.lower():
+                prompt_params.append(param)
+            elif "gating" in name.lower():
                 gating_params.append(param)
             else:
                 other_trainable_params.append(param)
@@ -469,11 +593,24 @@ def main():
         param_groups.append({"params": other_trainable_params, "lr": args.lr})
     if gating_params:
         param_groups.append({"params": gating_params, "lr": args.lr_gating})
+    if prompt_params:
+        param_groups.append({"params": prompt_params, "lr": lr_prompt})
 
+    betas = getattr(args, "betas", (0.9, 0.999))
+    eps = getattr(args, "eps", 1.0e-8)
     optimizer = torch.optim.AdamW(
         param_groups if param_groups else model.parameters(),
+        betas=betas,
+        eps=eps,
         weight_decay=args.weight_decay
     )
+    print(f"  [✓] Khởi tạo Optimizer AdamW: {len(param_groups)} nhóm tham số | betas={betas} | eps={eps}")
+    if prompt_params:
+        print(f"      • Nhóm Soft Prompt (ctx): {len(prompt_params)} tensor, lr={lr_prompt}")
+    if gating_params:
+        print(f"      • Nhóm Dynamic Gating: {len(gating_params)} tensor, lr={args.lr_gating}")
+    if other_trainable_params:
+        print(f"      • Nhóm Adapter (LGA/SRM): {len(other_trainable_params)} tensor, lr={args.lr}")
 
     # Khởi tạo CosineAnnealingLR scheduler theo train_config.yaml
     # T_max đọc từ YAML (args.T_max); fallback về args.epochs nếu không có.
@@ -509,10 +646,13 @@ def main():
     checkpoint_mgr = CheckpointManager(
         save_dir=args.output_dir,
         drive_backup_dir=drive_backup,
-        max_to_keep=3,
+        max_to_keep=getattr(args, "keep_last_n", 2),
         save_only_latest_and_best=args.save_only_latest_and_best
     )
     start_epoch = args.start_epoch
+    resumed_meta = None
+    saved_best_score = 0.0
+    saved_best_ap = 0.0
 
     if args.resume:
         resume_file = args.resume
@@ -521,10 +661,37 @@ def main():
         
         if resume_file and os.path.isfile(resume_file):
             print(f"\n[*] Đang khôi phục phiên huấn luyện từ checkpoint: {resume_file}")
-            resumed_meta = checkpoint_mgr.load(resume_file, model=model, optimizer=optimizer)
+            resumed_meta = checkpoint_mgr.load(
+                resume_file,
+                model=model,
+                optimizer=optimizer,
+                scheduler=scheduler
+            )
             if resumed_meta and "epoch" in resumed_meta:
                 start_epoch = resumed_meta["epoch"] + 1
                 print(f"  [✓] Tiếp tục huấn luyện từ Epoch {start_epoch}!")
+
+            # Khôi phục kỷ lục Validation lịch sử để bảo vệ model_best.pth
+            if resumed_meta:
+                saved_best_score = float(resumed_meta.get("best_val_score", 0.0) or 0.0)
+                saved_best_ap = float(resumed_meta.get("best_val_ap", 0.0) or 0.0)
+                if not saved_best_score:
+                    vm = resumed_meta.get("val_metrics", {})
+                    saved_best_score = float(vm.get("val_score", vm.get("score", 0.0)) or 0.0)
+
+    # Đối chiếu thêm nếu file model_best.pth đã tồn tại sẵn trong output_dir
+    best_file = os.path.join(args.output_dir, "model_best.pth")
+    if os.path.isfile(best_file):
+        try:
+            best_data = torch.load(best_file, map_location="cpu", weights_only=False)
+            b_score = float(best_data.get("best_val_score", 0.0) or best_data.get("val_metrics", {}).get("val_score", 0.0) or 0.0)
+            b_ap = float(best_data.get("best_val_ap", 0.0) or best_data.get("val_metrics", {}).get("ap", 0.0) or 0.0)
+            if b_score > saved_best_score:
+                saved_best_score = b_score
+                saved_best_ap = b_ap
+                print(f"  [✓] Đã phát hiện và bảo tồn kỷ lục từ model_best.pth hiện có: Score={saved_best_score:.2f}% (AP={saved_best_ap:.2f}%)")
+        except Exception:
+            pass
 
     # 7. Huấn luyện qua Trainer
     trainer = Trainer(
@@ -535,9 +702,20 @@ def main():
         use_amp=args.use_amp,
         grad_accum_steps=args.grad_accum,
         checkpoint_manager=checkpoint_mgr,
-        criterion=criterion
+        criterion=criterion,
+        grad_clip_norm=getattr(args, "grad_clip_norm", 1.0),
+        best_val_score=saved_best_score,
+        best_val_ap=saved_best_ap
     )
     trainer.optimizer = optimizer
+
+    # Khôi phục trạng thái GradScaler (AMP FP16) nếu có từ checkpoint resumed
+    if resumed_meta and "scaler" in resumed_meta and resumed_meta["scaler"] and hasattr(trainer, "scaler") and trainer.scaler:
+        try:
+            trainer.scaler.load_state_dict(resumed_meta["scaler"])
+            print("  [✓] Đã khôi phục trạng thái GradScaler (AMP FP16) vào Trainer.")
+        except Exception as e_sc:
+            print(f"  [!] Cảnh báo khôi phục GradScaler: {e_sc}")
 
     print("\n" + "=" * 85)
     print(f"BẮT ĐẦU CHẠY HUẤN LUYỆN: TỪ EPOCH {start_epoch} ĐẾN {args.epochs}")
@@ -559,28 +737,14 @@ def main():
         val_freq=args.val_freq
     )
 
-    # Lưu checkpoint hoàn thành của giai đoạn (Mô hình chính thức từ Best Model)
-    os.makedirs(args.output_dir, exist_ok=True)
+    # Khóa cứng tiêu chuẩn: Chỉ duy trì đúng 2 checkpoint chính thức (model_best.pth và checkpoint_latest.pth)
     best_path = os.path.join(args.output_dir, "model_best.pth")
-    final_path = os.path.join(args.output_dir, args.checkpoint_name)
-    if os.path.exists(best_path) and os.path.abspath(best_path) != os.path.abspath(final_path):
-        shutil.copyfile(best_path, final_path)
-        print(f"[CHECKPOINT] [Final] Đã đồng bộ checkpoint chính thức từ Best Model: {final_path}")
-        if drive_backup and os.path.exists(drive_backup):
-            shutil.copyfile(best_path, os.path.join(drive_backup, args.checkpoint_name))
-            print(f"[GOOGLE DRIVE] Đã sao lưu checkpoint chính thức sang Drive: {os.path.join(drive_backup, args.checkpoint_name)}")
-    elif not os.path.exists(final_path):
-        checkpoint_mgr.save(
-            model=model,
-            optimizer=optimizer,
-            scaler=trainer.scaler,
-            epoch=args.epochs,
-            filename=args.checkpoint_name
-        )
-
-    print(f"\n[✓] CHIẾN DỊCH HUẤN LUYỆN HOÀN TẤT THÀNH CÔNG!")
-    print(f"  • Checkpoint đã lưu an toàn tại: {args.output_dir}")
-    print(f"  • Tên file: {args.checkpoint_name}")
+    latest_path = os.path.join(args.output_dir, "checkpoint_latest.pth")
+    print(f"\n" + "=" * 85)
+    print(f"[✓] CHIẾN DỊCH HUẤN LUYỆN HOÀN TẤT THÀNH CÔNG!")
+    print(f"  • Checkpoint tốt nhất (Official Best Model): {best_path} ({'Có sẵn' if os.path.exists(best_path) else 'N/A'})")
+    print(f"  • Checkpoint mới nhất (Latest Resumable):    {latest_path} ({'Có sẵn' if os.path.exists(latest_path) else 'N/A'})")
+    print(f"  • Điểm kỷ lục tốt nhất: Score={trainer.best_val_score:.2f}% | AP={trainer.best_val_ap:.2f}%")
     print("=" * 85)
 
 
