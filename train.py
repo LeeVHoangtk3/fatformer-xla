@@ -476,14 +476,22 @@ def main():
     )
 
     # Khởi tạo CosineAnnealingLR scheduler theo train_config.yaml
+    # T_max đọc từ YAML (args.T_max); fallback về args.epochs nếu không có.
+    # Lưu ý: trước đây dùng args.epochs trực tiếp, khiến config T_max bị bỏ qua.
     scheduler = None
     if getattr(args, "use_cosine_scheduler", True):
+        t_max = getattr(args, "T_max", args.epochs)
+        if t_max < 1:
+            raise ValueError(
+                f"[CONFIG ERROR] scheduler.T_max phải >= 1, nhận được {t_max}. "
+                f"Kiểm tra lại giá trị T_max trong train_config.yaml."
+            )
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
             optimizer,
-            T_max=args.epochs,
+            T_max=t_max,
             eta_min=getattr(args, "eta_min", 1.0e-6)
         )
-        print(f"  [✓] Kích hoạt CosineAnnealingLR (T_max={args.epochs}, eta_min={getattr(args, 'eta_min', 1.0e-6)})")
+        print(f"  [✓] Kích hoạt CosineAnnealingLR (T_max={t_max}, eta_min={getattr(args, 'eta_min', 1.0e-6)})")
 
     # 5. Hàm mục tiêu Loss Function (Phương Án A: DualStreamCELoss)
     if args.loss_type == "dual_stream_ce":
