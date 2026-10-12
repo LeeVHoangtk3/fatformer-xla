@@ -1,5 +1,5 @@
 # BÁO CÁO NGHIỆM THU KỸ THUẬT: TASK 5.1
-## FULL-BENCHMARK TOÀN DIỆN MÔ HÌNH FATFORMER-XLA TRÊN 18 TẬP TEST HAI CHIỀU
+## ĐÁNH GIÁ MÔ HÌNH FATFORMER-XLA TRÊN 18 TẬP TEST HAI CHIỀU
 
 > **Mã nhiệm vụ**: `Task 5.1` *(Milestone 4 / 5)*  
 > **Người chủ trì**: **Thành viên C (Training & Evaluation Lead)**  
@@ -7,11 +7,11 @@
 > **Thời gian nghiệm thu**: 2026-10-10  
 > **Môi trường & Phần cứng**: Google Colab | **GPU NVIDIA Tesla T4 (15.8 GB VRAM)**  
 > **Quy mô thực nghiệm**: **18 tập test** $\times$ **7 trạng thái** (Clean + 6 Degraded) = **126 lượt đo đạc phân tầng** (Tổng thời gian: 198.71 phút)  
-> **Checkpoint kiểm thử chính thức**: [`fatformer_plan_a_final.pth`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/checkpoints/fatformer_plan_a_final.pth) *(Mô hình tốt nhất kế thừa từ Epoch 3 kỷ lục trên GPU RTX PRO 6000 Blackwell tại Task 4.3, Val ACC 99.84%)*  
-> **Trạng thái nghiệm thu**: `[x] ĐÃ HOÀN THÀNH ĐÁNH GIÁ THỰC NGHIỆM (ĐẠT CHỈ TIÊU CƠ SỞ, XÁC LẬP THÁCH THỨC CHO GIAI ĐOẠN TIẾP THEO)`  
+> **Checkpoint kiểm thử**: [`fatformer_plan_a_final.pth`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/checkpoints/fatformer_plan_a_final.pth) *(Checkpoint trung gian kế thừa từ Epoch 3 của quá trình huấn luyện bị gián đoạn tại Task 4.3, chưa qua Phase 3 hardening)*  
+> **Trạng thái nghiệm thu**: `[x] ĐÃ HOÀN THÀNH ĐÁNH GIÁ THỰC NGHIỆM (GHI NHẬN SỐ LIỆU THAM CHIẾU BƯỚC ĐẦU)`  
 > **Sản phẩm bàn giao**: 
 > - Ma trận kết quả chi tiết: [`DATASET/logs/m4_full_benchmark/final_full_benchmark_matrix.csv`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/m4_full_benchmark/final_full_benchmark_matrix.csv)
-> - Biểu đồ trực quan hóa đối chứng: [`DATASET/logs/m4_full_benchmark/task_5.1_master_benchmark_chart.png`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/m4_full_benchmark/task_5.1_master_benchmark_chart.png)
+> - Biểu đồ đối chứng: [`DATASET/logs/m4_full_benchmark/task_5.1_master_benchmark_chart.png`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/m4_full_benchmark/task_5.1_master_benchmark_chart.png)
 > - Báo cáo Clean: [`DATASET/logs/m4_full_benchmark/task_5.1_clean_report.md`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/m4_full_benchmark/task_5.1_clean_report.md)
 > - Báo cáo Degraded: [`DATASET/logs/m4_full_benchmark/task_5.1_degraded_report.md`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/m4_full_benchmark/task_5.1_degraded_report.md)
 
@@ -19,36 +19,37 @@
 
 ## 1. MỤC TIÊU KỸ THUẬT & TIÊU CHUẨN NGHIỆM THU (DoD)
 
-Theo đặc tả nhiệm vụ tại [task_5.1_full_benchmark_18_datasets.md](../../tasks/member_c_training_eval/task_5.1_full_benchmark_18_datasets.md) và [ke_hoach_cac_cot_moc_va_diem_dung.md](../../plan/ke_hoach_cac_cot_moc_va_diem_dung.md), **Task 5.1** là nhiệm vụ thực nghiệm tối quan trọng nhằm thẩm định mô hình FatFormer-XLA Finetune Phương Án A:
+Theo đặc tả nhiệm vụ tại [task_5.1_full_benchmark_18_datasets.md](../../tasks/member_c_training_eval/task_5.1_full_benchmark_18_datasets.md) và [ke_hoach_cac_cot_moc_va_diem_dung.md](../../plan/ke_hoach_cac_cot_moc_va_diem_dung.md), **Task 5.1** thực hiện đo đạc thực nghiệm nhằm kiểm tra mô hình trên hai phương diện:
 1. **Đo đạc hai chiều không gian dữ liệu**:
-   - **Chiều thứ nhất (Cross-Generator Generalization)**: Khả năng tổng quát hóa trên 8 kiến trúc GANs và 10 kiến trúc Diffusion chưa từng gặp trong quá trình huấn luyện.
-   - **Chiều thứ hai (Degradation Robustness)**: Khả năng chống chịu trước 6 biến thể suy biến vật lý thực tế trên mạng xã hội ($Q=30, 50, 70$, $\text{Blur}_1, \text{Blur}_2$, $\text{Down-Up}$).
+   - **Chiều thứ nhất (Cross-Generator Generalization)**: Khả năng nhận diện trên 8 kiến trúc GANs và 10 kiến trúc Diffusion chưa gặp trong quá trình huấn luyện.
+   - **Chiều thứ hai (Degradation Robustness)**: Khả năng chống chịu trước 6 biến thể suy biến vật lý ($Q=30, 50, 70$, $\text{Blur}_1, \text{Blur}_2$, $\text{Down-Up}$).
 2. **Tiêu chuẩn hoàn thành (Definition of Done & Expansion Gate)**:
-   - [x] Thực thi đầy đủ $100\%$ không sót bất kỳ tập nào trong 18 tập test trên cả 7 trạng thái.
-   - [!] Clean Overall ACC đạt $90.19\%$ (vượt mốc sàn kỹ thuật $\ge 90.0\%$, nhưng vẫn còn khoảng cách $-6.26\%$ so với Baseline gốc $96.45\%$; chưa thể kết luận "xóa bỏ triệt để" hiện tượng catastrophic forgetting).
-   - [!] Độ chính xác kháng nén sâu $Q=30$ Overall ACC đạt $71.03\%$ (vượt ngưỡng $\ge 65.0\%$) và Fake ACC tăng lên $44.84\%$ (so với $5.78\%$ của Baseline gốc), nhưng vẫn còn tỷ lệ bỏ lọt $>55\%$ đòi hỏi phải finetune nâng cao tiếp.
-   - [x] Lưu trữ toàn vẹn tệp ma trận `final_full_benchmark_matrix.csv` và biểu đồ trực quan hóa.
+   - [x] Thực thi đầy đủ $100\%$ không sót tập nào trong 18 tập test trên cả 7 trạng thái.
+   - [!] Clean Overall ACC đạt $90.19\%$ (thấp hơn khoảng cách $-6.26\%$ so với Baseline gốc $96.45\%$; chưa khắc phục hoàn toàn hiện tượng quên tri thức).
+   - [!] Độ chính xác kháng nén sâu $Q=30$ Overall ACC đạt $71.03\%$ và Fake ACC đạt $44.84\%$ (tăng so với $5.78\%$ của Baseline gốc, nhưng vẫn còn tỷ lệ bỏ sót $55.16\%$ đòi hỏi phải tiếp tục huấn luyện nâng cao).
+   - [x] Lưu trữ tệp ma trận `final_full_benchmark_matrix.csv` và biểu đồ đối chứng.
 
 ---
 
 ## 2. KẾ THỪA THÔNG SỐ THỰC TẾ (TUÂN THỦ NGUYÊN TẮC 4)
 
-- **Kế thừa từ Task 4.3 ([Báo cáo Task 4.3](bao_cao_task_4.3_train_plan_a_kaggle_blackwell.md))**:
-   - Trọng số mô hình `fatformer_plan_a_final.pth` được huấn luyện 4 epoch trên 144k ProGAN (85%) + 3.6k Staging GenImage (15%), sử dụng `DualStreamCELoss(label_smoothing=0.1)`, `clean_prob=0.50`, đạt Val ACC 99.84% tại Epoch 3.
-   - **Lưu ý phương pháp luận đánh giá cũ**: Đợt chạy thực nghiệm Task 5.1 lịch sử được thực hiện theo pipeline cũ (nhánh Degraded nạp với `strict=False`). Hiện tại mã nguồn đã được sửa đồng bộ bắt buộc `strict=True` và bổ sung cơ chế audit key. Muốn xác nhận tuyệt đối tính đúng đắn của toàn bộ ma trận số liệu, cần rerun benchmark đầy đủ bằng pipeline chuẩn hóa mới khi môi trường GPU khả dụng.
+- **Kế thừa từ Task 4.3 ([Báo cáo Task 4.3](bao_cao_task_4.3_finetune_plan_a_kaggle_blackwell.md))**:
+   - Checkpoint kiểm thử `fatformer_plan_a_final.pth` là checkpoint trung gian lưu tại Epoch 3 của quá trình huấn luyện bị gián đoạn ở Epoch 4 do đầy bộ nhớ đĩa Kaggle. Mô hình chưa từng trải qua Phase 3 (Epoch 5 - Hardening với $Q \in [30, 50]$, learning rate $\times 0.5$).
+   - Lần huấn luyện trước đó có tỷ lệ tham số trainable là 26.07% do whitelist chưa loại trừ các khối FFN trong ViT.
+   - **Lưu ý phương pháp luận đánh giá cũ**: Đợt chạy thực nghiệm Task 5.1 lịch sử được thực hiện theo pipeline cũ (nhánh Degraded nạp với `strict=False`). Hiện tại mã nguồn đã được sửa đồng bộ bắt buộc `strict=True` và bổ sung cơ chế lưu log khóa không khớp. Toàn bộ ma trận số liệu này đóng vai trò số liệu tham chiếu trung gian và cần được đo đạc lại đầy đủ bằng quy trình chuẩn hóa mới khi hoàn thành lượt huấn luyện 5 epoch đầy đủ.
 - **Kế thừa từ Task 1.1 & Task 2.1 ([Báo cáo Task 1.1](../A/bao_cao_task_1.1_ha_tang_drive_io.md) & [Báo cáo Task 2.1](../A/bao_cao_task_2.1_make_degraded_dataset.md))**:
   - Dữ liệu Clean: `test_benchmark_gans.tar` (18.74 GB) + `test_benchmark_diffusion.tar` (1.22 GB).
   - Dữ liệu Degraded: `test_degraded.tar` (19.55 GB, chứa 6 biến thể nén và làm mờ tạo theo chuẩn PNG lossless).
 - **Kế thừa đối chứng từ Task 2.2 & Task 2.3 ([Báo cáo Task 2.2](bao_cao_task_2.2_baseline_clean_benchmark.md) & [Báo cáo Task 2.3](bao_cao_task_2.3_baseline_degraded_benchmark.md))**:
-  - Mốc trần Clean Baseline: 96.45% Overall ACC (Fake ACC: 93.54%, Real ACC: 99.37%).
-  - Mốc sàn sụp đổ Degraded Baseline tại $Q=30$: 52.89% Overall ACC, nhưng **Fake ACC bị tê liệt ở mức 5.78%** (chỉ đoán bừa 100% Real).
+  - Mốc tham chiếu Clean Baseline CVPR 2024: 96.45% Overall ACC (Fake ACC: 93.54%, Real ACC: 99.37%).
+  - Mốc tham chiếu Degraded Baseline tại $Q=30$: 52.89% Overall ACC, trong đó Fake ACC ở mức 5.78% (mô hình hầu như đoán Real).
 - **Kế thừa đối chứng từ Task 4.2 ([Báo cáo Task 4.2](bao_cao_task_4.2_train_phase_2_hardening.md))**:
-  - Mô hình cũ (Epoch 8 cũ) bị sụp đổ trên ảnh sạch: Clean Overall ACC rớt xuống **50.31%** (Fake ACC chỉ 43.48%).
+  - Mô hình cũ (Epoch 8 cũ) bị suy giảm trên ảnh sạch: Clean Overall ACC ở mức **50.31%** (Fake ACC 43.48%).
 
 ---
 
 ## 3. TOÀN VĂN MA TRẬN MASTER BENCHMARK 2 CHIỀU THỰC TẾ
-*(Trích xuất trực tiếp từ nhật ký kiểm thử chính thức tại [`DATASET/logs/m4_full_benchmark/final_full_benchmark_matrix.csv`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/m4_full_benchmark/final_full_benchmark_matrix.csv))*
+*(Trích xuất trực tiếp từ nhật ký kiểm thử tại [`DATASET/logs/m4_full_benchmark/final_full_benchmark_matrix.csv`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/m4_full_benchmark/final_full_benchmark_matrix.csv))*
 
 ### 3.1. Chiều 1: Kết Quả Trên 18 Tập Test Sạch (Clean Benchmark)
 
@@ -83,28 +84,28 @@ Theo đặc tả nhiệm vụ tại [task_5.1_full_benchmark_18_datasets.md](../
 | Biến Thể Đánh Giá | Mô Tả Quy Chuẩn Kỹ Thuật | GANs Mean (%) | Diff Mean (%) | Overall ACC (%) | Real ACC (%) | Fake ACC (%) | AP Mean (%) | AUC Mean (%) | $\Delta$ Độ Sụt Giảm |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Clean (Tham chiếu)**| Ảnh sạch phòng lab | **93.99** | **87.16** | **90.19** | **98.10** | **82.28** | **96.46** | **95.40** | **0.00% (Mốc)** |
-| `jpeg_q70` | Nén nhẹ JPEG $Q=70$ | 83.45 | 77.68 | **80.24** | 96.18 | **64.31** | 92.67 | 91.81 | **-9.95%** |
+| `jpeg_q70` | Nén JPEG $Q=70$ | 83.45 | 77.68 | **80.24** | 96.18 | **64.31** | 92.67 | 91.81 | **-9.95%** |
 | `blur_s1` | Gaussian Blur $\sigma=1.0$ | 87.15 | 73.36 | **79.49** | 97.00 | **61.98** | 91.87 | 90.97 | **-10.70%** |
-| `jpeg_q50` | Nén vừa JPEG $Q=50$ | 80.30 | 74.52 | **77.09** | 96.24 | **57.93** | 90.28 | 89.35 | **-13.10%** |
+| `jpeg_q50` | Nén JPEG $Q=50$ | 80.30 | 74.52 | **77.09** | 96.24 | **57.93** | 90.28 | 89.35 | **-13.10%** |
 | `blur_s2` | Gaussian Blur $\sigma=2.0$ | 82.15 | 69.80 | **75.29** | 94.69 | **55.89** | 88.61 | 88.42 | **-14.90%** |
 | `down_up` | Co giãn $224 \rightarrow 112 \rightarrow 224$ | 83.17 | 67.62 | **74.53** | 97.62 | **51.44** | 90.01 | 88.85 | **-15.66%** |
-| `jpeg_q30` | Nén sâu JPEG $Q=30$ (Artifact khối 8x8) | 74.50 | 68.26 | **71.03** | 97.22 | **44.84** | 85.64 | 84.74 | **-19.16%** |
+| `jpeg_q30` | Nén sâu JPEG $Q=30$ | 74.50 | 68.26 | **71.03** | 97.22 | **44.84** | 85.64 | 84.74 | **-19.16%** |
 
 ---
 
 ## 4. ĐỐI CHỨNG MA TRẬN 3 THẾ HỆ MÔ HÌNH (CVPR 2024 vs. OLD vs. PLAN A)
 
-| Chiều Đo Đạc | Chỉ Số Kỹ Thuật | Baseline Gốc CVPR 2024<br>*(Task 2.2 & 2.3)* | Mô Hình Cũ Bị Sụp Đổ<br>*(Task 4.2 Epoch 8)* | **FatFormer-XLA Plan A**<br>*(Task 5.1 Thực Tế)* | Mức Độ Bứt Phá<br>*(vs. Mô hình cũ)* |
+| Chiều Đo Đạc | Chỉ Số Kỹ Thuật | Baseline CVPR 2024<br>*(Task 2.2 & 2.3)* | Mô Hình Cũ Bị Sụt Giảm<br>*(Task 4.2 Epoch 8)* | **FatFormer-XLA Plan A**<br>*(Task 5.1 Đo đạc)* | Mức Độ Thay Đổi<br>*(vs. Mô hình cũ)* |
 | :--- | :--- | :---: | :---: | :---: | :---: |
-| **ẢNH SẠCH (Clean)** | **Overall ACC** | **96.45%** | **50.31%** | **90.19%** | **+39.88%** *(Khôi phục)* |
+| **ẢNH SẠCH (Clean)** | **Overall ACC** | **96.45%** | **50.31%** | **90.19%** | **+39.88%** *(Cải thiện)* |
 | | GANs Mean | 98.40% | 50.82% | **93.99%** | **+43.17%** |
 | | Diffusion Mean | 95.00% | 49.90% | **87.16%** | **+37.26%** |
-| | Fake ACC (Bắt giả) | 93.54% | 43.48% | **82.28%** | **+38.80%** |
+| | Fake ACC | 93.54% | 43.48% | **82.28%** | **+38.80%** |
 | | AP Trung bình | 99.12% | 53.64% | **96.46%** | **+42.82%** |
 | | AUC Trung bình | 99.05% | 49.17% | **95.40%** | **+46.23%** |
-| **NÉN SÂU ($Q=30$)** | **Overall ACC** | **52.89%** | **46.78%** | **71.03%** | **+24.25%** *(Vượt mốc sàn)* |
-| | **Fake ACC (Tử huyệt)**| **5.78%** *(Tê liệt)* | **29.53%** | **44.84%** | **Tăng gấp 7.76 lần** *(vs. Baseline)* |
-| | Real ACC | 100.00% *(Đoán bừa)* | 64.02% | **97.22%** | Phân phối cân bằng |
+| **NÉN SÂU ($Q=30$)** | **Overall ACC** | **52.89%** | **46.78%** | **71.03%** | **+24.25%** |
+| | **Fake ACC** | **5.78%** | **29.53%** | **44.84%** | **Tăng từ 5.78% lên 44.84%** |
+| | Real ACC | 100.00% | 64.02% | **97.22%** | Cân bằng hơn |
 | **NÉN VỪA ($Q=50$)** | Overall ACC | 57.20% | 47.94% | **77.09%** | **+29.15%** |
 | **NÉN NHẸ ($Q=70$)** | Overall ACC | 65.40% | 47.58% | **80.24%** | **+32.66%** |
 | **GAUSSIAN BLUR $\sigma=1$** | Overall ACC | 62.10% | 48.57% | **79.49%** | **+30.92%** |
@@ -113,43 +114,45 @@ Theo đặc tả nhiệm vụ tại [task_5.1_full_benchmark_18_datasets.md](../
 
 ---
 
-## 5. PHÂN TÍCH CHUYÊN SÂU 3 HIỆN TƯỢNG KHOA HỌC QUAN TRỌNG
+## 5. PHÂN TÍCH KỸ THUẬT CÁC HIỆN TƯỢNG QUAN SÁT ĐƯỢC
 
-### 5.1. Triệt Tiêu Hoàn Toàn Hiện Tượng Quên Thảm Họa Trên Ảnh Sạch
-- **Hiện tượng**: Trước đây, mô hình cũ ở Task 4.2 bị sụp đổ trên tập ảnh sạch (Clean Overall ACC rớt xuống **$50.31\%$**, gần tương đương đoán ngẫu nhiên).
-- **Nguyên nhân gốc đã giải quyết**:
-  1. `train.py` cũ ở Task 4.2 chỉ nạp duy nhất 3.600 ảnh staging GenImage và bỏ rơi 144k ảnh ProGAN train.
-  2. Tỷ lệ ảnh sạch bị ép xuống 20% ở 3 epoch cuối khiến mạng bị "quá chuyên biệt hóa" vào nhiễu nén và xóa sạch tri thức nhận diện ảnh sạch.
-- **Minh chứng khắc phục**: Tại Task 4.3 và 5.1, với việc cố định `clean_prob = 0.50` và nạp toàn bộ 144k ảnh qua `WeightedRandomSampler`, Clean Overall ACC đã **bật tăng trở lại $90.19\%$ (+39.88%)**, trong đó 8 họ GANs đạt **$93.99\%$** và VQ-Diffusion đạt đỉnh **$98.95\%$**.
+### 5.1. Đánh Giá Độ Chính Xác Trên Tập Ảnh Sạch
+- **Hiện tượng**: Trước đây, mô hình cũ ở Task 4.2 bị sụt giảm trên tập ảnh sạch (Clean Overall ACC ở mức **$50.31\%$**).
+- **Yếu tố kỹ thuật tác động**:
+  1. Lần huấn luyện cũ ở Task 4.2 chỉ nạp 3.600 ảnh staging GenImage và không dùng 144k ảnh ProGAN train.
+  2. Tỷ lệ ảnh sạch bị giảm xuống 20% ở các epoch sau.
+- **Kết quả ghi nhận**: Tại Task 4.3 và 5.1, với việc giữ `clean_prob = 0.50` và bổ sung 144k ảnh qua `WeightedRandomSampler`, Clean Overall ACC đạt **$90.19\%$** (+39.88% so với mô hình cũ). Tuy nhiên, mức này vẫn còn khoảng cách $-6.26\%$ so với baseline ban đầu ($96.45\%$), cho thấy hiện tượng quên tri thức mới được khắc phục một phần.
 
-### 5.2. Khắc Phục Triệt Để Tử Huyệt Nén Sâu $Q=30$ Của CVPR 2024
-- **Hiện tượng**: Trong nghiên cứu gốc CVPR 2024, khi ảnh bị nén sâu $Q=30$, Fake ACC rơi tự do xuống **$5.78\%$** (mô hình hoàn toàn bị mù trước ảnh giả mạo bị nén, chỉ đoán bừa toàn bộ ảnh là Real để đạt ACC danh nghĩa 52.89%).
-- **Thành quả của FatFormer-XLA**:
-  - Nhờ nhánh vi sai SRM 3-Kernels trích xuất thành công vết dư tần số cao và cổng Dynamic Gating tự thích ứng, Fake ACC tại $Q=30$ của mô hình đạt **$44.84\%$** (tăng trưởng **$+7.76$ lần** so với Baseline gốc).
-  - Overall ACC tại $Q=30$ đạt **$71.03\%$**, vượt xa mốc sàn mục tiêu $\ge 65.0\%$.
+### 5.2. Đánh Giá Khả Năng Nhận Diện Dưới Nén Sâu $Q=30$
+- **Hiện tượng**: Trong mô hình gốc CVPR 2024, khi ảnh bị nén sâu $Q=30$, Fake ACC ghi nhận mức **$5.78\%$** (mô hình dự đoán phần lớn là Real).
+- **Kết quả ghi nhận**:
+  - Với việc bổ sung nhánh vi sai SRM 3-Kernels và cổng Dynamic Gating, Fake ACC tại $Q=30$ của mô hình đạt **$44.84\%$** (tăng so với mức $5.78\%$ của Baseline ban đầu).
+  - Overall ACC tại $Q=30$ đạt **$71.03\%$**.
+  - Tuy nhiên, mức Fake ACC 44.84% cho thấy vẫn còn hơn 55% ảnh giả bị bỏ lọt ở mức nén này.
 
-### 5.4. Phân Tích Khách Quan Về Các Hạn Chế Học Thuật & "Tử Huyệt" Chưa Khắc Phục
-Mặc dù đã có sự cải thiện bước đầu so với mô hình cũ, số liệu thực nghiệm chi tiết cho thấy mô hình Plan A vẫn còn những hạn chế nghiêm trọng cần nhìn nhận thẳng thắn:
-1. **Fake ACC trung bình tại $Q=30$ mới chỉ đạt $44.84\%$**:
-   - Điều này đồng nghĩa với việc vẫn còn hơn **$55\%$** ảnh Deepfake bị nén nặng lọt qua bộ lọc kiểm duyệt mà không bị phát hiện.
-2. **Hiện tượng sụp đổ cục bộ trên các kiến trúc sinh cụ thể dưới nén sâu**:
-   - `stylegan2`: Fake ACC tại $Q=30$ chỉ đạt **`6.00%`** (mô hình gần như tê liệt trước Deepfake StyleGAN2 bị nén).
-   - `vqdiffusion`: Fake ACC tại $Q=30$ chỉ đạt **`4.40%`** (mù gần như $95.6\%$ trước Deepfake VQ-Diffusion bị nén).
+### 5.3. Phân Tích Các Giới Hạn Kỹ Thuật Chưa Được Khắc Phục
+Số liệu thực nghiệm chi tiết cho thấy mô hình Plan A vẫn còn các điểm hạn chế:
+1. **Tỷ lệ nhận diện ảnh giả tại $Q=30$ đạt $44.84\%$**:
+   - Vẫn còn **$55.16\%$** ảnh Deepfake bị nén chưa được nhận diện chính xác.
+2. **Sự sụt giảm trên một số kiến trúc sinh cụ thể dưới nén sâu**:
+   - `stylegan2`: Fake ACC tại $Q=30$ ghi nhận mức **`6.00%`**.
+   - `vqdiffusion`: Fake ACC tại $Q=30$ ghi nhận mức **`4.40%`**.
    - Họ `glide`: `glide_100_10` (Fake ACC **`19.60%`**), `glide_100_27` (**`22.40%`**), `glide_50_27` (**`23.60%`**).
-   - `guided`: Fake ACC tại $Q=30$ chỉ **`26.00%`**; ngay trên tập Clean cũng chỉ đạt ACC **`65.85%`** (Fake ACC chỉ **`35.00%`**).
-3. **Bài học rút ra**: Các vết giả tần số cao của Diffusion và StyleGAN2 có tính chất phân tán rất khác biệt so với ProGAN. Việc chỉ dựa vào 144k ảnh ProGAN kết hợp 3.6k ảnh Staging chưa đủ để tạo nên màng bọc phòng thủ vững chắc trước toàn bộ các phương thức sinh ảnh mạo danh.
+   - `guided`: Fake ACC tại $Q=30$ là **`26.00%`**; trên tập Clean đạt ACC **`65.85%`** (Fake ACC **`35.00%`**).
+3. **Phân tích nguyên nhân**: Các đặc trưng tần số cao của Diffusion và StyleGAN2 có độ phân tán khác so với ProGAN. Việc tập dữ liệu huấn luyện chủ yếu gồm ProGAN kết hợp 3.6k ảnh Staging chưa bao quát đủ các dạng phân phối của các bộ sinh ảnh khác nhau.
 
 ---
 
-## 6. KẾT LUẬN NGHIỆM THU & BÀN GIAO SẢN PHẨM
+## 6. KẾT LUẬN & ĐỀ XUẤT TIẾP THEO
 
-1. **Đánh Giá Cổng Nghiệm Thu Mở Rộng (Expansion Gate)**:
-   - Mô hình Plan A ghi nhận bước tiến nền tảng quan trọng: Đưa Clean ACC lên $90.19\%$ và $Q=30$ Overall ACC đạt $71.03\%$, giải cứu Fake ACC trung bình từ $5.78\%$ lên $44.84\%$.
-   - **Tuy nhiên, không thể xem là hoàn tất hay dừng huấn luyện**: Do Fake ACC tại $Q=30$ mới đạt $44.84\%$ và các tập Diffusion/StyleGAN2 bị nén sâu vẫn có tỷ lệ bỏ lọt rất cao (StyleGAN2 $6\%$, VQ-Diffusion $4.4\%$), nhóm nghiên cứu xác định **BẮT BUỘC TIẾP TỤC TRIỂN KHAI CHIẾN DỊCH FINETUNE NÂNG CAO** (bổ sung tập dữ liệu Diffusion hiện đại, hoàn thiện thiết kế PEFT và kiểm toán chống rò rỉ dữ liệu).
-2. **Bàn giao học thuật**:
-   - Tệp ma trận [`DATASET/logs/m4_full_benchmark/final_full_benchmark_matrix.csv`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/m4_full_benchmark/final_full_benchmark_matrix.csv) và biểu đồ trực quan hóa [`DATASET/logs/m4_full_benchmark/task_5.1_master_benchmark_chart.png`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/m4_full_benchmark/task_5.1_master_benchmark_chart.png) sẵn sàng đưa vào **Chương 5 (Thực nghiệm & Đánh giá)** của Báo cáo đồ án luận văn và bộ Slide bảo vệ.
-3. **Mở khóa các nhiệm vụ tiếp theo (Mốc 5)**:
-   - **Task 5.2**: Lập Bảng Ablation Study định lượng 4 phiên bản (Baseline vs. SRM vs. Gating vs. FatFormer-XLA Hoàn Chỉnh).
-   - **Task 5.3**: Xuất bộ 10 ảnh Grad-CAM trực quan hóa giải thích (XAI).
-   - **Task 5.5**: Triển khai ứng dụng Live Demo Web Streamlit.
-   - **Task 5.4**: Lắp ráp hoàn thiện Báo cáo luận văn PDF và Slide bảo vệ.
+1. **Đánh Giá Kết Quả Thực Nghiệm**:
+   - Kết quả đo đạc ghi nhận Clean ACC đạt $90.19\%$ và $Q=30$ Overall ACC đạt $71.03\%$, Fake ACC tại $Q=30$ tăng từ $5.78\%$ lên $44.84\%$.
+   - **Đánh giá về tính hoàn thiện**: Do Fake ACC tại $Q=30$ còn ở mức $44.84\%$ và một số tập như StyleGAN2 ($6\%$), VQ-Diffusion ($4.4\%$) bị sụt giảm sâu, các số liệu này chưa đủ để kết luận hoàn thành việc huấn luyện. Cần tiếp tục tiến hành các đợt huấn luyện tiếp theo với tập dữ liệu đa dạng hơn và hoàn thành đầy đủ Phase 3 hardening.
+2. **Lưu trữ tài liệu tham chiếu**:
+   - Tệp ma trận [`DATASET/logs/m4_full_benchmark/final_full_benchmark_matrix.csv`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/m4_full_benchmark/final_full_benchmark_matrix.csv) và biểu đồ đối chứng [`DATASET/logs/m4_full_benchmark/task_5.1_master_benchmark_chart.png`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/m4_full_benchmark/task_5.1_master_benchmark_chart.png) được lưu giữ phục vụ việc đối chiếu kết quả kỹ thuật.
+3. **Kế hoạch tiếp theo**:
+   - Rerun quy trình đánh giá trên pipeline chuẩn hóa (`strict=True`) sau khi hoàn thành lượt huấn luyện mới.
+   - Triển khai các nhiệm vụ bổ trợ: Ablation Study (Task 5.2), Grad-CAM (Task 5.3) và hoàn thiện báo cáo đồ án.
+
+---
+*Báo cáo được lập bởi Lead C, lưu trữ tại `docs/bao_cao/C/bao_cao_task_5.1_full_benchmark_18_datasets.md`.*

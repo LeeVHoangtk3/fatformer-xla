@@ -44,9 +44,10 @@ freeze:
     - "gating"                         # Dynamic Gating MLP
   trainable_params:
     - "language_guided_alignment.ctx"  # Soft prompt vector
-  # Mục tiêu: trainable ratio ∈ [5.5%, 6.0%] (~55M / ~933M tham số)
-  target_trainable_ratio_min: 0.055
-  target_trainable_ratio_max: 0.060
+  # Mục tiêu PEFT theo số liệu đo đạc thực tế trên ViT-L-14.pt: trainable ratio ∈ [2.5%, 3.5%] (~15.41M / 578.44M tham số, thực tế 2.66%)
+  # Ngưỡng bảo vệ fail-fast tối đa: ≤ 8.0% (0.080)
+  target_trainable_ratio_min: 0.025
+  target_trainable_ratio_max: 0.035
 
 # ------------------------------------------------------------------------------
 # 3. CẤU HÌNH HÀM MẤT MÁT (Loss Configuration — Task Finetune Phương Án A)
