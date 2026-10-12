@@ -15,7 +15,7 @@ import time
 import hashlib
 import argparse
 import json
-from typing import Dict, List, Tuple, Set
+from typing import Optional, Dict, Any, List, Tuple, Union, Set
 from PIL import Image
 
 current_dir = os.path.dirname(os.path.abspath(__file__))

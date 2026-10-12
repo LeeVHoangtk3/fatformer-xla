@@ -15,7 +15,14 @@ import regex as re
 
 @lru_cache()
 def default_bpe():
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "bpe_simple_vocab_16e6.txt.gz")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    gz_path = os.path.join(base_dir, "bpe_simple_vocab_16e6.txt.gz")
+    if os.path.exists(gz_path):
+        return gz_path
+    txt_path = os.path.join(base_dir, "bpe_simple_vocab_16e6.txt")
+    if os.path.exists(txt_path):
+        return txt_path
+    return gz_path
 
 
 @lru_cache()
@@ -69,7 +76,21 @@ class SimpleTokenizer(object):
     def __init__(self, bpe_path: str = default_bpe()):
         self.byte_encoder = bytes_to_unicode()
         self.byte_decoder = {v: k for k, v in self.byte_encoder.items()}
-        merges = gzip.open(bpe_path).read().decode("utf-8").split('\n')
+        if bpe_path.endswith(".gz") and os.path.exists(bpe_path):
+            merges = gzip.open(bpe_path).read().decode("utf-8").split('\n')
+        elif os.path.exists(bpe_path):
+            with open(bpe_path, "r", encoding="utf-8") as f:
+                merges = f.read().split('\n')
+        else:
+            txt_alt = bpe_path[:-3] if bpe_path.endswith(".gz") else (bpe_path + ".gz")
+            if os.path.exists(txt_alt):
+                if txt_alt.endswith(".gz"):
+                    merges = gzip.open(txt_alt).read().decode("utf-8").split('\n')
+                else:
+                    with open(txt_alt, "r", encoding="utf-8") as f:
+                        merges = f.read().split('\n')
+            else:
+                merges = gzip.open(bpe_path).read().decode("utf-8").split('\n')
         merges = merges[1:49152-256-2+1]
         merges = [tuple(merge.split()) for merge in merges]
         vocab = list(bytes_to_unicode().values())

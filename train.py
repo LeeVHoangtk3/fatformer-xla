@@ -107,26 +107,26 @@ def parse_args():
     parser.add_argument("--weight_decay", type=float, default=1e-4, help="Hệ số suy giảm trọng số AdamW")
     parser.add_argument("--clean_prob", type=float, default=0.50, help="Tỷ lệ ảnh sạch tối thiểu (khóa cứng 0.50 chống quên biểu diễn cũ)")
     parser.add_argument("--val_freq", type=int, default=1, help="Chu kỳ chạy kiểm định validation (mỗi n epoch)")
-    parser.add_argument("--use_cosine_scheduler", type=str2bool, default=True, help="Kích hoạt CosineAnnealingLR scheduler theo train_config.yaml")
+    parser.add_argument("--use_cosine_scheduler", type=str2bool, nargs='?', const=True, default=True, help="Kích hoạt CosineAnnealingLR scheduler theo train_config.yaml")
     parser.add_argument("--eta_min", type=float, default=1.0e-6, help="Tốc độ học tối thiểu eta_min cho CosineAnnealingLR")
     parser.add_argument("--grad_clip_norm", type=float, default=1.0, help="Ngưỡng gradient clipping max_norm (mặc định: 1.0)")
     parser.add_argument("--log_freq", type=int, default=50, help="Tần suất in log tiến độ (mỗi n batch)")
 
     # 3. Chuyển đổi kiến trúc & Module Ablation
-    parser.add_argument("--use_srm", type=str2bool, default=True, help="Bật/Tắt khối vi sai không gian SRM 3-Kernels (Ablation 2: tắt)")
-    parser.add_argument("--use_gating", type=str2bool, default=True, help="Bật/Tắt cổng thích ứng tần số động lambda(x) (Ablation 2 & 3: tắt)")
-    parser.add_argument("--use_curriculum", type=str2bool, default=True, help="Bật/Tắt lập lịch suy thoái Curriculum 3 giai đoạn")
+    parser.add_argument("--use_srm", type=str2bool, nargs='?', const=True, default=True, help="Bật/Tắt khối vi sai không gian SRM 3-Kernels (Ablation 2: tắt)")
+    parser.add_argument("--use_gating", type=str2bool, nargs='?', const=True, default=True, help="Bật/Tắt cổng thích ứng tần số động lambda(x) (Ablation 2 & 3: tắt)")
+    parser.add_argument("--use_curriculum", type=str2bool, nargs='?', const=True, default=True, help="Bật/Tắt lập lịch suy thoái Curriculum 3 giai đoạn")
     parser.add_argument("--loss_type", type=str, default="dual_stream_ce", choices=["dual_stream_ce", "dual_stream_focal", "focal", "ce", "cross_entropy"], help="Loại hàm mất mát (dual_stream_ce/dual_stream_focal/ce)")
     parser.add_argument("--label_smoothing", type=float, default=0.1, help="Hệ số làm mượt nhãn Label Smoothing")
 
     # 4. Quản lý Checkpoint & Hạ tầng
     parser.add_argument("--output_dir", type=str, default="checkpoints", help="Thư mục lưu trữ Checkpoint")
     parser.add_argument("--checkpoint_name", type=str, default="model_best.pth", help="Tên file checkpoint chính cần lưu (mặc định: model_best.pth)")
-    parser.add_argument("--save_only_latest_and_best", type=str2bool, default=True, help="Chỉ lưu 2 file: checkpoint_latest.pth và model_best.pth (tiết kiệm đĩa cứng, chống tràn Kaggle)")
+    parser.add_argument("--save_only_latest_and_best", type=str2bool, nargs='?', const=True, default=True, help="Chỉ lưu 2 file: checkpoint_latest.pth và model_best.pth (tiết kiệm đĩa cứng, chống tràn Kaggle)")
     parser.add_argument("--resume", type=str, default=None, help="Đường dẫn file .pth để tiếp tục huấn luyện ('latest' để tự tìm file mới nhất)")
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", help="Thiết bị thực thi (cuda hoặc cpu)")
     parser.add_argument("--num_workers", type=int, default=4, help="Số luồng nạp dữ liệu DataLoader")
-    parser.add_argument("--use_amp", type=str2bool, default=True, help="Bật Automatic Mixed Precision FP16")
+    parser.add_argument("--use_amp", type=str2bool, nargs='?', const=True, default=True, help="Bật Automatic Mixed Precision FP16")
 
     return parser.parse_args()
 
