@@ -233,4 +233,5 @@ DATASET/*
 datasets/*
 !datasets/logs/
 progan_val.zip
-*.zip
+*.zip
+scratch/

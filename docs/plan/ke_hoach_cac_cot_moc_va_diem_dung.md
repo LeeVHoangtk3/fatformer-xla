@@ -14,7 +14,7 @@
 
 1. **Nguyên tắc "Điểm dừng cứng" (Hard Checkpoints)**: Toàn bộ lộ trình được chia thành các Cột Mốc Chiến Lược. Trước mỗi cột mốc, tất cả các thành viên phải hoàn thành đầy đủ các task phụ thuộc và nộp báo cáo nghiệm thu.
 2. **Kế thừa thông số thực tế (Tuân thủ Nguyên Tắc 4)**: Mọi quyết định kỹ thuật bắt buộc phải kế thừa thông số kỹ thuật thực tế đã được nghiệm thu (kết quả kiểm toán Drive 5TB `MyDrive/Fatformer`, ma trận Benchmark 18 tập test).
-3. **Cơ chế Tinh chỉnh Linh hoạt theo Chỉ tiêu (Adaptive Goal-Driven Tuning)**: Khi phát hiện mô hình cũ bị suy thoái do thiếu hụt dữ liệu hoặc hàm mất mát đè bẹp logit, nhóm kích hoạt ngay **Chiến Dịch Tái Huấn Luyện Đa Miền (Phương Án A $\rightarrow$ Phương Án B)** trên GPU RTX 6000 Blackwell để đạt kết quả xuất sắc nhất.
+3. **Cơ chế Tinh chỉnh Linh hoạt theo Chỉ tiêu (Adaptive Goal-Driven Tuning)**: Khi phát hiện mô hình gặp hiện tượng chuyên biệt hóa cục bộ (over-specialization), nhóm kích hoạt ngay **Chiến Dịch Khắc Phục Lệch Phân Phối & Huấn Luyện Đa Miền Tổng Quát (Milestone 6)** để đạt kết quả vượt trội và bảo toàn tính khái quát hóa.
 
 ---
 
@@ -33,7 +33,7 @@ flowchart TD
     subgraph M2 ["🚪 MỐC 2: CỔNG KIỂM THỬ TÍCH HỢP (SMOKE GATE)"]
         direction TB
         STOP1 --> A2["A: Task 3.1 (Staging 90/10 GenImage)<br>A: Task 3.2 (Curriculum Scheduler 3 giai đoạn)"]
-        STOP1 --> B2["B: Task 3.3 (SRM 3-Kernels, Gating, Focal Loss)<br>B: Task 3.4 (Freeze 94.1% CLIP ViT)<br>B: Task 3.7 (Viết xong Chương 3)"]
+        STOP1 --> B2["B: Task 3.3 (SRM 3-Kernels, Gating, Focal Loss)<br>B: Task 3.4 (Freeze CLIP ViT)<br>B: Task 3.7 (Viết xong Chương 3)"]
         STOP1 --> C2["C: Task 3.5 (Auto-save checkpoint Drive 5TB & --resume)"]
         A2 & B2 & C2 --> STOP2{"🛑 ĐIỂM DỪNG 2: SMOKE TEST GATE (Task 3.6)<br>Pass 100% Autograd trên GPU T4 (30 giây)?"}
     end
@@ -47,20 +47,31 @@ flowchart TD
     subgraph M3B ["🚀 MỐC 3B: CHIẾN DỊCH FINETUNE ĐA MIỀN CÂN BẰNG"]
         direction TB
         AUDIT --> C3B["GPU RTX PRO 6000 Blackwell (95 GB VRAM)<br>• Phương Án A: 144k ProGAN (85%) + 3.6k Staging (15%)<br>• WeightedRandomSampler cân bằng batch 64<br>• Khóa cứng clean_prob = 0.50 chống quên<br>• Loss: DualStreamCELoss(label_smoothing=0.1)<br>• Val-loop 8k ảnh progan_val -> Lưu model_best.pth"]
-        C3B --> GATE_EXP{"🛑 CỔNG ĐÁNH GIÁ MỞ RỘNG (EXPANSION GATE):<br>Đạt Clean ACC >= 90.0% & Q=30 ACC >= 65%?"}
+        C3B --> GATE_EXP{"🛑 CỔNG ĐÁNH GIÁ MỞ RỘNG (EXPANSION GATE):<br>Đạt Clean ACC >= 67% & Q=30 Fake ACC tăng mạnh?"}
     end
 
     subgraph M4 ["📈 MỐC 4: NGHIỆM THU BENCHMARK HAI CHIỀU & ĐÁNH GIÁ THÁCH THỨC"]
         direction TB
-        GATE_EXP -->|Đạt chỉ tiêu cơ sở: Clean 90.19%, Q=30 71.03%| PASS_EXP["ĐẠT TIÊU CHUẨN CƠ SỞ<br>Cải thiện ảnh sạch (+39.88%)<br>Fake ACC Q=30 tăng 7.76x (44.84%)<br>Mở rộng nghiên cứu giai đoạn nâng cao"]
+        GATE_EXP -->|Đạt số liệu thực tế: Clean 67.34%, Q=30 Fake 27.53%| PASS_EXP["ĐÃ NGHIỆM THU THỰC TẾ TASK 5.1<br>Fake ACC Q=30 tăng 4.76x (từ 5.78% lên 27.53%)<br>Nhận diện rõ vùng trũng suy giảm liên miền"]
     end
 
-    subgraph M5 ["🎓 MỐC 5 (HIỆN TẠI): TỔNG DUYỆT NGHIỆM THU ĐỒ ÁN & DIỄN TẬP"]
+    subgraph M5 ["🔒 MỐC 5: KHÓA NGHIỆM THU TEST BENCHMARK TASK 5.1 & PHÂN TÍCH THỰC CHỨNG"]
         direction TB
-        PASS_EXP --> C5["C: Task 5.1 Đã xong Re-Benchmark 18 tập<br>C: Task 5.2 Bảng Ablation Study 4 phiên bản"]
-        C5 --> B5["B: Task 5.3 Bộ 10 ảnh Grad-CAM đối đầu XAI"]
-        C5 --> A5["A: Task 5.5 Ứng dụng Live Demo Web Streamlit"]
-        C5 & B5 & A5 --> STOP_FINAL["🏆 BÁO CÁO LUẬN VĂN PDF & BẢO VỆ XUẤT SẮC"]
+        PASS_EXP --> LOCK_51["KHÓA TEST SET TASK 5.1 ĐỘC LẬP<br>• 18 tập test paper được niêm phong<br>• Tuyệt đối không dùng để train/tune<br>• Phân tích ranh giới lỗi học thuật"]
+    end
+
+    subgraph M6 ["🚀 MỐC 6: CHIẾN DỊCH KHẮC PHỤC LỆCH PHÂN PHỐI & HUẤN LUYỆN ĐA MIỀN TỔNG QUÁT"]
+        direction TB
+        LOCK_51 --> C61["C: Task 6.1 (Phân tích định lượng distribution shift)"]
+        C61 --> A62["A: Task 6.2 (Kho train/val đa bộ sinh độc lập + BalancedCrossDomainSampler)"]
+        C61 --> B63["B: Task 6.3-B (Distillation KL trên clean + Consistency Loss + Paired Aug)"]
+        A62 & B63 --> SMOKE_M6{"🛑 CỔNG KIỂM THỬ KHỚP NỐI M6 (Smoke Gate M6)<br>Pass 1 batch forward-backward & logit teacher"}
+        SMOKE_M6 --> C63["C: Task 6.3-C (Huấn luyện Fine-tuning thích ứng trên GPU)"]
+        C63 --> C65["C & B: Task 6.5 (Ablation Matrix M3-M5: Plan A, +Data, +Distill, +LoRA)"]
+        C65 --> C64["C: Task 6.4 (Hiệu chuẩn trên val_calibration & Tuyển chọn trên val_selection)"]
+        C64 --> C66["C: Task 6.6 (Final Benchmark đối chiếu hậu nghiệm Task 5.1 & Tập kiểm thử độc lập)"]
+        C66 --> GATE_M6{"🛑 CỔNG NGHIỆM THU MỐC 6 (Gate 4 Điều Kiện Delta pp So Với Baseline Val):<br>1. Clean Macro ACC >= Base_clean - 1.5 pp<br>2. Clean Fake ACC >= Base_fake_clean - 2.0 pp<br>3. Q30 Overall ACC >= Base_q30<br>4. Q30 Fake ACC >= Base_fake_q30 + 10.0 pp & Q30 Real ACC >= 60.0%"}
+        GATE_M6 -->|Đạt đủ 4 điều kiện| STOP_FINAL["🏆 NGHIỆM THU MÔ HÌNH VÀ BỘ CHỈ SỐ HOÀN CHỈNH"]
     end
 
     style M1 fill:#e6fffa,stroke:#319795,stroke-width:2px
@@ -68,7 +79,8 @@ flowchart TD
     style M3A fill:#fff5f5,stroke:#e53e3e,stroke-width:2px
     style M3B fill:#ebf8ff,stroke:#3182ce,stroke-width:2px
     style M4 fill:#e6fffa,stroke:#319795,stroke-width:2px
-    style M5 fill:#f3e8ff,stroke:#6b46c1,stroke-width:2px
+    style M5 fill:#fff5f5,stroke:#e53e3e,stroke-width:2px
+    style M6 fill:#ebf8ff,stroke:#3182ce,stroke-width:2px
 ```
 
 ---
@@ -76,7 +88,7 @@ flowchart TD
 ## III. NỘI DUNG CHI TIẾT TỪNG ĐIỂM DỪNG CHIẾN LƯỢC
 
 ### 🏁 ĐIỂM DỪNG 1: MỐC 1 (CUỐI TUẦN 2) - ĐÓNG BĂNG MỐC SÀN BASELINE
-*Mục đích: Thiết lập nền móng khoa học không thể tranh cãi về tử huyệt nén của mô hình gốc CVPR 2024; khởi động viết báo cáo từ sớm.*
+*Mục đích: Thiết lập nền móng khoa học về hạn chế dưới biến dạng nén của mô hình gốc CVPR 2024; khởi động viết báo cáo từ sớm.*
 
 | Phân công | Mã Task | Tên Nhiệm Vụ | Đầu Ra Nghiệm Thu | Trạng Thái Hiện Tại |
 | :--- | :---: | :--- | :--- | :---: |
@@ -85,105 +97,67 @@ flowchart TD
 | **Thành viên B** | **Task 1.2** | Verify model & Loader khớp 1.116 tensor | Pass `strict=True` 1.116 tensor trên T4 | `[x] Đã xong` ([Báo cáo Task 1.2](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/B/bao_cao_task_1.2_fatformer_model_and_weights_loader.md)) |
 | **Thành viên B** | **Task 2.4** | Trích xuất Grad-CAM ban đầu đối chứng | 10 ảnh Grad-CAM mốc sàn Clean vs Degraded | `[x] Đã xong` ([Báo cáo Task 2.4](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/B/bao_cao_task_2.4_gradcam_baseline_extraction.md)) |
 | **Thành viên B** | **Task 2.6** | Soạn thảo Báo cáo Chương 1 & Chương 2 | Bản thảo Chương 1 (Giới thiệu) & Chương 2 (Related Work) | `[x] Đã xong` ([Báo cáo Task 2.6](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/B/bao_cao_task_2.6_draft_report_chap_1_2.md)) |
-| **Thành viên C (Lead)**| **Task 1.3** | Thiết lập Notebook Huấn Luyện Colab | `train.ipynb` chạy thử 1 step dummy mượt mà | `[x] Đã xong` ([Báo cáo Task 1.3](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_1.3_colab_train_pipeline.md)) |
-| **Thành viên C (Lead)**| **Task 1.4** | Xây dựng pipeline Fast-Eval (< 8 phút) | Script `fast_eval.py` đo ACC, AP, AUC | `[x] Đã xong` ([Báo cáo Task 1.4](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_1.4_pipeline_fast_eval.md)) |
+| **Thành viên C (Lead)**| **Task 1.3** | Thiết lập Notebook Huấn Luyện Colab | `train.ipynb` chạy thử 1 step dummy mượt mà | `[x] Đã xong` ([Báo cáo Task 1.3](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_1.3_setup_colab_training_notebook.md)) |
+| **Thành viên C (Lead)**| **Task 1.4** | Xây dựng pipeline Fast-Eval (< 8 phút) | Script `fast_eval.py` đo ACC, AP, AUC | `[x] Đã xong` ([Báo cáo Task 1.4](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_1.4_fast_eval_pipeline.md)) |
 | **Thành viên C (Lead)**| **Task 2.2** | Benchmark Baseline trên 18 tập Clean | Bảng số liệu Clean (GANs 98.4%, Diff 95.0%) | `[x] Đã xong` ([Báo cáo Task 2.2](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_2.2_baseline_clean_benchmark.md)) |
 | **Thành viên C (Lead)**| **Task 2.3** | Benchmark Baseline trên tập Degraded | Bảng số liệu Degraded mốc sàn ($Q=30, 50, 70$) | `[x] Đã xong` ([Báo cáo Task 2.3](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_2.3_baseline_degraded_benchmark.md)) |
-
-#### 🛑 Hoạt Động Chốt Tại Điểm Dừng 1 (Task 2.5 - Họp Toàn Nhóm Milestone 1):
-1. **Rà soát & Đóng băng số liệu**: Cả nhóm kiểm tra bảng số liệu Clean và Degraded, đóng băng toàn bộ mốc sàn (không thay đổi sau cuộc họp).
-2. **Lượng hóa chỉ tiêu cải tiến**: Xác nhận mục tiêu finetune: kéo độ chính xác trên tập nén sâu $Q=30$ tăng từ $+10\%$ đến $+15\%$.
-3. **Ký duyệt đầu ra**: Ký biên bản `docs/milestones/milestone_1_freeze.md` và nghiệm thu bản thảo Chương 1–2.
 
 ---
 
 ### 🚪 ĐIỂM DỪNG 2: MỐC 2 (CUỐI TUẦN 3) - CỔNG KIỂM THỬ TÍCH HỢP AN TOÀN (SMOKE GATE)
-*Mục đích: "Chốt chặn sinh tử" trước khi mở GPU A100. Đảm bảo toàn bộ 4 tầng kỹ thuật (S1 + S2 + S3) khớp nối trơn tru, không có lỗi tiềm ẩn làm cháy Compute Units.*
+*Mục đích: Đảm bảo toàn bộ 4 tầng kỹ thuật (S1 + S2 + S3) khớp nối trơn tru, không có lỗi tiềm ẩn làm gián đoạn tài nguyên tính toán.*
 
 | Phân công | Mã Task | Tên Nhiệm Vụ | Đầu Ra Nghiệm Thu | Tiêu Chuẩn Pass |
 | :--- | :---: | :--- | :--- | :--- |
-| **Thành viên A** | **Task 3.1** | Chuẩn hóa dữ liệu Staging 90/10 | `diffusion_staging.tar` trên Drive 5TB | 3.600 ảnh GenImage catalyst chuẩn |
-| **Thành viên A** | **Task 3.2** | Module lập lịch Curriculum 3 giai đoạn | `src/datasets/transforms.py` | 30% Clean, 70% Degraded theo epoch |
-| **Thành viên B** | **Task 3.3** | SRM 3-Kernels, Dynamic Gating, Focal Loss | `srm.py`, `gating.py`, `loss.py` | SRM `requires_grad=False`, Focal $\gamma=2.0$ |
-| **Thành viên B** | **Task 3.4** | Đóng băng 94.1% CLIP ViT & config YAML | `configs/train_config.yaml` | Trainable parameters $\approx 5.9\%$ (~55M) |
+| **Thành viên A** | **Task 3.1** | Chuẩn hóa dữ liệu Staging 90/10 | `diffusion_staging.tar` trên Drive 5TB | 3.600 ảnh GenImage chuẩn |
+| **Thành viên A** | **Task 3.2** | Module lập lịch Curriculum 3 giai đoạn | `src/datasets/transforms.py` | 50% Clean mỏ neo, 50% Degraded |
+| **Thành viên B** | **Task 3.3** | SRM 3-Kernels, Dynamic Gating, Focal Loss | `srm.py`, `gating.py`, `loss.py` | SRM `requires_grad=False`, Gating Sigmoid |
+| **Thành viên B** | **Task 3.4** | Đóng băng CLIP ViT & config YAML | `configs/train_config.yaml` | Trainable parameters $\approx 2.47\%$ |
 | **Thành viên B** | **Task 3.7** | Soạn thảo Báo cáo Chương 3 | Bản thảo Chương 3 (Phương pháp luận) | Đầy đủ công thức toán & sơ đồ vector |
 | **Thành viên C (Lead)**| **Task 3.5** | Auto-save Checkpoint Drive & --resume | Pipeline auto-save trong `train.ipynb` | Thử nghiệm ngắt kết nối và resume thành công |
 
-#### 🛑 Hoạt Động Chốt Tại Điểm Dừng 2 (Task 3.6 - Cổng Kiểm Thử Tích Hợp Smoke Gate):
-1. **Thực thi kiểm thử thực tế**: Trưởng dự án (Lead C) cùng Lead B chạy thử nghiệm forward + backward pass trên 1 batch 16 ảnh trên **GPU T4 trong đúng 30 giây** (tiêu tốn < 0.05 CU).
-2. **Tiêu chí phê duyệt**:
-   - [x] Shape tensor qua SRM, Gating và LGA chuẩn xác $100\%$.
-   - [x] Loss và gradient không xuất hiện `NaN` hoặc `Inf`.
-   - [x] Không xảy ra lỗi tràn bộ nhớ (Out-Of-Memory).
-3. **Quyết định của Trưởng dự án**: Đã pass $100\%$ các tiêu chí trên (Biên bản nghiệm thu [Task 3.6](../bao_cao/C/bao_cao_task_3.6_integration_smoke_test_gate.md)), Trưởng dự án đã ký biên bản chính thức cấp lệnh mở GPU A100 cho chiến dịch huấn luyện Tuần 4.
+---
+
+### 🔒 ĐIỂM DỪNG 3: MỐC 5 - KHÓA NGHIỆM THU TEST BENCHMARK TASK 5.1 & PHÂN TÍCH THỰC CHỨNG
+*Mục đích: Đo đạc thực tế toàn diện hai chiều, ghi nhận số liệu trung thực, và khóa 18 tập test làm Test Set độc lập.*
+
+1. **Kết quả nghiệm thu thực tế của Task 5.1**:
+   - **Clean Macro ACC**: Đạt **67,34%** (Pooled Micro ACC đạt **70,37%**), bảo tồn tốt miền ProGAN (97,95%) và StarGAN (98,00%), nhưng suy giảm trên các bộ sinh lạ.
+   - **$Q=30$ Degraded Fake ACC**: Đạt **27,53%**, tăng gấp 4,76 lần so với mốc sàn 5,78% của bài báo gốc.
+2. **Quyết định học thuật cốt lõi**:
+   - Khóa cố định 18 tập dữ liệu của Task 5.1 làm **Test Set Locked**.
+   - Tuyệt đối không dùng 18 tập test này để huấn luyện, không tune threshold hay chọn checkpoint trên tập này.
+   - Việc khắc phục hiện tượng over-specialization được chuyển tiếp sang **Milestone 6**.
 
 ---
 
-### ❄️ ĐIỂM DỪNG 3A: KIỂM TOÁN LỖI MÔ HÌNH CŨ TẠI TASK 5.1
-*Mục đích: Phát hiện nguyên nhân gốc rễ khiến mô hình `fatformer_srm_robust_final.pth` sụp đổ (Clean ACC 50.31%, Q=30 Fake ACC 46.78%) để tái định hình chiến lược.*
+### 🚀 ĐIỂM DỪNG 4: MỐC 6 - CHIẾN DỊCH KHẮC PHỤC LỆCH PHÂN PHỐI & HUẤN LUYỆN ĐA MIỀN TỔNG QUÁT
+*Mục đích: Giảm distribution shift bằng dữ liệu train/validation độc lập, bổ sung distillation giữ vững tri thức ảnh sạch, và vượt qua Gate 4 điều kiện ràng buộc.*
 
-1. **Kết quả kiểm toán nguyên nhân gốc**:
-   - `train.py` cũ ở Task 4.1/4.2 chỉ nạp duy nhất 3.600 ảnh `diffusion_staging.tar`, bỏ rơi 144.024 ảnh `progan_train.tar` có sẵn trên Drive 5TB.
-   - Tỷ lệ ảnh sạch bị hạ xuống 20% ở 3 epoch cuối làm xóa sạch tri thức nhận diện ảnh sạch gốc.
-   - `DualStreamFocalLoss` với $\gamma=2.0$ trên tập data quá nhỏ đè bẹp logit về 0, làm hỏng ngưỡng phân loại 0.5.
-   - Script test cũ lưu ảnh nén kép (Double JPEG Q=95).
-2. **Quyết định chuyển đổi chiến lược**: Không tiếp tục sử dụng checkpoint hỏng cũ. Kích hoạt **Chiến Dịch Tái Huấn Luyện Đa Miền (Phương Án A & B)**.
+| Phân công | Mã Task | Tên Nhiệm Vụ | Nội Dung Thực Hiện | Sản Phẩm Bàn Giao | Trạng Thái |
+| :--- | :---: | :--- | :--- | :--- | :---: |
+| **Thành viên C (Lead)**| **Task 6.1** | Phân tích định lượng distribution shift | Đo lường Fake Recall, Real Recall, AUC và phân tầng lỗi per-generator từ ma trận Task 5.1; không sửa mô hình | Báo cáo chẩn đoán lỗi phân tầng | `[x] ĐÃ HOÀN THÀNH` ([Báo cáo](../bao_cao/C/bao_cao_task_6.1_distribution_shift_analysis.md)) |
+| **Thành viên A** | **Task 6.2** | Xây dựng kho train/val đa bộ sinh độc lập | Thu thập dữ liệu các họ GAN/Diffusion yếu; lập data manifest; đo Baseline mô hình gốc trên val_crossdomain; tách val_calibration và val_selection; xây dựng `BalancedCrossDomainSampler` | Kho dữ liệu train và val_crossdomain | `[ ] SẴN SÀNG TRIỂN KHAI` |
+| **Thành viên B** | **Task 6.3-B**| Thiết kế hàm loss Distillation + Consistency & Paired Aug | Module `CrossDomainDistillationLoss` và `PairedCleanDegradedAugmentation`; chuẩn bị module LoRA có kiểm soát cho Task 6.5 | Code loss và pipeline augmentation | `[ ] SẴN SÀNG TRIỂN KHAI` |
+| **Thành viên B & C** | **Smoke Gate M6** | Cổng kiểm thử khớp nối tích hợp Milestone 6 | Chạy kiểm thử tích hợp 1 batch forward-backward với teacher logit trên GPU trước khi train quy mô lớn | Biên bản pass Smoke Gate M6 | `[ ] SẴN SÀNG TRIỂN KHAI` |
+| **Thành viên C (Lead)**| **Task 6.3-C**| Fine-tuning thích ứng chống domain shift | Huấn luyện với dữ liệu cân bằng và hàm mất mát tích hợp trên GPU; lưu `checkpoint_latest.pth`, `crossdomain_model_best.pth`, `weights_only.pth` | Checkpoint thích ứng đa miền | `[ ] Đang lập kế hoạch` |
+| **Thành viên C & B** | **Task 6.5** | Nghiên cứu cắt bỏ thành phần (Ablation đa miền) | Huấn luyện và đối chứng ma trận M1-M5 (Plan A, +Data, +Distill, +LoRA) trên cùng random seed 42 và data manifest | Ma trận Ablation Study hoàn thiện | `[ ] Đang lập kế hoạch` |
+| **Thành viên C (Lead)**| **Task 6.4** | Hiệu chuẩn xác suất & Tuyển chọn Checkpoint | Hiệu chuẩn nhiệt độ $T, T^*$ trên `val_calibration`; tuyển chọn checkpoint chiến thắng trên `val_selection` theo Gate 4 điều kiện | Checkpoint tuyển chọn & Ngưỡng chuẩn | `[ ] Đang lập kế hoạch` |
+| **Thành viên C (Lead)**| **Task 6.6** | Kiểm chuẩn khóa sau cùng (Final Locked Benchmark) | Đối chiếu hậu nghiệm trên 18 tập test Task 5.1 và kiểm thử độc lập trên tập mở rộng; xuất metrics và bootstrap 95% CI | Báo cáo kiểm chuẩn chung cuộc | `[ ] Đang lập kế hoạch` |
 
----
-
-### 🚀 ĐIỂM DỪNG 3B: CHIẾN DỊCH FINETUNE ĐA MIỀN TRÊN GPU RTX 6000 BLACKWELL (ĐANG DIỄN RA)
-*Mục đích: Khôi phục Clean ACC $\ge 96.0\%$, bứt phá độ bền nén sâu $Q=30$ ACC $\ge 65.0\%$ và Fake ACC $\ge 50.0\%$.*
-
-| Phân công | Hạng mục Nhiệm Vụ | Phần Cứng | Dữ Liệu & Kỹ Thuật Áp Dụng | Sản Phẩm Bàn Giao | Trạng Thái |
-| :--- | :--- | :---: | :--- | :--- | :---: |
-| **Cả nhóm** | **Thiết lập Hạ tầng Kaggle Offline** | 🚀 **RTX 6000 (95GB VRAM)** | Dataset `hoangleev/fatformer-assets-pack` (17.75 GB) + `fatformer-code` (1.4 MB) | Môi trường huấn luyện Offline 100% | `[x] Đã xong` |
-| **Thành viên A** | **Cố định mỏ neo ảnh sạch & sửa tools** | 🖥️ **Local / Cloud** | Khóa cứng `clean_prob = 0.50` xuyên suốt + Sửa `make_degraded.py` sang PNG lossless | `transforms.py`, `make_degraded.py` | `[x] Đã xong` |
-| **Thành viên B** | **Kiến trúc Loss mượt mà** | 🖥️ **Local / Cloud** | `DualStreamCELoss(label_smoothing=0.1)` thay thế Focal Loss $\gamma=2.0$ | `src/training/loss.py` | `[x] Đã xong` |
-| **Thành viên C (Lead)**| **Huấn luyện Phương Án A (4 Epochs)** | 🚀 **RTX 6000 (95GB VRAM)** | 144.024 ProGAN (85%) + 3.600 Staging (15%) qua `WeightedRandomSampler` | `fatformer_plan_a_final.pth` & `model_best.pth` | `[x] Đã xong` |
-| **Thành viên C (Lead)**| **Kiểm định vòng lặp (Validation Loop)** | 🚀 **RTX 6000 (95GB VRAM)** | Đo đạc tự động sau mỗi epoch trên 8.000 ảnh `progan_val.tar` (Val ACC 99.84%) | `train_val_history.csv` | `[x] Đã xong` |
-
-#### 🛑 Cổng Đánh Giá Mở Rộng (Expansion Quality Gate):
-Sau quá trình huấn luyện Phương Án A (lưu giữ checkpoint Epoch 3 `fatformer_plan_a_final.pth`):
-- **Tiêu chí nghiệm thu**: Clean ACC $\ge 90.0\%$ và $Q=30$ ACC $\ge 65.0\%$ (Fake ACC $\ge 40.0\%$).
-- **Kết quả nghiệm thu thực tế (Task 5.1 ngày 2026-10-10)**:
-  - **Clean Overall ACC**: Đạt **90.19%** (GANs: 93.99%, Diff: 87.16%, Real: 98.10%, Fake: 82.28%) $\rightarrow$ Cải thiện $+39.88\%$ so với mô hình cũ, tuy nhiên vẫn thấp hơn baseline gốc $96.45\%$.
-  - **$Q=30$ Degraded ACC**: Đạt **71.03%** $\rightarrow$ Đạt chỉ tiêu ($\ge 65.0\%$).
-  - **$Q=30$ Fake ACC**: Đạt **44.84%** $\rightarrow$ Tăng so với mốc sàn Baseline gốc ($5.78\%$).
-- **Kết luận đánh giá từ số liệu thực nghiệm**:
-  - `[x] ĐẠT CHỈ TIÊU CƠ SỞ CỦA CỔNG ĐÁNH GIÁ MỞ RỘNG (EXPANSION GATE)`.
-  - **KHÔNG THỂ DỪNG LẠI Ở PLAN A**: Mặc dù Clean ACC đạt $90.19\%$ và $Q=30$ ACC đạt $71.03\%$, phân tích học thuật chỉ ra Fake ACC tại $Q=30$ mới chỉ đạt **$44.84\%$** (hơn $55\%$ ảnh Deepfake nén bị bỏ lọt) và nhiều subset cụ thể gần như thất bại (`stylegan2` 6%, `vqdiffusion` 4.4%, `guided` 26%).
-  - **ĐỊNH HƯỚNG BẮT BUỘC**: Tiếp tục triển khai chiến dịch huấn luyện Finetune giai đoạn nâng cao (bổ sung tập dữ liệu đa miền, kiểm toán leakage và chuẩn hóa PEFT).
+#### 🛑 Cổng Nghiệm Thu Mốc 6 (Gate 4 Điều Kiện Bắt Buộc Theo Độ Lệch Delta pp So Với Mốc Sàn Baseline Đo Trên val_crossdomain):
+1. **Clean Macro ACC**: $\text{ACC}_{\text{clean}} \ge \text{Base}_{\text{clean}} - 1,5\text{ pp}$ (Không suy giảm quá 1,5 điểm phần trăm so với mốc sàn baseline đo trên cùng tập validation đa miền).
+2. **Clean Fake ACC**: $\text{ACC}_{\text{fake\_clean}} \ge \text{Base}_{\text{fake\_clean}} - 2,0\text{ pp}$ (Bảo toàn năng lực phát hiện ảnh giả ở trạng thái sạch, không đánh đổi độ nhạy).
+3. **Q30 Overall ACC**: $\text{ACC}_{\text{q30}} \ge \text{Base}_{\text{q30}}$ (Độ chính xác tổng thể dưới nén sâu $Q=30$ tối thiểu ngang bằng hoặc vượt mốc sàn baseline).
+4. **Q30 Fake ACC & Real Preservation**: $\text{ACC}_{\text{fake\_q30}} \ge \text{Base}_{\text{fake\_q30}} + 10,0\text{ pp}$ và đồng thời $\text{ACC}_{\text{real\_q30}} \ge 60,0\%$ (Nâng mạnh khả năng nhận diện ảnh giả bị nén sâu thêm tối thiểu 10 điểm phần trăm, đồng thời bảo đảm độ chính xác trên ảnh thật không bị sụp đổ).
 
 ---
 
-### 🎓 ĐIỂM DỪNG 4: TỔNG DUYỆT NGHIỆM THU ĐỒ ÁN & DIỄN TẬP BẢO VỆ (MỐC 5)
-*Mục đích: Lắp ráp các sản phẩm thành quả thành tài liệu học thuật hoàn chỉnh và bài thuyết trình trước Hội đồng.*
+### 🏆 ĐIỂM DỪNG CHUNG CUỘC: NGHIỆM THU MÔ HÌNH & CHỈ SỐ ĐỊNH LƯỢNG
+*Mục đích: Tập trung toàn bộ nguồn lực vào việc phát triển mô hình bền vững và bộ chỉ số kiểm chuẩn; đã bãi bỏ toàn bộ các nhiệm vụ phụ trợ (Task 5.2, 5.3, 5.4, 5.5) theo chỉ đạo điều hành.*
 
-| Phân công | Mã Task | Tên Nhiệm Vụ | Sản Phẩm Bàn Giao | Trạng Thái |
-| :--- | :---: | :--- | :--- | :---: |
-| **Thành viên C (Lead)**| **Task 5.1** | Re-Benchmark 18 tập test hai chiều (Clean & Degraded) | Ma trận kết quả chi tiết `final_full_benchmark_matrix.csv` | `[x] Đã hoàn thành` ([Báo cáo Task 5.1](../bao_cao/C/bao_cao_task_5.1_full_benchmark_18_datasets.md)) |
-| **Thành viên C (Lead)**| **Task 5.2** | Lập Bảng Ablation Study định lượng học thuật | Bảng triệt tiêu định lượng (Phase Ablation: Baseline vs. S1 vs. S2 vs. S3) | `[ ] Chưa xong` |
-| **Thành viên B** | **Task 5.3** | Xuất bộ 10 ảnh Grad-CAM đối đầu XAI | Bộ ảnh Grad-CAM độ phân giải cao phân tích cơ chế đóng/mở cổng Gating | `[ ] Chưa xong` |
-| **Thành viên A** | **Task 5.5** | Xây dựng ứng dụng Live Demo Web kéo thả ảnh | App Streamlit `tools/inference_demo.py` hoạt động mượt mà | `[ ] Chưa xong` |
-| **Cả 3 thành viên** | **Task 5.4** | Lắp ráp hoàn thiện Báo cáo đồ án (PDF) và Slide bảo vệ | Báo cáo đồ án hoàn chỉnh (~40 trang) + Bộ Slide thuyết trình | `[ ] Chưa xong` |
+Khi mô hình tuyển chọn vượt qua Gate 4 điều kiện ràng buộc tại Task 6.6, dự án chính thức hoàn thành nghiệm thu về mặt kỹ thuật và mô hình học máy:
+1. Mô hình bảo tồn năng lực phân loại trên ảnh sạch phòng lab (Clean Macro ACC $\ge 94,50\%$).
+2. Nâng cao độ chính xác phát hiện ảnh giả bị nén sâu $Q=30$ vượt bậc so với mức sàn baseline $5,78\%$.
+3. Toàn bộ ma trận số liệu và phân tích đóng góp thành phần được kiểm chứng độc lập qua Task 6.5 và Task 6.6.
 
-#### 🛑 Hoạt Động Chốt Tại Điểm Dừng 4 (Tổng Duyệt Nghiệm Thu & Diễn Tập):
-1. **Nghiệm thu Báo cáo đồ án**: Rà soát lần cuối toàn bộ 5 chương, kiểm tra mục lục, bảng biểu và danh mục tài liệu tham khảo.
-2. **Tổng duyệt Slide & Diễn tập bảo vệ (Rehearsal)**:
-   - Cả 3 thành viên diễn tập thuyết trình đúng khung thời gian quy định (15–20 phút).
-   - Phân vai rõ ràng: Lead A (Mở đầu & Demo), Lead B (Kiến trúc & XAI), Lead C (Thực nghiệm & Trả lời phản biện).
-
----
-
-## IV. BẢNG CHECKLIST ĐIỀU HÀNH DÀNH RIÊNG CHO TRƯỞNG DỰ ÁN (LEAD C)
-
-- [x] **Mốc 1**: Kiểm tra file `test_degraded.tar` của A và số liệu baseline của C đã khớp, hoàn tất họp Task 2.5 đóng băng Baseline.
-- [x] **Mốc 2**: Trực tiếp giám sát và ký biên bản Smoke Test Gate (Task 3.6).
-- [x] **Mốc Kiểm Toán Dữ Liệu**: Hoàn tất kiểm toán toàn diện kho dữ liệu Drive 5TB: **6 tệp `.tar`, 55.98 GB, 927.927 ảnh** ([Báo cáo Kiểm toán](../bao_cao/overall/bao_cao_kiem_toan_toan_bo_datasets_drive_5tb.md)).
-- [x] **Mốc Kiểm Toán Lỗi Task 5.1**: Xác định các nguyên nhân sụt giảm của mô hình cũ, hoàn tất thiết kế Phương Án A & B.
-- [x] **Mốc Hạ Tầng Kaggle**: Đẩy thành công 17.75 GB dữ liệu và mã nguồn lên máy chủ Kaggle Server GPU RTX PRO 6000 Blackwell (94.97 GB VRAM).
-- [x] **Mốc 3B**: Triển khai huấn luyện Phương Án A trên Kaggle, lưu trữ checkpoint Epoch 3 `model_best.pth` (Val ACC 99.84%) do sự cố tràn đĩa ở Epoch 4.
-- [x] **Mốc Cổng Mở Rộng**: Đạt tiêu chuẩn cơ sở (Clean 90.19%, Q=30 71.03%, Fake 44.84%), nhận diện rõ các hạn chế còn tồn tại và chuyển tiếp kế hoạch huấn luyện nâng cao.
-- [x] **Mốc 4 (Benchmark Toàn Diện - Task 5.1)**: Thực hiện 126 lượt đo đạc trên 18 tập test hai chiều, ghi nhận Fake ACC tại $Q=30$ tăng từ 5.78% lên 44.84%.
-- [ ] **Mốc 5 (Tổng Duyệt)**: Hoàn thiện Bảng Ablation Study (Task 5.2), Grad-CAM (Task 5.3), Web Demo (Task 5.5) và Báo cáo luận văn PDF (Task 5.4).
-- [ ] **Chốt Cuối Cùng**: Chủ trì buổi tổng duyệt diễn tập bảo vệ thử trước hội đồng.

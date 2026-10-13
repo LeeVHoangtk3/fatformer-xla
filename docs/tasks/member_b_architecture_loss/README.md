@@ -1,11 +1,11 @@
 # BẢNG ĐIỀU KHIỂN NHIỆM VỤ: THÀNH VIÊN B (ARCHITECTURE & LOSS LEAD)
 
 > **Vai trò**: Trưởng nhóm Kiến trúc Mô hình & Hàm Mất Mát (Architecture & Loss Lead)  
-> **Trách nhiệm cốt lõi**: Quản lý tính toàn vẹn của mã nguồn mô hình tại `src/models/`, bảo đảm nạp khớp 100% (1.116 tensors) checkpoint gốc; hiện thực hóa tầng kiến trúc **Spatial Residual Block (SRM 3-Kernels)** và mạng cổng thích ứng tần số động **$\lambda(x) \in [0.0, 2.0]$**; cấu hình đóng băng 94.1% CLIP ViT-L/14; xây dựng hàm mục tiêu thích ứng **`DualStreamFocalLoss`**; huấn luyện Checkpoint Ablation 3; trích xuất ảnh giải thích mô hình Grad-CAM (XAI) và chủ trì soạn thảo bản thảo Báo cáo đồ án (Chương 1–4).
+> **Trách nhiệm cốt lõi**: Quản lý tính toàn vẹn của mã nguồn mô hình tại `src/models/`, bảo đảm nạp khớp cấu trúc tensor; hiện thực hóa tầng kiến trúc **Spatial Residual Block (SRM 3-Kernels)** và mạng cổng thích ứng tần số động **$\lambda(x) \in [0.0, 2.0]$**; cấu hình đóng băng CLIP ViT-L/14; xây dựng hàm mục tiêu thích ứng `DualStreamCELoss`; chủ trì thiết kế hàm mất mát tích hợp triệt tiêu phân kỳ KL (Knowledge Distillation), module Paired Augmentation và module LoRA có kiểm soát trong Milestone 6.
 
 ---
 
-## 📌 BẢNG LỘ TRÌNH VÀ CHECKLIST NHIỆM VỤ (TUẦN 1 - TUẦN 5)
+## 📌 BẢNG LỘ TRÌNH VÀ CHECKLIST NHIỆM VỤ (TUẦN 1 - TUẦN 7)
 
 | Tuần | Mã Task | Tên nhiệm vụ | Môi trường | Đầu vào (Input) | Đầu ra (Output) | Tệp Chi Tiết | Trạng thái |
 | :---: | :---: | :--- | :---: | :--- | :--- | :---: | :---: |
@@ -15,20 +15,22 @@
 | **Tuần 3** | **Task 3.3** | Hiện thực hóa SRM 3-Kernels, Dynamic Gating & Dual-Stream Focal Loss | 🖥️ **Local** +<br>☁️ **Colab T4** | • Công thức toán học SRM 3-Kernels, gating Sigmoid $\lambda(x)$, Focal Loss ($\gamma=2.0, \alpha=0.25$) | • Code hoàn chỉnh: `src/models/srm.py`, `src/models/gating.py`, `src/training/loss.py` | [`task_3.3_srm_and_frequency_gating_integration.md`](task_3.3_srm_and_frequency_gating_integration.md) | `[x] Đã hoàn thành` ([Báo cáo](../../bao_cao/B/bao_cao_task_3.3_srm_gating_focal_loss.md)) |
 | **Tuần 3** | **Task 3.4** | Cấu hình đóng băng 94.1% CLIP ViT & File cấu hình huấn luyện | 🖥️ **Local** | • Kiến trúc mô hình hoàn chỉnh từ Task 3.3 | • File `configs/train_config.yaml`<br>• Logic set `requires_grad` trong code | [`task_3.4_freeze_clip_and_train_config.md`](task_3.4_freeze_clip_and_train_config.md) | `[x] Đã hoàn thành` ([Báo cáo](../../bao_cao/B/bao_cao_task_3.4_freeze_clip_train_config.md)) |
 | **Tuần 3** | **Task 3.7** | Soạn thảo Chương 3: Phương pháp luận & Kiến trúc FatFormer-XLA | 🖥️ **Local** | • Công thức toán SRM, Haar DWT, Gating $\lambda(x)$, Curriculum và Dual-Stream Focal Loss | • Bản thảo Chương 3 (PDF/LaTeX kèm sơ đồ kiến trúc vector) | [`task_3.7_draft_report_chap_3.md`](task_3.7_draft_report_chap_3.md) | `[x] Đã hoàn thành` ([Báo cáo](../../bao_cao/B/bao_cao_task_3.7_draft_report_chap_3.md)) |
-| **Tuần 4** | **Task 4.4** | Huấn luyện Checkpoint Ablation 3 (Thêm SRM, không Gating/Focal) | ☁️ **Colab L4/A100** | • Mô hình có nhánh SRM 3-Kernels<br>• Dữ liệu ProGAN gốc, hàm Cross-Entropy Loss | • Checkpoint `fatformer_srm_only.pth` trên Drive 5TB<br>• Log hội tụ 5 epoch | [`task_4.4_train_ablation_srm_only.md`](task_4.4_train_ablation_srm_only.md) | `[x] Đã bãi bỏ (Chuyển sang Phase Ablation theo PA1)` |
+| **Tuần 4** | **Task 4.4** | Huấn luyện Checkpoint Ablation 3 (Thêm SRM, không Gating/Focal) | ☁️ **Colab L4/A100** | • Mô hình có nhánh SRM 3-Kernels<br>• Dữ liệu ProGAN gốc, hàm Cross-Entropy Loss | • Checkpoint `fatformer_srm_only.pth` trên Drive 5TB<br>• Log hội tụ 5 epoch | [`task_4.4_train_ablation_srm_only.md`](task_4.4_train_ablation_srm_only.md) | `[x] Đã bãi bỏ (Chuyển sang Phase Ablation)` |
 | **Tuần 4** | **Task 4.6** | Chủ trì soạn thảo Chương 4: Thiết lập thực nghiệm & Môi trường | 🖥️ **Local** | • Siêu tham số (LR, batch size, optimizer), phần cứng A100/T4, giáo trình Curriculum | • Bản thảo Chương 4 hoàn chỉnh | [`task_4.6_draft_report_chap_4.md`](task_4.6_draft_report_chap_4.md) | `[x] Đã hoàn thành` ([Báo cáo](../../bao_cao/B/bao_cao_task_4.6_draft_report_chap_4.md)) |
-| **Tuần 5** | **Task 5.3** | Xuất bộ ảnh Grad-CAM đối đầu chứng minh tính giải thích (XAI) | 🖥️ **Local** /<br>☁️ **Colab T4** | • Checkpoint gốc vs Checkpoint cuối `fatformer_srm_robust_final.pth`<br>• Tập ảnh test nén sâu $Q=30$ | • Bộ 10 ảnh Grad-CAM phân giải cao so sánh song song | [`task_5.3_xai_gradcam_comparison.md`](task_5.3_xai_gradcam_comparison.md) | `[ ] Chưa xong` |
+| **Tuần 5** | **Task 5.3** | Xuất bộ ảnh Grad-CAM đối đầu chứng minh tính giải thích (XAI) | 🖥️ **Local** | • Checkpoint gốc vs hoàn thiện | • Không triển khai | - | `[x] Đã bãi bỏ (Ưu tiên mô hình)` |
+| **Tuần 6** | **Task 6.3-B**| Thiết kế hàm mất mát Distillation KL + Consistency Loss & Paired Augmentation | 🖥️ **Local** | • Khung phân tích lỗi Task 6.1<br>• Baseline gốc CVPR 2024 làm mỏ neo teacher | • Module `CrossDomainDistillationLoss`<br>• Module `PairedCleanDegradedAugmentation`<br>• Module LoRA có kiểm soát cho Task 6.5 | [`task_6.3_b_distillation_and_consistency_loss.md`](task_6.3_b_distillation_and_consistency_loss.md) | `[ ] SẴN SÀNG TRIỂN KHAI` |
+| | **Smoke Gate M6** | Phối hợp Cổng kiểm thử tích hợp Milestone 6 trên GPU | ☁️ **Colab T4** | • Tích hợp loss Task 6.3-B và data Task 6.2 | • Xác nhận 1 batch forward-backward không NaN/Inf | - | `[ ] SẴN SÀNG TRIỂN KHAI` |
 
 ---
 
-## 🧭 4 QUY TẮC KỸ THUẬT BẮT BUỘC CỦA LEAD B
+## 🧭 CÁC QUY TẮC KỸ THUẬT BẮT BUỘC CỦA LEAD B
 
 1. **Quy Tắc Typo Bắt Buộc (Khớp Checkpoint Gốc)**:
-   - Trong class `LanguageGuidedAlignment`, module enhancer bắt buộc phải đặt tên thuộc tính chính xác là `self.patch_basaed_enhancer` (có chữ `a` thừa) để khớp 100% với tên key trong file checkpoint gốc `fatformer_4class_ckpt.pth`.
+   - Trong class `LanguageGuidedAlignment`, module enhancer bắt buộc phải đặt tên thuộc tính chính xác là `self.patch_basaed_enhancer` (có chữ `a` thừa) để khớp với tên key trong file checkpoint gốc.
 2. **Quy Tắc Nạp Weights Backbone**:
    - Tệp `ViT-L-14.pt` là TorchScript JIT archive, nạp thông qua `torch.jit.load()` hoặc `torch.load(..., weights_only=False)`. Checkpoint huấn luyện được bọc trong khóa `ckpt['model']`.
 3. **Quy Tắc Bộ Lọc Vi Sai SRM 3-Kernels**:
    - 3 ma trận lọc vi sai SRM ($1^{st}$ order, $2^{nd}$ order Laplacian, $5 \times 5$ square) luôn phải đặt `requires_grad = False` để trở thành bộ lọc cố định, tuyệt đối không tính gradient hay tiêu tốn VRAM tối ưu.
-4. **Quy Tắc Đóng Băng Tuyệt Đối (Freeze CLIP)**:
-   - Nghiêm cấm mở khóa gradient của các tầng ViT gốc. Chỉ 5.9% tham số được phép có `requires_grad = True` (FAA adapters, SRM projection layer, Gating MLP network, LGA và soft prompts).
+4. **Hàm Mục Tiêu Bảo Tồn Tri Thức Trong Milestone 6**:
+   - Khi thiết kế hàm mất mát tại Task 6.3-B, nhánh ảnh sạch bắt buộc áp dụng triệt tiêu phân kỳ KL (Knowledge Distillation) với logit từ mô hình gốc làm mỏ neo, ngăn chặn hiện tượng trôi dạt biểu diễn (representation drift) gây sụt giảm độ chính xác trên ảnh sạch phòng lab.
 5. **Tính Tự Chủ Triển Khai**: Chi tiết cài đặt hàm toán học, căn chỉnh shape tensor trong `src/models/` do Thành viên B tự chủ xử lý, miễn bảo đảm đúng tiêu chuẩn đầu ra và vượt qua cổng Smoke Test Gate.
