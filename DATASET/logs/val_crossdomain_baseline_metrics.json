@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "task": "Task 6.2 (Milestone 6)",
+    "lead": "Member A (Data & Infrastructure Lead)",
+    "model_reference": "fatformer_4class_ckpt.pth (CVPR 2024 Author Checkpoint)",
+    "dataset_reference": "val_crossdomain (Independent Multidomain Validation Set)",
+    "description": "Bo moc san tham chieu bat bien phuc vu Gate 4 dieu kien tai Task 6.4"
+  },
+  "baseline_metrics": {
+    "clean_macro_acc": 73.25,
+    "clean_real_acc": 98.5,
+    "clean_fake_acc": 48.0,
+    "q30_macro_acc": 52.2,
+    "q30_real_acc": 99.2,
+    "q30_fake_acc": 5.2
+  },
+  "gate_conditions_definition": {
+    "condition_1": {
+      "rule": "Clean Macro ACC >= Base_clean - 1.5 pp",
+      "threshold_value": 71.75,
+      "description": "Gioi han do sut giam tren anh sach khong qua 1.5 diem phan tram"
+    },
+    "condition_2": {
+      "rule": "Clean Fake ACC >= Base_fake_clean - 2.0 pp",
+      "threshold_value": 46.0,
+      "description": "Bao dam do nhay phat hien anh gia clean khong bi suy giam"
+    },
+    "condition_3": {
+      "rule": "Q30 Macro ACC >= Base_q30",
+      "threshold_value": 52.2,
+      "description": "Do chinh xac tong the duoi nen sau Q=30 phai bang hoac vuot moc san"
+    },
+    "condition_4": {
+      "rule": "Q30 Fake ACC >= Base_fake_q30 + 10.0 pp AND Q30 Real ACC >= 60.0%",
+      "fake_q30_min_threshold": 15.2,
+      "real_q30_min_threshold": 60.0,
+      "description": "Nang cao ro ret kha nang bat anh gia nen sau ma khong lam sup anh that"
+    }
+  }
+}

@@ -230,6 +230,7 @@ weights/
 pretrained/
 DATASET/*
 !DATASET/logs/
+!DATASET/manifests/
 datasets/*
 !datasets/logs/
 progan_val.zip

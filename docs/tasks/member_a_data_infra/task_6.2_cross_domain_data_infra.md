@@ -5,7 +5,7 @@
 - **Người phối hợp**: **Thành viên C (Training Lead)**, **Thành viên B (Architecture Lead)**
 - **Môi trường thực thi**: ☁️ **Google Drive 5TB** + 🖥️ **Local / Cloud**
 - **Độ ưu tiên**: 🔴 Khẩn cấp (Tiền đề then chốt cho Task 6.3)
-- **Trạng thái**: `[ ] Sẵn sàng triển khai`
+- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH XUẤT SẮC` ([Báo cáo](../../bao_cao/A/bao_cao_task_6.2_cross_domain_data_infra.md))
 
 ---
 
@@ -98,9 +98,9 @@ Ghi nhận đầy đủ siêu dữ liệu của từng tệp:
 
 ## 4. Tiêu Chuẩn Nghiệm Thu (Definition of Done)
 
-- [ ] Kho dữ liệu `crossdomain_staging.tar` được đóng gói hoàn chỉnh trên Google Drive 5TB.
-- [ ] Vượt qua kiểm toán 3 tầng: 0% trùng SHA-256 và 0% trùng pHash ($d_H \le 3$) so với 18 tập test; 0% trùng giữa train và val.
-- [ ] Tệp `data_manifest.json` được tạo lập đầy đủ thông tin nguồn gốc và phân loại miền.
-- [ ] Module `BalancedCrossDomainSampler` vượt qua unit test nạp batch cân bằng.
-- [ ] Bảng mốc sàn tham chiếu `val_crossdomain_baseline_metrics.json` được đo đạc xong và bàn giao cho Lead C.
-- [ ] Biên soạn báo cáo nghiệm thu tại [`docs/bao_cao/A/bao_cao_task_6.2_cross_domain_data_infra.md`](../../bao_cao/A/bao_cao_task_6.2_cross_domain_data_infra.md).
+- [x] Kho dữ liệu `crossdomain_staging.tar` được đóng gói hoàn chỉnh trên Google Drive 5TB.
+- [x] Vượt qua kiểm toán 3 tầng: 0% trùng SHA-256 và 0% trùng pHash ($d_H \le 3$) so với 18 tập test; 0% trùng giữa train và val.
+- [x] Tệp `data_manifest.json` được tạo lập đầy đủ thông tin nguồn gốc và phân loại miền tại `DATASET/manifests/data_manifest.json`.
+- [x] Module `BalancedCrossDomainSampler` vượt qua unit test nạp batch cân bằng (PASS 100%).
+- [x] Bảng mốc sàn tham chiếu `val_crossdomain_baseline_metrics.json` được đo đạc xong và bàn giao cho Lead C.
+- [x] Biên soạn báo cáo nghiệm thu tại [`docs/bao_cao/A/bao_cao_task_6.2_cross_domain_data_infra.md`](../../bao_cao/A/bao_cao_task_6.2_cross_domain_data_infra.md).
