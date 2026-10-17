@@ -90,6 +90,7 @@ def freeze_clip_backbone(
             "srm.proj",
             "gating",
             "ctx",
+            "lora",
             "forgery_aware_adapter.first_conv_layer",
             "forgery_aware_adapter.second_conv_layer",
             "forgery_aware_adapter.freq_scale",
@@ -120,6 +121,7 @@ def freeze_clip_backbone(
                     "forgery_aware_adapter.norm_intra",
                     "forgery_aware_adapter.norm_inter",
                     "forgery_aware_adapter.norm3",
+                    "lora",
                 ]
             )
             if not is_adapter_param:

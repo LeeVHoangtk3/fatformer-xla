@@ -247,7 +247,7 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
     has_real = any(r.get("label", 0) == 0 for r in train_records)
     has_fake = any(r.get("label", 0) == 1 for r in train_records)
 
-    workers = getattr(args, "num_workers", 2)
+    workers = getattr(args, "num_workers", 0)
     use_pin = torch.cuda.is_available()
 
     if has_real and has_fake:
@@ -462,18 +462,21 @@ class CrossDomainTrainer:
             print(f"  -> Luu model vuot troi tai epoch {epoch} (Composite={self.best_composite_score:.2f}%)")
 
         # Neu phat hien moi truong Google Colab voi Drive duoc mount, tu dong sao luu them ban copy sang Drive
-        drive_base = "/content/drive/MyDrive/Fatformer/checkpoints"
-        if os.path.exists(os.path.dirname(drive_base)):
-            drive_branch_dir = os.path.join(drive_base, os.path.basename(self.save_dir))
-            try:
-                os.makedirs(drive_branch_dir, exist_ok=True)
-                import shutil
-                shutil.copy2(latest_path, os.path.join(drive_branch_dir, "checkpoint_latest.pth"))
-                if is_best:
-                    shutil.copy2(best_path, os.path.join(drive_branch_dir, "crossdomain_model_best.pth"))
-                print(f"  [✓] Da dong bo checkpoint an toan sang Google Drive: {drive_branch_dir}")
-            except Exception as e:
-                print(f"  [!] Canh bao dong bo Drive: {e}")
+        for drive_base in [
+            "/content/drive/MyDrive/Fatformer/checkpoint",
+            "/content/drive/MyDrive/Fatformer/checkpoints",
+        ]:
+            if os.path.exists(os.path.dirname(drive_base)):
+                drive_branch_dir = os.path.join(drive_base, os.path.basename(self.save_dir))
+                try:
+                    os.makedirs(drive_branch_dir, exist_ok=True)
+                    import shutil
+                    shutil.copy2(latest_path, os.path.join(drive_branch_dir, "checkpoint_latest.pth"))
+                    if is_best:
+                        shutil.copy2(best_path, os.path.join(drive_branch_dir, "crossdomain_model_best.pth"))
+                    print(f"  [✓] Da dong bo checkpoint an toan sang Google Drive: {drive_branch_dir}")
+                except Exception as e:
+                    print(f"  [!] Canh bao dong bo Drive ({drive_base}): {e}")
 
 
 def run_training_pipeline(args):
@@ -528,9 +531,12 @@ def run_training_pipeline(args):
 
         init_candidates = [
             args.checkpoint_init,
+            "/content/drive/MyDrive/Fatformer/checkpoint/fatformer_plan_a_best_weights.pth",
+            "/content/drive/MyDrive/Fatformer/checkpoint/fatformer_plan_a_final.pth",
+            "/content/drive/MyDrive/Fatformer/checkpoint/fatformer_srm_robust_final.pth",
+            "/content/drive/MyDrive/Fatformer/checkpoints/fatformer_plan_a_best_weights.pth",
             "DATASET/checkpoints/fatformer_plan_a_best_weights.pth",
             "DATASET/checkpoints/fatformer_plan_a_best.pth",
-            "/content/drive/MyDrive/Fatformer/checkpoints/fatformer_plan_a_best_weights.pth",
             "fatformer_4class_ckpt.pth",
         ]
         resolved_init = find_first_existing(init_candidates)
@@ -542,11 +548,11 @@ def run_training_pipeline(args):
         if args.branch in ["M4", "M5"]:
             teacher_candidates = [
                 args.teacher_checkpoint,
+                "/content/drive/MyDrive/Fatformer/pretrained/fatformer_4class_ckpt.pth",
+                "/content/drive/MyDrive/FatFormer_Hub/pretrained/fatformer_4class_ckpt.pth",
                 "fatformer_4class_ckpt.pth",
                 "pretrained/fatformer_4class_ckpt.pth",
                 "DATASET/pretrained/fatformer_4class_ckpt.pth",
-                "/content/drive/MyDrive/Fatformer/pretrained/fatformer_4class_ckpt.pth",
-                "/content/drive/MyDrive/FatFormer_Hub/pretrained/fatformer_4class_ckpt.pth",
             ]
             resolved_teacher = find_first_existing(teacher_candidates)
             if resolved_teacher:
@@ -567,10 +573,15 @@ def run_training_pipeline(args):
             lora_cfg = {"enabled": True, "rank": 8, "alpha": 16.0, "num_layers": 2}
             ViTLoRAAdapter(student.visual, config=lora_cfg)
 
+        # Ap dung PEFT (Task 3.4): Dong bang 94.1% CLIP ViT-L/14 backbone, chi toi uu cac adapter (~5.9% tham so)
+        from src.training.freeze_utils import freeze_clip_backbone
+        freeze_clip_backbone(student, verbose=True)
+
         print("[*] Khoi tao DataLoader da mien...")
         train_loader, val_loader = build_crossdomain_dataloaders(args)
 
-    optimizer = torch.optim.AdamW(student.parameters(), lr=args.learning_rate, weight_decay=1e-4)
+    trainable_params = [p for p in student.parameters() if p.requires_grad]
+    optimizer = torch.optim.AdamW(trainable_params, lr=args.learning_rate, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
 
     trainer = CrossDomainTrainer(
@@ -654,7 +665,7 @@ def parse_arguments():
     parser.add_argument("--train_manifest", type=str, default="DATASET/manifests/data_manifest.json", help="Duong dan tep manifest json")
     parser.add_argument("--train_dir", type=str, default="DATASET/train_crossdomain", help="Thu muc du lieu train")
     parser.add_argument("--val_dir", type=str, default="DATASET/val_crossdomain", help="Thu muc du lieu val")
-    parser.add_argument("--num_workers", type=int, default=2, help="So luong workers cho DataLoader")
+    parser.add_argument("--num_workers", type=int, default=0, help="So luong workers cho DataLoader (mac dinh 0 chong OOM)")
 
     args = parser.parse_args()
 
