@@ -162,7 +162,7 @@ class CrossDomainDistillationLoss(nn.Module):
         Returns:
             Scalar: α_kd · τ² · KL(student ‖ teacher)
         """
-        if clean_mask is not None and clean_mask.any():
+        if clean_mask is not None:
             student_logits = student_logits[clean_mask]
             teacher_logits = teacher_logits[clean_mask]
 

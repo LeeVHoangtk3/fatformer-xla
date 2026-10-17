@@ -5,7 +5,7 @@
 - **Người phối hợp**: **Thành viên C (Training Lead)**, **Thành viên A (Data Lead)**
 - **Môi trường thực thi**: 🖥️ **Local / Cloud**
 - **Độ ưu tiên**: 🔴 Khẩn cấp (Hợp phần kiến trúc & loss cho Task 6.3)
-- **Trạng thái**: `[ ] Sẵn sàng triển khai`
+- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH XUẤT SẮC` ([Báo cáo](../../bao_cao/B/bao_cao_task_6.3_b_distillation_and_consistency_loss.md))
 
 ---
 
@@ -65,8 +65,8 @@ Trước khi chuyển giao mã nguồn sang Task 6.3-C để chạy huấn luy�
 
 ## 4. Tiêu Chuẩn Nghiệm Thu (Definition of Done)
 
-- [ ] Module `src/training/loss.py` hoàn thiện đầy đủ `CrossDomainDistillationLoss` và `PairedConsistencyLoss`.
-- [ ] Module `src/datasets/transforms.py` cập nhật pipeline `PairedCleanDegradedAugmentation`.
-- [ ] Module LoRA được tích hợp trong `src/models/lora_adapter.py` với cờ cấu hình bật/tắt minh bạch.
-- [ ] Vượt qua Cổng Smoke Gate Milestone 6 (100% pass trên 1 mini-batch).
-- [ ] Biên soạn báo cáo nghiệm thu tại [`docs/bao_cao/B/bao_cao_task_6.3_b_distillation_and_consistency_loss.md`](../../bao_cao/B/bao_cao_task_6.3_b_distillation_and_consistency_loss.md).
+- [x] Module `src/training/loss.py` hoàn thiện đầy đủ `CrossDomainDistillationLoss` và `PairedConsistencyLoss`.
+- [x] Module `src/datasets/transforms.py` cập nhật pipeline `PairedCleanDegradedAugmentation`.
+- [x] Module LoRA được tích hợp trong `src/models/lora_adapter.py` với cờ cấu hình bật/tắt minh bạch.
+- [x] Vượt qua Cổng Smoke Gate Milestone 6 (100% pass trên 1 mini-batch trong 0.40s).
+- [x] Biên soạn báo cáo nghiệm thu tại [`docs/bao_cao/B/bao_cao_task_6.3_b_distillation_and_consistency_loss.md`](../../bao_cao/B/bao_cao_task_6.3_b_distillation_and_consistency_loss.md).

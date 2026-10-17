@@ -1,0 +1,43 @@
+# ==============================================================================
+# FATFORMAT-XLA: CAU HINH HUAN LUYEN NHANH M3 — DATA ONLY
+# Task 6.3-C & Task 6.5 — Thanh vien C (Training & Evaluation Lead)
+# ==============================================================================
+# Dac trung: Chi mo rong du lieu da bo sinh (Cross-Domain Data), su dung CrossEntropyLoss
+#            tieu chuan voi label smoothing, khong ap dung Distillation hay Consistency Loss.
+# ==============================================================================
+
+experiment:
+  name: "M3_data_only"
+  branch: "M3"
+  seed: 42
+  description: "Finetuning tren du lieu da mien voi CrossEntropyLoss thuan tuy"
+
+model:
+  backbone: "CLIP:ViT-L/14"
+  clip_path: "ViT-L-14.pt"
+  checkpoint_init: "DATASET/checkpoints/fatformer_plan_a_best_weights.pth"
+  num_classes: 2
+  use_srm: true
+  use_gating: true
+  srm_out_dim: 1024
+
+loss:
+  type: "CrossDomainTotalLoss"
+  label_smoothing: 0.05
+  temperature: 2.0
+  alpha_kd: 0.0          # Vo hieu hoa Distillation Loss
+  beta_cons: 0.0         # Vo hieu hoa Consistency Loss
+
+lora:
+  enabled: false
+
+training:
+  epochs: 5
+  batch_size: 64
+  learning_rate: 1.0e-5
+  min_lr: 1.0e-6
+  weight_decay: 1.0e-4
+  grad_accum_steps: 1
+  grad_clip_norm: 1.0
+  use_amp: true
+  save_dir: "DATASET/checkpoints/m3"

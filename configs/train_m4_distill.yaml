@@ -1,0 +1,46 @@
+# ==============================================================================
+# FATFORMAT-XLA: CAU HINH HUAN LUYEN NHANH M4 — DATA + DISTILLATION + CONSISTENCY
+# Task 6.3-C & Task 6.5 — Thanh vien C (Training & Evaluation Lead)
+# ==============================================================================
+# Dac trung: Tich hop toan dien CrossDomainTotalLoss:
+#            - CrossEntropyLoss (label_smoothing = 0.05)
+#            - CrossDomainDistillationLoss (alpha_kd = 0.4, tau = 2.0 voi teacher dong bang)
+#            - PairedConsistencyLoss (beta_cons = 0.2 voi cap anh sach - suy bien)
+# ==============================================================================
+
+experiment:
+  name: "M4_data_distill_consistency"
+  branch: "M4"
+  seed: 42
+  description: "Finetuning da mien voi Distillation Loss va Consistency Loss"
+
+model:
+  backbone: "CLIP:ViT-L/14"
+  clip_path: "ViT-L-14.pt"
+  checkpoint_init: "DATASET/checkpoints/fatformer_plan_a_best_weights.pth"
+  teacher_checkpoint: "fatformer_4class_ckpt.pth"
+  num_classes: 2
+  use_srm: true
+  use_gating: true
+  srm_out_dim: 1024
+
+loss:
+  type: "CrossDomainTotalLoss"
+  label_smoothing: 0.05
+  temperature: 2.0
+  alpha_kd: 0.4          # Trong so chieu tri thuc tu baseline moc san
+  beta_cons: 0.2         # Trong so dong bo quyet dinh giua clean va degraded
+
+lora:
+  enabled: false
+
+training:
+  epochs: 5
+  batch_size: 64
+  learning_rate: 1.0e-5
+  min_lr: 1.0e-6
+  weight_decay: 1.0e-4
+  grad_accum_steps: 1
+  grad_clip_norm: 1.0
+  use_amp: true
+  save_dir: "DATASET/checkpoints/m4"
