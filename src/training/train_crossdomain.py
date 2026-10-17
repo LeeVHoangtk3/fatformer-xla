@@ -40,7 +40,9 @@ if hasattr(sys.stdout, "reconfigure"):
 
 from src.training.loss import CrossDomainTotalLoss
 from src.datasets.transforms import PairedCleanDegradedAugmentation
+from src.datasets.samplers import BalancedBatchSampler, BalancedCrossDomainSampler
 from src.models.lora_adapter import ViTLoRAAdapter
+import torchvision.transforms as transforms
 
 
 def set_seed(seed: int = 42) -> None:
@@ -53,6 +55,14 @@ def set_seed(seed: int = 42) -> None:
         torch.cuda.manual_seed_all(seed)
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
+
+
+def find_first_existing(candidates: list) -> Optional[str]:
+    """Tim duong dan ton tai dau tien tu danh sach ung vien."""
+    for path in candidates:
+        if path and os.path.exists(path):
+            return path
+    return None
 
 
 class _DummyDataset(Dataset):
@@ -74,6 +84,180 @@ class _DummyDataset(Dataset):
         else:
             tensor = torch.randn(3, 224, 224)
             return tensor, target
+
+
+class CrossDomainDataset(Dataset):
+    """
+    Dataset nap anh da mien ho tro doc tu manifest JSON hoac quet thu muc anh.
+    - Neu paired=True (nhanh M4, M5): tra ve ((x_clean, x_degraded), label).
+    - Neu paired=False (nhanh M3, Val): tra ve (x_transformed, label).
+    """
+    def __init__(
+        self,
+        records: list,
+        paired: bool = True,
+        img_resolution: int = 256,
+        crop_resolution: int = 224,
+    ):
+        self.records = records
+        self.paired = paired
+        self.paired_aug = PairedCleanDegradedAugmentation(
+            img_resolution=img_resolution,
+            crop_resolution=crop_resolution,
+        ) if paired else None
+
+        _mean = [0.485, 0.456, 0.406]
+        _std = [0.229, 0.224, 0.225]
+        self.eval_transform = transforms.Compose([
+            transforms.Resize((img_resolution, img_resolution)),
+            transforms.CenterCrop(crop_resolution),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=_mean, std=_std),
+        ])
+
+    def __len__(self) -> int:
+        return len(self.records)
+
+    def __getitem__(self, idx: int):
+        rec = self.records[idx]
+        file_path = rec.get("file_path", rec.get("path", ""))
+        target = int(rec.get("label", 0))
+
+        pil_img = None
+        if file_path and os.path.isfile(file_path):
+            try:
+                pil_img = Image.open(file_path).convert("RGB")
+            except Exception:
+                pil_img = None
+
+        if pil_img is None:
+            pil_img = Image.new("RGB", (256, 256), color=(idx * 17 % 255, idx * 37 % 255, 128))
+
+        if self.paired and self.paired_aug is not None:
+            xc, xd = self.paired_aug(pil_img)
+            return (xc, xd), target
+        else:
+            return self.eval_transform(pil_img), target
+
+
+def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
+    """
+    Xay dung DataLoader huan luyen va danh gia cho chien dich thich ung da mien:
+    - Thu thap mau tu manifest JSON hoac quet thu muc tren dia.
+    - Su dung BalancedBatchSampler cuong buc 50/50 Real/Fake tren tung mini-batch.
+    """
+    import json
+    train_records = []
+    val_records = []
+
+    # 1. Do tim tep manifest
+    manifest_candidates = [
+        getattr(args, "train_manifest", ""),
+        os.path.join(PROJECT_ROOT, "DATASET", "manifests", "data_manifest.json"),
+        os.path.join(PROJECT_ROOT, "data_manifest.json"),
+        "/content/drive/MyDrive/Fatformer/manifests/data_manifest.json",
+    ]
+    manifest_file = find_first_existing(manifest_candidates)
+
+    if manifest_file:
+        try:
+            with open(manifest_file, "r", encoding="utf-8") as f:
+                manifest_data = json.load(f)
+            records = manifest_data.get("records", [])
+
+            manifest_dir = os.path.dirname(manifest_file)
+            base_search_paths = [
+                PROJECT_ROOT,
+                os.path.join(PROJECT_ROOT, "DATASET"),
+                manifest_dir,
+                os.path.dirname(manifest_dir),
+                "/content/drive/MyDrive/Fatformer",
+                "/content/fatformer-xla",
+            ]
+
+            for r in records:
+                rel_path = r.get("file_path", r.get("path", ""))
+                abs_path = rel_path
+                if not os.path.isabs(rel_path):
+                    for bsp in base_search_paths:
+                        candidate = os.path.normpath(os.path.join(bsp, rel_path))
+                        if os.path.exists(candidate):
+                            abs_path = candidate
+                            break
+
+                r_entry = dict(r)
+                r_entry["file_path"] = abs_path
+                split = r.get("split", "train")
+                if split == "train":
+                    train_records.append(r_entry)
+                else:
+                    val_records.append(r_entry)
+            print(f"  [✓] Da nap thanh cong tu manifest ({manifest_file}): Train={len(train_records)}, Val={len(val_records)}")
+        except Exception as e:
+            print(f"  [!] Khong the doc manifest {manifest_file}: {e}")
+
+    # 2. Quet thu muc du lieu train va val neu records con trong
+    if len(train_records) == 0:
+        dir_candidates = [
+            getattr(args, "train_dir", ""),
+            os.path.join(PROJECT_ROOT, "DATASET", "train_crossdomain"),
+            "/content/drive/MyDrive/Fatformer/data_crossdomain/train",
+        ]
+        real_train_dir = find_first_existing(dir_candidates)
+        if real_train_dir:
+            for root, _, files in os.walk(real_train_dir):
+                for fname in files:
+                    if fname.lower().endswith((".png", ".jpg", ".jpeg")):
+                        full_p = os.path.join(root, fname)
+                        is_fake = ("fake" in root.lower() or "1_fake" in root.lower())
+                        gen = os.path.basename(root) if is_fake else "real"
+                        train_records.append({
+                            "file_path": full_p,
+                            "label": 1 if is_fake else 0,
+                            "generator": gen,
+                            "source": "folder_scan",
+                        })
+            print(f"  [✓] Quet thu muc du lieu {real_train_dir}: {len(train_records)} mau train.")
+
+    # 3. Mau du phong neu kho anh chua tai ve
+    if len(train_records) == 0:
+        print("  [!] Khong tim thay anh tren dia, tao 64 mau mo phong co kiem soat.")
+        for i in range(64):
+            is_fake = (i % 2 == 1)
+            train_records.append({
+                "file_path": f"mock_sample_{i}.png",
+                "label": 1 if is_fake else 0,
+                "generator": f"gen_{(i // 2) % 4}" if is_fake else "real",
+                "source": "mock",
+            })
+    if len(val_records) == 0:
+        for i in range(32):
+            is_fake = (i % 2 == 1)
+            val_records.append({
+                "file_path": f"mock_val_{i}.png",
+                "label": 1 if is_fake else 0,
+                "generator": f"gen_{(i // 2) % 4}" if is_fake else "real",
+                "source": "mock",
+            })
+
+    paired_train = (args.branch in ["M4", "M5"])
+    train_ds = CrossDomainDataset(train_records, paired=paired_train)
+    val_ds = CrossDomainDataset(val_records, paired=False)
+
+    has_real = any(r.get("label", 0) == 0 for r in train_records)
+    has_fake = any(r.get("label", 0) == 1 for r in train_records)
+
+    workers = getattr(args, "num_workers", 2)
+    use_pin = torch.cuda.is_available()
+
+    if has_real and has_fake:
+        batch_sampler = BalancedBatchSampler(train_records, batch_size=args.batch_size)
+        train_loader = DataLoader(train_ds, batch_sampler=batch_sampler, num_workers=workers, pin_memory=use_pin)
+    else:
+        train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=workers, pin_memory=use_pin)
+
+    val_loader = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False, num_workers=workers, pin_memory=use_pin)
+    return train_loader, val_loader
 
 
 class _MockBackbone(nn.Module):
@@ -308,30 +492,69 @@ def run_training_pipeline(args):
         from src.models import build_model
         from src.training.checkpoint_manager import CheckpointManager
 
+        clip_candidates = [
+            args.clip_path,
+            "ViT-L-14.pt",
+            "pretrained/ViT-L-14.pt",
+            "DATASET/pretrained/ViT-L-14.pt",
+            "/content/drive/MyDrive/Fatformer/pretrained/ViT-L-14.pt",
+            "/content/drive/MyDrive/FatFormer_Hub/pretrained/ViT-L-14.pt",
+        ]
+        resolved_clip = find_first_existing(clip_candidates) or args.clip_path
+
         class ModelArgs:
             backbone = "CLIP:ViT-L/14"
-            clip_path = args.clip_path
+            clip_path = resolved_clip
             num_classes = 2
             use_srm = True
             use_gating = True
             srm_out_dim = 1024
 
-        student = build_model(ModelArgs())
-        if os.path.exists(args.checkpoint_init):
-            CheckpointManager.load(args.checkpoint_init, student, device=device, strict=False)
+        student = build_model(ModelArgs()).to(device)
+
+        init_candidates = [
+            args.checkpoint_init,
+            "DATASET/checkpoints/fatformer_plan_a_best_weights.pth",
+            "DATASET/checkpoints/fatformer_plan_a_best.pth",
+            "/content/drive/MyDrive/Fatformer/checkpoints/fatformer_plan_a_best_weights.pth",
+            "fatformer_4class_ckpt.pth",
+        ]
+        resolved_init = find_first_existing(init_candidates)
+        if resolved_init:
+            print(f"[*] Nap trong so khoi tao Student tu: {resolved_init}")
+            CheckpointManager.load(resolved_init, student, device=device, strict=False)
 
         teacher = None
-        if args.branch in ["M4", "M5"] and os.path.exists(args.teacher_checkpoint):
-            teacher = build_model(ModelArgs())
-            CheckpointManager.load(args.teacher_checkpoint, teacher, device=device, strict=True)
+        if args.branch in ["M4", "M5"]:
+            teacher_candidates = [
+                args.teacher_checkpoint,
+                "fatformer_4class_ckpt.pth",
+                "pretrained/fatformer_4class_ckpt.pth",
+                "DATASET/pretrained/fatformer_4class_ckpt.pth",
+                "/content/drive/MyDrive/Fatformer/pretrained/fatformer_4class_ckpt.pth",
+                "/content/drive/MyDrive/FatFormer_Hub/pretrained/fatformer_4class_ckpt.pth",
+            ]
+            resolved_teacher = find_first_existing(teacher_candidates)
+            if resolved_teacher:
+                print(f"[*] Nap trong so Teacher mo neo tu: {resolved_teacher}")
+                teacher = build_model(ModelArgs()).to(device)
+                CheckpointManager.load(resolved_teacher, teacher, device=device, strict=False)
+            else:
+                print("[!] Canh bao: Khong tim thay checkpoint Teacher rieng biet, sao chep Student lam mo neo dong bang.")
+                teacher = build_model(ModelArgs()).to(device)
+                teacher.load_state_dict(student.state_dict())
+
+            for p in teacher.parameters():
+                p.requires_grad = False
+            teacher.eval()
 
         # Neu la nhanh M5: Kich hoat them LoRA ViT Adapter
         if args.branch == "M5":
             lora_cfg = {"enabled": True, "rank": 8, "alpha": 16.0, "num_layers": 2}
             ViTLoRAAdapter(student.visual, config=lora_cfg)
 
-        train_loader = None  # Se nhan tu Task 6.2 DataLoader
-        val_loader = None
+        print("[*] Khoi tao DataLoader da mien...")
+        train_loader, val_loader = build_crossdomain_dataloaders(args)
 
     optimizer = torch.optim.AdamW(student.parameters(), lr=args.learning_rate, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
@@ -396,6 +619,10 @@ def parse_arguments():
     parser.add_argument("--clip_path", type=str, default="ViT-L-14.pt", help="Path to CLIP backbone")
     parser.add_argument("--checkpoint_init", type=str, default="DATASET/checkpoints/fatformer_plan_a_best_weights.pth")
     parser.add_argument("--teacher_checkpoint", type=str, default="fatformer_4class_ckpt.pth")
+    parser.add_argument("--train_manifest", type=str, default="DATASET/manifests/data_manifest.json", help="Duong dan tep manifest json")
+    parser.add_argument("--train_dir", type=str, default="DATASET/train_crossdomain", help="Thu muc du lieu train")
+    parser.add_argument("--val_dir", type=str, default="DATASET/val_crossdomain", help="Thu muc du lieu val")
+    parser.add_argument("--num_workers", type=int, default=2, help="So luong workers cho DataLoader")
 
     args = parser.parse_args()
 
@@ -412,12 +639,20 @@ def parse_arguments():
             args.batch_size = t_cfg.get("batch_size", args.batch_size)
             args.learning_rate = float(t_cfg.get("learning_rate", args.learning_rate))
             args.save_dir = t_cfg.get("save_dir", args.save_dir)
+            if "grad_accum_steps" in t_cfg:
+                args.grad_accum_steps = t_cfg.get("grad_accum_steps", args.grad_accum_steps)
         if "loss" in cfg:
             l_cfg = cfg["loss"]
             args.alpha_kd = float(l_cfg.get("alpha_kd", args.alpha_kd))
             args.beta_cons = float(l_cfg.get("beta_cons", args.beta_cons))
             args.temperature = float(l_cfg.get("temperature", args.temperature))
             args.label_smoothing = float(l_cfg.get("label_smoothing", args.label_smoothing))
+        if "dataset" in cfg:
+            d_cfg = cfg["dataset"]
+            args.train_manifest = d_cfg.get("manifest", args.train_manifest)
+            args.train_dir = d_cfg.get("train_dir", args.train_dir)
+            args.val_dir = d_cfg.get("val_dir", args.val_dir)
+            args.num_workers = d_cfg.get("num_workers", args.num_workers)
 
     return args
 

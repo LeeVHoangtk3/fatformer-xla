@@ -199,12 +199,149 @@ def run_dummy_audit_verification():
     print("=" * 80)
 
 
+def scan_directory_records(data_dir: str, split_name: str = "dataset") -> List[Dict]:
+    """Quet thu muc anh, tinh toan ma bam SHA-256 va pHash cho tung anh."""
+    records = []
+    if not os.path.exists(data_dir):
+        return records
+
+    valid_exts = (".png", ".jpg", ".jpeg", ".webp")
+    for root, _, files in os.walk(data_dir):
+        for fname in files:
+            if fname.lower().endswith(valid_exts):
+                fpath = os.path.join(root, fname)
+                try:
+                    sha = compute_sha256(fpath)
+                    with Image.open(fpath) as img:
+                        phash = compute_phash_from_image(img)
+                    records.append({
+                        "path": fpath,
+                        "sha256": sha,
+                        "phash": phash,
+                        "split": split_name,
+                    })
+                except Exception as e:
+                    print(f"  [!] Khong the doc anh {fpath}: {e}")
+    return records
+
+
+def run_real_audit(args):
+    """Kiem toan phan ly du lieu thuc te tren thu muc hoac tep manifest."""
+    import json
+    print("=" * 80)
+    print("FATFORMER-XLA: KIEM TOAN PHAN LY DU LIEU DA TANG (DU LIEU THUC TE)")
+    print("=" * 80)
+
+    train_records = []
+    val_records = []
+    test_sha_set = set()
+    test_phash_list = []
+
+    # 1. Nap tu manifest neu chi dinh
+    if args.manifest and os.path.exists(args.manifest):
+        print(f"[*] Dang doc tep manifest: {args.manifest}")
+        try:
+            with open(args.manifest, "r", encoding="utf-8") as f:
+                manifest_data = json.load(f)
+            for r in manifest_data.get("records", []):
+                rec = {
+                    "path": r.get("file_path", r.get("path", "")),
+                    "sha256": str(r.get("sha256", "")),
+                    "phash": int(r.get("phash", 0)),
+                    "split": r.get("split", "train"),
+                }
+                if rec["split"] == "train":
+                    train_records.append(rec)
+                else:
+                    val_records.append(rec)
+            print(f"  [✓] Nap tu manifest: Train={len(train_records)}, Val={len(val_records)}")
+        except Exception as e:
+            print(f"  [!] Loi doc manifest {args.manifest}: {e}")
+
+    # 2. Quet thu muc train neu chi dinh
+    if args.train_dir and os.path.exists(args.train_dir):
+        print(f"[*] Dang quet thu muc train: {args.train_dir}")
+        scanned_train = scan_directory_records(args.train_dir, split_name="train")
+        train_records.extend(scanned_train)
+        print(f"  [✓] Quet duoc {len(scanned_train)} mau train tu thu muc.")
+
+    # 3. Quet thu muc val neu chi dinh
+    if args.val_dir and os.path.exists(args.val_dir):
+        print(f"[*] Dang quet thu muc val: {args.val_dir}")
+        scanned_val = scan_directory_records(args.val_dir, split_name="val")
+        val_records.extend(scanned_val)
+        print(f"  [✓] Quet duoc {len(scanned_val)} mau val tu thu muc.")
+
+    # 4. Quet test sets neu chi dinh
+    if args.test_dirs:
+        for tdir in args.test_dirs:
+            if os.path.exists(tdir):
+                print(f"[*] Dang quet tap test doi chieu: {tdir}")
+                t_recs = scan_directory_records(tdir, split_name="test")
+                for r in t_recs:
+                    test_sha_set.add(r["sha256"])
+                    test_phash_list.append(r["phash"])
+        print(f"  [✓] Tong so mau test doi chieu: {len(test_sha_set)} SHA-256 / {len(test_phash_list)} pHash.")
+
+    if len(train_records) == 0 and len(val_records) == 0:
+        print("[!] Canh bao: Khong co du lieu trong manifest hoac thu muc duoc chi dinh!")
+        print("    Vui long kiem tra --train_dir, --val_dir hoac --manifest.")
+        return
+
+    # Thuc hien kiem toan 3 tang
+    auditor = DataIsolationAuditor(test_sha_set, test_phash_list)
+    pass_train, m_train, logs_train = auditor.audit_records(train_records, split_name="train", phash_threshold=args.phash_threshold)
+    for l in logs_train:
+        print(f"  {l}")
+
+    pass_val = True
+    m_val = {}
+    if len(val_records) > 0:
+        pass_val, m_val, logs_val = auditor.audit_records(val_records, split_name="val", phash_threshold=args.phash_threshold)
+        for l in logs_val:
+            print(f"  {l}")
+
+    pass_sep, leak_cnt = audit_train_val_separation(train_records, val_records)
+    print(f"\n- Kiem toan Tang 3 (Train - Val Isolation):")
+    print(f"  • Ro ri giua Train va Val: {'0 mau (PASS)' if pass_sep else f'{leak_cnt} mau bi ro ri (FAIL)'}")
+
+    all_pass = pass_train and pass_val and pass_sep
+    print(f"\n=> KET LUAN KIEM TOAN: {'PASS 100% (CO THE SU DUNG)' if all_pass else 'FAIL (CAN XU LY TRUNG LAP)'}")
+    print("=" * 80)
+
+    if args.output_report:
+        report = {
+            "all_pass": all_pass,
+            "train_metrics": m_train,
+            "val_metrics": m_val,
+            "train_val_leakage": leak_cnt,
+            "phash_threshold": args.phash_threshold,
+        }
+        os.makedirs(os.path.dirname(os.path.abspath(args.output_report)), exist_ok=True)
+        with open(args.output_report, "w", encoding="utf-8") as f:
+            json.dump(report, f, indent=2)
+        print(f"[✓] Da xuat bao cao kiem toan ra: {args.output_report}")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Data Isolation Dual Audit")
-    parser.add_argument("--test_dummy", action="store_true", help="Chay kiem thu tren du lieu mau")
+    parser.add_argument("--test_dummy", action="store_true", help="Chay kiem thu tren du lieu mau gia lap")
+    parser.add_argument("--train_dir", type=str, default="", help="Thu muc du lieu train")
+    parser.add_argument("--val_dir", type=str, default="", help="Thu muc du lieu val")
+    parser.add_argument("--manifest", type=str, default="", help="Duong dan tep manifest json")
+    parser.add_argument("--test_dirs", nargs="*", default=[], help="Danh sach thu muc test can doi chieu")
+    parser.add_argument("--phash_threshold", type=int, default=3, help="Nguong khoang cach Hamming pHash")
+    parser.add_argument("--output_report", type=str, default="", help="Duong dan xuat bao cao json")
     args = parser.parse_args()
 
     if args.test_dummy:
         run_dummy_audit_verification()
+    elif args.manifest or args.train_dir or args.val_dir or args.test_dirs:
+        run_real_audit(args)
     else:
-        print("Hay chay voi tham so --test_dummy hoac chi dinh thu muc train/val.")
+        def_manifest = os.path.join(PROJECT_ROOT, "DATASET", "manifests", "data_manifest.json")
+        if os.path.exists(def_manifest):
+            args.manifest = def_manifest
+            run_real_audit(args)
+        else:
+            run_dummy_audit_verification()

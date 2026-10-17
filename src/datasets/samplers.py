@@ -11,12 +11,16 @@ Muc dich:
 """
 
 import math
+import sys
 from typing import List, Dict, Optional, Iterator
 from collections import Counter
 
 import numpy as np
 import torch
 from torch.utils.data import Sampler
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 
 class BalancedCrossDomainSampler(Sampler[int]):
@@ -115,8 +119,79 @@ class BalancedCrossDomainSampler(Sampler[int]):
         return self.num_samples
 
 
+class BalancedBatchSampler(Sampler[List[int]]):
+    """
+    Bộ lấy mẫu phân lô cân bằng đa miền (Strict Balanced Batch Sampler).
+    Cưỡng bức mỗi mini-batch luôn có chính xác tỷ lệ 50/50 giữa Real và Fake:
+      - batch_size // 2 mẫu Real (phân bổ đều theo nguồn camera/kho ảnh).
+      - batch_size // 2 mẫu Fake (phân bổ đều theo các bộ sinh).
+    Giải quyết triệt để hiện tượng lệch lớp trong các mini-batch kích thước nhỏ.
+    """
+
+    def __init__(
+        self,
+        dataset_records: List[Dict],
+        batch_size: int = 64,
+        num_batches: Optional[int] = None,
+        drop_last: bool = False,
+    ):
+        self.records = dataset_records
+        self.batch_size = max(2, batch_size)
+        self.drop_last = drop_last
+
+        # Tách chỉ số Real và Fake
+        self.real_indices = [i for i, r in enumerate(self.records) if r.get("label", 0) == 0]
+        self.fake_indices = [i for i, r in enumerate(self.records) if r.get("label", 0) == 1]
+
+        if len(self.real_indices) == 0 or len(self.fake_indices) == 0:
+            raise ValueError("Dataset phải chứa đồng thời cả mẫu Real và mẫu Fake.")
+
+        # Trọng số nội bộ Real
+        real_sources = [self.records[i].get("source", "unknown") for i in self.real_indices]
+        src_counts = Counter(real_sources)
+        num_src = len(src_counts)
+        real_w = np.array([(1.0 / max(num_src, 1)) / max(src_counts[s], 1) for s in real_sources], dtype=np.float64)
+        real_w = real_w / real_w.sum()
+        self.real_weights = torch.DoubleTensor(real_w)
+
+        # Trọng số nội bộ Fake
+        fake_gens = [self.records[i].get("generator", "unknown") for i in self.fake_indices]
+        gen_counts = Counter(fake_gens)
+        num_gen = len(gen_counts)
+        fake_w = np.array([(1.0 / max(num_gen, 1)) / max(gen_counts[g], 1) for g in fake_gens], dtype=np.float64)
+        fake_w = fake_w / fake_w.sum()
+        self.fake_weights = torch.DoubleTensor(fake_w)
+
+        # Xác định số lượng batch mỗi epoch
+        if num_batches is not None:
+            self.total_batches = num_batches
+        else:
+            self.total_batches = max(1, len(self.records) // self.batch_size)
+
+    def __iter__(self) -> Iterator[List[int]]:
+        n_real = self.batch_size // 2
+        n_fake = self.batch_size - n_real
+
+        for _ in range(self.total_batches):
+            # Lấy mẫu Real có trọng số
+            sub_real_idx = torch.multinomial(self.real_weights, num_samples=n_real, replacement=True)
+            batch_real = [self.real_indices[idx] for idx in sub_real_idx.tolist()]
+
+            # Lấy mẫu Fake có trọng số
+            sub_fake_idx = torch.multinomial(self.fake_weights, num_samples=n_fake, replacement=True)
+            batch_fake = [self.fake_indices[idx] for idx in sub_fake_idx.tolist()]
+
+            # Gộp và xáo trộn bên trong từng mini-batch
+            batch = batch_real + batch_fake
+            perm = torch.randperm(len(batch)).tolist()
+            yield [batch[p] for p in perm]
+
+    def __len__(self) -> int:
+        return self.total_batches
+
+
 def run_sampler_unit_test():
-    """Unit test kiem chung tinh can bang cua BalancedCrossDomainSampler."""
+    """Unit test kiem chung tinh can bang cua BalancedCrossDomainSampler va BalancedBatchSampler."""
     print("=" * 80)
     print("FATFORMER-XLA: UNIT TEST BALANCED CROSS-DOMAIN SAMPLER (TASK 6.2)")
     print("=" * 80)
@@ -144,10 +219,10 @@ def run_sampler_unit_test():
     print(f"  • Fake ProGAN: 10,000 | Midjourney: 500 | Stable Diffusion: 500")
     print(f"  • Real ImageNet: 5,000 | FFHQ: 1,000")
 
+    # 1. Kiem thu BalancedCrossDomainSampler (cap do epoch)
     sampler = BalancedCrossDomainSampler(records, batch_size=64, num_samples=12000)
     sampled_indices = list(sampler)
 
-    # Thong ke ket qua sau khi lay mau
     sampled_labels = [records[i]["label"] for i in sampled_indices]
     sampled_gens = [records[i]["generator"] for i in sampled_indices if records[i]["label"] == 1]
     sampled_srcs = [records[i]["source"] for i in sampled_indices if records[i]["label"] == 0]
@@ -162,25 +237,29 @@ def run_sampler_unit_test():
     print("\n- Ket qua sau khi lay mau 12,000 luot qua BalancedCrossDomainSampler:")
     print(f"  • Ty le nhan: Real = {real_pct:.1f}% | Fake = {fake_pct:.1f}% (Can bang ly tuong ~50/50)")
 
-    print(f"  • Phan bo cac bo sinh trong nhom Fake (3 bo sinh):")
-    for g, c in gen_counts.items():
-        print(f"    - {g:18s}: {c:,} ({c / len(sampled_gens) * 100:.1f}%)")
-
-    print(f"  • Phan bo cac nguon trong nhom Real (2 nguon):")
-    for s, c in src_counts.items():
-        print(f"    - {s:18s}: {c:,} ({c / len(sampled_srcs) * 100:.1f}%)")
-
-    # Kiem tra tieu chi pass
     pass_class = abs(real_pct - 50.0) < 3.0
     pass_gen = max(abs(c / len(sampled_gens) * 100 - 33.3) for c in gen_counts.values()) < 5.0
     pass_src = max(abs(c / len(sampled_srcs) * 100 - 50.0) for c in src_counts.values()) < 5.0
 
-    print("\n- Danh gia kiem dinh:")
-    print(f"  [1] Can bang Real/Fake (±3%): {'PASS' if pass_class else 'FAIL'}")
-    print(f"  [2] Can bang Generator Fake (±5%): {'PASS' if pass_gen else 'FAIL'}")
-    print(f"  [3] Can bang Source Real (±5%): {'PASS' if pass_src else 'FAIL'}")
+    print(f"  [1] Can bang Real/Fake toan cuc (+/-3%): {'PASS' if pass_class else 'FAIL'}")
+    print(f"  [2] Can bang Generator Fake (+/-5%): {'PASS' if pass_gen else 'FAIL'}")
+    print(f"  [3] Can bang Source Real (+/-5%): {'PASS' if pass_src else 'FAIL'}")
 
-    all_pass = pass_class and pass_gen and pass_src
+    # 2. Kiem thu BalancedBatchSampler (cap do tung mini-batch)
+    print("\n- Kiem thu BalancedBatchSampler (kiem tra ty le tren tung mini-batch):")
+    batch_sampler = BalancedBatchSampler(records, batch_size=8, num_batches=100)
+    all_batch_50_50 = True
+    for b_idx, batch in enumerate(batch_sampler):
+        b_labels = [records[i]["label"] for i in batch]
+        n_r = sum(1 for l in b_labels if l == 0)
+        n_f = sum(1 for l in b_labels if l == 1)
+        if n_r != 4 or n_f != 4:
+            all_batch_50_50 = False
+            break
+
+    print(f"  [4] Bao dam 100% mini-batch (batch_size=8) co dung 4 Real va 4 Fake: {'PASS' if all_batch_50_50 else 'FAIL'}")
+
+    all_pass = pass_class and pass_gen and pass_src and all_batch_50_50
     print(f"\n=> KET LUAN: {'UNIT TEST PASS 100%' if all_pass else 'UNIT TEST FAILED'}")
     print("=" * 80)
     return all_pass

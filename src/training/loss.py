@@ -140,8 +140,8 @@ class CrossDomainDistillationLoss(nn.Module):
         super().__init__()
         if temperature <= 0:
             raise ValueError(f"temperature phải > 0, nhận được {temperature}")
-        if not (0.0 < alpha_kd <= 1.0):
-            raise ValueError(f"alpha_kd phải ∈ (0, 1], nhận được {alpha_kd}")
+        if not (0.0 <= alpha_kd <= 1.0):
+            raise ValueError(f"alpha_kd phải ∈ [0, 1], nhận được {alpha_kd}")
         self.temperature = temperature
         self.alpha_kd = alpha_kd
         # KLDivLoss mong đợi log-prob ở input, prob ở target — reduction='batchmean' chuẩn hoá theo batch
@@ -162,6 +162,9 @@ class CrossDomainDistillationLoss(nn.Module):
         Returns:
             Scalar: α_kd · τ² · KL(student ‖ teacher)
         """
+        if self.alpha_kd == 0.0:
+            return torch.tensor(0.0, device=student_logits.device)
+
         if clean_mask is not None:
             student_logits = student_logits[clean_mask]
             teacher_logits = teacher_logits[clean_mask]
@@ -184,7 +187,7 @@ class PairedConsistencyLoss(nn.Module):
     """
     Hàm mất mát đồng bộ logit cặp sạch-suy biến — Task 6.3-B, Milestone 6.
 
-    Ràng buộc mô hình duy trì quyết định phân loại nhất quán giữa ảnh sạch và
+    Ràng buộc mô hình duy trì quyết định phân loại đồng đều xuyên suốt giữa ảnh sạch và
     ảnh bị suy biến vật lý (JPEG nén / Gaussian Blur), chống nhiễu loạn ma trận
     lượng tử hóa khối 8×8.
 
@@ -236,7 +239,7 @@ class CrossDomainTotalLoss(nn.Module):
         2. L_KD  : CrossDomainDistillationLoss — bảo vệ tri thức ảnh sạch
         3. L_cons: PairedConsistencyLoss — đồng bộ quyết định clean ↔ degraded
 
-    Interface thống nhất để Lead C tích hợp trực tiếp trong trainer Milestone 6.
+    Interface chuẩn hóa đồng bộ để Lead C tích hợp trực tiếp trong trainer Milestone 6.
     """
 
     def __init__(
@@ -273,10 +276,10 @@ class CrossDomainTotalLoss(nn.Module):
         loss_kd   = torch.tensor(0.0, device=logits.device)
         loss_cons = torch.tensor(0.0, device=logits.device)
 
-        if teacher_logits is not None:
+        if teacher_logits is not None and self.kd_loss.alpha_kd > 0.0:
             loss_kd = self.kd_loss(logits, teacher_logits, clean_mask=clean_mask)
 
-        if logits_degraded is not None:
+        if logits_degraded is not None and self.cons_loss.beta_cons > 0.0:
             loss_cons = self.cons_loss(logits, logits_degraded)
 
         loss_total = loss_ce + loss_kd + loss_cons

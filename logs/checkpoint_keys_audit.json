@@ -16,5 +16,14 @@
     "missing_keys": [],
     "unexpected_keys_count": 0,
     "unexpected_keys": []
+  },
+  {
+    "timestamp": "2026-10-18 01:15:07",
+    "checkpoint_path": "DATASET/checkpoints/fatformer_plan_a_best_weights.pth",
+    "strict_mode": false,
+    "missing_keys_count": 0,
+    "missing_keys": [],
+    "unexpected_keys_count": 0,
+    "unexpected_keys": []
   }
 ]
