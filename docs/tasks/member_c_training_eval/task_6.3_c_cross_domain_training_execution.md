@@ -51,7 +51,7 @@ Tuyệt đối không lưu file `checkpoint_epoch_{E}.pth` ở mỗi epoch để
 - Chạy script kiểm thử tích hợp `tools/test_smoke_m6.py` trên 1 batch dữ liệu. Xác nhận 100% pass mới bắt đầu huấn luyện chính thức.
 
 ### Bước 2: Huấn luyện tuần tự các nhánh ứng viên
-- **Thực thi trên Notebook Kaggle / Colab**: Nạp và chạy trực tiếp tệp [`notebooks/task_6.3_c_train_crossdomain.ipynb`](../../../notebooks/task_6.3_c_train_crossdomain.ipynb).
+- **Thực thi trên Notebook Kaggle / Colab**: Nạp và chạy trực tiếp tệp [`notebooks/task/task_6.3/task_6.3_c_train_crossdomain.ipynb`](../../../notebooks/task/task_6.3/task_6.3_c_train_crossdomain.ipynb).
 - **Hoặc chạy bằng lệnh Terminal chuẩn hóa**:
   - **Nhánh M3 (Chỉ thêm Data đa miền)**:
     ```bash
