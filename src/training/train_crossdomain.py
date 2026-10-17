@@ -304,8 +304,7 @@ class CrossDomainTrainer:
         self.grad_clip_norm = grad_clip_norm
         self.grad_accum_steps = grad_accum_steps
         self.use_amp = use_amp and (device.type == "cuda")
-
-        self.scaler = torch.amp.GradScaler("cuda", enabled=self.use_amp)
+        self.scaler = torch.amp.GradScaler("cuda", enabled=True) if self.use_amp else None
         self.best_composite_score = -1.0
 
         os.makedirs(self.save_dir, exist_ok=True)
@@ -359,17 +358,23 @@ class CrossDomainTrainer:
                 )
                 loss = loss_dict["loss_total"] / self.grad_accum_steps
 
-            # Lan truyen nguoc qua GradScaler
-            self.scaler.scale(loss).backward()
-
-            if (step + 1) % self.grad_accum_steps == 0 or (step + 1) == num_batches:
-                if self.grad_clip_norm > 0:
-                    self.scaler.unscale_(self.optimizer)
-                    nn.utils.clip_grad_norm_(self.student.parameters(), self.grad_clip_norm)
-
-                self.scaler.step(self.optimizer)
-                self.scaler.update()
-                self.optimizer.zero_grad()
+            # Lan truyen nguoc qua GradScaler (neu la CUDA AMP) hoac truc tiep (neu khong bat AMP/CPU)
+            if self.scaler is not None:
+                self.scaler.scale(loss).backward()
+                if (step + 1) % self.grad_accum_steps == 0 or (step + 1) == num_batches:
+                    if self.grad_clip_norm > 0:
+                        self.scaler.unscale_(self.optimizer)
+                        nn.utils.clip_grad_norm_(self.student.parameters(), self.grad_clip_norm)
+                    self.scaler.step(self.optimizer)
+                    self.scaler.update()
+                    self.optimizer.zero_grad()
+            else:
+                loss.backward()
+                if (step + 1) % self.grad_accum_steps == 0 or (step + 1) == num_batches:
+                    if self.grad_clip_norm > 0:
+                        nn.utils.clip_grad_norm_(self.student.parameters(), self.grad_clip_norm)
+                    self.optimizer.step()
+                    self.optimizer.zero_grad()
 
             total_loss += loss_dict["loss_total"].item()
             total_ce += loss_dict["loss_ce"].item()
@@ -644,58 +649,94 @@ def run_training_pipeline(args):
 
 
 def parse_arguments():
+    # 1. Quet truoc de kiem tra co truyen --config hay khong
+    pre_parser = argparse.ArgumentParser(add_help=False)
+    pre_parser.add_argument("--config", type=str, default="")
+    pre_args, _ = pre_parser.parse_known_args()
+
+    default_device = "cuda" if torch.cuda.is_available() else "cpu"
+    defaults = {
+        "branch": "M4",
+        "device": default_device,
+        "epochs": 5,
+        "batch_size": 8,
+        "learning_rate": 1e-5,
+        "alpha_kd": 0.4,
+        "beta_cons": 0.2,
+        "temperature": 2.0,
+        "label_smoothing": 0.05,
+        "save_dir": "checkpoints/m4",
+        "seed": 42,
+        "grad_accum_steps": 4,
+        "clip_path": "ViT-L-14.pt",
+        "checkpoint_init": "DATASET/checkpoints/fatformer_plan_a_best_weights.pth",
+        "teacher_checkpoint": "fatformer_4class_ckpt.pth",
+        "train_manifest": "DATASET/manifests/data_manifest.json",
+        "train_dir": "DATASET/train_crossdomain",
+        "val_dir": "DATASET/val_crossdomain",
+        "num_workers": 0,
+    }
+
+    # 2. Neu co config YAML, nap cac truong vao defaults truoc khi xu ly CLI
+    if pre_args.config and os.path.exists(pre_args.config):
+        with open(pre_args.config, "r", encoding="utf-8") as f:
+            cfg = yaml.safe_load(f) or {}
+        if "experiment" in cfg:
+            defaults["branch"] = cfg["experiment"].get("branch", defaults["branch"])
+            defaults["seed"] = cfg["experiment"].get("seed", defaults["seed"])
+        if "training" in cfg:
+            t_cfg = cfg["training"]
+            defaults["epochs"] = t_cfg.get("epochs", defaults["epochs"])
+            defaults["batch_size"] = t_cfg.get("batch_size", defaults["batch_size"])
+            defaults["learning_rate"] = float(t_cfg.get("learning_rate", defaults["learning_rate"]))
+            defaults["save_dir"] = t_cfg.get("save_dir", defaults["save_dir"])
+            if "device" in t_cfg:
+                defaults["device"] = t_cfg.get("device", defaults["device"])
+            if "grad_accum_steps" in t_cfg:
+                defaults["grad_accum_steps"] = t_cfg.get("grad_accum_steps", defaults["grad_accum_steps"])
+        if "loss" in cfg:
+            l_cfg = cfg["loss"]
+            defaults["alpha_kd"] = float(l_cfg.get("alpha_kd", defaults["alpha_kd"]))
+            defaults["beta_cons"] = float(l_cfg.get("beta_cons", defaults["beta_cons"]))
+            defaults["temperature"] = float(l_cfg.get("temperature", defaults["temperature"]))
+            defaults["label_smoothing"] = float(l_cfg.get("label_smoothing", defaults["label_smoothing"]))
+        if "dataset" in cfg:
+            d_cfg = cfg["dataset"]
+            defaults["train_manifest"] = d_cfg.get("manifest", defaults["train_manifest"])
+            defaults["train_dir"] = d_cfg.get("train_dir", defaults["train_dir"])
+            defaults["val_dir"] = d_cfg.get("val_dir", defaults["val_dir"])
+            defaults["num_workers"] = d_cfg.get("num_workers", defaults["num_workers"])
+
+    # 3. Parser chinh thuc tiep nhan defaults tu YAML, dong thoi cho phep co CLI ghi de
     parser = argparse.ArgumentParser(description="FatFormer-XLA Cross-Domain Training")
-    parser.add_argument("--config", type=str, default="", help="Duong dan tep cau hinh yaml")
-    parser.add_argument("--branch", type=str, default="M4", choices=["M3", "M4", "M5"], help="Nhanh thuc nghiem")
+    parser.add_argument("--config", type=str, default=pre_args.config, help="Duong dan tep cau hinh yaml")
+    parser.add_argument("--branch", type=str, default=defaults["branch"], choices=["M3", "M4", "M5"], help="Nhanh thuc nghiem")
     parser.add_argument("--dry_run", action="store_true", help="Chay kiem thu dry-run gia lap")
-    parser.add_argument("--device", type=str, default="cpu", help="Thiet bi: cpu hoac cuda")
-    parser.add_argument("--epochs", type=int, default=5, help="So epochs")
-    parser.add_argument("--batch_size", type=int, default=8, help="Batch size")
-    parser.add_argument("--learning_rate", type=float, default=1e-5, help="Learning rate")
-    parser.add_argument("--alpha_kd", type=float, default=0.4, help="Trong so KD loss")
-    parser.add_argument("--beta_cons", type=float, default=0.2, help="Trong so Consistency loss")
-    parser.add_argument("--temperature", type=float, default=2.0, help="Nhiet do KD")
-    parser.add_argument("--label_smoothing", type=float, default=0.05, help="Label smoothing")
-    parser.add_argument("--save_dir", type=str, default="checkpoints/m4", help="Thu muc luu checkpoint")
-    parser.add_argument("--seed", type=int, default=42, help="Random seed")
-    parser.add_argument("--grad_accum_steps", type=int, default=1, help="Gradient accumulation")
-    parser.add_argument("--clip_path", type=str, default="ViT-L-14.pt", help="Path to CLIP backbone")
-    parser.add_argument("--checkpoint_init", type=str, default="DATASET/checkpoints/fatformer_plan_a_best_weights.pth")
-    parser.add_argument("--teacher_checkpoint", type=str, default="fatformer_4class_ckpt.pth")
-    parser.add_argument("--train_manifest", type=str, default="DATASET/manifests/data_manifest.json", help="Duong dan tep manifest json")
-    parser.add_argument("--train_dir", type=str, default="DATASET/train_crossdomain", help="Thu muc du lieu train")
-    parser.add_argument("--val_dir", type=str, default="DATASET/val_crossdomain", help="Thu muc du lieu val")
-    parser.add_argument("--num_workers", type=int, default=0, help="So luong workers cho DataLoader (mac dinh 0 chong OOM)")
+    parser.add_argument("--device", type=str, default=defaults["device"], help="Thiet bi: cuda hoac cpu")
+    parser.add_argument("--epochs", type=int, default=defaults["epochs"], help="So epochs")
+    parser.add_argument("--batch_size", type=int, default=defaults["batch_size"], help="Batch size")
+    parser.add_argument("--learning_rate", type=float, default=defaults["learning_rate"], help="Learning rate")
+    parser.add_argument("--alpha_kd", type=float, default=defaults["alpha_kd"], help="Trong so KD loss")
+    parser.add_argument("--beta_cons", type=float, default=defaults["beta_cons"], help="Trong so Consistency loss")
+    parser.add_argument("--temperature", type=float, default=defaults["temperature"], help="Nhiet do KD")
+    parser.add_argument("--label_smoothing", type=float, default=defaults["label_smoothing"], help="Label smoothing")
+    parser.add_argument("--save_dir", type=str, default=defaults["save_dir"], help="Thu muc luu checkpoint")
+    parser.add_argument("--seed", type=int, default=defaults["seed"], help="Random seed")
+    parser.add_argument("--grad_accum_steps", type=int, default=defaults["grad_accum_steps"], help="Gradient accumulation")
+    parser.add_argument("--clip_path", type=str, default=defaults["clip_path"], help="Path to CLIP backbone")
+    parser.add_argument("--checkpoint_init", type=str, default=defaults["checkpoint_init"])
+    parser.add_argument("--teacher_checkpoint", type=str, default=defaults["teacher_checkpoint"])
+    parser.add_argument("--train_manifest", type=str, default=defaults["train_manifest"], help="Duong dan tep manifest json")
+    parser.add_argument("--train_dir", type=str, default=defaults["train_dir"], help="Thu muc du lieu train")
+    parser.add_argument("--val_dir", type=str, default=defaults["val_dir"], help="Thu muc du lieu val")
+    parser.add_argument("--num_workers", type=int, default=defaults["num_workers"], help="So luong workers cho DataLoader (mac dinh 0 chong OOM)")
 
     args = parser.parse_args()
 
-    # Neu co file config yaml, nạp va ghi de cac gia tri tuong ung
-    if args.config and os.path.exists(args.config):
-        with open(args.config, "r", encoding="utf-8") as f:
-            cfg = yaml.safe_load(f)
-        if "experiment" in cfg:
-            args.branch = cfg["experiment"].get("branch", args.branch)
-            args.seed = cfg["experiment"].get("seed", args.seed)
-        if "training" in cfg:
-            t_cfg = cfg["training"]
-            args.epochs = t_cfg.get("epochs", args.epochs)
-            args.batch_size = t_cfg.get("batch_size", args.batch_size)
-            args.learning_rate = float(t_cfg.get("learning_rate", args.learning_rate))
-            args.save_dir = t_cfg.get("save_dir", args.save_dir)
-            if "grad_accum_steps" in t_cfg:
-                args.grad_accum_steps = t_cfg.get("grad_accum_steps", args.grad_accum_steps)
-        if "loss" in cfg:
-            l_cfg = cfg["loss"]
-            args.alpha_kd = float(l_cfg.get("alpha_kd", args.alpha_kd))
-            args.beta_cons = float(l_cfg.get("beta_cons", args.beta_cons))
-            args.temperature = float(l_cfg.get("temperature", args.temperature))
-            args.label_smoothing = float(l_cfg.get("label_smoothing", args.label_smoothing))
-        if "dataset" in cfg:
-            d_cfg = cfg["dataset"]
-            args.train_manifest = d_cfg.get("manifest", args.train_manifest)
-            args.train_dir = d_cfg.get("train_dir", args.train_dir)
-            args.val_dir = d_cfg.get("val_dir", args.val_dir)
-            args.num_workers = d_cfg.get("num_workers", args.num_workers)
+    # Kiem tra an toan: neu yeu cau cuda ma he thong khong co GPU, tu dong chuyen sang cpu
+    if args.device == "cuda" and not torch.cuda.is_available():
+        print("[!] Canh bao: CUDA khong kha dung tren thiet bi nay, tu dong chuyen sang CPU.")
+        args.device = "cpu"
 
     return args
 
