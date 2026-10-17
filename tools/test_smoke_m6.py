@@ -309,12 +309,85 @@ def test_lora_adapter() -> None:
 
 
 # ──────────────────────────────────────────────────────────
+# Tiêu chí #6: Tích hợp BalancedCrossDomainSampler + DataLoader
+# ──────────────────────────────────────────────────────────
+
+def test_sampler_dataloader_integration(student: nn.Module, teacher: nn.Module, device: torch.device) -> None:
+    _section("#6: Tích hợp BalancedCrossDomainSampler (Task 6.2) + DataLoader + Autograd")
+    from torch.utils.data import Dataset, DataLoader
+    from src.datasets.samplers import BalancedCrossDomainSampler
+
+    # Tao dataset mo phong 100 mau
+    mock_records = []
+    for i in range(100):
+        if i % 2 == 0:
+            mock_records.append({
+                "label": 0,
+                "source": "imagenet" if i % 4 == 0 else "ffhq",
+                "generator": "real"
+            })
+        else:
+            gen = "progan" if i % 6 == 1 else ("stylegan" if i % 6 == 3 else "stable_diffusion")
+            mock_records.append({
+                "label": 1,
+                "source": "fake",
+                "generator": gen
+            })
+
+    class _MockDataset(Dataset):
+        def __init__(self, records):
+            self.records = records
+
+        def __len__(self):
+            return len(self.records)
+
+        def __getitem__(self, idx):
+            rec = self.records[idx]
+            x_clean = torch.randn(3, 224, 224)
+            x_deg = x_clean + 0.05 * torch.randn(3, 224, 224)
+            return x_clean, x_deg, rec["label"], idx
+
+    dataset = _MockDataset(mock_records)
+    sampler = BalancedCrossDomainSampler(mock_records, batch_size=8, num_samples=32)
+    loader = DataLoader(dataset, batch_size=8, sampler=sampler)
+
+    # Lay 1 batch tu sampler
+    batch = next(iter(loader))
+    x_c, x_d, targets, _ = batch
+    x_c = x_c.to(device)
+    x_d = x_d.to(device)
+    targets = targets.to(device)
+
+    clean_mask = torch.tensor([True, False, True, False, True, False, True, False], device=device)
+
+    # Forward
+    student_logits = student(x_c)
+    student_logits_deg = student(x_d)
+    with torch.no_grad():
+        teacher_logits = teacher(x_c)
+
+    total_loss_fn = CrossDomainTotalLoss(alpha_kd=0.4, beta_cons=0.2, temperature=2.0)
+    loss_dict = total_loss_fn(
+        logits=student_logits,
+        targets=targets,
+        teacher_logits=teacher_logits,
+        logits_degraded=student_logits_deg,
+        clean_mask=clean_mask,
+    )
+    loss_total = loss_dict["loss_total"]
+    loss_total.backward()
+
+    _pass(f"BalancedCrossDomainSampler: lay mau batch size={len(targets)} thanh cong")
+    _pass(f"DataLoader + Loss: loss_total={loss_total.item():.4f} | backward khong loi")
+
+
+# ──────────────────────────────────────────────────────────
 # Main
 # ──────────────────────────────────────────────────────────
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="FatFormer-XLA Smoke Gate Milestone 6 (Task 6.3-B)"
+        description="FatFormer-XLA Smoke Gate Milestone 6 (Khop noi Task 6.2 & Task 6.3-B)"
     )
     parser.add_argument(
         "--device", type=str,
@@ -334,7 +407,7 @@ def run_smoke_gate_m6():
     B      = args.batch_size
 
     print("=" * 70)
-    print("  FATFORMER-XLA: SMOKE GATE MILESTONE 6 — TASK 6.3-B")
+    print("  FATFORMER-XLA: SMOKE GATE MILESTONE 6 — TÍCH HỢP TOÀN DIỆN")
     print(f"  Thiết bị: {device} | Batch size: {B}")
     print("=" * 70)
 
@@ -360,6 +433,9 @@ def run_smoke_gate_m6():
     # Tiêu chí #5
     test_total_loss_backward(student, teacher, x_clean, x_degraded, device)
 
+    # Tiêu chí #6
+    test_sampler_dataloader_integration(student, teacher, device)
+
     # Tiêu chí BONUS
     test_lora_adapter()
 
@@ -368,8 +444,8 @@ def run_smoke_gate_m6():
     print("  KẾT QUẢ NGHIỆM THU SMOKE GATE MILESTONE 6")
     print(f"  Thời gian chạy: {elapsed:.2f}s")
     print("=" * 70)
-    print("  [✓✓✓] PASS 100% — 5/5 TIÊU CHÍ DoD HOÀN THÀNH!")
-    print("  Đủ điều kiện chuyển giao sang Task 6.3-C (Training GPU).")
+    print("  [✓✓✓] PASS 100% — 6/6 TIÊU CHÍ SMOKE GATE M6 HOÀN THÀNH!")
+    print("  Đủ điều kiện chuyển giao sang Task 6.3-C (Huấn luyện GPU).")
     print("=" * 70)
 
 
