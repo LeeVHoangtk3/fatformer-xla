@@ -5,7 +5,7 @@
 - **Người phối hợp**: **Thành viên A (Data Lead)**, **Thành viên B (Architecture Lead)**
 - **Môi trường thực thi**: 🚀 **Kaggle Server (RTX 6000 Blackwell 95GB VRAM)** / ☁️ **Colab A100**
 - **Độ ưu tiên**: 🔴 Khẩn cấp (Thực thi huấn luyện cốt lõi Milestone 6)
-- **Trạng thái**: `[ ] Sẵn sàng triển khai`
+- **Trạng thái**: `[ ] Sẵn sàng huấn luyện trên GPU` (Notebook & Mã nguồn hoàn tất 100%)
 
 ---
 
@@ -51,36 +51,37 @@ Tuyệt đối không lưu file `checkpoint_epoch_{E}.pth` ở mỗi epoch để
 - Chạy script kiểm thử tích hợp `tools/test_smoke_m6.py` trên 1 batch dữ liệu. Xác nhận 100% pass mới bắt đầu huấn luyện chính thức.
 
 ### Bước 2: Huấn luyện tuần tự các nhánh ứng viên
-Chạy script huấn luyện chuẩn hóa cho từng nhánh:
-- **Nhánh M3 (Chỉ thêm Data đa miền)**:
-  ```bash
-  python src/training/train_crossdomain.py \
-      --config configs/train_m3_data_only.yaml \
-      --seed 42 --epochs 5 --output_dir checkpoints/m3/
-  ```
-- **Nhánh M4 (Data đa miền + Distillation & Consistency Loss)**:
-  ```bash
-  python src/training/train_crossdomain.py \
-      --config configs/train_m4_distill.yaml \
-      --seed 42 --epochs 5 --alpha_kd 0.4 --beta_cons 0.2 --output_dir checkpoints/m4/
-  ```
-- **Nhánh M5 (M4 + LoRA ViT Adapter)**:
-  ```bash
-  python src/training/train_crossdomain.py \
-      --config configs/train_m5_lora.yaml \
-      --seed 42 --epochs 5 --enable_lora --output_dir checkpoints/m5/
-  ```
+- **Thực thi trên Notebook Kaggle / Colab**: Nạp và chạy trực tiếp tệp [`notebooks/task_6.3_c_train_crossdomain.ipynb`](../../../notebooks/task_6.3_c_train_crossdomain.ipynb).
+- **Hoặc chạy bằng lệnh Terminal chuẩn hóa**:
+  - **Nhánh M3 (Chỉ thêm Data đa miền)**:
+    ```bash
+    python src/training/train_crossdomain.py \
+        --config configs/train_m3_data.yaml \
+        --seed 42 --epochs 5 --output_dir checkpoints/m3/
+    ```
+  - **Nhánh M4 (Data đa miền + Distillation & Consistency Loss)**:
+    ```bash
+    python src/training/train_crossdomain.py \
+        --config configs/train_m4_distill.yaml \
+        --seed 42 --epochs 5 --alpha_kd 0.4 --beta_cons 0.2 --output_dir checkpoints/m4/
+    ```
+  - **Nhánh M5 (M4 + LoRA ViT Adapter)**:
+    ```bash
+    python src/training/train_crossdomain.py \
+        --config configs/train_m5_lora.yaml \
+        --seed 42 --epochs 5 --enable_lora --output_dir checkpoints/m5/
+    ```
 
-### Bước 3: Thu thập nhật ký hội tụ
+### Bước 3: Thu thập bản ghi tiến trình
 - Ghi nhận chi tiết loss train, CE loss, KD loss, Consistency loss và validation metrics qua từng epoch vào `DATASET/logs/m6_training_history.csv`.
 
 ---
 
 ## 5. Tiêu Chuẩn Nghiệm Thu (Definition of Done)
 
-- [ ] Vượt qua 100% Cổng Smoke Gate Milestone 6 trước khi khởi động huấn luyện.
+- [x] Vượt qua 100% Cổng Smoke Gate Milestone 6 trước khi khởi động huấn luyện ([Báo cáo](../../bao_cao/C/bao_cao_smoke_gate_m6.md)).
 - [ ] Hoàn thành huấn luyện các nhánh ứng viên với điều kiện seed 42 và manifest cố định.
 - [ ] Tuân thủ nghiêm ngặt chính sách đĩa lưu trữ: Không lưu dư thừa checkpoint từng epoch.
-- [ ] Checkpoint tốt của từng nhánh và tệp nhật ký `m6_training_history.csv` được lưu an toàn trên Google Drive 5TB.
+- [ ] Checkpoint tối ưu của từng nhánh và tệp bản ghi `m6_training_history.csv` được lưu an toàn trên Google Drive 5TB.
 - [ ] Bàn giao toàn bộ kết quả cho Task 6.5 tiến hành lập ma trận Ablation Study.
 - [ ] Biên soạn báo cáo nghiệm thu tại [`docs/bao_cao/C/bao_cao_task_6.3_c_cross_domain_training_execution.md`](../../bao_cao/C/bao_cao_task_6.3_c_cross_domain_training_execution.md).
