@@ -461,6 +461,20 @@ class CrossDomainTrainer:
             torch.save(state, best_path)
             print(f"  -> Luu model vuot troi tai epoch {epoch} (Composite={self.best_composite_score:.2f}%)")
 
+        # Neu phat hien moi truong Google Colab voi Drive duoc mount, tu dong sao luu them ban copy sang Drive
+        drive_base = "/content/drive/MyDrive/Fatformer/checkpoints"
+        if os.path.exists(os.path.dirname(drive_base)):
+            drive_branch_dir = os.path.join(drive_base, os.path.basename(self.save_dir))
+            try:
+                os.makedirs(drive_branch_dir, exist_ok=True)
+                import shutil
+                shutil.copy2(latest_path, os.path.join(drive_branch_dir, "checkpoint_latest.pth"))
+                if is_best:
+                    shutil.copy2(best_path, os.path.join(drive_branch_dir, "crossdomain_model_best.pth"))
+                print(f"  [✓] Da dong bo checkpoint an toan sang Google Drive: {drive_branch_dir}")
+            except Exception as e:
+                print(f"  [!] Canh bao dong bo Drive: {e}")
+
 
 def run_training_pipeline(args):
     set_seed(args.seed)
@@ -598,6 +612,24 @@ def run_training_pipeline(args):
         trainer.save_checkpoint(epoch, is_best=is_best)
         print(f"Epoch {epoch}/{args.epochs} ({elapsed:.1f}s) | Train Loss: {train_metrics['loss_total']:.4f} | "
               f"Val ACC: {val_metrics['val_acc']:.2f}% | Composite: {val_metrics['val_composite']:.2f}%")
+
+        # Ghi vao history CSV
+        history_csv = os.path.join(PROJECT_ROOT, "DATASET", "logs", "m6_training_history.csv")
+        os.makedirs(os.path.dirname(history_csv), exist_ok=True)
+        file_exists = os.path.isfile(history_csv)
+        with open(history_csv, "a", encoding="utf-8") as f:
+            if not file_exists:
+                f.write("branch,epoch,train_loss,val_macro_acc,val_composite,time_sec\n")
+            f.write(f"{args.branch},{epoch},{train_metrics['loss_total']:.4f},{val_metrics['val_acc']:.2f},{val_metrics['val_composite']:.2f},{elapsed:.1f}\n")
+
+        # Dong bo nhat ky sang Drive neu phat hien Colab Drive
+        drive_logs = "/content/drive/MyDrive/Fatformer/logs"
+        if os.path.exists(drive_logs):
+            try:
+                import shutil
+                shutil.copy2(history_csv, os.path.join(drive_logs, "m6_training_history.csv"))
+            except Exception:
+                pass
 
 
 def parse_arguments():
