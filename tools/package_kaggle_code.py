@@ -20,7 +20,6 @@ EXCLUDE_DIRS = {
     "__pycache__",
     ".git",
     ".agents",
-    "DATASET",
     "checkpoints",
     "pretrained",
     "logs",
@@ -53,12 +52,18 @@ TARGET_PATHS = [
     "configs",
     "src",
     "tools",
+    "DATASET/manifests",
 ]
 
 
 def should_include(file_path: Path, root_path: Path) -> bool:
     rel_path = file_path.relative_to(root_path)
     
+    # Neu la DATASET, chi chap nhan thu muc manifests
+    if len(rel_path.parts) >= 2 and rel_path.parts[0] == "DATASET":
+        if rel_path.parts[1] != "manifests":
+            return False
+
     # Kiểm tra xem có nằm trong thư mục bị loại trừ không
     for part in rel_path.parts[:-1]:
         if part in EXCLUDE_DIRS:
