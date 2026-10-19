@@ -149,6 +149,11 @@ class CLIPModel(nn.Module):
         else:
             self.gating = None
 
+    @property
+    def visual(self):
+        """Thuộc tính truy cập trực tiếp đến bộ mã hóa ảnh Visual Transformer."""
+        return self.image_encoder
+
     def freeze_backbone(self, verbose=True):
         """Tiện ích đóng băng 94.1% Backbone CLIP, chỉ mở khóa các adapter (Task 3.4)."""
         from ..training.freeze_utils import freeze_clip_backbone

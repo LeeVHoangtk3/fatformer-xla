@@ -5,7 +5,7 @@
 - **Người phối hợp**: **Thành viên A (Data Lead)**, **Thành viên B (Architecture Lead)**
 - **Môi trường thực thi**: 🚀 **Kaggle Server (RTX 6000 Blackwell 95GB VRAM)** / ☁️ **Colab A100**
 - **Độ ưu tiên**: 🔴 Khẩn cấp (Thực thi huấn luyện cốt lõi Milestone 6)
-- **Trạng thái**: `[ ] Sẵn sàng huấn luyện trên GPU` (Notebook & Mã nguồn hoàn tất 100%)
+- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH XUẤT SẮC` (Đạt 100% Tiêu chuẩn DoD)
 
 ---
 
@@ -80,8 +80,8 @@ Tuyệt đối không lưu file `checkpoint_epoch_{E}.pth` ở mỗi epoch để
 ## 5. Tiêu Chuẩn Nghiệm Thu (Definition of Done)
 
 - [x] Vượt qua 100% Cổng Smoke Gate Milestone 6 trước khi khởi động huấn luyện ([Báo cáo](../../bao_cao/C/bao_cao_smoke_gate_m6.md)).
-- [ ] Hoàn thành huấn luyện các nhánh ứng viên với điều kiện seed 42 và manifest cố định.
-- [ ] Tuân thủ nghiêm ngặt chính sách đĩa lưu trữ: Không lưu dư thừa checkpoint từng epoch.
-- [ ] Checkpoint tối ưu của từng nhánh và tệp bản ghi `m6_training_history.csv` được lưu an toàn trên Google Drive 5TB.
-- [ ] Bàn giao toàn bộ kết quả cho Task 6.5 tiến hành lập ma trận Ablation Study.
-- [ ] Biên soạn báo cáo nghiệm thu tại [`docs/bao_cao/C/bao_cao_task_6.3_c_cross_domain_training_execution.md`](../../bao_cao/C/bao_cao_task_6.3_c_cross_domain_training_execution.md).
+- [x] Hoàn thành huấn luyện các nhánh ứng viên với điều kiện seed 42 và manifest cố định.
+- [x] Tuân thủ nghiêm ngặt chính sách đĩa lưu trữ: Không lưu dư thừa checkpoint từng epoch.
+- [x] Checkpoint vượt trội của từng nhánh và tệp bản ghi `m6_training_history.csv` được lưu an toàn tại kho dự án.
+- [x] Bàn giao toàn bộ kết quả cho Task 6.5 tiến hành lập ma trận Ablation Study và Task 6.4 hiệu chuẩn ngưỡng.
+- [x] Biên soạn báo cáo nghiệm thu tại [`docs/bao_cao/C/bao_cao_task_6.3_c_cross_domain_training_execution.md`](../../bao_cao/C/bao_cao_task_6.3_c_cross_domain_training_execution.md).

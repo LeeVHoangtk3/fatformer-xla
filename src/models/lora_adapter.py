@@ -186,8 +186,8 @@ class ViTLoRAAdapter(nn.Module):
             attn = self._get_attn(block)
             if attn is None:
                 continue
-            # Thay thế in_proj hoặc q_proj / v_proj bằng LoRALinear
-            for proj_name in ("q_proj", "v_proj"):
+            # Thay thế in_proj hoặc q_proj / v_proj / out_proj bằng LoRALinear
+            for proj_name in ("q_proj", "v_proj", "out_proj"):
                 proj = getattr(attn, proj_name, None)
                 if isinstance(proj, nn.Linear):
                     lora_proj = LoRALinear.from_linear(
@@ -199,10 +199,13 @@ class ViTLoRAAdapter(nn.Module):
     @staticmethod
     def _get_resblocks(vit_model: nn.Module) -> Optional[nn.ModuleList]:
         """Tìm danh sách ResBlock trong ViT — hỗ trợ cả 2 cấu trúc CLIP."""
-        # Cấu trúc 1: model.transformer.resblocks (OpenAI CLIP visual)
+        # Hỗ trợ: model.transformer.resblocks, visual.transformer.resblocks,
+        # image_encoder.transformer.resblocks, clip_model.visual.transformer.resblocks
         for path in [
             ["transformer", "resblocks"],
             ["visual", "transformer", "resblocks"],
+            ["image_encoder", "transformer", "resblocks"],
+            ["clip_model", "visual", "transformer", "resblocks"],
         ]:
             obj = vit_model
             try:

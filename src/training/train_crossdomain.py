@@ -576,7 +576,10 @@ def run_training_pipeline(args):
         # Neu la nhanh M5: Kich hoat them LoRA ViT Adapter
         if args.branch == "M5":
             lora_cfg = {"enabled": True, "rank": 8, "alpha": 16.0, "num_layers": 2}
-            ViTLoRAAdapter(student.visual, config=lora_cfg)
+            vit_target = getattr(student, "image_encoder", getattr(student, "visual", student))
+            lora_adapter = ViTLoRAAdapter(vit_target, config=lora_cfg)
+            if hasattr(lora_adapter, "summary"):
+                print(f"[*] {lora_adapter.summary()}")
 
         # Ap dung PEFT (Task 3.4): Dong bang 94.1% CLIP ViT-L/14 backbone, chi toi uu cac adapter (~5.9% tham so)
         from src.training.freeze_utils import freeze_clip_backbone
