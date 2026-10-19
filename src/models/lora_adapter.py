@@ -118,6 +118,11 @@ class LoRALinear(nn.Module):
             lora_layer.bias_param.data.copy_(linear.bias.data)
         return lora_layer
 
+    @property
+    def bias(self):
+        """Thuộc tính tương thích hoàn toàn với nn.Linear chuẩn."""
+        return self.bias_param
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # Nhánh chính: tính toán với W gốc (frozen)
         bias = self.bias_param if self.bias_param is not None else None
@@ -183,18 +188,29 @@ class ViTLoRAAdapter(nn.Module):
 
         target_blocks = list(resblocks)[-self.num_layers:]
         for block in target_blocks:
+            # 1. Thử nghiệm trên các tầng attention nếu có q_proj, v_proj riêng biệt
             attn = self._get_attn(block)
-            if attn is None:
-                continue
-            # Thay thế in_proj hoặc q_proj / v_proj / out_proj bằng LoRALinear
-            for proj_name in ("q_proj", "v_proj", "out_proj"):
-                proj = getattr(attn, proj_name, None)
-                if isinstance(proj, nn.Linear):
-                    lora_proj = LoRALinear.from_linear(
-                        proj, rank=self.rank, alpha=self.alpha, enabled=True
-                    )
-                    setattr(attn, proj_name, lora_proj)
-                    self.lora_layers.append(lora_proj)
+            if attn is not None:
+                for proj_name in ("q_proj", "v_proj"):
+                    proj = getattr(attn, proj_name, None)
+                    if isinstance(proj, nn.Linear):
+                        lora_proj = LoRALinear.from_linear(
+                            proj, rank=self.rank, alpha=self.alpha, enabled=True
+                        )
+                        setattr(attn, proj_name, lora_proj)
+                        self.lora_layers.append(lora_proj)
+
+            # 2. Chèn adapter vào các tầng chiếu MLP (c_fc, c_proj) của ResidualAttentionBlock chuẩn OpenAI CLIP
+            mlp = getattr(block, "mlp", None)
+            if mlp is not None:
+                for proj_name in ("c_fc", "c_proj"):
+                    proj = getattr(mlp, proj_name, None)
+                    if isinstance(proj, nn.Linear):
+                        lora_proj = LoRALinear.from_linear(
+                            proj, rank=self.rank, alpha=self.alpha, enabled=True
+                        )
+                        setattr(mlp, proj_name, lora_proj)
+                        self.lora_layers.append(lora_proj)
 
     @staticmethod
     def _get_resblocks(vit_model: nn.Module) -> Optional[nn.ModuleList]:

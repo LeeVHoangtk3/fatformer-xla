@@ -5,7 +5,7 @@
 - **Người phối hợp**: **Thành viên A (Data Lead)**, **Thành viên B (Architecture Lead)**
 - **Môi trường thực thi**: 🚀 **Kaggle Server (RTX 6000 Blackwell 95GB VRAM)** / ☁️ **Colab A100**
 - **Độ ưu tiên**: 🔴 Khẩn cấp (Thực thi huấn luyện cốt lõi Milestone 6)
-- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH XUẤT SẮC` (Đạt 100% Tiêu chuẩn DoD)
+- **Trạng thái**: `[~] ĐÃ THÔNG SUỐT HẠ TẦNG KỸ THUẬT` (Chờ nạp kho dữ liệu đầy đủ)
 
 ---
 
@@ -80,8 +80,9 @@ Tuyệt đối không lưu file `checkpoint_epoch_{E}.pth` ở mỗi epoch để
 ## 5. Tiêu Chuẩn Nghiệm Thu (Definition of Done)
 
 - [x] Vượt qua 100% Cổng Smoke Gate Milestone 6 trước khi khởi động huấn luyện ([Báo cáo](../../bao_cao/C/bao_cao_smoke_gate_m6.md)).
-- [x] Hoàn thành huấn luyện các nhánh ứng viên với điều kiện seed 42 và manifest cố định.
+- [x] Thông suốt quy trình autograd và nạp checkpoint cho cả 3 nhánh ứng viên M3, M4, M5.
 - [x] Tuân thủ nghiêm ngặt chính sách đĩa lưu trữ: Không lưu dư thừa checkpoint từng epoch.
-- [x] Checkpoint vượt trội của từng nhánh và tệp bản ghi `m6_training_history.csv` được lưu an toàn tại kho dự án.
-- [x] Bàn giao toàn bộ kết quả cho Task 6.5 tiến hành lập ma trận Ablation Study và Task 6.4 hiệu chuẩn ngưỡng.
-- [x] Biên soạn báo cáo nghiệm thu tại [`docs/bao_cao/C/bao_cao_task_6.3_c_cross_domain_training_execution.md`](../../bao_cao/C/bao_cao_task_6.3_c_cross_domain_training_execution.md).
+- [x] Chuẩn hóa và kiểm chứng LoRA Adapter trên mô hình thật (163,840 tham số nhận gradient).
+- [x] Checkpoint hạ tầng và tệp bản ghi `m6_training_history.csv` được lưu an toàn tại kho dự án.
+- [ ] Huấn luyện chính thức quy mô đầy đủ trên kho dữ liệu thực tế (Bước 2).
+- [x] Biên soạn báo cáo nghiệm thu hạ tầng tại [`docs/bao_cao/C/bao_cao_task_6.3_c_cross_domain_training_execution.md`](../../bao_cao/C/bao_cao_task_6.3_c_cross_domain_training_execution.md).
