@@ -388,11 +388,14 @@ class CrossDomainTrainer:
 
         os.makedirs(self.save_dir, exist_ok=True)
 
-        # Dong bang hoan toan mo hinh teacher
+        # Dong bang hoan toan mo hinh teacher va toi uu bo nho VRAM
         if self.teacher is not None:
             self.teacher.eval()
             for p in self.teacher.parameters():
                 p.requires_grad = False
+            if self.device.type == "cuda" and self.use_amp:
+                self.teacher = self.teacher.half()
+                print("[*] Da toi uu hoa mo hinh Teacher sang kieu nua do chinh xac FP16 (tiet kiem 50% VRAM).")
 
     def train_epoch(self, epoch: int) -> Dict[str, float]:
         self.student.train()
@@ -418,11 +421,15 @@ class CrossDomainTrainer:
             targets = targets.to(self.device)
             clean_mask = (targets == 0)  # Nhan 0 la anh that sach
 
-            # Tinh toan logit mo hinh mau (teacher) khong qua dao ham
+            # Tinh toan logit mo hinh mau (teacher) khong qua dao ham va tiet kiem VRAM
             teacher_logits = None
             if self.teacher is not None:
                 with torch.no_grad():
-                    teacher_logits = self.teacher(x_clean)
+                    if self.use_amp and self.device.type == "cuda":
+                        with torch.amp.autocast(self.device.type, enabled=True):
+                            teacher_logits = self.teacher(x_clean)
+                    else:
+                        teacher_logits = self.teacher(x_clean)
 
             with torch.amp.autocast(self.device.type, enabled=self.use_amp):
                 student_clean_logits = self.student(x_clean)
@@ -462,6 +469,9 @@ class CrossDomainTrainer:
 
         if self.scheduler is not None:
             self.scheduler.step()
+
+        if self.device.type == "cuda":
+            torch.cuda.empty_cache()
 
         avg_loss = total_loss / max(num_batches, 1)
         return {
@@ -630,6 +640,8 @@ def run_training_pipeline(args):
 
         teacher = None
         if args.branch in ["M4", "M5"]:
+            if device.type == "cuda":
+                torch.cuda.empty_cache()
             teacher_candidates = [
                 args.teacher_checkpoint,
                 "/content/drive/MyDrive/Fatformer/pretrained/fatformer_4class_ckpt.pth",
@@ -824,5 +836,13 @@ def parse_arguments():
 
 
 if __name__ == "__main__":
-    args = parse_arguments()
-    run_training_pipeline(args)
+    import traceback
+    try:
+        args = parse_arguments()
+        run_training_pipeline(args)
+    except Exception as e:
+        print("\n" + "=" * 80)
+        print(f"[X] SU CO TRONG TRAINING PIPELINE: {e}")
+        print("=" * 80)
+        traceback.print_exc()
+        sys.exit(1)

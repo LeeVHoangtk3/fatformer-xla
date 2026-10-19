@@ -175,7 +175,7 @@ class CrossDomainDistillationLoss(nn.Module):
 
         tau = self.temperature
         student_log_prob = F.log_softmax(student_logits / tau, dim=-1)  # (B, C)
-        teacher_prob     = F.softmax(teacher_logits.detach() / tau, dim=-1)  # (B, C) — no grad
+        teacher_prob     = F.softmax(teacher_logits.detach() / tau, dim=-1).to(student_log_prob.dtype)  # (B, C) — no grad
 
         kl = self.kl_loss(student_log_prob, teacher_prob)
         return self.alpha_kd * (tau ** 2) * kl
@@ -223,7 +223,7 @@ class PairedConsistencyLoss(nn.Module):
                 f"Shape không khớp: logits_clean {logits_clean.shape} "
                 f"vs logits_degraded {logits_degraded.shape}"
             )
-        mse = F.mse_loss(logits_clean, logits_degraded, reduction="mean")
+        mse = F.mse_loss(logits_clean, logits_degraded.to(logits_clean.dtype), reduction="mean")
         return self.beta_cons * 0.5 * mse
 
 
