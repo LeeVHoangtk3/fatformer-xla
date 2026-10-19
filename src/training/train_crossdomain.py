@@ -150,67 +150,99 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
     train_records = []
     val_records = []
 
-    # 1. Do tim tep manifest
-    manifest_candidates = [
-        getattr(args, "train_manifest", ""),
-        os.path.join(PROJECT_ROOT, "DATASET", "manifests", "data_manifest.json"),
-        os.path.join(PROJECT_ROOT, "data_manifest.json"),
-        "/content/drive/MyDrive/Fatformer/manifests/data_manifest.json",
-    ]
-    manifest_file = find_first_existing(manifest_candidates)
+    # 0. Uu tien tuyet doi: Neu nguoi dung truyen ro rang train_dir va val_dir
+    train_dir_arg = getattr(args, "train_dir", "")
+    val_dir_arg = getattr(args, "val_dir", "")
 
-    if manifest_file:
-        try:
-            with open(manifest_file, "r", encoding="utf-8") as f:
-                manifest_data = json.load(f)
-            records = manifest_data.get("records", [])
+    # 1. Do tim tep manifest neu khong chi dinh ro train_dir
+    if not (train_dir_arg and os.path.isdir(train_dir_arg)):
+        manifest_candidates = [
+            getattr(args, "train_manifest", ""),
+            os.path.join(PROJECT_ROOT, "DATASET", "manifests", "data_manifest.json"),
+            os.path.join(PROJECT_ROOT, "data_manifest.json"),
+            "/content/drive/MyDrive/Fatformer/manifests/data_manifest.json",
+        ]
+        manifest_file = find_first_existing(manifest_candidates)
 
-            manifest_dir = os.path.dirname(manifest_file)
-            base_search_paths = [
-                PROJECT_ROOT,
-                os.path.join(PROJECT_ROOT, "DATASET"),
-                manifest_dir,
-                os.path.dirname(manifest_dir),
-                "/content/drive/MyDrive/Fatformer",
-                "/content/fatformer-xla",
-            ]
+        if manifest_file:
+            try:
+                with open(manifest_file, "r", encoding="utf-8") as f:
+                    manifest_data = json.load(f)
+                records = manifest_data.get("records", [])
 
-            for r in records:
-                rel_path = r.get("file_path", r.get("path", ""))
-                abs_path = rel_path
-                if not os.path.isabs(rel_path):
-                    for bsp in base_search_paths:
-                        candidate = os.path.normpath(os.path.join(bsp, rel_path))
-                        if os.path.exists(candidate):
-                            abs_path = candidate
-                            break
+                manifest_dir = os.path.dirname(manifest_file)
+                base_search_paths = [
+                    PROJECT_ROOT,
+                    os.path.join(PROJECT_ROOT, "DATASET"),
+                    manifest_dir,
+                    os.path.dirname(manifest_dir),
+                    "/content/dataset_local",
+                    "/content/dataset_local/diffusion_staging",
+                    "/content/drive/MyDrive/Fatformer",
+                    "/content/fatformer-xla",
+                ]
 
-                r_entry = dict(r)
-                r_entry["file_path"] = abs_path
-                split = r.get("split", "train")
-                if split == "train":
-                    train_records.append(r_entry)
+                temp_train = []
+                temp_val = []
+                for r in records:
+                    rel_path = r.get("file_path", r.get("path", ""))
+                    abs_path = rel_path
+                    if not os.path.isabs(rel_path):
+                        for bsp in base_search_paths:
+                            candidate = os.path.normpath(os.path.join(bsp, rel_path))
+                            if os.path.exists(candidate):
+                                abs_path = candidate
+                                break
+
+                    r_entry = dict(r)
+                    r_entry["file_path"] = abs_path
+                    split = r.get("split", "train")
+                    if split == "train":
+                        temp_train.append(r_entry)
+                    else:
+                        temp_val.append(r_entry)
+
+                train_existing = sum(1 for r in temp_train if os.path.isfile(r.get("file_path", "")))
+                val_existing = sum(1 for r in temp_val if os.path.isfile(r.get("file_path", "")))
+
+                if len(temp_train) > 0 and train_existing == 0:
+                    print(f"  [!] Canh bao: Toan bo {len(temp_train)} duong dan trong manifest {manifest_file} deu khong ton tai tren dia (dummy mock).")
+                    print("  [*] Tu dong bo qua manifest ao de quet tim thu muc anh thuc te...")
                 else:
-                    val_records.append(r_entry)
-            print(f"  [✓] Da nap thanh cong tu manifest ({manifest_file}): Train={len(train_records)}, Val={len(val_records)}")
-        except Exception as e:
-            print(f"  [!] Khong the doc manifest {manifest_file}: {e}")
+                    train_records = temp_train
+                    val_records = temp_val
+                    print(f"  [✓] Da nap thanh cong tu manifest ({manifest_file}): Train={len(train_records)} ({train_existing} anh ton tai), Val={len(val_records)} ({val_existing} anh ton tai)")
+            except Exception as e:
+                print(f"  [!] Khong the doc manifest {manifest_file}: {e}")
 
-    # 2. Quet thu muc du lieu train va val neu records con trong
+    # 2. Quet thu muc du lieu train neu records con trong
     if len(train_records) == 0:
         dir_candidates = [
-            getattr(args, "train_dir", ""),
+            train_dir_arg,
+            "/content/dataset_local/diffusion_staging/train",
+            "/content/dataset_local/diffusion_staging",
+            "/content/dataset_local",
+            os.path.join(PROJECT_ROOT, "DATASET", "data_crossdomain", "train"),
             os.path.join(PROJECT_ROOT, "DATASET", "train_crossdomain"),
             "/content/drive/MyDrive/Fatformer/data_crossdomain/train",
         ]
         real_train_dir = find_first_existing(dir_candidates)
         if real_train_dir:
+            print(f"  [*] Dang quet anh thuc te tu thu muc: {real_train_dir}...")
             for root, _, files in os.walk(real_train_dir):
                 for fname in files:
-                    if fname.lower().endswith((".png", ".jpg", ".jpeg")):
+                    if fname.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
                         full_p = os.path.join(root, fname)
-                        is_fake = ("fake" in root.lower() or "1_fake" in root.lower())
-                        gen = os.path.basename(root) if is_fake else "real"
+                        norm_p = full_p.replace("\\", "/").lower()
+                        is_fake = ("fake" in norm_p or "1_fake" in norm_p)
+                        gen = "real"
+                        if is_fake:
+                            for g_name in ["stable_diffusion", "sdv15", "sd_v15", "midjourney", "stylegan", "progan", "dalle", "adm"]:
+                                if g_name in norm_p:
+                                    gen = g_name
+                                    break
+                            if gen == "real":
+                                gen = os.path.basename(root)
                         train_records.append({
                             "file_path": full_p,
                             "label": 1 if is_fake else 0,
@@ -219,7 +251,54 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
                         })
             print(f"  [✓] Quet thu muc du lieu {real_train_dir}: {len(train_records)} mau train.")
 
-    # 3. Mau du phong neu kho anh chua tai ve
+    # 3. Quet val hoac phan chia tap kiem dinh neu val_records con trong
+    if len(val_records) == 0 and len(train_records) > 0:
+        val_candidates = [
+            val_dir_arg,
+            "/content/dataset_local/diffusion_staging/val",
+            "/content/dataset_local/val",
+            os.path.join(PROJECT_ROOT, "DATASET", "data_crossdomain", "val"),
+            "/content/drive/MyDrive/Fatformer/data_crossdomain/val",
+        ]
+        real_val_dir = find_first_existing(val_candidates)
+        if real_val_dir:
+            for root, _, files in os.walk(real_val_dir):
+                for fname in files:
+                    if fname.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
+                        full_p = os.path.join(root, fname)
+                        norm_p = full_p.replace("\\", "/").lower()
+                        is_fake = ("fake" in norm_p or "1_fake" in norm_p)
+                        gen = "real"
+                        if is_fake:
+                            for g_name in ["stable_diffusion", "sdv15", "sd_v15", "midjourney", "stylegan", "progan", "dalle", "adm"]:
+                                if g_name in norm_p:
+                                    gen = g_name
+                                    break
+                            if gen == "real":
+                                gen = os.path.basename(root)
+                        val_records.append({
+                            "file_path": full_p,
+                            "label": 1 if is_fake else 0,
+                            "generator": gen,
+                            "source": "folder_scan_val",
+                        })
+            print(f"  [✓] Quet thu muc val {real_val_dir}: {len(val_records)} mau val.")
+        else:
+            import random
+            rng = random.Random(getattr(args, "seed", 42))
+            reals = [r for r in train_records if r.get("label", 0) == 0]
+            fakes = [r for r in train_records if r.get("label", 0) == 1]
+            rng.shuffle(reals)
+            rng.shuffle(fakes)
+
+            n_val_real = max(1, int(len(reals) * 0.15))
+            n_val_fake = max(1, int(len(fakes) * 0.15))
+
+            val_records = reals[:n_val_real] + fakes[:n_val_fake]
+            train_records = reals[n_val_real:] + fakes[n_val_fake:]
+            print(f"  [✓] Tu dong phan chia train/val (85/15 can bang): Train={len(train_records)} (Real: {len(reals)-n_val_real}, Fake: {len(fakes)-n_val_fake}) | Val={len(val_records)} (Real: {n_val_real}, Fake: {n_val_fake})")
+
+    # 4. Mau du phong neu kho anh chua tai ve
     if len(train_records) == 0:
         print("  [!] Khong tim thay anh tren dia, tao 64 mau mo phong co kiem soat.")
         for i in range(64):
