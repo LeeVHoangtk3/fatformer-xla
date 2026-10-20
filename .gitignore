@@ -235,4 +235,5 @@ datasets/*
 !datasets/logs/
 progan_val.zip
 *.zip
-scratch/
+scratch/
+wait/
