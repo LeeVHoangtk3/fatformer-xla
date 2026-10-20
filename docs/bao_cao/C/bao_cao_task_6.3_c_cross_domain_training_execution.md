@@ -99,20 +99,28 @@ M5,5,0.3584,94.07,94.07,148.2
 
 ### V. PHÂN TÍCH & ĐÁNH GIÁ CHUYÊN SÂU
 
-1. **Hiệu quả phân biệt giả mạo trên tập dữ liệu thực tế**:
-   - Khác với phiên chạy thử nghiệm ban đầu (với dữ liệu mẫu dummy 60 ảnh cho độ chính xác quanh 50%), phiên chạy trên **3.600 ảnh đối chứng thực tế** chứng minh mô hình FatFormer-XLA có khả năng phân biệt giả mạo vượt trội với độ chính xác đạt trên **94.0%** ngay từ các chu kỳ đầu tiên.
-   - Nhánh **M3 (Data Only)** đạt độ chính xác thẩm định đỉnh **94.63%** tại Epoch 1 và ổn định ở mức **94.44%** tại Epoch 5, chứng minh việc bổ sung dữ liệu sinh từ các bộ khuếch tán (Diffusion) đem lại sự thích ứng mạnh mẽ với các mẫu hình nhiễu mới.
+1. **Hiệu quả phân loại trên tập dữ liệu đối chứng**:
+   - Khác với phiên chạy kiểm thử ban đầu (với dữ liệu mẫu mô phỏng 60 ảnh cho độ chính xác quanh 50%), phiên chạy trên **3.600 ảnh đối chứng thực tế** cho thấy mô hình thích ứng tốt trên phân phối 5 bộ sinh đã nạp (Stable Diffusion v1.5, Midjourney, StyleGAN, ProGAN, DALL-E) với độ chính xác thẩm định định kỳ đạt quanh **94.0% – 94.6%**.
+   - Việc bổ sung dữ liệu sinh từ các bộ khuếch tán giúp mô hình mở rộng trường nhận diện sang các dạng giả mạo thế hệ mới so với mốc xuất phát ban đầu (73.25% trên `val_crossdomain`).
 
-2. **Tác động điều chuẩn của hàm mất mát Chưng cất & Đồng bộ (M4 & M5)**:
-   - Ở nhánh M4 và M5, giá trị hàm mất mát ban đầu cao hơn nhánh M3 ($0.6084$ và $0.6013$ so với $0.2639$) do có thêm 2 số hạng phạt: Triệt tiêu phân kỳ tri thức ($L_{\text{KD}}$) và đồng bộ quyết định trên cặp ảnh sạch - suy biến ($L_{\text{cons}}$).
-   - Qua 5 chu kỳ, hàm mất mát giảm mượt mà về $0.3703$ (M4) và $0.3584$ (M5), với độ chính xác thẩm định duy trì ổn định quanh mức **94.07% – 94.26%**. Ràng buộc $L_{\text{KD}}$ giúp mô hình không bị quá khớp vào riêng miền dữ liệu mới mà vẫn bảo tồn tri thức mỏ neo của baseline ảnh sạch.
+2. **Động lực hội tụ của hàm mất mát Chưng cất & Đồng bộ (M4 & M5)**:
+   - Ở nhánh M4 và M5, giá trị hàm mất mát tổng hợp ban đầu ghi nhận cao hơn nhánh M3 ($0.6084$ và $0.6013$ so với $0.2639$) do gánh thêm 2 số hạng điều chuẩn: Hàm mất mát chưng cất tri thức ($L_{\text{KD}}$) và hàm mất mát đồng bộ biểu diễn trên cặp ảnh sạch - suy biến ($L_{\text{cons}}$).
+   - Qua 5 chu kỳ huấn luyện, hàm mất mát giảm đều đặn về $0.3703$ (M4) và $0.3584$ (M5), với độ chính xác thẩm định định kỳ đạt quanh mức **94.07% – 94.26%**. Quá trình tối ưu diễn ra ổn định, không xuất hiện hiện tượng bùng nổ gradient hay phân kỳ số học.
 
-3. **Độ ổn định của LoRA ViT Adapter (M5)**:
-   - Module `ViTLoRAAdapter` với 163.840 tham số phân bổ trên 4 tầng chiếu MLP của 2 block cuối CLIP ViT-L/14 vận hành hoàn toàn ổn định.
-   - Trọng số lưu trữ của M5 đạt **2,440,110,477 bytes** (tăng thêm đúng 1.97 MB tương ứng với các ma trận $A$ và $B$ của LoRA so với M3/M4). Độ chính xác thẩm định cuối cùng của M5 đạt mức ổn định tuyệt đối **94.07%** ở cả Epoch 3 và Epoch 5.
+3. **Vận hành thực tế của bộ điều hợp LoRA ViT (M5)**:
+   - Module `ViTLoRAAdapter` với 163.840 tham số bổ sung tại 4 tầng chiếu MLP của 2 khối Transformer cuối CLIP ViT-L/14 hoạt động trơn tru cùng cơ chế PEFT.
+   - Dung lượng lưu trữ của checkpoint M5 ghi nhận **2.440.110.477 bytes** (tăng thêm đúng 1.97 MB tương ứng với các ma trận trọng số $A$ và $B$ của LoRA so với M3/M4). Độ chính xác thẩm định tại Epoch 3 và Epoch 5 duy trì ở mức **94.07%**.
 
-4. **Kiểm soát dung lượng đĩa và an toàn hệ thống**:
-   - Mã nguồn đã kiểm soát bộ nhớ hiệu quả, loại bỏ các file trùng lặp và lưu trữ trực tiếp 3 mô hình đại diện vượt trội vào đúng cấu trúc `DATASET/checkpoints/` mà không gây tràn hạn mức đĩa của máy chủ.
+4. **Hạn Chế Thực Nghiệm & Cảnh Báo Khoa Học (Experimental Limitations & Nuances)**:
+   - **Biên độ sai số thống kê của tập thẩm định (Sample Size & Noise)**: Tập kiểm định định kỳ gồm 540 ảnh (270 ảnh thật, 270 ảnh giả). Với cỡ mẫu này, khoảng tin cậy 95% có biên độ sai số vào khoảng $\pm 1.0\%$. Mức chênh lệch điểm số giữa M3 (94.63%), M4 (94.26%) và M5 (94.07%) chỉ tương ứng với sự khác biệt từ 2 đến 3 mẫu ảnh trong tổng số 540 ảnh. Do đó, các sai khác nhỏ này chưa đủ cơ sở để khẳng định sự vượt trội dứt khoát giữa các nhánh kiến trúc khi chỉ dựa vào điểm thẩm định định kỳ này.
+   - **Bản chất tập kiểm định (In-Distribution Validation)**: Tập kiểm định 540 ảnh được trích xuất ngẫu nhiên theo tỷ lệ 85/15 từ cùng một kho 3.600 ảnh đối chứng thuộc 5 bộ sinh. Vì vậy, đây là phép đo nội phân phối (in-distribution) nhằm kiểm tra khả năng khớp dữ liệu đối chứng, chưa phải là bài kiểm tra tổng quát hóa trên các bộ sinh hoàn toàn xa lạ (unseen out-of-distribution).
+   - **Hiện tượng chọn điểm lưu trữ checkpoint (Best Checkpoint Selection)**: Nhánh M3 đạt điểm đỉnh 94.63% tại Epoch 1 và giảm nhẹ về 94.44% ở Epoch 5. Việc điểm số đạt mốc cao ngay từ Epoch 1 có thể chứa đựng yếu tố ngẫu nhiên cục bộ của quá trình lấy mẫu.
+   - **Chưa phản ánh toàn diện các tiêu chí của Gate 4 điều kiện**: Vòng lặp thẩm định định kỳ của Task 6.3 đo đạc độ chính xác phân loại cơ bản (`val_macro_acc`), chưa đo mức độ duy trì tri thức ảnh gốc (Clean ACC, Clean Fake ACC) và khả năng chịu nén JPEG sâu (Q30 Macro ACC, Q30 Fake ACC) cũng như độ tin cậy xác suất (ECE).
+   - **Quy mô phiên chạy đơn lẻ (Single Seed Run)**: Chiến dịch thực hiện với `seed = 42`. Do đó, vai trò độc lập của từng thành phần (Dữ liệu đối chứng, $L_{\text{KD}}$, $L_{\text{cons}}$, LoRA) sẽ được bóc tách định lượng thận trọng tại Task 6.5 thay vì vội vàng kết luận tại giai đoạn này.
+
+5. **Phân Định Trách Nhiệm Thẩm Định Độc Lập Sang Task 6.4**:
+   - Toàn bộ 5 mô hình ứng viên (M1 Plan A, M2 Baseline 4-class, M3 Data Only, M4 Distill+Cons, M5 LoRA) sẽ được đưa vào quy trình kiểm thử và sàng lọc khách quan tại **Task 6.4 (Calibration & Model Selection)** thông qua công cụ `tools/calibrate_and_select.py`.
+   - Quyết định tuyển chọn mô hình đại diện chính thức sẽ căn cứ vào việc vượt qua Cổng Gate 4 điều kiện khắt khe (bao gồm cả ảnh sạch lẫn ảnh nén JPEG Q=30) cùng điểm ECE sau khi hiệu chuẩn nhiệt độ, bảo đảm tính công tâm và minh bạch thực nghiệm.
 
 ---
 
