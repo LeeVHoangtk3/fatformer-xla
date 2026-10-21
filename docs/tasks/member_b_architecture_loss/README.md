@@ -19,7 +19,7 @@
 | **Tuần 4** | **Task 4.6** | Chủ trì soạn thảo Chương 4: Thiết lập thực nghiệm & Môi trường | 🖥️ **Local** | • Siêu tham số (LR, batch size, optimizer), phần cứng A100/T4, giáo trình Curriculum | • Bản thảo Chương 4 hoàn chỉnh | [`task_4.6_draft_report_chap_4.md`](task_4.6_draft_report_chap_4.md) | `[x] Đã hoàn thành` ([Báo cáo](../../bao_cao/B/bao_cao_task_4.6_draft_report_chap_4.md)) |
 | **Tuần 5** | **Task 5.3** | Xuất bộ ảnh Grad-CAM đối đầu chứng minh tính giải thích (XAI) | 🖥️ **Local** | • Checkpoint gốc vs hoàn thiện | • Không triển khai | - | `[x] Đã bãi bỏ (Ưu tiên mô hình)` |
 | **Tuần 6** | **Task 6.3-B**| Thiết kế hàm mất mát Distillation KL + Consistency Loss & Paired Augmentation | 🖥️ **Local** | • Khung phân tích lỗi Task 6.1<br>• Baseline gốc CVPR 2024 làm mỏ neo teacher | • Module `CrossDomainDistillationLoss`<br>• Module `PairedCleanDegradedAugmentation`<br>• Module LoRA có kiểm soát cho Task 6.5 | [`task_6.3_b_distillation_and_consistency_loss.md`](task_6.3_b_distillation_and_consistency_loss.md) | `[x] ĐÃ HOÀN THÀNH` ([Báo cáo](../../bao_cao/B/bao_cao_task_6.3_b_distillation_and_consistency_loss.md)) |
-| | **Smoke Gate M6** | Phối hợp Cổng kiểm thử tích hợp Milestone 6 trên GPU | ☁️ **Colab T4** | • Tích hợp loss Task 6.3-B và data Task 6.2 | • Xác nhận 1 batch forward-backward không NaN/Inf | - | `[ ] SẴN SÀNG TRIỂN KHAI` |
+| | **Smoke Gate M6** | Phối hợp Cổng kiểm thử tích hợp Milestone 6 trên GPU | ☁️ **Colab T4** | • Tích hợp loss Task 6.3-B và data Task 6.2 | • Xác nhận 1 batch forward-backward không NaN/Inf | - | `[x] ĐÃ HOÀN THÀNH` ([Báo cáo](../../bao_cao/C/bao_cao_smoke_gate_m6.md)) |
 
 ---
 
