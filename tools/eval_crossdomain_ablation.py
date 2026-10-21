@@ -26,9 +26,11 @@ Quy trinh thuc thi:
 import os
 import sys
 import io
+import glob
 import json
 import time
 import argparse
+from types import SimpleNamespace
 from typing import Dict, List, Tuple, Optional, Any
 
 import numpy as np
@@ -49,9 +51,15 @@ if hasattr(sys.stdout, "reconfigure"):
 
 
 def find_first_existing(path_list: List[str]) -> Optional[str]:
-    """Tim duong dan ton tai dau tien trong danh sach ung vien."""
+    """Tim duong dan ton tai dau tien trong danh sach ung vien (ho tro ca glob pattern)."""
     for p in path_list:
-        if p and os.path.exists(p):
+        if not p:
+            continue
+        if "*" in p or "?" in p:
+            matches = glob.glob(p, recursive=True)
+            if matches:
+                return os.path.abspath(matches[0])
+        elif os.path.exists(p):
             return os.path.abspath(p)
     return None
 
@@ -324,15 +332,15 @@ def build_candidate_model(
     from src.models import build_model
     from src.training.checkpoint_manager import CheckpointManager
 
-    class Args:
-        backbone = "CLIP:ViT-L/14"
-        clip_path = clip_path
-        num_classes = 4 if branch_name == "M1" else 2
-        use_srm = (branch_name != "M1")
-        use_gating = (branch_name != "M1")
-        srm_out_dim = 1024
-
-    model = build_model(Args()).to(device)
+    model_args = SimpleNamespace(
+        backbone="CLIP:ViT-L/14",
+        clip_path=clip_path,
+        num_classes=4 if branch_name == "M1" else 2,
+        use_srm=(branch_name != "M1"),
+        use_gating=(branch_name != "M1"),
+        srm_out_dim=1024,
+    )
+    model = build_model(model_args)
 
     # Neu la M5: Gắn bộ điều hợp LoRA ViT
     if branch_name == "M5":
@@ -343,10 +351,21 @@ def build_candidate_model(
 
     if ckpt_path and os.path.exists(ckpt_path):
         print(f"  [*] Nap checkpoint {branch_name} tu: {ckpt_path}")
-        CheckpointManager.load(ckpt_path, model, device=device, strict=False)
+        try:
+            ckpt_obj = torch.load(ckpt_path, map_location="cpu", weights_only=False)
+        except TypeError:
+            ckpt_obj = torch.load(ckpt_path, map_location="cpu")
+        state = ckpt_obj.get("model_state", ckpt_obj.get("model", ckpt_obj))
+        state = {(k[7:] if k.startswith("module.") else k): v for k, v in state.items()}
+        res = model.load_state_dict(state, strict=False)
+        missing_count = len(getattr(res, "missing_keys", []))
+        unexpected_count = len(getattr(res, "unexpected_keys", []))
+        print(f"  [✓] Da nap checkpoint {branch_name}: Missing keys = {missing_count} | Unexpected keys = {unexpected_count}")
+        del ckpt_obj, state
     else:
         print(f"  [!] Canh bao: Khong tim thay checkpoint cho {branch_name} tai '{ckpt_path}'. Chay voi trong so hien thoi.")
 
+    model = model.to(device)
     model.eval()
     return model
 
@@ -373,7 +392,12 @@ def run_crossdomain_ablation_and_gate(args):
     print(f"Thiet bi: {args.device} | Che do gia lap (Dummy): {args.test_dummy}")
     print("=" * 88)
 
-    device = torch.device(args.device)
+    device_str = args.device
+    if device_str == "cuda" and not torch.cuda.is_available():
+        print("[!] Canh bao: PyTorch hien tai khong ho tro CUDA hoac chua bat GPU.")
+        print("    Tu dong chuyen doi thiet bi sang 'cpu' de duy tri tien trinh danh gia.")
+        device_str = "cpu"
+    device = torch.device(device_str)
 
     # 1. Tim kiem va xac dinh duong dan CLIP backbone
     clip_candidates = [
@@ -405,6 +429,12 @@ def run_crossdomain_ablation_and_gate(args):
         ]),
         "M3": find_first_existing([
             args.m3_ckpt,
+            "/kaggle/input/**/crossdomain_model_best_m3.pth",
+            "/kaggle/input/**/*best*m3*.pth",
+            "/kaggle/input/**/*_m3.pth",
+            "/kaggle/input/**/m3/crossdomain_model_best.pth",
+            "/kaggle/input/**/m3*/crossdomain_model_best.pth",
+            "/kaggle/input/**/m3*best*.pth",
             "DATASET/checkpoints/m3/crossdomain_model_best.pth",
             "/kaggle/working/fatformer-xla/DATASET/checkpoints/m3/crossdomain_model_best.pth",
             "/kaggle/working/checkpoints/m3/crossdomain_model_best.pth",
@@ -412,6 +442,12 @@ def run_crossdomain_ablation_and_gate(args):
         ]),
         "M4": find_first_existing([
             args.m4_ckpt,
+            "/kaggle/input/**/crossdomain_model_best_m4.pth",
+            "/kaggle/input/**/*best*m4*.pth",
+            "/kaggle/input/**/*_m4.pth",
+            "/kaggle/input/**/m4/crossdomain_model_best.pth",
+            "/kaggle/input/**/m4*/crossdomain_model_best.pth",
+            "/kaggle/input/**/m4*best*.pth",
             "DATASET/checkpoints/m4/crossdomain_model_best.pth",
             "/kaggle/working/fatformer-xla/DATASET/checkpoints/m4/crossdomain_model_best.pth",
             "/kaggle/working/checkpoints/m4/crossdomain_model_best.pth",
@@ -419,6 +455,12 @@ def run_crossdomain_ablation_and_gate(args):
         ]),
         "M5": find_first_existing([
             args.m5_ckpt,
+            "/kaggle/input/**/crossdomain_model_best_m5.pth",
+            "/kaggle/input/**/*best*m5*.pth",
+            "/kaggle/input/**/*_m5.pth",
+            "/kaggle/input/**/m5/crossdomain_model_best.pth",
+            "/kaggle/input/**/m5*/crossdomain_model_best.pth",
+            "/kaggle/input/**/m5*best*.pth",
             "DATASET/checkpoints/m5/crossdomain_model_best.pth",
             "/kaggle/working/fatformer-xla/DATASET/checkpoints/m5/crossdomain_model_best.pth",
             "/kaggle/working/checkpoints/m5/crossdomain_model_best.pth",
@@ -449,6 +491,38 @@ def run_crossdomain_ablation_and_gate(args):
             print(f"[✓] Nap thanh cong {len(val_records)} mau validation tu: {resolved_manifest}")
         except Exception as e:
             print(f"[!] Loi doc manifest ({resolved_manifest}): {e}")
+
+    # Neu manifest cu khong co mau val, tu dong tai ban 3600 anh tu GitHub
+    if len(val_records) == 0 and not args.test_dummy:
+        print("[*] Manifest hien tai khong co mau val. Dang tu dong cap nhat ban manifest 3600 anh tu GitHub...")
+        try:
+            import urllib.request
+            raw_url = "https://raw.githubusercontent.com/LeeVHoangtk3/fatformer-xla/hoang/DATASET/manifests/data_manifest.json"
+            save_dest = resolved_manifest or "DATASET/manifests/data_manifest.json"
+            urllib.request.urlretrieve(raw_url, save_dest)
+            with open(save_dest, "r", encoding="utf-8") as f:
+                m_data = json.load(f)
+            records = m_data.get("records", [])
+            val_records = [r for r in records if r.get("split") == "val"]
+            print(f"[✓] Da cap nhat manifest thanh cong: {len(val_records)} mau validation!")
+        except Exception as e:
+            print(f"[!] Khong the cap nhat manifest: {e}")
+
+    # Tu dong remap duong dan anh thuc te tren Kaggle neu can
+    real_staging_dirs = glob.glob("/kaggle/input/**/diffusion_staging", recursive=True)
+    if real_staging_dirs and len(val_records) > 0:
+        base_s = real_staging_dirs[0]
+        remap_count = 0
+        for r in val_records:
+            orig_p = r.get("file_path", "")
+            if not os.path.exists(orig_p) and "diffusion_staging" in orig_p:
+                sub_p = orig_p.split("diffusion_staging")[-1].lstrip("/\\")
+                new_p = os.path.join(base_s, sub_p)
+                if os.path.exists(new_p):
+                    r["file_path"] = new_p
+                    remap_count += 1
+        if remap_count > 0:
+            print(f"[✓] Tu dong anh xa thanh cong {remap_count} duong dan anh den: {base_s}")
 
     # Neu chay dummy hoac khong co anh thuc te tren dia
     if args.test_dummy or len(val_records) == 0:
@@ -699,15 +773,24 @@ def run_crossdomain_ablation_and_gate(args):
         )
 
     # Ket luan tuyen chon
+    selection_type = "GATE_PASSED"
     if not selected_model_branch:
         # Fallback chon model co composite score cao trong so M3-M5
         valid_candidates = [g for g in gate_results if g["branch"] in ["M3", "M4", "M5"]]
         if valid_candidates:
-            selected_model_branch = max(valid_candidates, key=lambda x: x["composite_score"])["branch"]
+            best_cand = max(valid_candidates, key=lambda x: x["composite_score"])
+            selected_model_branch = best_cand["branch"]
+            selected_composite_score = best_cand["composite_score"]
+            selection_type = "FALLBACK_BEST_CANDIDATE"
         else:
             selected_model_branch = "M5"
+            selected_composite_score = next((g["composite_score"] for g in gate_results if g["branch"] == "M5"), -1.0)
+            selection_type = "FALLBACK_DEFAULT"
 
-    print(f"\n-> MO HINH DAI DIEN DUOC TUYEN CHON: [{selected_model_branch}] (Composite Score: {selected_composite_score:.2f}%)")
+    print(
+        f"\n-> MO HINH DAI DIEN DUOC TUYEN CHON: [{selected_model_branch}] "
+        f"(Composite Score: {selected_composite_score:.2f}%, Status: {selection_type})"
+    )
 
     # Xuat file trong so rut gon weights_only.pth
     if args.export_weights_only and not args.test_dummy:
@@ -721,6 +804,23 @@ def run_crossdomain_ablation_and_gate(args):
             f_size_mb = os.path.getsize(out_weights_path) / (1024 * 1024)
             print(f"[✓] Trich xuat thanh cong: {out_weights_path} ({f_size_mb:.2f} MB)")
 
+    # Xuat artifact raw logits
+    if getattr(args, "save_raw_logits", False):
+        logits_export_path = os.path.join(args.output_dir, "crossdomain_raw_logits.npz")
+        try:
+            export_dict = {}
+            for b in ["M1", "M2", "M3", "M4", "M5"]:
+                if b in models_data:
+                    export_dict[f"{b}_clean_logits"] = models_data[b]["clean_logits"].cpu().numpy()
+                    export_dict[f"{b}_q30_logits"] = models_data[b]["q30_logits"].cpu().numpy()
+                    export_dict[f"{b}_targets"] = models_data[b]["targets"].cpu().numpy()
+            export_dict["val_calib_indices"] = idx_calib.cpu().numpy()
+            export_dict["val_select_indices"] = idx_select.cpu().numpy()
+            np.savez_compressed(logits_export_path, **export_dict)
+            print(f"[✓] Da xuat artifact logits tho ra: {logits_export_path}")
+        except Exception as e:
+            print(f"[!] Canh bao xuat raw logits: {e}")
+
     # Xuat bao cao tong hop JSON
     report_json_path = os.path.join(args.output_dir, "calibration_and_selection_report.json")
     final_report = {
@@ -730,6 +830,9 @@ def run_crossdomain_ablation_and_gate(args):
             "seed": args.seed,
             "selected_model": selected_model_branch,
             "selected_composite_score": selected_composite_score,
+            "selection_status": selection_type,
+            "composite_formula": "0.5 * clean_macro_acc + 0.5 * q30_macro_acc",
+            "all_gate_passed": any(g["gate_pass"] for g in gate_results),
         },
         "baseline_metrics": base_metrics,
         "ablation_matrix": ablation_matrix,
@@ -761,6 +864,7 @@ def parse_args():
     parser.add_argument("--num_workers", type=int, default=2, help="So luong workers nap anh")
     parser.add_argument("--seed", type=int, default=42, help="Hat giong ngau nhien")
     parser.add_argument("--export_weights_only", action="store_true", default=True, help="Trich xuat weights_only.pth")
+    parser.add_argument("--save_raw_logits", action="store_true", default=True, help="Xuat tap tin raw logits ra .npz de ban giao doi chieu")
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", help="Thiet bi: cuda hoac cpu")
 
     return parser.parse_args()

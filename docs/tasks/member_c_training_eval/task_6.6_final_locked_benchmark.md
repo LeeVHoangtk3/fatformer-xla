@@ -5,7 +5,7 @@
 - **Người nghiệm thu**: **Cả nhóm (Lead A, Lead B, Lead C)**
 - **Môi trường thực thi**: ☁️ **Colab GPU (T4 / A100)**
 - **Độ ưu tiên**: 🔴 Khẩn cấp (Bài kiểm chuẩn chung cuộc của đồ án)
-- **Trạng thái**: `[ ] Sẵn sàng triển khai`
+- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH`
 
 ---
 
@@ -61,8 +61,8 @@
 
 ## 4. Tiêu Chuẩn Nghiệm Thu (Definition of Done)
 
-- [ ] Hoàn thành vòng đo đạc đối chiếu hậu nghiệm trên 18 tập test hai chiều đúng 1 lượt.
-- [ ] Hoàn thành vòng kiểm thử độc lập trên tập dữ liệu mở rộng.
-- [ ] Xuất đầy đủ các bảng dữ liệu CSV chi tiết và bảng tổng hợp 3 bên kèm khoảng tin cậy 95% Bootstrap.
-- [ ] Cả 3 thành viên họp ký duyệt biên bản nghiệm thu kỹ thuật chung cuộc.
-- [ ] Biên soạn báo cáo nghiệm thu tại [`docs/bao_cao/C/bao_cao_task_6.6_final_locked_benchmark.md`](../../bao_cao/C/bao_cao_task_6.6_final_locked_benchmark.md).
+- [x] Hoàn thành vòng đo đạc đối chiếu hậu nghiệm trên 18 tập test hai chiều đúng 1 lượt ([`tools/eval_locked_benchmark.py`](../../../tools/eval_locked_benchmark.py)).
+- [x] Hoàn thành vòng kiểm thử độc lập trên tập dữ liệu mở rộng đối chứng đa miền.
+- [x] Xuất đầy đủ các bảng dữ liệu CSV chi tiết và bảng tổng hợp 3 bên kèm khoảng tin cậy 95% Bootstrap ([`task_6.6_three_way_comparison.png`](../../../DATASET/logs/task_6.6_three_way_comparison.png)).
+- [x] Cả 3 thành viên họp ký duyệt biên bản nghiệm thu kỹ thuật chung cuộc.
+- [x] Biên soạn báo cáo nghiệm thu tại [`docs/bao_cao/C/bao_cao_task_6.6_final_locked_benchmark.md`](../../bao_cao/C/bao_cao_task_6.6_final_locked_benchmark.md).

@@ -6,7 +6,7 @@
 - **Vị trí trong luồng quy trình**: **Thực thi sau khi hoàn thành ma trận Ablation Study tại Task 6.5**
 - **Môi trường thực thi**: ☁️ **Colab GPU (T4 / L4)** / 🖥️ **Local**
 - **Độ ưu tiên**: 🔴 Khẩn cấp (Cổng kiểm định chất lượng trước khi bàn giao cho Task 6.6)
-- **Trạng thái**: `[ ] Sẵn sàng triển khai`
+- **Trạng thái**: `[~] NGHIỆM THU CÓ ĐIỀU KIỆN (FAIL GATE Q30 / CHỌN ỨNG VIÊN FALLBACK M4)`
 
 ---
 
@@ -52,9 +52,9 @@ Mọi ứng viên phải được đối chiếu trực tiếp với mốc sàn 
 
 ## 4. Tiêu Chuẩn Nghiệm Thu (Definition of Done)
 
-- [ ] Thực hiện phân tách rõ ràng giữa `val_calibration` và `val_selection`.
-- [ ] Bảng xếp hạng chi tiết toàn bộ các ứng viên M3, M4, M5 sau khi hiệu chuẩn trên `val_selection`.
-- [ ] Xác định rõ checkpoint vượt qua toàn bộ 4 điều kiện của Gate.
-- [ ] Đóng băng trọng số và xuất tệp rút gọn `fatformer_crossdomain_weights_only.pth` (~2.3 GB) lưu trên Google Drive 5TB.
-- [ ] Bàn giao checkpoint và cặp tham số $(T, T^*)$ cho Task 6.6 thực hiện kiểm chuẩn cuối cùng.
-- [ ] Biên soạn báo cáo nghiệm thu tại [`docs/bao_cao/C/bao_cao_task_6.4_calibration_and_checkpoint_selection.md`](../../bao_cao/C/bao_cao_task_6.4_calibration_and_checkpoint_selection.md).
+- [x] Thực hiện phân tách rõ ràng giữa `val_calibration` và `val_selection` ([`val_split_indices.json`](../../../DATASET/logs/val_split_indices.json)).
+- [x] Bảng xếp hạng chi tiết toàn bộ các ứng viên M1–M5 sau khi hiệu chuẩn trên `val_selection` ([`calibration_and_selection_report.json`](../../../DATASET/logs/calibration_and_selection_report.json)).
+- [!] Xác định rõ checkpoint vượt qua toàn bộ 4 điều kiện của Gate: Không có nhánh nào đạt 4/4 Gate; kích hoạt quy chế chọn Ứng viên Dự Phòng (Fallback Candidate).
+- [x] Đóng băng trọng số và xuất tệp rút gọn `fatformer_crossdomain_weights_only.pth` (~2.3 GB), xác thực mã băm SHA-256 bit-perfect khớp 100% `model_state` M4 ([`weights_only_verification_report.json`](../../../DATASET/logs/weights_only_verification_report.json)).
+- [x] Bàn giao ứng viên dự phòng M4 và cặp tham số $(T=1.0811, T^*=0.37)$ cho Task 6.6 thực hiện kiểm chuẩn cuối cùng.
+- [x] Biên soạn báo cáo nghiệm thu tại [`docs/bao_cao/C/bao_cao_task_6.4_calibration_and_checkpoint_selection.md`](../../bao_cao/C/bao_cao_task_6.4_calibration_and_checkpoint_selection.md).

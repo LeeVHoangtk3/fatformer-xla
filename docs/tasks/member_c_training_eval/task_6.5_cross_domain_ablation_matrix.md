@@ -6,7 +6,7 @@
 - **Vị trí trong luồng quy trình**: **Thực thi ngay sau Task 6.3-C và trước Task 6.4**
 - **Môi trường thực thi**: ☁️ **Colab GPU** / 🖥️ **Local**
 - **Độ ưu tiên**: 🟠 Cao (Cung cấp luận cứ khoa học định lượng từng biến số)
-- **Trạng thái**: `[ ] Sẵn sàng triển khai`
+- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH`
 
 ---
 
@@ -46,8 +46,8 @@ Trên tập kiểm định `val_selection` (Task 6.2), toàn bộ 5 cấu hình 
 
 ## 4. Tiêu Chuẩn Nghiệm Thu (Definition of Done)
 
-- [ ] Hoàn thành script đánh giá tự động `tools/eval_crossdomain_ablation.py`.
-- [ ] Xuất tệp dữ liệu chi tiết `DATASET/logs/crossdomain_ablation_matrix.csv` gồm đầy đủ 5 cấu hình.
-- [ ] Lập biểu đồ radar chart hoặc bar chart trực quan hóa sự dịch chuyển hiệu năng giữa M1 $\rightarrow$ M5.
-- [ ] Bàn giao toàn bộ danh sách checkpoint và logits thô cho Task 6.4 thực hiện hiệu chuẩn và xếp hạng.
-- [ ] Biên soạn báo cáo nghiệm thu tại [`docs/bao_cao/C/bao_cao_task_6.5_cross_domain_ablation_matrix.md`](../../bao_cao/C/bao_cao_task_6.5_cross_domain_ablation_matrix.md).
+- [x] Hoàn thành script đánh giá tự động `tools/eval_crossdomain_ablation.py`.
+- [x] Xuất tệp dữ liệu chi tiết `DATASET/logs/crossdomain_ablation_matrix.csv` gồm đầy đủ 5 cấu hình.
+- [x] Lập biểu đồ radar chart hoặc bar chart trực quan hóa sự dịch chuyển hiệu năng giữa M1 $\rightarrow$ M5 ([`tools/plot_crossdomain_ablation.py`](../../../tools/plot_crossdomain_ablation.py)).
+- [x] Bàn giao toàn bộ danh sách checkpoint và logits thô cho Task 6.4 thực hiện hiệu chuẩn và xếp hạng ([`val_split_indices.json`](../../../DATASET/logs/val_split_indices.json)).
+- [x] Biên soạn báo cáo nghiệm thu tại [`docs/bao_cao/C/bao_cao_task_6.5_cross_domain_ablation_matrix.md`](../../bao_cao/C/bao_cao_task_6.5_cross_domain_ablation_matrix.md).

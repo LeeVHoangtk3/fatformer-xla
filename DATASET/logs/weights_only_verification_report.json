@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "task": "Task 6.4 Weights Provenance & Integrity Verification",
+    "timestamp": "2026-10-21 16:28:05",
+    "weights_only_file": "fatformer_crossdomain_weights_only.pth",
+    "m4_source_file": "crossdomain_model_best_m4.pth",
+    "verification_status": "IDENTICAL_BIT_PERFECT"
+  },
+  "weights_only_info": {
+    "path": "D:\\GIT REPO\\.nam4\\fatformer-xla\\DATASET\\checkpoints\\fatformer_crossdomain_weights_only.pth",
+    "size_bytes": 2314739112,
+    "sha256": "09b41c431ee842a8c4340ea713a7fb0a5855e5c56f55c7458229dce5536f4c4e",
+    "key_count": 1684
+  },
+  "m4_source_info": {
+    "path": "D:\\GIT REPO\\.nam4\\fatformer-xla\\DATASET\\checkpoints\\m4\\crossdomain_model_best_m4.pth",
+    "size_bytes": 2438133069,
+    "sha256": "b5ad83966047038c8b2dc062c88857f9bfc02adb8eae03620b0c09efc8f2acdb",
+    "key_count": 1684,
+    "contains_optimizer": true,
+    "epoch": 3,
+    "best_acc": null
+  },
+  "comparison_results": {
+    "keys_match_exact": true,
+    "missing_keys_count": 0,
+    "unexpected_keys_count": 0,
+    "max_abs_diff": 0.0,
+    "is_bit_perfect": true
+  }
+}
