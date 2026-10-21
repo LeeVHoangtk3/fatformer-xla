@@ -6,6 +6,8 @@ FatFormer-XLA: Kiem Chuan Khoa So Chung Cuoc & Doi Chieu Hau Nghiem (Task 6.6)
 - Danh gia 2 chieu toan dien:
     1. Chieu 1: 18 tap test Clean (8 GANs + 10 Diffusion)
     2. Chieu 2: 6 bien the Degraded (jpeg_q30, jpeg_q50, jpeg_q70, blur_s1, blur_s2, down_up)
+- Ho tro quet de quy da tang (Multi-Class: progan, stylegan, stylegan2, cyclegan)
+- Ho tro case-insensitive va alias (PNDM, VQ_Diffusion, vq_diffusion)
 - Tinh toan ma tran sut giam delta = ACC_Degraded - ACC_Clean
 - Tinh toan khoang tin cay 95% Bootstrap (B=1.000) cho cac chi so cot loi
 - Ho tro --test_dummy chay kiem thu logic cuc bo cho ca 2 chieu
@@ -71,6 +73,27 @@ VARIANT_DESCRIPTIONS = {
     "down_up": "Down-Up Bicubic (224 -> 112 -> 224)"
 }
 
+SUBSET_ALIASES = {
+    "progan": ["progan", "ProGAN", "pro_gan"],
+    "stylegan": ["stylegan", "StyleGAN", "style_gan"],
+    "stylegan2": ["stylegan2", "StyleGAN2", "style_gan2", "stylegan_2"],
+    "biggan": ["biggan", "BigGAN", "big_gan"],
+    "cyclegan": ["cyclegan", "CycleGAN", "cycle_gan"],
+    "stargan": ["stargan", "StarGAN", "star_gan"],
+    "gaugan": ["gaugan", "GauGAN", "gau_gan"],
+    "deepfake": ["deepfake", "DeepFake", "deep_fake", "FaceForensics"],
+    "guided": ["guided", "Guided", "guided_diffusion", "ADM", "adm"],
+    "ldm_200": ["ldm_200", "LDM_200", "ldm200", "LDM200"],
+    "ldm_200_cfg": ["ldm_200_cfg", "LDM_200_cfg", "ldm200cfg", "LDM200_cfg"],
+    "ldm_100": ["ldm_100", "LDM_100", "ldm100", "LDM100"],
+    "glide_50_27": ["glide_50_27", "Glide_50_27", "glide5027"],
+    "glide_100_10": ["glide_100_10", "Glide_100_10", "glide10010"],
+    "glide_100_27": ["glide_100_27", "Glide_100_27", "glide10027"],
+    "dalle": ["dalle", "DALLE", "dall_e", "dalle_2"],
+    "pndm": ["pndm", "PNDM", "pndm_diffusion"],
+    "vqdiffusion": ["vqdiffusion", "VQ_Diffusion", "vq_diffusion", "VQDiffusion", "vq-diffusion", "VQ-Diffusion"]
+}
+
 
 def find_first_existing(candidates: List[Optional[str]]) -> Optional[str]:
     for c in candidates:
@@ -82,6 +105,43 @@ def find_first_existing(candidates: List[Optional[str]]) -> Optional[str]:
         matches = glob.glob(c, recursive=True)
         if matches:
             return os.path.abspath(matches[0])
+    return None
+
+
+def locate_subset_dir(base_root: str, subset_key: str) -> Optional[str]:
+    """
+    Tim kiem thu muc cua tap test theo danh sach alias va ho tro khong phan biet hoa thuong (case-insensitive).
+    """
+    if not base_root or not os.path.exists(base_root):
+        return None
+
+    aliases = [a.lower() for a in SUBSET_ALIASES.get(subset_key, [subset_key])]
+
+    # 1. Kiem tra truc tiep o cap 1 va cap 2 (test/, diffusion_test/)
+    immediate_candidates = [base_root]
+    try:
+        immediate_candidates += [
+            os.path.join(base_root, d) for d in os.listdir(base_root)
+            if os.path.isdir(os.path.join(base_root, d))
+        ]
+    except Exception:
+        pass
+
+    for candidate in immediate_candidates:
+        try:
+            for item in os.listdir(candidate):
+                full_p = os.path.join(candidate, item)
+                if os.path.isdir(full_p) and item.lower() in aliases:
+                    return full_p
+        except Exception:
+            pass
+
+    # 2. Quet de quy toan bo thu muc base_root
+    for root, dirs, _ in os.walk(base_root):
+        for d in dirs:
+            if d.lower() in aliases:
+                return os.path.join(root, d)
+
     return None
 
 
@@ -321,28 +381,46 @@ def evaluate_dataset_items(
 
 
 def scan_subset_images(subset_dir: str, max_samples: int = 0, seed: int = 42) -> List[Dict[str, Any]]:
-    """Quet cac anh trong thu muc subset (0_real va 1_fake), co the gioi han so mau."""
+    """
+    Quet toan bo anh trong thu muc subset bang cach duyet de quy tat ca cac tang thu muc.
+    Ho tro ca:
+    1. Cau truc phang: subset/0_real/*.png, subset/1_fake/*.png
+    2. Cau truc da lop (multi-class): subset/class_name/0_real/*.png, subset/class_name/1_fake/*.png
+    """
+    if not subset_dir or not os.path.exists(subset_dir):
+        return []
+
     real_files = []
     fake_files = []
 
-    label_patterns = [
-        ("0_real", 0), ("real", 0), ("0", 0),
-        ("1_fake", 1), ("fake", 1), ("1", 1)
-    ]
+    for root, _, files in os.walk(subset_dir):
+        parts = [p.lower() for p in os.path.normpath(root).split(os.sep)]
 
-    for label_str, lbl in label_patterns:
-        c_dir = os.path.join(subset_dir, label_str)
-        if os.path.isdir(c_dir):
-            for root, _, files in os.walk(c_dir):
-                for fn in files:
-                    if fn.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
-                        fp = os.path.join(root, fn)
-                        if lbl == 0:
-                            real_files.append({"file_path": fp, "label": 0})
-                        else:
-                            fake_files.append({"file_path": fp, "label": 1})
+        is_real = any(p in ("0_real", "real", "0") for p in parts)
+        is_fake = any(p in ("1_fake", "fake", "1") for p in parts)
 
-    if max_samples > 0 and len(real_files) + len(fake_files) > max_samples:
+        # Uu tien thanh phan thu muc gan nhat o cuoi duong dan neu co ca 2
+        if is_real and is_fake:
+            for p in reversed(parts):
+                if p in ("0_real", "real", "0"):
+                    is_fake = False
+                    break
+                elif p in ("1_fake", "fake", "1"):
+                    is_real = False
+                    break
+
+        if not (is_real or is_fake):
+            continue
+
+        for fn in files:
+            if fn.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
+                fp = os.path.join(root, fn)
+                if is_real:
+                    real_files.append({"file_path": fp, "label": 0})
+                elif is_fake:
+                    fake_files.append({"file_path": fp, "label": 1})
+
+    if max_samples > 0 and (len(real_files) + len(fake_files)) > max_samples:
         rng = random.Random(seed)
         half = max_samples // 2
         sampled_real = rng.sample(real_files, min(len(real_files), half))
@@ -423,16 +501,8 @@ def main():
     else:
         print(f"[*] Dang quet tim 18 tap test Clean ben trong: {args.test_root}...")
         for sub in ALL_18_SUBSETS:
-            sub_dir = os.path.join(args.test_root, sub)
-            if not os.path.isdir(sub_dir):
-                matches = [
-                    p for p in glob.glob(os.path.join(args.test_root, "**", sub), recursive=True)
-                    if os.path.isdir(p)
-                ]
-                if matches:
-                    sub_dir = matches[0]
-
-            if os.path.isdir(sub_dir):
+            sub_dir = locate_subset_dir(args.test_root, sub)
+            if sub_dir and os.path.isdir(sub_dir):
                 recs = scan_subset_images(sub_dir, max_samples=0)
             else:
                 recs = []
@@ -440,7 +510,10 @@ def main():
 
         total_clean_found = sum(len(v) for v in clean_records_by_subset.values())
         found_subsets = [k for k, v in clean_records_by_subset.items() if len(v) > 0]
-        print(f"[✓] Tim thay tong cong {total_clean_found} anh tren {len(found_subsets)}/18 tap test: {found_subsets}")
+        missing_subsets = [k for k, v in clean_records_by_subset.items() if len(v) == 0]
+        print(f"[✓] Tim thay tong cong {total_clean_found:,} anh tren {len(found_subsets)}/18 tap test: {found_subsets}")
+        if missing_subsets:
+            print(f"[!] Cac tap test chua tim thay anh: {missing_subsets}")
 
         if total_clean_found == 0:
             print("[!] Canh bao: Khong tim thay anh nao trong thu muc test. Chuyen sang che do dummy phuc vu kiem thu...")
@@ -488,7 +561,7 @@ def main():
             "elapsed_sec": round(elapsed, 2)
         }
         clean_results.append(res_row)
-        print(f"  -> [{group_name:9s}] {sub:15s} | Macro ACC: {metrics['macro_acc']:.2f}% | "
+        print(f"  -> [{group_name:9s}] {sub:15s} ({len(cat_targets):>5,} anh) | Macro ACC: {metrics['macro_acc']:.2f}% | "
               f"Real: {metrics['real_acc']:.2f}% | Fake: {metrics['fake_acc']:.2f}% | "
               f"AUC: {metrics['auc']:.2f}% | AP: {metrics['ap']:.2f}% ({elapsed:.2f}s)")
 
@@ -528,12 +601,12 @@ def main():
 
     print("\n" + "-" * 96)
     if mean_clean_gans:
-        print(f"[*] CLEAN MEAN GANs      : Macro ACC = {mean_clean_gans['macro_acc']:.2f}% | AUC = {mean_clean_gans['auc']:.2f}% | AP = {mean_clean_gans['ap']:.2f}%")
+        print(f"[*] CLEAN MEAN GANs ({len(gans_rows)}/8)      : Macro ACC = {mean_clean_gans['macro_acc']:.2f}% | AUC = {mean_clean_gans['auc']:.2f}% | AP = {mean_clean_gans['ap']:.2f}% ({mean_clean_gans['num_samples']:,} anh)")
     if mean_clean_diff:
-        print(f"[*] CLEAN MEAN Diffusion : Macro ACC = {mean_clean_diff['macro_acc']:.2f}% | AUC = {mean_clean_diff['auc']:.2f}% | AP = {mean_clean_diff['ap']:.2f}%")
+        print(f"[*] CLEAN MEAN Diffusion ({len(diff_rows)}/10) : Macro ACC = {mean_clean_diff['macro_acc']:.2f}% | AUC = {mean_clean_diff['auc']:.2f}% | AP = {mean_clean_diff['ap']:.2f}% ({mean_clean_diff['num_samples']:,} anh)")
     if mean_clean_overall:
-        print(f"[*] CLEAN MEAN OVERALL   : Macro ACC = {mean_clean_overall['macro_acc']:.2f}% (95% CI: [{clean_ci_range[0]:.2f}%, {clean_ci_range[1]:.2f}%]) | "
-              f"AUC = {mean_clean_overall['auc']:.2f}% | AP = {mean_clean_overall['ap']:.2f}%")
+        print(f"[*] CLEAN MEAN OVERALL ({len(clean_results)}/18)   : Macro ACC = {mean_clean_overall['macro_acc']:.2f}% (95% CI: [{clean_ci_range[0]:.2f}%, {clean_ci_range[1]:.2f}%]) | "
+              f"AUC = {mean_clean_overall['auc']:.2f}% | AP = {mean_clean_overall['ap']:.2f}% ({mean_clean_overall['num_samples']:,} anh)")
     print("-" * 96)
 
     # =========================================================================
@@ -561,7 +634,6 @@ def main():
 
             var_records = {}
             if is_deg_dummy:
-                # Che do dummy
                 sample_subsets = ["progan", "stylegan", "guided", "dalle"]
                 for sub in sample_subsets:
                     var_records[sub] = [
@@ -569,6 +641,7 @@ def main():
                         for i in range(20)
                     ]
             else:
+                # Tim thu muc bien the ho tro ca chu thuong va hoa
                 var_dir = os.path.join(args.degraded_root, var_name)
                 if not os.path.isdir(var_dir):
                     matches = [
@@ -583,16 +656,8 @@ def main():
                     continue
 
                 for sub in ALL_18_SUBSETS:
-                    sub_dir = os.path.join(var_dir, sub)
-                    if not os.path.isdir(sub_dir):
-                        matches = [
-                            p for p in glob.glob(os.path.join(var_dir, "**", sub), recursive=True)
-                            if os.path.isdir(p)
-                        ]
-                        if matches:
-                            sub_dir = matches[0]
-
-                    if os.path.isdir(sub_dir):
+                    sub_dir = locate_subset_dir(var_dir, sub)
+                    if sub_dir and os.path.isdir(sub_dir):
                         recs = scan_subset_images(
                             sub_dir,
                             max_samples=args.samples_per_degraded_subset,
@@ -647,6 +712,8 @@ def main():
                 summary_by_variant[var_name] = {
                     "variant": var_name,
                     "variant_desc": var_desc,
+                    "num_subsets": len(var_sub_rows),
+                    "num_samples": sum(r["num_samples"] for r in var_sub_rows),
                     "gans_acc": round(g_mean, 2),
                     "diff_acc": round(d_mean, 2),
                     "overall_acc": round(o_mean, 2),
@@ -656,7 +723,7 @@ def main():
                     "ap": round(ap_mean, 2),
                     "delta_drop": round(delta_drop, 2)
                 }
-                print(f"  -> [{var_name:8s}] Overall ACC: {o_mean:.2f}% (Δ: {delta_drop:+.2f}%) | "
+                print(f"  -> [{var_name:8s}] ({len(var_sub_rows)}/18 subsets) | Overall ACC: {o_mean:.2f}% (Δ: {delta_drop:+.2f}%) | "
                       f"GANs: {g_mean:.2f}% | Diff: {d_mean:.2f}% | Real: {r_mean:.2f}% | Fake: {f_mean:.2f}%")
     else:
         print("\n[!] Khong phat hien --degraded_root. Bo qua danh gia chieu 2 (Degraded).")
@@ -732,7 +799,7 @@ def main():
     print("BẢNG TỔNG HỢP KIỂM CHUẨN KHÓA SỔ CHUNG CUỘC FATFORMER-XLA (TASK 6.6)")
     print("=" * 96)
     if mean_clean_overall:
-        print(f"[*] CLEAN OVERALL   : Macro ACC = {mean_clean_overall['macro_acc']:.2f}% "
+        print(f"[*] CLEAN OVERALL ({len(clean_results)}/18) : Macro ACC = {mean_clean_overall['macro_acc']:.2f}% "
               f"(95% CI: [{clean_ci_range[0]:.2f}%, {clean_ci_range[1]:.2f}%]) | "
               f"AUC = {mean_clean_overall['auc']:.2f}% | AP = {mean_clean_overall['ap']:.2f}%")
 
@@ -740,7 +807,8 @@ def main():
         print("\n" + "-" * 96)
         print(f"{'Biến thể':<10} {'Mô tả suy biến':<30} {'GANs (%)':<10} {'Diff (%)':<10} {'Overall (%)':<12} {'Real ACC':<10} {'Fake ACC':<10} {'Δ Sụt giảm':<12}")
         print("-" * 96)
-        print(f"{'Clean':<10} {'Mốc trần tham chiếu':<30} {mean_clean_gans['macro_acc']:<10.2f} {mean_clean_diff['macro_acc']:<10.2f} {mean_clean_overall['macro_acc']:<12.2f} {mean_clean_overall['real_acc']:<10.2f} {mean_clean_overall['fake_acc']:<10.2f} {'0.00% (Mốc)':<12}")
+        if mean_clean_gans and mean_clean_diff and mean_clean_overall:
+            print(f"{'Clean':<10} {'Mốc trần tham chiếu':<30} {mean_clean_gans['macro_acc']:<10.2f} {mean_clean_diff['macro_acc']:<10.2f} {mean_clean_overall['macro_acc']:<12.2f} {mean_clean_overall['real_acc']:<10.2f} {mean_clean_overall['fake_acc']:<10.2f} {'0.00% (Mốc)':<12}")
         print("-" * 96)
         for var, s in summary_by_variant.items():
             print(f"{var:<10} {s['variant_desc']:<30} {s['gans_acc']:<10.2f} {s['diff_acc']:<10.2f} {s['overall_acc']:<12.2f} {s['real_acc']:<10.2f} {s['fake_acc']:<10.2f} {s['delta_drop']:+.2f}%")
