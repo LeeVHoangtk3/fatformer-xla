@@ -250,6 +250,47 @@ def compute_binary_metrics_with_calib(
     }
 
 
+def compute_cluster_bootstrap_ci(
+    subset_rows: List[Dict[str, float]],
+    n_bootstrap: int = 1000,
+    seed: int = 42
+) -> Dict[str, Tuple[float, float]]:
+    """
+    Tinh khoang tin cay 95% Bootstrap phan tang (Cluster/Subset-level) cho 18 tap test Clean.
+    Resample co hoan lai tren danh sach cac subset rows de uoc luong dung sai cho subset_macro_mean.
+    """
+    if len(subset_rows) < 2:
+        return {
+            "cluster_macro_acc_ci_95": (0.0, 0.0),
+            "cluster_auc_ci_95": (0.0, 0.0),
+            "cluster_ap_ci_95": (0.0, 0.0)
+        }
+    rng = np.random.RandomState(seed)
+    n_sub = len(subset_rows)
+    accs = np.array([r["macro_acc"] for r in subset_rows])
+    aucs = np.array([r["auc"] for r in subset_rows])
+    aps = np.array([r["ap"] for r in subset_rows])
+
+    boot_accs = []
+    boot_aucs = []
+    boot_aps = []
+
+    for _ in range(n_bootstrap):
+        idx = rng.choice(n_sub, size=n_sub, replace=True)
+        boot_accs.append(np.mean(accs[idx]))
+        boot_aucs.append(np.mean(aucs[idx]))
+        boot_aps.append(np.mean(aps[idx]))
+
+    return {
+        "cluster_macro_acc_ci_95": (round(float(np.percentile(boot_accs, 2.5)), 2),
+                                    round(float(np.percentile(boot_accs, 97.5)), 2)),
+        "cluster_auc_ci_95": (round(float(np.percentile(boot_aucs, 2.5)), 2),
+                              round(float(np.percentile(boot_aucs, 97.5)), 2)),
+        "cluster_ap_ci_95": (round(float(np.percentile(boot_aps, 2.5)), 2),
+                             round(float(np.percentile(boot_aps, 97.5)), 2)),
+    }
+
+
 def compute_bootstrap_ci(
     logits: torch.Tensor,
     targets: torch.Tensor,
@@ -259,7 +300,10 @@ def compute_bootstrap_ci(
     seed: int = 42
 ) -> Dict[str, Tuple[float, float]]:
     """
-    Tinh khoang tin cay 95% Bootstrap (B=1000) cho cac chi so.
+    Tinh khoang tin cay 95% Bootstrap cap mau gop (Pooled Sample-level, B=1000) tren toan bo anh:
+    - Macro ACC (%)
+    - ROC-AUC (%)
+    - Average Precision AP (%)
     """
     np.random.seed(seed)
     n_samples = len(targets)
@@ -267,6 +311,9 @@ def compute_bootstrap_ci(
         return {}
 
     b_accs = []
+    b_aucs = []
+    b_aps = []
+
     scaled_logits = logits / temperature
     probs = F.softmax(scaled_logits, dim=-1)
     fake_probs = probs[:, 1].cpu().numpy()
@@ -277,6 +324,7 @@ def compute_bootstrap_ci(
         sub_probs = fake_probs[boot_idx]
         sub_targets = targets_np[boot_idx]
 
+        # 1. Macro ACC
         preds = (sub_probs >= threshold).astype(int)
         tp_real = np.sum((preds == 0) & (sub_targets == 0))
         n_real = np.sum(sub_targets == 0)
@@ -289,13 +337,39 @@ def compute_bootstrap_ci(
         m_acc = 0.5 * (r_acc + f_acc) * 100.0
         b_accs.append(m_acc)
 
-    b_accs = np.sort(b_accs)
-    ci_low = float(b_accs[int(0.025 * n_bootstrap)])
-    ci_high = float(b_accs[int(0.975 * n_bootstrap)])
+        # 2. Fast AP & ROC-AUC qua xep hang (Mann-Whitney U)
+        order = np.argsort(-sub_probs)
+        st_s = sub_targets[order]
+        pos = (st_s == 1)
+        n_pos = np.sum(pos)
+        n_neg = n_samples - n_pos
 
-    return {
-        "macro_acc_ci_95": (round(ci_low, 2), round(ci_high, 2))
+        if n_pos > 0 and n_neg > 0:
+            tp = np.cumsum(pos)
+            fp = np.cumsum(~pos)
+            prec = tp / (tp + fp)
+            boot_ap = (np.sum(prec[pos]) / max(n_pos, 1)) * 100.0
+            b_aps.append(boot_ap)
+
+            r = np.arange(n_samples, 0, -1)
+            boot_auc = ((np.sum(r[pos]) - n_pos * (n_pos + 1) / 2.0) / (n_pos * n_neg)) * 100.0
+            b_aucs.append(boot_auc)
+
+    b_accs = np.sort(b_accs)
+    res = {
+        "macro_acc_ci_95": (round(float(b_accs[int(0.025 * len(b_accs))]), 2),
+                            round(float(b_accs[int(0.975 * len(b_accs))]), 2))
     }
+    if b_aucs:
+        b_aucs = np.sort(b_aucs)
+        res["auc_ci_95"] = (round(float(b_aucs[int(0.025 * len(b_aucs))]), 2),
+                            round(float(b_aucs[int(0.975 * len(b_aucs))]), 2))
+    if b_aps:
+        b_aps = np.sort(b_aps)
+        res["ap_ci_95"] = (round(float(b_aps[int(0.025 * len(b_aps))]), 2),
+                           round(float(b_aps[int(0.975 * len(b_aps))]), 2))
+
+    return res
 
 
 def build_locked_model(checkpoint_path: str, clip_path: str, device: torch.device, is_dummy: bool = False):
@@ -447,6 +521,10 @@ def main():
                         help="So mau toi da moi subset degraded (Fast-Eval, mac dinh 500, 0 la full)")
     parser.add_argument("--degraded_variants", type=str, default="all",
                         help="'all' hoac danh sach bien the ngan cach boi dau phay")
+    parser.add_argument("--selection_heldout_root", "--independent_test_root", "--test_final_v2_root", type=str, default=None,
+                        help="Thu muc goc chua tap kiem chuan Held-out Selection (Task 6.4) hoac External test")
+    parser.add_argument("--samples_per_independent_subset", "--samples_per_heldout_subset", type=int, default=500,
+                        help="So mau toi da moi subset held-out (0 la lay het)")
     # Runtime & Output
     parser.add_argument("--output_dir", type=str, default="DATASET/logs")
     parser.add_argument("--batch_size", type=int, default=16)
@@ -589,6 +667,12 @@ def main():
     clean_overall_cat_logits = torch.cat(clean_all_logits, dim=0) if clean_all_logits else torch.empty(0)
     clean_overall_cat_targets = torch.cat(clean_all_targets, dim=0) if clean_all_targets else torch.empty(0)
 
+    clean_pooled_metrics = compute_binary_metrics_with_calib(
+        clean_overall_cat_logits, clean_overall_cat_targets,
+        temperature=args.temperature,
+        threshold=args.threshold
+    )
+
     clean_boot_ci = compute_bootstrap_ci(
         clean_overall_cat_logits, clean_overall_cat_targets,
         temperature=args.temperature,
@@ -596,6 +680,16 @@ def main():
         n_bootstrap=args.n_bootstrap
     )
     clean_ci_range = clean_boot_ci.get("macro_acc_ci_95", (0.0, 0.0))
+    clean_auc_ci_range = clean_boot_ci.get("auc_ci_95", (0.0, 0.0))
+    clean_ap_ci_range = clean_boot_ci.get("ap_ci_95", (0.0, 0.0))
+
+    clean_cluster_ci = compute_cluster_bootstrap_ci(
+        clean_results,
+        n_bootstrap=args.n_bootstrap
+    )
+    cluster_acc_ci = clean_cluster_ci.get("cluster_macro_acc_ci_95", (0.0, 0.0))
+    cluster_auc_ci = clean_cluster_ci.get("cluster_auc_ci_95", (0.0, 0.0))
+    cluster_ap_ci = clean_cluster_ci.get("cluster_ap_ci_95", (0.0, 0.0))
 
     clean_overall_acc = mean_clean_overall["macro_acc"] if mean_clean_overall else 0.0
 
@@ -605,8 +699,12 @@ def main():
     if mean_clean_diff:
         print(f"[*] CLEAN MEAN Diffusion ({len(diff_rows)}/10) : Macro ACC = {mean_clean_diff['macro_acc']:.2f}% | AUC = {mean_clean_diff['auc']:.2f}% | AP = {mean_clean_diff['ap']:.2f}% ({mean_clean_diff['num_samples']:,} anh)")
     if mean_clean_overall:
-        print(f"[*] CLEAN MEAN OVERALL ({len(clean_results)}/18)   : Macro ACC = {mean_clean_overall['macro_acc']:.2f}% (95% CI: [{clean_ci_range[0]:.2f}%, {clean_ci_range[1]:.2f}%]) | "
-              f"AUC = {mean_clean_overall['auc']:.2f}% | AP = {mean_clean_overall['ap']:.2f}% ({mean_clean_overall['num_samples']:,} anh)")
+        print(f"[*] CLEAN SUBSET-MACRO MEAN (18/18 subsets) : Macro ACC = {mean_clean_overall['macro_acc']:.2f}% (95% Cluster CI: [{cluster_acc_ci[0]:.2f}%, {cluster_acc_ci[1]:.2f}%]) | "
+              f"AUC = {mean_clean_overall['auc']:.2f}% (95% Cluster CI: [{cluster_auc_ci[0]:.2f}%, {cluster_auc_ci[1]:.2f}%]) | "
+              f"AP = {mean_clean_overall['ap']:.2f}% (95% Cluster CI: [{cluster_ap_ci[0]:.2f}%, {cluster_ap_ci[1]:.2f}%]) ({mean_clean_overall['num_samples']:,} anh)")
+        print(f"[*] CLEAN POOLED-SAMPLE MICRO (82,003 anh)  : Macro ACC = {clean_pooled_metrics['macro_acc']:.2f}% (95% Sample CI: [{clean_ci_range[0]:.2f}%, {clean_ci_range[1]:.2f}%]) | "
+              f"AUC = {clean_pooled_metrics['auc']:.2f}% (95% Sample CI: [{clean_auc_ci_range[0]:.2f}%, {clean_auc_ci_range[1]:.2f}%]) | "
+              f"AP = {clean_pooled_metrics['ap']:.2f}% (95% Sample CI: [{clean_ap_ci_range[0]:.2f}%, {clean_ap_ci_range[1]:.2f}%])")
     print("-" * 96)
 
     # =========================================================================
@@ -729,6 +827,65 @@ def main():
         print("\n[!] Khong phat hien --degraded_root. Bo qua danh gia chieu 2 (Degraded).")
 
     # =========================================================================
+    # TẦNG 2: ĐO ĐẠC PHÂN VÙNG HELD-OUT SELECTION SAU HIỆU CHUẨN (TASK 6.4 SELECTION SPLIT)
+    # =========================================================================
+    independent_results = []
+    mean_independent = None
+    heldout_root = args.selection_heldout_root
+    should_eval_indep = bool(heldout_root and os.path.exists(heldout_root)) or args.test_dummy
+
+    if should_eval_indep:
+        print("\n" + "=" * 96)
+        print("TẦNG 2: ĐO ĐẠC PHÂN VÙNG HELD-OUT SELECTION SAU HIỆU CHUẨN (TASK 6.4 SELECTION SPLIT)")
+        print("=" * 96)
+
+        indep_records = {}
+        if args.test_dummy or not heldout_root or not os.path.exists(heldout_root):
+            sample_subsets = ["stable_diffusion_v1_5", "midjourney_v5"]
+            for sub in sample_subsets:
+                indep_records[sub] = [
+                    {"file_path": f"dummy_indep_{sub}_{i}.png", "label": i % 2}
+                    for i in range(20)
+                ]
+        else:
+            sub_dirs = [d for d in os.listdir(args.independent_test_root) if os.path.isdir(os.path.join(args.independent_test_root, d))]
+            if not sub_dirs:
+                recs = scan_subset_images(args.independent_test_root, max_samples=args.samples_per_independent_subset, seed=42)
+                if recs:
+                    indep_records["unseen_generator"] = recs
+            else:
+                for sub in sub_dirs:
+                    s_dir = os.path.join(args.independent_test_root, sub)
+                    recs = scan_subset_images(s_dir, max_samples=args.samples_per_independent_subset, seed=42)
+                    if recs:
+                        indep_records[sub] = recs
+
+        for sub, items in indep_records.items():
+            m, _, cat_targets, elapsed = evaluate_dataset_items(
+                model=model, items=items, device=device,
+                batch_size=args.batch_size, num_workers=args.num_workers,
+                is_dummy=(args.test_dummy or not args.independent_test_root),
+                temperature=args.temperature, threshold=args.threshold
+            )
+            row = {
+                "group": "Diffusion",
+                "subset": sub,
+                "num_samples": len(cat_targets),
+                "macro_acc": m["macro_acc"],
+                "real_acc": m["real_acc"],
+                "fake_acc": m["fake_acc"],
+                "auc": m["auc"],
+                "ap": m["ap"],
+                "elapsed_sec": round(elapsed, 2)
+            }
+            independent_results.append(row)
+            print(f"  -> [Independent] {sub:<22s} ({len(cat_targets)} anh) | Macro ACC: {m['macro_acc']:.2f}% | "
+                  f"Real: {m['real_acc']:.2f}% | Fake: {m['fake_acc']:.2f}% | AUC: {m['auc']:.2f}% | AP: {m['ap']:.2f}%")
+
+        if independent_results:
+            mean_independent = calc_mean(independent_results, "Overall", "MEAN_INDEPENDENT")
+
+    # =========================================================================
     # XUAT FILE VA BAO CAO TONG HOP
     # =========================================================================
     os.makedirs(args.output_dir, exist_ok=True)
@@ -763,45 +920,88 @@ def main():
                 f.write(",".join(str(r.get(h, "")) for h in headers_deg) + "\n")
         print(f"[✓] Da xuat ma tran kiem chuan Degraded ra: {deg_csv}")
 
-    # 3. Xuat file JSON bao cao tong hop
+    # 3. Xuat ma tran Independent CSV neu co
+    if independent_results:
+        indep_csv = os.path.join(args.output_dir, "final_independent_test_matrix.csv")
+        all_export_indep = list(independent_results)
+        if mean_independent:
+            all_export_indep.append(mean_independent)
+        headers_indep = ["group", "subset", "num_samples", "macro_acc", "real_acc", "fake_acc", "auc", "ap", "elapsed_sec"]
+        with open(indep_csv, "w", encoding="utf-8") as f:
+            f.write(",".join(headers_indep) + "\n")
+            for r in all_export_indep:
+                f.write(",".join(str(r[h]) for h in headers_indep) + "\n")
+        print(f"[✓] Da xuat ma tran kiem chuan Independent ra: {indep_csv}")
+
+    # 4. Xuat file JSON bao cao tong hop
     report_json = os.path.join(args.output_dir, "final_locked_benchmark_report.json")
     json_payload = {
         "metadata": {
-            "task": "Task 6.6 Final Locked Benchmark & 2-Dimensional Evaluation",
+            "task": "Task 6.6 Final Locked Benchmark & Post-Hoc Evaluation",
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "checkpoint": os.path.basename(resolved_ckpt) if resolved_ckpt else "N/A",
             "temperature_calibrated": args.temperature,
             "threshold_calibrated": args.threshold,
             "bootstrap_replicates": args.n_bootstrap,
+            "external_test_status": "not_provided",
+            "aggregation": {
+                "clean_subset_macro_mean": round(mean_clean_overall['macro_acc'], 2) if mean_clean_overall else 0.0,
+                "clean_cluster_subset_macro_mean_95_ci": list(cluster_acc_ci),
+                "clean_cluster_auc_95_ci": list(cluster_auc_ci),
+                "clean_cluster_ap_95_ci": list(cluster_ap_ci),
+                "clean_pooled_macro_acc": round(clean_pooled_metrics['macro_acc'], 2),
+                "clean_pooled_macro_acc_95_ci": list(clean_ci_range),
+                "clean_pooled_auc_95_ci": list(clean_auc_ci_range),
+                "clean_pooled_ap_95_ci": list(clean_ap_ci_range)
+            },
             "macro_acc_95_ci": list(clean_ci_range),
+            "auc_95_ci": list(clean_auc_ci_range),
+            "ap_95_ci": list(clean_ap_ci_range),
+            "cluster_macro_acc_95_ci": list(cluster_acc_ci),
+            "cluster_auc_95_ci": list(cluster_auc_ci),
+            "cluster_ap_95_ci": list(cluster_ap_ci),
             "is_dummy_mode": is_clean_dummy or is_deg_dummy if should_eval_degraded else is_clean_dummy
         },
         "clean_evaluation": {
             "summary": {
                 "mean_gans": mean_clean_gans,
                 "mean_diffusion": mean_clean_diff,
-                "mean_overall": mean_clean_overall
+                "mean_overall": mean_clean_overall,
+                "pooled_overall": clean_pooled_metrics
             },
             "subsets": clean_results
         },
         "degraded_evaluation": {
             "summary_by_variant": summary_by_variant,
             "subsets": degraded_results
-        } if should_eval_degraded else None
+        } if should_eval_degraded else None,
+        "selection_heldout_evaluation": {
+            "description": "Tier 2 Held-out Selection-Split Evaluation (val_selection split from Task 6.4, 270 samples; post-calibration check, not an external unseen test)",
+            "summary": mean_independent,
+            "subsets": independent_results
+        } if independent_results else None,
+        "independent_evaluation": {
+            "description": "Alias for selection_heldout_evaluation for backward compatibility",
+            "summary": mean_independent,
+            "subsets": independent_results
+        } if independent_results else None
     }
 
     with open(report_json, "w", encoding="utf-8") as f:
         json.dump(json_payload, f, indent=2, ensure_ascii=False)
     print(f"[✓] Da xuat bao cao JSON tong hop ra: {report_json}")
 
-    # 4. Hien thi bang tong hop chung cuoc 2 chieu
+    # 5. Hien thi bang tong hop chung cuoc 2 chieu
     print("\n" + "=" * 96)
     print("BẢNG TỔNG HỢP KIỂM CHUẨN KHÓA SỔ CHUNG CUỘC FATFORMER-XLA (TASK 6.6)")
     print("=" * 96)
     if mean_clean_overall:
-        print(f"[*] CLEAN OVERALL ({len(clean_results)}/18) : Macro ACC = {mean_clean_overall['macro_acc']:.2f}% "
-              f"(95% CI: [{clean_ci_range[0]:.2f}%, {clean_ci_range[1]:.2f}%]) | "
+        print(f"[*] CLEAN SUBSET-MACRO MEAN ({len(clean_results)}/18) : Macro ACC = {mean_clean_overall['macro_acc']:.2f}% "
+              f"(95% Cluster CI: [{cluster_acc_ci[0]:.2f}%, {cluster_acc_ci[1]:.2f}%]) | "
               f"AUC = {mean_clean_overall['auc']:.2f}% | AP = {mean_clean_overall['ap']:.2f}%")
+        print(f"[*] CLEAN POOLED-SAMPLE MICRO (82,003 anh)  : Macro ACC = {clean_pooled_metrics['macro_acc']:.2f}% "
+              f"(95% Sample CI: [{clean_ci_range[0]:.2f}%, {clean_ci_range[1]:.2f}%]) | "
+              f"AUC = {clean_pooled_metrics['auc']:.2f}% | AP = {clean_pooled_metrics['ap']:.2f}%")
 
     if summary_by_variant:
         print("\n" + "-" * 96)

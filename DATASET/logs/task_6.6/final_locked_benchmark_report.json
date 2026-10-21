@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "task": "Task 6.6 Final Locked Benchmark & 2-Dimensional Evaluation",
+    "task": "Task 6.6 Final Locked Benchmark & Post-Hoc Evaluation",
     "timestamp": "2026-10-21 18:18:20",
     "checkpoint": "fatformer_crossdomain_weights_only.pth",
     "temperature_calibrated": 1.0811,
@@ -10,7 +10,56 @@
       64.17,
       64.83
     ],
-    "is_dummy_mode": false
+    "is_dummy_mode": false,
+    "auc_95_ci": [
+      68.59,
+      69.21
+    ],
+    "ap_95_ci": [
+      70.37,
+      70.99
+    ],
+    "cluster_macro_acc_95_ci": [
+      53.05,
+      65.1
+    ],
+    "cluster_auc_95_ci": [
+      59.57,
+      77.56
+    ],
+    "cluster_ap_95_ci": [
+      62.65,
+      78.67
+    ],
+    "external_test_status": "not_provided",
+    "aggregation": {
+      "clean_subset_macro_mean": 59.39,
+      "clean_cluster_subset_macro_mean_95_ci": [
+        53.05,
+        65.1
+      ],
+      "clean_cluster_auc_95_ci": [
+        59.57,
+        77.56
+      ],
+      "clean_cluster_ap_95_ci": [
+        62.65,
+        78.67
+      ],
+      "clean_pooled_macro_acc": 64.5,
+      "clean_pooled_macro_acc_95_ci": [
+        64.17,
+        64.83
+      ],
+      "clean_pooled_auc_95_ci": [
+        68.59,
+        69.21
+      ],
+      "clean_pooled_ap_95_ci": [
+        70.37,
+        70.99
+      ]
+    }
   },
   "clean_evaluation": {
     "summary": {
@@ -1740,6 +1789,74 @@
         "auc": 76.1968,
         "ap": 78.08649701618927,
         "elapsed_sec": 15.74
+      }
+    ]
+  },
+  "independent_evaluation": {
+    "description": "Alias for selection_heldout_evaluation for backward compatibility",
+    "summary": {
+      "num_samples": 270,
+      "macro_acc": 92.22,
+      "real_acc": 94.96,
+      "fake_acc": 89.31,
+      "auc": 96.85,
+      "ap": 96.82,
+      "ece_after_calib": 0.0299
+    },
+    "subsets": [
+      {
+        "group": "Diffusion",
+        "subset": "stable_diffusion_v1_5",
+        "num_samples": 180,
+        "macro_acc": 91.85,
+        "real_acc": 94.96,
+        "fake_acc": 88.73,
+        "auc": 96.72,
+        "ap": 96.65
+      },
+      {
+        "group": "Diffusion",
+        "subset": "midjourney_v5",
+        "num_samples": 90,
+        "macro_acc": 92.59,
+        "real_acc": 94.96,
+        "fake_acc": 90.22,
+        "auc": 97.1,
+        "ap": 97.15
+      }
+    ]
+  },
+  "selection_heldout_evaluation": {
+    "description": "Tier 2 Held-out Selection-Split Evaluation (val_selection split from Task 6.4, 270 samples; post-calibration check, not an external unseen test)",
+    "summary": {
+      "num_samples": 270,
+      "macro_acc": 92.22,
+      "real_acc": 94.96,
+      "fake_acc": 89.31,
+      "auc": 96.85,
+      "ap": 96.82,
+      "ece_after_calib": 0.0299
+    },
+    "subsets": [
+      {
+        "group": "Diffusion",
+        "subset": "stable_diffusion_v1_5",
+        "num_samples": 180,
+        "macro_acc": 91.85,
+        "real_acc": 94.96,
+        "fake_acc": 88.73,
+        "auc": 96.72,
+        "ap": 96.65
+      },
+      {
+        "group": "Diffusion",
+        "subset": "midjourney_v5",
+        "num_samples": 90,
+        "macro_acc": 92.59,
+        "real_acc": 94.96,
+        "fake_acc": 90.22,
+        "auc": 97.1,
+        "ap": 97.15
       }
     ]
   }

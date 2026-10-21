@@ -4,8 +4,7 @@
 - **Người thực hiện**: **Thành viên C (Training & Evaluation Lead)**
 - **Người nghiệm thu**: **Cả nhóm (Lead A, Lead B, Lead C)**
 - **Môi trường thực thi**: ☁️ **Colab GPU (T4 / A100)**
-- **Độ ưu tiên**: 🔴 Khẩn cấp (Bài kiểm chuẩn chung cuộc của đồ án)
-- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH`
+- **Trạng thái**: `[~] HOÀN THÀNH BENCHMARK CÓ ĐIỀU KIỆN (M4 FALLBACK, CHƯA ĐẠT GATE ROBUSTNESS Q=30)`
 
 ---
 
@@ -16,8 +15,9 @@
 1. **Tầng 1 - Benchmark Đối Chiếu Hậu Nghiệm (Post-hoc Comparative Benchmark)**:
    - Đo đạc lại trên 18 tập test của bài báo gốc CVPR 2024 (ở cả 2 trạng thái Clean và Degraded $Q \in \{30, 50, 70\}$).
    - Khai báo rõ ràng trong báo cáo khoa học: Đây là phép đo đối chiếu hậu nghiệm nhằm so sánh trực tiếp sự cải thiện trước và sau khi can thiệp Milestone 6 (Baseline Gốc vs Plan A vs Mô hình Đa Miền).
-2. **Tầng 2 - Đánh Giá Khái Quát Hóa Độc Lập (Unseen Independent Evaluation)**:
-   - Kiểm thử trên phân vùng dữ liệu độc lập chưa từng tham gia vào bất kỳ pha chẩn đoán hay tối ưu hóa nào (như tập `test_final_v2` gồm các bộ sinh thế hệ mới) nhằm chứng minh năng lực tổng quát hóa thực chất, triệt tiêu rủi ro thiên vị thích ứng (*adaptive overfitting*).
+2. **Tầng 2 - Đánh Giá Trên Phân Vùng Held-out Selection (Held-out Selection-Split Evaluation)**:
+   - Đánh giá trên phân vùng dữ liệu `val_selection` (270 ảnh Midjourney v5 & SD v1.5) tách biệt với pha hiệu chuẩn nhiệt độ `val_calibration` nhằm xác nhận hiệu năng nội bộ sau hiệu chuẩn.
+   - *Lưu ý học thuật*: Phân vùng này đã tham gia quá trình chấm điểm chọn checkpoint M4 tại Task 6.4, do đó không thay thế cho bài kiểm thử ngoại vi độc lập (*external unseen test* như `test_final_v2` với manifest và kiểm tra overlap = 0).
 
 ---
 
@@ -61,8 +61,8 @@
 
 ## 4. Tiêu Chuẩn Nghiệm Thu (Definition of Done)
 
-- [x] Hoàn thành vòng đo đạc đối chiếu hậu nghiệm trên 18 tập test hai chiều đúng 1 lượt ([`tools/eval_locked_benchmark.py`](../../../tools/eval_locked_benchmark.py)).
-- [x] Hoàn thành vòng kiểm thử độc lập trên tập dữ liệu mở rộng đối chứng đa miền.
-- [x] Xuất đầy đủ các bảng dữ liệu CSV chi tiết và bảng tổng hợp 3 bên kèm khoảng tin cậy 95% Bootstrap ([`task_6.6_three_way_comparison.png`](../../../DATASET/logs/task_6.6_three_way_comparison.png)).
-- [x] Cả 3 thành viên họp ký duyệt biên bản nghiệm thu kỹ thuật chung cuộc.
+- [x] Hoàn thành vòng đo đạc đối chiếu hậu nghiệm trên 18 tập test hai chiều (Clean + Degraded) đúng 1 lượt ([`tools/eval_locked_benchmark.py`](../../../tools/eval_locked_benchmark.py)).
+- [~] External unseen test: Chưa thực hiện do chưa có bộ dữ liệu `test_final_v2` được kiểm chứng overlap; sử dụng phân vùng `val_selection` làm held-out evaluation sau calibration, không thay thế external test.
+- [x] Xuất đầy đủ các bảng dữ liệu CSV chi tiết và bảng tổng hợp 3 bên kèm khoảng tin cậy 95% Bootstrap phân định rõ ràng giữa Estimator Cấp Subset (Cluster CI) và Cấp Ảnh Gộp (Sample CI) ([`task_6.6_three_way_comparison.png`](../../../DATASET/logs/task_6.6_three_way_comparison.png)).
+- [~] Trạng thái nghiệm thu: Hoàn thành benchmark khóa sổ; checkpoint M4 báo cáo ở trạng thái fallback có điều kiện từ Task 6.4 (chưa đạt gate robustness Q=30).
 - [x] Biên soạn báo cáo nghiệm thu tại [`docs/bao_cao/C/bao_cao_task_6.6_final_locked_benchmark.md`](../../bao_cao/C/bao_cao_task_6.6_final_locked_benchmark.md).
