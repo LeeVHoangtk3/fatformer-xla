@@ -3,8 +3,12 @@
 FatFormer-XLA: Kiem Chuan Khoa So Chung Cuoc & Doi Chieu Hau Nghiem (Task 6.6)
 - Nap tep trong so rut gon: fatformer_crossdomain_weights_only.pth
 - Dong bang cap tham so hieu chuan Task 6.4: T = 1.0811, T* = 0.3700
+- Danh gia 2 chieu toan dien:
+    1. Chieu 1: 18 tap test Clean (8 GANs + 10 Diffusion)
+    2. Chieu 2: 6 bien the Degraded (jpeg_q30, jpeg_q50, jpeg_q70, blur_s1, blur_s2, down_up)
+- Tinh toan ma tran sut giam delta = ACC_Degraded - ACC_Clean
 - Tinh toan khoang tin cay 95% Bootstrap (B=1.000) cho cac chi so cot loi
-- Ho tro --test_dummy chay kiem thu logic cuc bo
+- Ho tro --test_dummy chay kiem thu logic cuc bo cho ca 2 chieu
 - Xuat bang ma tran ket qua CSV va JSON bao cao
 """
 
@@ -13,6 +17,7 @@ import sys
 import time
 import json
 import glob
+import random
 import argparse
 from types import SimpleNamespace
 from typing import Dict, List, Tuple, Any, Optional
@@ -30,9 +35,15 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 if hasattr(sys.stderr, "reconfigure"):
-    sys.stderr.reconfigure(encoding="utf-8")
+    try:
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 
 GAN_SUBSETS = [
     "progan", "stylegan", "stylegan2", "biggan",
@@ -46,6 +57,19 @@ DIFFUSION_SUBSETS = [
 ]
 
 ALL_18_SUBSETS = GAN_SUBSETS + DIFFUSION_SUBSETS
+
+ALL_DEGRADED_VARIANTS = [
+    "jpeg_q30", "jpeg_q50", "jpeg_q70", "blur_s1", "blur_s2", "down_up"
+]
+
+VARIANT_DESCRIPTIONS = {
+    "jpeg_q30": "Nen JPEG sau Q=30 (Artifact 8x8)",
+    "jpeg_q50": "Nen JPEG trung binh Q=50",
+    "jpeg_q70": "Nen JPEG nhe Q=70",
+    "blur_s1": "Gaussian Blur (sigma=1.0)",
+    "blur_s2": "Gaussian Blur (sigma=2.0)",
+    "down_up": "Down-Up Bicubic (224 -> 112 -> 224)"
+}
 
 
 def find_first_existing(candidates: List[Optional[str]]) -> Optional[str]:
@@ -93,7 +117,6 @@ class ImageListDataset(Dataset):
         item = self.items[idx]
         label = item["label"]
         if self.is_dummy:
-            # Sinh tensor gia lap
             x = torch.randn(3, 224, 224)
         else:
             try:
@@ -113,6 +136,12 @@ def compute_binary_metrics_with_calib(
     """
     Hieu chuan nhiet do T va phan loai theo nguong T*.
     """
+    if len(targets) == 0:
+        return {
+            "macro_acc": 0.0, "overall_acc": 0.0, "real_acc": 0.0,
+            "fake_acc": 0.0, "auc": 50.0, "ap": 50.0
+        }
+
     scaled_logits = logits / temperature
     probs = F.softmax(scaled_logits, dim=-1)
     fake_probs = probs[:, 1].cpu().numpy()
@@ -177,8 +206,7 @@ def compute_bootstrap_ci(
     if n_samples < 5:
         return {}
 
-    b_accs, b_aucs, b_aps = [], [], []
-
+    b_accs = []
     scaled_logits = logits / temperature
     probs = F.softmax(scaled_logits, dim=-1)
     fake_probs = probs[:, 1].cpu().numpy()
@@ -249,13 +277,99 @@ def build_locked_model(checkpoint_path: str, clip_path: str, device: torch.devic
     return model
 
 
+def evaluate_dataset_items(
+    model: nn.Module,
+    items: List[Dict[str, Any]],
+    device: torch.device,
+    batch_size: int = 16,
+    num_workers: int = 0,
+    is_dummy: bool = False,
+    temperature: float = 1.0811,
+    threshold: float = 0.3700
+) -> Tuple[Dict[str, float], torch.Tensor, torch.Tensor, float]:
+    """
+    Suy luan tren mot tap hop mau va tra ve cac chi so da hieu chuan.
+    """
+    if not items:
+        return {}, torch.empty(0), torch.empty(0), 0.0
+
+    dataset = ImageListDataset(items, is_dummy=is_dummy)
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+
+    sub_logits = []
+    sub_targets = []
+
+    t0 = time.time()
+    with torch.no_grad():
+        for x, y in loader:
+            x = x.to(device)
+            with torch.amp.autocast(device.type, enabled=(device.type == "cuda")):
+                out = model(x)
+            sub_logits.append(out.cpu().float())
+            sub_targets.append(y)
+
+    elapsed = time.time() - t0
+    cat_logits = torch.cat(sub_logits, dim=0) if sub_logits else torch.empty(0)
+    cat_targets = torch.cat(sub_targets, dim=0) if sub_targets else torch.empty(0)
+
+    metrics = compute_binary_metrics_with_calib(
+        cat_logits, cat_targets,
+        temperature=temperature,
+        threshold=threshold
+    )
+    return metrics, cat_logits, cat_targets, elapsed
+
+
+def scan_subset_images(subset_dir: str, max_samples: int = 0, seed: int = 42) -> List[Dict[str, Any]]:
+    """Quet cac anh trong thu muc subset (0_real va 1_fake), co the gioi han so mau."""
+    real_files = []
+    fake_files = []
+
+    label_patterns = [
+        ("0_real", 0), ("real", 0), ("0", 0),
+        ("1_fake", 1), ("fake", 1), ("1", 1)
+    ]
+
+    for label_str, lbl in label_patterns:
+        c_dir = os.path.join(subset_dir, label_str)
+        if os.path.isdir(c_dir):
+            for root, _, files in os.walk(c_dir):
+                for fn in files:
+                    if fn.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
+                        fp = os.path.join(root, fn)
+                        if lbl == 0:
+                            real_files.append({"file_path": fp, "label": 0})
+                        else:
+                            fake_files.append({"file_path": fp, "label": 1})
+
+    if max_samples > 0 and len(real_files) + len(fake_files) > max_samples:
+        rng = random.Random(seed)
+        half = max_samples // 2
+        sampled_real = rng.sample(real_files, min(len(real_files), half))
+        sampled_fake = rng.sample(fake_files, min(len(fake_files), max_samples - len(sampled_real)))
+        combined = sampled_real + sampled_fake
+        rng.shuffle(combined)
+        return combined
+
+    return real_files + fake_files
+
+
 def main():
     parser = argparse.ArgumentParser(description="FatFormer-XLA Final Locked Benchmark (Task 6.6)")
+    # Checkpoint & Backbone
     parser.add_argument("--checkpoint", type=str, default="DATASET/checkpoints/fatformer_crossdomain_weights_only.pth")
     parser.add_argument("--clip_path", type=str, default="ViT-L-14.pt")
+    # Locked calibration parameters (Task 6.4)
     parser.add_argument("--temperature", type=float, default=1.0811, help="Nhiet do T dong bang Task 6.4")
     parser.add_argument("--threshold", type=float, default=0.3700, help="Nguong cat T* dong bang Task 6.4")
-    parser.add_argument("--test_root", type=str, default="", help="Thu muc goc chua 18 tap test")
+    # Datasets
+    parser.add_argument("--test_root", type=str, default="", help="Thu muc goc chua 18 tap test Clean")
+    parser.add_argument("--degraded_root", type=str, default="", help="Thu muc goc chua 6 bien the Degraded")
+    parser.add_argument("--samples_per_degraded_subset", type=int, default=500,
+                        help="So mau toi da moi subset degraded (Fast-Eval, mac dinh 500, 0 la full)")
+    parser.add_argument("--degraded_variants", type=str, default="all",
+                        help="'all' hoac danh sach bien the ngan cach boi dau phay")
+    # Runtime & Output
     parser.add_argument("--output_dir", type=str, default="DATASET/logs")
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--num_workers", type=int, default=0)
@@ -265,11 +379,11 @@ def main():
 
     args = parser.parse_args()
 
-    print("=" * 88)
-    print("FATFORMER-XLA: FINAL LOCKED BENCHMARK & POST-HOC VERIFICATION (TASK 6.6)")
+    print("=" * 96)
+    print("FATFORMER-XLA: FINAL LOCKED BENCHMARK & POST-HOC 2-DIMENSIONAL VERIFICATION (TASK 6.6)")
     print(f"Tham so hieu chuan da khoa: Temperature T = {args.temperature:.4f} | Threshold T* = {args.threshold:.4f}")
     print(f"Thiet bi: {args.device} | Che do gia lap (Dummy): {args.test_dummy}")
-    print("=" * 88)
+    print("=" * 96)
 
     device = torch.device(args.device)
 
@@ -289,22 +403,28 @@ def main():
 
     model = build_locked_model(resolved_ckpt, resolved_clip, device, is_dummy=args.test_dummy)
 
-    # 1. Chuan bi danh sach cac tap test
-    records_by_subset = {}
-    if args.test_dummy or not args.test_root or not os.path.exists(args.test_root):
-        print("[*] Khoi tao du lieu mau 18 tap test phuc vu kiem thu he thong...")
+    # =========================================================================
+    # CHIEU 1: DANH GIA 18 TAP TEST CLEAN
+    # =========================================================================
+    print("\n" + "=" * 96)
+    print("CHIỀU 1: ĐO ĐẠC 18 TẬP TEST CLEAN BENCHMARK (GANs + DIFFUSION)")
+    print("=" * 96)
+
+    clean_records_by_subset = {}
+    is_clean_dummy = args.test_dummy or not args.test_root or not os.path.exists(args.test_root)
+
+    if is_clean_dummy:
+        print("[*] Khoi tao du lieu mau 18 tap test Clean phuc vu kiem thu he thong...")
         for sub in ALL_18_SUBSETS:
-            records_by_subset[sub] = [
-                {"file_path": f"dummy_{sub}_{i}.png", "label": i % 2}
+            clean_records_by_subset[sub] = [
+                {"file_path": f"dummy_clean_{sub}_{i}.png", "label": i % 2}
                 for i in range(40)
             ]
     else:
-        # Quet tap test thuc te (ho tro de quy moi tang thu muc)
-        print(f"[*] Dang quet tim 18 tap test ben trong: {args.test_root}...")
+        print(f"[*] Dang quet tim 18 tap test Clean ben trong: {args.test_root}...")
         for sub in ALL_18_SUBSETS:
             sub_dir = os.path.join(args.test_root, sub)
             if not os.path.isdir(sub_dir):
-                # Tim kiem de quy trong args.test_root
                 matches = [
                     p for p in glob.glob(os.path.join(args.test_root, "**", sub), recursive=True)
                     if os.path.isdir(p)
@@ -312,66 +432,49 @@ def main():
                 if matches:
                     sub_dir = matches[0]
 
-            recs = []
             if os.path.isdir(sub_dir):
-                for label_str, lbl in [("0_real", 0), ("1_fake", 1), ("real", 0), ("fake", 1), ("0", 0), ("1", 1)]:
-                    c_dir = os.path.join(sub_dir, label_str)
-                    if os.path.isdir(c_dir):
-                        for root, _, files in os.walk(c_dir):
-                            for fn in files:
-                                if fn.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
-                                    recs.append({"file_path": os.path.join(root, fn), "label": lbl})
-            records_by_subset[sub] = recs
+                recs = scan_subset_images(sub_dir, max_samples=0)
+            else:
+                recs = []
+            clean_records_by_subset[sub] = recs
 
-        total_found = sum(len(v) for v in records_by_subset.values())
-        found_subsets = [k for k, v in records_by_subset.items() if len(v) > 0]
-        print(f"[✓] Tim thay tong cong {total_found} anh tren {len(found_subsets)}/18 tap test: {found_subsets}")
-        if total_found == 0:
+        total_clean_found = sum(len(v) for v in clean_records_by_subset.values())
+        found_subsets = [k for k, v in clean_records_by_subset.items() if len(v) > 0]
+        print(f"[✓] Tim thay tong cong {total_clean_found} anh tren {len(found_subsets)}/18 tap test: {found_subsets}")
+
+        if total_clean_found == 0:
             print("[!] Canh bao: Khong tim thay anh nao trong thu muc test. Chuyen sang che do dummy phuc vu kiem thu...")
+            is_clean_dummy = True
             for sub in ALL_18_SUBSETS:
-                records_by_subset[sub] = [
-                    {"file_path": f"dummy_{sub}_{i}.png", "label": i % 2}
+                clean_records_by_subset[sub] = [
+                    {"file_path": f"dummy_clean_{sub}_{i}.png", "label": i % 2}
                     for i in range(40)
                 ]
 
-    # 2. Vong do dac suy luan khoa so
-    print("\n[*] Bat dau suy luan danh gia tren 18 tap test...")
-    results = []
-    all_logits_list = []
-    all_targets_list = []
+    # Suy luan Clean
+    clean_results = []
+    clean_all_logits = []
+    clean_all_targets = []
 
     for sub in ALL_18_SUBSETS:
-        sub_items = records_by_subset.get(sub, [])
+        sub_items = clean_records_by_subset.get(sub, [])
         if not sub_items:
             continue
 
-        dataset = ImageListDataset(sub_items, is_dummy=args.test_dummy)
-        loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
-
-        sub_logits = []
-        sub_targets = []
-
-        t0 = time.time()
-        with torch.no_grad():
-            for x, y in loader:
-                x = x.to(device)
-                with torch.amp.autocast(device.type, enabled=(device.type == "cuda")):
-                    out = model(x)
-                sub_logits.append(out.cpu().float())
-                sub_targets.append(y)
-
-        elapsed = time.time() - t0
-        cat_logits = torch.cat(sub_logits, dim=0)
-        cat_targets = torch.cat(sub_targets, dim=0)
-
-        all_logits_list.append(cat_logits)
-        all_targets_list.append(cat_targets)
-
-        metrics = compute_binary_metrics_with_calib(
-            cat_logits, cat_targets,
+        metrics, cat_logits, cat_targets, elapsed = evaluate_dataset_items(
+            model=model,
+            items=sub_items,
+            device=device,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            is_dummy=is_clean_dummy,
             temperature=args.temperature,
             threshold=args.threshold
         )
+
+        clean_all_logits.append(cat_logits)
+        clean_all_targets.append(cat_targets)
+
         group_name = "GANs" if sub in GAN_SUBSETS else "Diffusion"
         res_row = {
             "group": group_name,
@@ -384,14 +487,10 @@ def main():
             "ap": metrics["ap"],
             "elapsed_sec": round(elapsed, 2)
         }
-        results.append(res_row)
+        clean_results.append(res_row)
         print(f"  -> [{group_name:9s}] {sub:15s} | Macro ACC: {metrics['macro_acc']:.2f}% | "
               f"Real: {metrics['real_acc']:.2f}% | Fake: {metrics['fake_acc']:.2f}% | "
               f"AUC: {metrics['auc']:.2f}% | AP: {metrics['ap']:.2f}% ({elapsed:.2f}s)")
-
-    # 3. Tinh toan cac chi so tong hop (Mean GANs, Mean Diffusion, Mean Overall)
-    gans_rows = [r for r in results if r["group"] == "GANs"]
-    diff_rows = [r for r in results if r["group"] == "Diffusion"]
 
     def calc_mean(rows, group_label, subset_label):
         if not rows:
@@ -408,74 +507,245 @@ def main():
             "elapsed_sec": round(sum(r["elapsed_sec"] for r in rows), 2)
         }
 
-    mean_gans = calc_mean(gans_rows, "GANs", "MEAN_GANS")
-    mean_diff = calc_mean(diff_rows, "Diffusion", "MEAN_DIFFUSION")
-    mean_overall = calc_mean(results, "Overall", "MEAN_OVERALL")
+    gans_rows = [r for r in clean_results if r["group"] == "GANs"]
+    diff_rows = [r for r in clean_results if r["group"] == "Diffusion"]
+    mean_clean_gans = calc_mean(gans_rows, "GANs", "MEAN_GANS")
+    mean_clean_diff = calc_mean(diff_rows, "Diffusion", "MEAN_DIFFUSION")
+    mean_clean_overall = calc_mean(clean_results, "Overall", "MEAN_OVERALL")
 
-    # 4. Tinh khoang tin cay 95% Bootstrap cho toan bo mau
-    overall_cat_logits = torch.cat(all_logits_list, dim=0)
-    overall_cat_targets = torch.cat(all_targets_list, dim=0)
-    boot_ci = compute_bootstrap_ci(
-        overall_cat_logits, overall_cat_targets,
+    clean_overall_cat_logits = torch.cat(clean_all_logits, dim=0) if clean_all_logits else torch.empty(0)
+    clean_overall_cat_targets = torch.cat(clean_all_targets, dim=0) if clean_all_targets else torch.empty(0)
+
+    clean_boot_ci = compute_bootstrap_ci(
+        clean_overall_cat_logits, clean_overall_cat_targets,
         temperature=args.temperature,
         threshold=args.threshold,
         n_bootstrap=args.n_bootstrap
     )
-    ci_range = boot_ci.get("macro_acc_ci_95", (0.0, 0.0))
+    clean_ci_range = clean_boot_ci.get("macro_acc_ci_95", (0.0, 0.0))
 
-    print("\n" + "=" * 88)
-    print("BẢNG TỔNG HỢP KIỂM CHUẨN KHÓA SỔ CHUNG CUỘC (TASK 6.6)")
-    print("=" * 88)
-    if mean_gans:
-        print(f"[*] MEAN GANs      : Macro ACC = {mean_gans['macro_acc']:.2f}% | AUC = {mean_gans['auc']:.2f}% | AP = {mean_gans['ap']:.2f}%")
-    if mean_diff:
-        print(f"[*] MEAN Diffusion : Macro ACC = {mean_diff['macro_acc']:.2f}% | AUC = {mean_diff['auc']:.2f}% | AP = {mean_diff['ap']:.2f}%")
-    if mean_overall:
-        print(f"[*] MEAN OVERALL   : Macro ACC = {mean_overall['macro_acc']:.2f}% (95% CI: [{ci_range[0]:.2f}%, {ci_range[1]:.2f}%]) | "
-              f"AUC = {mean_overall['auc']:.2f}% | AP = {mean_overall['ap']:.2f}%")
+    clean_overall_acc = mean_clean_overall["macro_acc"] if mean_clean_overall else 0.0
 
-    # 5. Xuat file CSV va JSON bao cao
+    print("\n" + "-" * 96)
+    if mean_clean_gans:
+        print(f"[*] CLEAN MEAN GANs      : Macro ACC = {mean_clean_gans['macro_acc']:.2f}% | AUC = {mean_clean_gans['auc']:.2f}% | AP = {mean_clean_gans['ap']:.2f}%")
+    if mean_clean_diff:
+        print(f"[*] CLEAN MEAN Diffusion : Macro ACC = {mean_clean_diff['macro_acc']:.2f}% | AUC = {mean_clean_diff['auc']:.2f}% | AP = {mean_clean_diff['ap']:.2f}%")
+    if mean_clean_overall:
+        print(f"[*] CLEAN MEAN OVERALL   : Macro ACC = {mean_clean_overall['macro_acc']:.2f}% (95% CI: [{clean_ci_range[0]:.2f}%, {clean_ci_range[1]:.2f}%]) | "
+              f"AUC = {mean_clean_overall['auc']:.2f}% | AP = {mean_clean_overall['ap']:.2f}%")
+    print("-" * 96)
+
+    # =========================================================================
+    # CHIEU 2: DANH GIA 6 BIEN THE DEGRADED (VAT LY)
+    # =========================================================================
+    degraded_results = []
+    summary_by_variant = {}
+    should_eval_degraded = bool(args.degraded_root and os.path.exists(args.degraded_root)) or args.test_dummy
+
+    if should_eval_degraded:
+        print("\n" + "=" * 96)
+        print("CHIỀU 2: ĐO ĐẠC 6 BIẾN THỂ TEST DEGRADED (ĐỘ BỀN VẬT LÝ & DELTA DROP)")
+        print("=" * 96)
+
+        if args.degraded_variants == "all":
+            variants_to_eval = ALL_DEGRADED_VARIANTS
+        else:
+            variants_to_eval = [v.strip() for v in args.degraded_variants.split(",") if v.strip()]
+
+        is_deg_dummy = args.test_dummy or not args.degraded_root or not os.path.exists(args.degraded_root)
+
+        for var_idx, var_name in enumerate(variants_to_eval):
+            var_desc = VARIANT_DESCRIPTIONS.get(var_name, var_name)
+            print(f"\n[{var_idx + 1}/{len(variants_to_eval)}] Đang kiểm chuẩn biến thể: '{var_name.upper()}' ({var_desc})...")
+
+            var_records = {}
+            if is_deg_dummy:
+                # Che do dummy
+                sample_subsets = ["progan", "stylegan", "guided", "dalle"]
+                for sub in sample_subsets:
+                    var_records[sub] = [
+                        {"file_path": f"dummy_deg_{var_name}_{sub}_{i}.png", "label": i % 2}
+                        for i in range(20)
+                    ]
+            else:
+                var_dir = os.path.join(args.degraded_root, var_name)
+                if not os.path.isdir(var_dir):
+                    matches = [
+                        p for p in glob.glob(os.path.join(args.degraded_root, "**", var_name), recursive=True)
+                        if os.path.isdir(p)
+                    ]
+                    if matches:
+                        var_dir = matches[0]
+
+                if not os.path.isdir(var_dir):
+                    print(f"  [!] Không tìm thấy thư mục cho biến thể '{var_name}' tại {var_dir}. Bỏ qua.")
+                    continue
+
+                for sub in ALL_18_SUBSETS:
+                    sub_dir = os.path.join(var_dir, sub)
+                    if not os.path.isdir(sub_dir):
+                        matches = [
+                            p for p in glob.glob(os.path.join(var_dir, "**", sub), recursive=True)
+                            if os.path.isdir(p)
+                        ]
+                        if matches:
+                            sub_dir = matches[0]
+
+                    if os.path.isdir(sub_dir):
+                        recs = scan_subset_images(
+                            sub_dir,
+                            max_samples=args.samples_per_degraded_subset,
+                            seed=42
+                        )
+                        if recs:
+                            var_records[sub] = recs
+
+            var_sub_rows = []
+            for sub, items in var_records.items():
+                m, _, cat_targets, elapsed = evaluate_dataset_items(
+                    model=model,
+                    items=items,
+                    device=device,
+                    batch_size=args.batch_size,
+                    num_workers=args.num_workers,
+                    is_dummy=is_deg_dummy,
+                    temperature=args.temperature,
+                    threshold=args.threshold
+                )
+                group_name = "GANs" if sub in GAN_SUBSETS else "Diffusion"
+                row = {
+                    "variant": var_name,
+                    "variant_desc": var_desc,
+                    "group": group_name,
+                    "subset": sub,
+                    "num_samples": len(cat_targets),
+                    "macro_acc": m["macro_acc"],
+                    "real_acc": m["real_acc"],
+                    "fake_acc": m["fake_acc"],
+                    "auc": m["auc"],
+                    "ap": m["ap"],
+                    "elapsed_sec": round(elapsed, 2)
+                }
+                var_sub_rows.append(row)
+                degraded_results.append(row)
+
+            # Tinh mean bien the
+            if var_sub_rows:
+                g_rows = [r for r in var_sub_rows if r["group"] == "GANs"]
+                d_rows = [r for r in var_sub_rows if r["group"] == "Diffusion"]
+                g_mean = float(np.mean([r["macro_acc"] for r in g_rows])) if g_rows else 0.0
+                d_mean = float(np.mean([r["macro_acc"] for r in d_rows])) if d_rows else 0.0
+                o_mean = float(np.mean([r["macro_acc"] for r in var_sub_rows]))
+                r_mean = float(np.mean([r["real_acc"] for r in var_sub_rows]))
+                f_mean = float(np.mean([r["fake_acc"] for r in var_sub_rows]))
+                auc_mean = float(np.mean([r["auc"] for r in var_sub_rows]))
+                ap_mean = float(np.mean([r["ap"] for r in var_sub_rows]))
+
+                delta_drop = o_mean - clean_overall_acc
+
+                summary_by_variant[var_name] = {
+                    "variant": var_name,
+                    "variant_desc": var_desc,
+                    "gans_acc": round(g_mean, 2),
+                    "diff_acc": round(d_mean, 2),
+                    "overall_acc": round(o_mean, 2),
+                    "real_acc": round(r_mean, 2),
+                    "fake_acc": round(f_mean, 2),
+                    "auc": round(auc_mean, 2),
+                    "ap": round(ap_mean, 2),
+                    "delta_drop": round(delta_drop, 2)
+                }
+                print(f"  -> [{var_name:8s}] Overall ACC: {o_mean:.2f}% (Δ: {delta_drop:+.2f}%) | "
+                      f"GANs: {g_mean:.2f}% | Diff: {d_mean:.2f}% | Real: {r_mean:.2f}% | Fake: {f_mean:.2f}%")
+    else:
+        print("\n[!] Khong phat hien --degraded_root. Bo qua danh gia chieu 2 (Degraded).")
+
+    # =========================================================================
+    # XUAT FILE VA BAO CAO TONG HOP
+    # =========================================================================
     os.makedirs(args.output_dir, exist_ok=True)
-    out_csv = os.path.join(args.output_dir, "final_posthoc_benchmark_matrix.csv")
 
-    all_export_rows = list(results)
-    if mean_gans:
-        all_export_rows.append(mean_gans)
-    if mean_diff:
-        all_export_rows.append(mean_diff)
-    if mean_overall:
-        all_export_rows.append(mean_overall)
+    # 1. Xuat ma tran Clean CSV
+    clean_csv = os.path.join(args.output_dir, "final_posthoc_benchmark_matrix.csv")
+    all_export_clean = list(clean_results)
+    if mean_clean_gans:
+        all_export_clean.append(mean_clean_gans)
+    if mean_clean_diff:
+        all_export_clean.append(mean_clean_diff)
+    if mean_clean_overall:
+        all_export_clean.append(mean_clean_overall)
 
-    headers = ["group", "subset", "num_samples", "macro_acc", "real_acc", "fake_acc", "auc", "ap", "elapsed_sec"]
-    with open(out_csv, "w", encoding="utf-8") as f:
-        f.write(",".join(headers) + "\n")
-        for r in all_export_rows:
-            f.write(",".join(str(r[h]) for h in headers) + "\n")
-    print(f"\n[✓] Da xuat ma tran kiem chuan khoa so ra: {out_csv}")
+    headers_clean = ["group", "subset", "num_samples", "macro_acc", "real_acc", "fake_acc", "auc", "ap", "elapsed_sec"]
+    with open(clean_csv, "w", encoding="utf-8") as f:
+        f.write(",".join(headers_clean) + "\n")
+        for r in all_export_clean:
+            f.write(",".join(str(r[h]) for h in headers_clean) + "\n")
+    print(f"\n[✓] Da xuat ma tran kiem chuan Clean ra: {clean_csv}")
 
+    # 2. Xuat ma tran Degraded CSV neu co
+    if degraded_results:
+        deg_csv = os.path.join(args.output_dir, "final_locked_degraded_matrix.csv")
+        headers_deg = [
+            "variant", "variant_desc", "group", "subset", "num_samples",
+            "macro_acc", "real_acc", "fake_acc", "auc", "ap", "elapsed_sec"
+        ]
+        with open(deg_csv, "w", encoding="utf-8") as f:
+            f.write(",".join(headers_deg) + "\n")
+            for r in degraded_results:
+                f.write(",".join(str(r.get(h, "")) for h in headers_deg) + "\n")
+        print(f"[✓] Da xuat ma tran kiem chuan Degraded ra: {deg_csv}")
+
+    # 3. Xuat file JSON bao cao tong hop
     report_json = os.path.join(args.output_dir, "final_locked_benchmark_report.json")
     json_payload = {
         "metadata": {
-            "task": "Task 6.6 Final Locked Benchmark",
+            "task": "Task 6.6 Final Locked Benchmark & 2-Dimensional Evaluation",
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "checkpoint": os.path.basename(resolved_ckpt) if resolved_ckpt else "N/A",
             "temperature_calibrated": args.temperature,
             "threshold_calibrated": args.threshold,
             "bootstrap_replicates": args.n_bootstrap,
-            "macro_acc_95_ci": list(ci_range),
-            "is_dummy_mode": args.test_dummy
+            "macro_acc_95_ci": list(clean_ci_range),
+            "is_dummy_mode": is_clean_dummy or is_deg_dummy if should_eval_degraded else is_clean_dummy
         },
-        "summary": {
-            "mean_gans": mean_gans,
-            "mean_diffusion": mean_diff,
-            "mean_overall": mean_overall
+        "clean_evaluation": {
+            "summary": {
+                "mean_gans": mean_clean_gans,
+                "mean_diffusion": mean_clean_diff,
+                "mean_overall": mean_clean_overall
+            },
+            "subsets": clean_results
         },
-        "subsets_metrics": results
+        "degraded_evaluation": {
+            "summary_by_variant": summary_by_variant,
+            "subsets": degraded_results
+        } if should_eval_degraded else None
     }
+
     with open(report_json, "w", encoding="utf-8") as f:
         json.dump(json_payload, f, indent=2, ensure_ascii=False)
     print(f"[✓] Da xuat bao cao JSON tong hop ra: {report_json}")
-    print("=" * 88)
+
+    # 4. Hien thi bang tong hop chung cuoc 2 chieu
+    print("\n" + "=" * 96)
+    print("BẢNG TỔNG HỢP KIỂM CHUẨN KHÓA SỔ CHUNG CUỘC FATFORMER-XLA (TASK 6.6)")
+    print("=" * 96)
+    if mean_clean_overall:
+        print(f"[*] CLEAN OVERALL   : Macro ACC = {mean_clean_overall['macro_acc']:.2f}% "
+              f"(95% CI: [{clean_ci_range[0]:.2f}%, {clean_ci_range[1]:.2f}%]) | "
+              f"AUC = {mean_clean_overall['auc']:.2f}% | AP = {mean_clean_overall['ap']:.2f}%")
+
+    if summary_by_variant:
+        print("\n" + "-" * 96)
+        print(f"{'Biến thể':<10} {'Mô tả suy biến':<30} {'GANs (%)':<10} {'Diff (%)':<10} {'Overall (%)':<12} {'Real ACC':<10} {'Fake ACC':<10} {'Δ Sụt giảm':<12}")
+        print("-" * 96)
+        print(f"{'Clean':<10} {'Mốc trần tham chiếu':<30} {mean_clean_gans['macro_acc']:<10.2f} {mean_clean_diff['macro_acc']:<10.2f} {mean_clean_overall['macro_acc']:<12.2f} {mean_clean_overall['real_acc']:<10.2f} {mean_clean_overall['fake_acc']:<10.2f} {'0.00% (Mốc)':<12}")
+        print("-" * 96)
+        for var, s in summary_by_variant.items():
+            print(f"{var:<10} {s['variant_desc']:<30} {s['gans_acc']:<10.2f} {s['diff_acc']:<10.2f} {s['overall_acc']:<12.2f} {s['real_acc']:<10.2f} {s['fake_acc']:<10.2f} {s['delta_drop']:+.2f}%")
+        print("-" * 96)
+    print("=" * 96)
 
 
 if __name__ == "__main__":
