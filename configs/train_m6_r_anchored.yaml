@@ -1,0 +1,51 @@
+# ==============================================================================
+# FATFORMER-XLA: CAU HINH HUAN LUYEN NEO PHUC HOI M6-R (PHASE 6-R)
+# Task 6.3-R — Thanh vien C (Training & Evaluation Lead)
+# ==============================================================================
+# Nguyen ly:
+# 1. Khoi tao Step 0 Zero-Init Identity (SRM proj=0, Gating=1.0)
+# 2. Khoi dong Student tu checkpoint goc fatformer_4class_ckpt.pth (khong dung WiSE)
+# 3. Toc do hoc phan tang Differential LR:
+#    - Nhom moi (SRM, Gating): lr = 1.0e-4
+#    - Nhom pretrained adapters (FAA, LGA, Text ctx): lr = 1.0e-5 (giam 10x)
+#    - Backbone CLIP ViT-L/14: dong bang hoan toan (requires_grad=False)
+# 4. Ham mat mat neo Teacher: 0.3 CE + 0.7 KD (tau=2.0) + 0.2 Consistency
+# 5. Luong du lieu Clean-First: clean_prob = 0.70
+# ==============================================================================
+
+experiment:
+  name: "M6_R_anchored_recovery"
+  branch: "M4"
+  seed: 42
+  description: "Phase 6-R Anchored Recovery Training with Teacher KD from fatformer_4class_ckpt.pth"
+
+model:
+  backbone: "CLIP:ViT-L/14"
+  clip_path: "DATASET/pretrained/ViT-L-14.pt"
+  checkpoint_init: "DATASET/pretrained/fatformer_4class_ckpt.pth"
+  teacher_checkpoint: "DATASET/pretrained/fatformer_4class_ckpt.pth"
+  num_classes: 2
+  use_srm: true
+  use_gating: true
+  srm_out_dim: 1024
+
+loss:
+  type: "CrossDomainTotalLoss"
+  label_smoothing: 0.05
+  temperature: 2.0
+  weight_ce: 0.3         # 30% Cross-Entropy voi Label Smoothing
+  alpha_kd: 0.7          # 70% Knowledge Distillation tu teacher CVPR 2024
+  beta_cons: 0.2         # 20% Paired Consistency Loss
+
+training:
+  device: "cuda"
+  epochs: 3
+  batch_size: 16
+  learning_rate: 1.0e-4  # lr cho module moi (SRM/Gating), pretrained adapters tu dong giam 10x (1e-5)
+  min_lr: 1.0e-6
+  weight_decay: 1.0e-4
+  grad_accum_steps: 2
+  grad_clip_norm: 1.0
+  use_amp: true
+  save_dir: "DATASET/checkpoints"
+  save_name: "fatformer_anchored_recovery_best.pth"

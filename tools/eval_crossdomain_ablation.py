@@ -672,12 +672,23 @@ def run_crossdomain_ablation_and_gate(args):
         "q30_real_acc": 99.20,
         "q30_fake_acc": 5.20,
     }
-    if args.baseline_metrics and os.path.exists(args.baseline_metrics):
+    base_candidates = [
+        args.baseline_metrics,
+        os.path.join(PROJECT_ROOT, "DATASET", "logs", "m6_crossdomain_recovery", "calibration", "val_crossdomain_baseline_metrics.json"),
+        os.path.join(PROJECT_ROOT, "DATASET", "logs", "val_crossdomain_baseline_metrics.json"),
+    ]
+    base_file = None
+    for bc in base_candidates:
+        if bc and os.path.exists(bc):
+            base_file = bc
+            break
+
+    if base_file:
         try:
-            with open(args.baseline_metrics, "r", encoding="utf-8") as f:
+            with open(base_file, "r", encoding="utf-8") as f:
                 bm = json.load(f)
             base_metrics = bm.get("baseline_metrics", bm)
-            print(f"[✓] Nap moc san baseline tham chieu tu: {args.baseline_metrics}")
+            print(f"[✓] Nap moc san baseline tham chieu tu: {base_file}")
         except Exception as e:
             print(f"[!] Canh bao nap baseline metrics: {e}")
 

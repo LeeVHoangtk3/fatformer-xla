@@ -229,27 +229,28 @@ class PairedConsistencyLoss(nn.Module):
 
 class CrossDomainTotalLoss(nn.Module):
     """
-    Hàm mất mát đa mục tiêu tổng hợp Milestone 6 — Task 6.3-B.
+    Hàm mất mát đa mục tiêu neo chặt Teacher (Anchored Recovery Loss) — Task 6.3-B & Task 6.3-R.
 
-    Công thức:
-        L_total = L_CE(y, ŷ) + α_kd · L_KD + β_cons · L_cons
+    Công thức chuẩn hóa Phase 6-R:
+        L_total = weight_ce · L_AugCE + α_kd · L_KD + β_cons · L_cons
+                = 0.3 · L_AugCE + 0.7 · L_KD + 0.2 · L_cons
 
     Kết hợp:
-        1. L_CE  : CrossEntropyLoss với Label Smoothing (0.05–0.10) — phân loại chính
-        2. L_KD  : CrossDomainDistillationLoss — bảo vệ tri thức ảnh sạch
-        3. L_cons: PairedConsistencyLoss — đồng bộ quyết định clean ↔ degraded
-
-    Interface chuẩn hóa đồng bộ để Lead C tích hợp trực tiếp trong trainer Milestone 6.
+        1. L_AugCE: CrossEntropyLoss với Label Smoothing 0.05 (trọng số 0.3)
+        2. L_KD   : Chưng cất tri thức KL neo chặt vào Teacher fatformer gốc (trọng số 0.7, T=2.0)
+        3. L_cons : PairedConsistencyLoss đồng bộ logit clean <-> degraded (trọng số 0.2)
     """
 
     def __init__(
         self,
+        weight_ce: float = 0.3,
         label_smoothing: float = 0.05,
         temperature: float = 2.0,
-        alpha_kd: float = 0.4,
+        alpha_kd: float = 0.7,
         beta_cons: float = 0.2,
     ):
         super().__init__()
+        self.weight_ce = weight_ce
         self.ce_loss   = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
         self.kd_loss   = CrossDomainDistillationLoss(temperature=temperature, alpha_kd=alpha_kd)
         self.cons_loss = PairedConsistencyLoss(beta_cons=beta_cons)
@@ -272,9 +273,10 @@ class CrossDomainTotalLoss(nn.Module):
         Returns:
             dict với keys: 'loss_total', 'loss_ce', 'loss_kd', 'loss_cons'
         """
-        loss_ce   = self.ce_loss(logits, targets)
-        loss_kd   = torch.tensor(0.0, device=logits.device)
-        loss_cons = torch.tensor(0.0, device=logits.device)
+        loss_ce_raw = self.ce_loss(logits, targets)
+        loss_ce     = self.weight_ce * loss_ce_raw
+        loss_kd     = torch.tensor(0.0, device=logits.device)
+        loss_cons   = torch.tensor(0.0, device=logits.device)
 
         if teacher_logits is not None and self.kd_loss.alpha_kd > 0.0:
             loss_kd = self.kd_loss(logits, teacher_logits, clean_mask=clean_mask)

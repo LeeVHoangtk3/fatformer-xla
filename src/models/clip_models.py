@@ -16,9 +16,9 @@ class TextEncoder(nn.Module):
 
     def forward(self, prompts, tokenized_prompts):
         x = prompts + self.positional_embedding.type(self.dtype)
-        x = x.permute(1, 0, 2)  # NLD -> LND
+        x = x.permute(1, 0, 2).contiguous()  # NLD -> LND
         x = self.transformer(x)[1]
-        x = x.permute(1, 0, 2)  # LND -> NLD
+        x = x.permute(1, 0, 2).contiguous()  # LND -> NLD
         x = self.ln_final(x).type(self.dtype)
         x = x[torch.arange(x.shape[0]), tokenized_prompts.argmax(dim=-1)] @ self.text_projection
         return x
@@ -94,19 +94,19 @@ class LanguageGuidedAlignment(nn.Module):
         ctx = self.ctx
 
         tgt = ctx[:, None].repeat_interleave(im_features.shape[0], dim=1)
-        tgt2 = self.patch_basaed_enhancer(tgt, im_features.transpose(0, 1), im_features.transpose(0, 1))[0]
+        imf_t = im_features.transpose(0, 1).contiguous()
+        tgt2 = self.patch_basaed_enhancer(tgt, imf_t, imf_t)[0]
         tgt = tgt + tgt2
         tgt = self.norm1(tgt)
         tgt = self.forward_FFN(tgt)
 
-        ctx_shifted = tgt.transpose(0, 1)
+        ctx_shifted = tgt.transpose(0, 1).contiguous()
 
-        prompts = []
-        for ctx_shifted_i in ctx_shifted:
-            ctx_i = ctx_shifted_i.unsqueeze(0).expand(self.n_cls, -1, -1)
-            pts_i = self.construct_prompts(ctx_i, prefix, suffix)
-            prompts.append(pts_i)
-        prompts = torch.stack(prompts)
+        B = im_features.shape[0]
+        prefix_exp = prefix.unsqueeze(0).expand(B, -1, -1, -1)
+        suffix_exp = suffix.unsqueeze(0).expand(B, -1, -1, -1)
+        ctx_exp = ctx_shifted.unsqueeze(1).expand(-1, self.n_cls, -1, -1)
+        prompts = torch.cat([prefix_exp, ctx_exp, suffix_exp], dim=2)
         return prompts
 
 
@@ -133,21 +133,12 @@ class CLIPModel(nn.Module):
         self.linear2 = nn.Linear(d_ffn, d_model)
         self.norm2 = nn.LayerNorm(d_model)
 
-        # Module cải tiến FatFormer-XLA (Task 3.3)
+        # Module cải tiến FatFormer-XLA: SRM và Gating được tích hợp bên trong
+        # ForgeryAwareAdapterLayer (blocks 7, 15, 23) của ViT-L/14, không bọc trùng lặp bên ngoài
         self.use_srm = getattr(args, "use_srm", False) if args else False
         self.use_gating = getattr(args, "use_gating", False) if args else False
-
-        if self.use_srm:
-            from .srm import SpatialResidualBlock
-            self.srm = SpatialResidualBlock(in_channels=3, out_dim=d_model)
-        else:
-            self.srm = None
-
-        if self.use_gating:
-            from .gating import DynamicFrequencyGating
-            self.gating = DynamicFrequencyGating(d_model=d_model)
-        else:
-            self.gating = None
+        self.srm = None
+        self.gating = None
 
     @property
     def visual(self):
@@ -170,58 +161,33 @@ class CLIPModel(nn.Module):
         logit_scale = self.logit_scale.exp()
 
         image_features = self.image_encoder(image.type(self.dtype), return_full=True)
-
-        # Tích hợp SRM 3-Kernels & Dynamic Frequency Gating λ(x) (Task 3.3)
-        if self.srm is not None:
-            # f_srm: [256, B, 1024]
-            f_srm = self.srm(image)
-            if self.gating is not None:
-                # lambda_v: [1, B, 1]
-                lambda_v = self.gating(f_srm)
-            else:
-                lambda_v = 1.0
-
-            # image_features: [B, 257, 1024] với token 0 là CLS, tokens 1..256 là patch tokens
-            f_srm_b = f_srm.permute(1, 0, 2)  # [B, 256, 1024]
-            if isinstance(lambda_v, torch.Tensor):
-                lambda_scale = lambda_v.squeeze(0).unsqueeze(1)  # [B, 1, 1]
-            else:
-                lambda_scale = lambda_v
-
-            # Hòa trộn vết dư không gian vào patch tokens với hệ số điều chế λ(x)
-            patches = image_features[:, 1:] + lambda_scale * f_srm_b * 0.1
-            image_features = torch.cat([image_features[:, :1], patches], dim=1)
-
         image_features_norm = image_features / image_features.norm(dim=-1, keepdim=True)
 
         prompts = self.language_guided_alignment(image_features)
+        B, n_cls, seq_len, ctx_dim = prompts.shape
+
+        # Vector hóa: Chuyển toàn bộ prompts của batch (B * n_cls) qua TextEncoder trong 1 forward duy nhất
+        prompts_flat = prompts.view(B * n_cls, seq_len, ctx_dim)
+        tokenized_prompts_rep = tokenized_prompts.repeat(B, 1)
+        text_features_flat = self.text_encoder(prompts_flat, tokenized_prompts_rep)
+        text_features = text_features_flat.view(B, n_cls, -1)
 
         # Eq. (1): Vanilla CLIP similarity S(i)
-        logits = []
-        text_feature_list = []
-        for pts_i, imf_i in zip(prompts, image_features_norm):
-            text_features = self.text_encoder(pts_i, tokenized_prompts)
-            text_feature_list.append(text_features)
-            text_features_norm = text_features / text_features.norm(dim=-1, keepdim=True)
-            l_i = logit_scale * imf_i[0] @ text_features_norm.t()
-            logits.append(l_i)
-        logits = torch.stack(logits)
+        text_features_norm = text_features / text_features.norm(dim=-1, keepdim=True)
+        cls_norm = image_features_norm[:, 0].unsqueeze(1)
+        logits = logit_scale * torch.bmm(cls_norm, text_features_norm.transpose(1, 2)).squeeze(1)
 
         # Eq. (9): Text-guided interactor similarity S'(i)
-        text_features = torch.stack(text_feature_list, dim=1)
-        tgt = image_features[:, 1:].transpose(0, 1)
-        tgt2 = self.text_guided_interactor(tgt, text_features, text_features)[0]
+        text_features_interactor = text_features.permute(1, 0, 2).contiguous()
+        tgt = image_features[:, 1:].transpose(0, 1).contiguous()
+        tgt2 = self.text_guided_interactor(tgt, text_features_interactor, text_features_interactor)[0]
         tgt = tgt + tgt2
         tgt = self.norm1(tgt)
         tgt = self.forward_FFN(tgt)
 
-        aug_image_features = tgt.transpose(0, 1).mean(dim=1)
+        aug_image_features = tgt.transpose(0, 1).contiguous().mean(dim=1)
         aug_image_features = aug_image_features / aug_image_features.norm(dim=-1, keepdim=True)
-        text_features_norm = text_features / text_features.norm(dim=-1, keepdim=True)
-        aug_logits = []
-        for pts_i, imf_i in zip(aug_image_features, text_features_norm.transpose(0, 1)):
-            aug_logits.append(logit_scale * pts_i @ imf_i.t())
-        aug_logits = torch.stack(aug_logits)
+        aug_logits = logit_scale * torch.bmm(aug_image_features.unsqueeze(1), text_features_norm.transpose(1, 2)).squeeze(1)
 
         # Trả về 2 luồng riêng biệt cho DualStreamFocalLoss hoặc tổng hợp cho suy luận
         if return_dual:

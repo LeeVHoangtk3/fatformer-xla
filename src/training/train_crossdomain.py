@@ -206,6 +206,8 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
                 val_existing = sum(1 for r in temp_val if os.path.isfile(r.get("file_path", "")))
 
                 if len(temp_train) > 0 and train_existing == 0:
+                    if not getattr(args, "dry_run", False):
+                        raise RuntimeError(f"LỖI DỮ LIỆU: Toàn bộ {len(temp_train)} đường dẫn trong manifest {manifest_file} không tồn tại trên đĩa! Cấm fallback dummy.")
                     print(f"  [!] Canh bao: Toan bo {len(temp_train)} duong dan trong manifest {manifest_file} deu khong ton tai tren dia (dummy mock).")
                     print("  [*] Tu dong bo qua manifest ao de quet tim thu muc anh thuc te...")
                 else:
@@ -213,6 +215,8 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
                     val_records = temp_val
                     print(f"  [✓] Da nap thanh cong tu manifest ({manifest_file}): Train={len(train_records)} ({train_existing} anh ton tai), Val={len(val_records)} ({val_existing} anh ton tai)")
             except Exception as e:
+                if not getattr(args, "dry_run", False) and "LỖI DỮ LIỆU" in str(e):
+                    raise
                 print(f"  [!] Khong the doc manifest {manifest_file}: {e}")
 
     # 2. Quet thu muc du lieu train neu records con trong
@@ -234,7 +238,19 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
                     if fname.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
                         full_p = os.path.join(root, fname)
                         norm_p = full_p.replace("\\", "/").lower()
-                        is_fake = ("fake" in norm_p or "1_fake" in norm_p)
+                        parts = norm_p.split("/")
+                        is_fake = any(p in ("1_fake", "fake", "1") for p in parts)
+                        is_real = any(p in ("0_real", "real", "0") for p in parts)
+                        if is_real and is_fake:
+                            for p in reversed(parts):
+                                if p in ("0_real", "real", "0"):
+                                    is_fake = False
+                                    break
+                                elif p in ("1_fake", "fake", "1"):
+                                    is_real = False
+                                    break
+                        if not (is_real or is_fake):
+                            is_fake = ("fake" in norm_p or "1_fake" in norm_p)
                         gen = "real"
                         if is_fake:
                             for g_name in ["stable_diffusion", "sdv15", "sd_v15", "midjourney", "stylegan", "progan", "dalle", "adm"]:
@@ -267,7 +283,19 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
                     if fname.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
                         full_p = os.path.join(root, fname)
                         norm_p = full_p.replace("\\", "/").lower()
-                        is_fake = ("fake" in norm_p or "1_fake" in norm_p)
+                        parts = norm_p.split("/")
+                        is_fake = any(p in ("1_fake", "fake", "1") for p in parts)
+                        is_real = any(p in ("0_real", "real", "0") for p in parts)
+                        if is_real and is_fake:
+                            for p in reversed(parts):
+                                if p in ("0_real", "real", "0"):
+                                    is_fake = False
+                                    break
+                                elif p in ("1_fake", "fake", "1"):
+                                    is_real = False
+                                    break
+                        if not (is_real or is_fake):
+                            is_fake = ("fake" in norm_p or "1_fake" in norm_p)
                         gen = "real"
                         if is_fake:
                             for g_name in ["stable_diffusion", "sdv15", "sd_v15", "midjourney", "stylegan", "progan", "dalle", "adm"]:
@@ -300,7 +328,9 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
 
     # 4. Mau du phong neu kho anh chua tai ve
     if len(train_records) == 0:
-        print("  [!] Khong tim thay anh tren dia, tao 64 mau mo phong co kiem soat.")
+        if not getattr(args, "dry_run", False):
+            raise RuntimeError("LỖI DỮ LIỆU: Không tìm thấy ảnh thực tế trong manifest hoặc thư mục! Tuyệt đối cấm fallback dummy khi không bật --dry_run.")
+        print("  [!] Khong tim thay anh tren dia, tao 64 mau mo phong co kiem soat cho dry-run.")
         for i in range(64):
             is_fake = (i % 2 == 1)
             train_records.append({
@@ -310,6 +340,8 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
                 "source": "mock",
             })
     if len(val_records) == 0:
+        if not getattr(args, "dry_run", False):
+            raise RuntimeError("LỖI DỮ LIỆU: Không tìm thấy ảnh thực tế cho tập val! Tuyệt đối cấm fallback dummy khi không bật --dry_run.")
         for i in range(32):
             is_fake = (i % 2 == 1)
             val_records.append({
@@ -318,6 +350,12 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
                 "generator": f"gen_{(i // 2) % 4}" if is_fake else "real",
                 "source": "mock",
             })
+
+    reals_all = [r for r in train_records if r.get("label", 0) == 0]
+    fakes_all = [r for r in train_records if r.get("label", 0) == 1]
+    if not getattr(args, "dry_run", False):
+        if len(reals_all) == 0 or len(fakes_all) == 0:
+            raise RuntimeError(f"LỖI GÁN NHÃN: Tập dữ liệu thiếu Real ({len(reals_all)}) hoặc Fake ({len(fakes_all)})! Kiểm tra lại đường dẫn và quy tắc gán nhãn.")
 
     paired_train = (args.branch in ["M4", "M5"])
     train_ds = CrossDomainDataset(train_records, paired=paired_train)
@@ -340,13 +378,16 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
 
 
 class _MockBackbone(nn.Module):
-    """Mo hinh nhe dung cho che do Dry-Run tren CPU."""
+    """Mo hinh nhe dung cho che do Dry-Run tren CPU (ho tro ca tham so SRM/Gating)."""
     def __init__(self, num_classes: int = 2):
         super().__init__()
         self.fc = nn.Linear(3 * 224 * 224, num_classes)
+        self.srm_proj = nn.Linear(num_classes, num_classes)
+        self.gating_mlp = nn.Linear(num_classes, num_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.fc(x.flatten(1))
+        feat = self.fc(x.flatten(1))
+        return feat + self.gating_mlp(self.srm_proj(feat)) * 0.0
 
 
 class CrossDomainTrainer:
@@ -367,6 +408,7 @@ class CrossDomainTrainer:
         scheduler: Optional[torch.optim.lr_scheduler._LRScheduler] = None,
         device: torch.device = torch.device("cpu"),
         save_dir: str = "checkpoints/m4",
+        save_name: str = "crossdomain_model_best.pth",
         grad_clip_norm: float = 1.0,
         grad_accum_steps: int = 1,
         use_amp: bool = False,
@@ -375,14 +417,15 @@ class CrossDomainTrainer:
         self.teacher = teacher_model.to(device) if teacher_model is not None else None
         self.train_loader = train_loader
         self.val_loader = val_loader
-        self.criterion = criterion.to(device)
+        self.device = torch.device(device) if isinstance(device, str) else device
+        self.criterion = criterion.to(self.device)
         self.optimizer = optimizer
         self.scheduler = scheduler
-        self.device = device
         self.save_dir = save_dir
+        self.save_name = save_name
         self.grad_clip_norm = grad_clip_norm
         self.grad_accum_steps = grad_accum_steps
-        self.use_amp = use_amp and (device.type == "cuda")
+        self.use_amp = use_amp and (self.device.type == "cuda")
         self.scaler = torch.amp.GradScaler("cuda", enabled=True) if self.use_amp else None
         self.best_composite_score = -1.0
 
@@ -534,26 +577,46 @@ class CrossDomainTrainer:
             "val_composite": composite,
         }
 
-    def save_checkpoint(self, epoch: int, is_best: bool = False) -> None:
+    def save_checkpoint(self, epoch: int, is_best: bool = False, val_metrics: Optional[Dict[str, float]] = None) -> None:
         """
         Chinh sach xoay vong checkpoint nham bao ve bo nho dia luu tru:
-        - checkpoint_latest.pth: Luon ghi de de phuc vu phuc hoi phien.
-        - crossdomain_model_best.pth: Chi cap nhat khi composite score vuot moc cu.
+        - checkpoint_latest.pth: Luon ghi de de phuc vu phuc hoi phien (chua day du optimizer, scheduler).
+        - fatformer_anchored_recovery_best.pth / save_name: Chi luu model.state_dict() va metadata
+          (dung luong gon ~2.0 GB, khong kem optimizer, nap khop 100%).
         """
-        state = {
+        model_sd = self.student.module.state_dict() if hasattr(self.student, "module") else self.student.state_dict()
+        state_latest = {
             "epoch": epoch,
-            "model_state": self.student.state_dict(),
-            "optimizer_state": self.optimizer.state_dict(),
+            "model": model_sd,
+            "model_state": model_sd,
+            "optimizer_state": self.optimizer.state_dict() if self.optimizer else None,
             "best_score": self.best_composite_score,
+            "val_metrics": val_metrics or {},
         }
 
         latest_path = os.path.join(self.save_dir, "checkpoint_latest.pth")
-        torch.save(state, latest_path)
+        torch.save(state_latest, latest_path)
 
         if is_best:
-            best_path = os.path.join(self.save_dir, "crossdomain_model_best.pth")
-            torch.save(state, best_path)
-            print(f"  -> Luu model vuot troi tai epoch {epoch} (Composite={self.best_composite_score:.2f}%)")
+            v_acc = val_metrics.get("val_acc", 0.0) if val_metrics else 0.0
+            comp = val_metrics.get("val_composite", self.best_composite_score) if val_metrics else self.best_composite_score
+            best_clean_state = {
+                "model": model_sd,
+                "metadata": {
+                    "epoch": epoch,
+                    "val_acc": v_acc,
+                    "composite": comp,
+                    "branch": "M4",
+                }
+            }
+            best_path = os.path.join(self.save_dir, self.save_name)
+            torch.save(best_clean_state, best_path)
+            print(f"  -> Luu model vuot troi tai epoch {epoch}: {best_path} (Val ACC={v_acc:.2f}%, Composite={comp:.2f}%)")
+
+            # Luu dong thoi ca fatformer_anchored_recovery_best.pth va crossdomain_model_best.pth de tuong thich 100%
+            alt_name = "fatformer_anchored_recovery_best.pth" if self.save_name == "crossdomain_model_best.pth" else "crossdomain_model_best.pth"
+            alt_path = os.path.join(self.save_dir, alt_name)
+            torch.save(best_clean_state, alt_path)
 
         # Neu phat hien moi truong Google Colab voi Drive duoc mount, tu dong sao luu them ban copy sang Drive
         for drive_base in [
@@ -567,7 +630,9 @@ class CrossDomainTrainer:
                     import shutil
                     shutil.copy2(latest_path, os.path.join(drive_branch_dir, "checkpoint_latest.pth"))
                     if is_best:
-                        shutil.copy2(best_path, os.path.join(drive_branch_dir, "crossdomain_model_best.pth"))
+                        shutil.copy2(best_path, os.path.join(drive_branch_dir, self.save_name))
+                        if self.save_name != "crossdomain_model_best.pth":
+                            shutil.copy2(compat_path, os.path.join(drive_branch_dir, "crossdomain_model_best.pth"))
                     print(f"  [✓] Da dong bo checkpoint an toan sang Google Drive: {drive_branch_dir}")
                 except Exception as e:
                     print(f"  [!] Canh bao dong bo Drive ({drive_base}): {e}")
@@ -582,8 +647,9 @@ def run_training_pipeline(args):
     print(f"Thiet bi: {device} | Dry-run: {args.dry_run} | Epochs: {args.epochs}")
     print("=" * 80)
 
-    # 1. Khoi tao Loss
+    # 1. Khoi tao Loss (Anchored Recovery Task 6.3-R: 0.3 CE + 0.7 KD + 0.2 Cons)
     criterion = CrossDomainTotalLoss(
+        weight_ce=getattr(args, "weight_ce", 0.3),
         label_smoothing=args.label_smoothing,
         temperature=args.temperature,
         alpha_kd=args.alpha_kd if args.branch in ["M4", "M5"] else 0.0,
@@ -591,74 +657,108 @@ def run_training_pipeline(args):
     )
 
     # 2. Khoi tao Model (Thuc te hoac Dry-run)
-    if args.dry_run:
-        student = _MockBackbone(num_classes=2)
-        teacher = _MockBackbone(num_classes=2) if args.branch in ["M4", "M5"] else None
+    # 2. Khoi tao Model (Thuc te hoac Dry-run)
+    from src.models import build_model
+    from src.training.checkpoint_manager import CheckpointManager
+
+    clip_candidates = [
+        args.clip_path,
+        "ViT-L-14.pt",
+        "pretrained/ViT-L-14.pt",
+        "DATASET/pretrained/ViT-L-14.pt",
+        "/content/drive/MyDrive/Fatformer/pretrained/ViT-L-14.pt",
+        "/content/drive/MyDrive/FatFormer_Hub/pretrained/ViT-L-14.pt",
+    ]
+    resolved_clip = find_first_existing(clip_candidates) or args.clip_path
+
+    class VanillaArgs:
+        backbone = "CLIP:ViT-L/14"
+        clip_path = resolved_clip
+        num_classes = 2
+        num_vit_adapter = 3
+        num_context_embedding = 8
+        init_context_embedding = ""
+        hidden_dim = 768
+        clip_vision_width = 1024
+        frequency_encoder_layer = 2
+        decoder_layer = 4
+        num_heads = 12
+        use_srm = False
+        use_gating = False
+
+    class UpgradedArgs:
+        backbone = "CLIP:ViT-L/14"
+        clip_path = resolved_clip
+        num_classes = 2
+        num_vit_adapter = 3
+        num_context_embedding = 8
+        init_context_embedding = ""
+        hidden_dim = 768
+        clip_vision_width = 1024
+        frequency_encoder_layer = 2
+        decoder_layer = 4
+        num_heads = 12
+        use_srm = True
+        use_gating = True
+
+    init_candidates = [
+        args.checkpoint_init,
+        os.path.join(PROJECT_ROOT, "DATASET", "pretrained", "fatformer_4class_ckpt.pth"),
+        "DATASET/pretrained/fatformer_4class_ckpt.pth",
+        "pretrained/fatformer_4class_ckpt.pth",
+        "fatformer_4class_ckpt.pth",
+        "/content/drive/MyDrive/Fatformer/pretrained/fatformer_4class_ckpt.pth",
+        "/content/drive/MyDrive/FatFormer_Hub/pretrained/fatformer_4class_ckpt.pth",
+    ]
+    resolved_init = find_first_existing(init_candidates)
+
+    teacher_candidates = [
+        args.teacher_checkpoint,
+        os.path.join(PROJECT_ROOT, "DATASET", "pretrained", "fatformer_4class_ckpt.pth"),
+        "DATASET/pretrained/fatformer_4class_ckpt.pth",
+        "pretrained/fatformer_4class_ckpt.pth",
+        "fatformer_4class_ckpt.pth",
+        "/content/drive/MyDrive/Fatformer/pretrained/fatformer_4class_ckpt.pth",
+        "/content/drive/MyDrive/FatFormer_Hub/pretrained/fatformer_4class_ckpt.pth",
+    ]
+    resolved_teacher = find_first_existing(teacher_candidates)
+
+    if args.dry_run and not (resolved_init and os.path.exists(resolved_init)):
+        print("[*] Dry-run che do gia lap (khong co checkpoint pretrained tren may)...")
+        student = _MockBackbone(num_classes=2).to(device)
+        teacher = _MockBackbone(num_classes=2).to(device) if args.branch in ["M4", "M5"] else None
         train_dataset = _DummyDataset(num_samples=16, paired=(args.branch in ["M4", "M5"]))
         val_dataset = _DummyDataset(num_samples=16, paired=False)
         train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
         val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False)
     else:
-        # Khi chay tren he thong Kaggle/Colab voi mo hinh FatFormer day du
-        from src.models import build_model
-        from src.training.checkpoint_manager import CheckpointManager
+        # Khoi tao mo hinh Student voi num_vit_adapter = 3, use_srm = True, use_gating = True
+        print("[*] Khoi tao mo hinh Student (Upgraded: use_srm=True, use_gating=True, num_vit_adapter=3)...")
+        student = build_model(UpgradedArgs()).to(device)
 
-        clip_candidates = [
-            args.clip_path,
-            "ViT-L-14.pt",
-            "pretrained/ViT-L-14.pt",
-            "DATASET/pretrained/ViT-L-14.pt",
-            "/content/drive/MyDrive/Fatformer/pretrained/ViT-L-14.pt",
-            "/content/drive/MyDrive/FatFormer_Hub/pretrained/ViT-L-14.pt",
-        ]
-        resolved_clip = find_first_existing(clip_candidates) or args.clip_path
-
-        class ModelArgs:
-            backbone = "CLIP:ViT-L/14"
-            clip_path = resolved_clip
-            num_classes = 2
-            use_srm = True
-            use_gating = True
-            srm_out_dim = 1024
-
-        student = build_model(ModelArgs()).to(device)
-
-        init_candidates = [
-            args.checkpoint_init,
-            "/content/drive/MyDrive/Fatformer/checkpoint/fatformer_plan_a_best_weights.pth",
-            "/content/drive/MyDrive/Fatformer/checkpoint/fatformer_plan_a_final.pth",
-            "/content/drive/MyDrive/Fatformer/checkpoint/fatformer_srm_robust_final.pth",
-            "/content/drive/MyDrive/Fatformer/checkpoints/fatformer_plan_a_best_weights.pth",
-            "DATASET/checkpoints/fatformer_plan_a_best_weights.pth",
-            "DATASET/checkpoints/fatformer_plan_a_best.pth",
-            "fatformer_4class_ckpt.pth",
-        ]
-        resolved_init = find_first_existing(init_candidates)
-        if resolved_init:
+        if resolved_init and os.path.exists(resolved_init):
             print(f"[*] Nap trong so khoi tao Student tu: {resolved_init}")
-            CheckpointManager.load(resolved_init, student, device=device, strict=False)
+            load_res_student = CheckpointManager.load(resolved_init, student, device=device, strict=False)
+            missing_s = load_res_student.missing_keys
+            unexpected_s = load_res_student.unexpected_keys
+            assert len(unexpected_s) == 0, f"Student co unexpected keys: {unexpected_s}"
+            assert all(("srm" in k or "gating" in k or "lora" in k) for k in missing_s), f"Phat hien missing keys bat thuong tai Student: {missing_s}"
+            print(f"[✓] Student nap thanh cong: 0 unexpected keys, {len(missing_s)} missing keys (toan bo thuoc SRM/Gating tai blocks 7, 15, 23).")
 
         teacher = None
         if args.branch in ["M4", "M5"]:
             if device.type == "cuda":
                 torch.cuda.empty_cache()
-            teacher_candidates = [
-                args.teacher_checkpoint,
-                "/content/drive/MyDrive/Fatformer/pretrained/fatformer_4class_ckpt.pth",
-                "/content/drive/MyDrive/FatFormer_Hub/pretrained/fatformer_4class_ckpt.pth",
-                "fatformer_4class_ckpt.pth",
-                "pretrained/fatformer_4class_ckpt.pth",
-                "DATASET/pretrained/fatformer_4class_ckpt.pth",
-            ]
-            resolved_teacher = find_first_existing(teacher_candidates)
-            if resolved_teacher:
+            if resolved_teacher and os.path.exists(resolved_teacher):
                 print(f"[*] Nap trong so Teacher mo neo tu: {resolved_teacher}")
-                teacher = build_model(ModelArgs()).to(device)
-                CheckpointManager.load(resolved_teacher, teacher, device=device, strict=False)
+                teacher = build_model(VanillaArgs()).to(device)
+                load_res_teacher = CheckpointManager.load(resolved_teacher, teacher, device=device, strict=True)
+                missing_t = load_res_teacher.missing_keys
+                unexpected_t = load_res_teacher.unexpected_keys
+                assert len(missing_t) == 0 and len(unexpected_t) == 0, f"Teacher load loi: missing={missing_t}, unexpected={unexpected_t}"
+                print(f"[✓] Teacher nap checkpoint goc bit-perfect: Missing=0, Unexpected=0.")
             else:
-                print("[!] Canh bao: Khong tim thay checkpoint Teacher rieng biet, sao chep Student lam mo neo dong bang.")
-                teacher = build_model(ModelArgs()).to(device)
-                teacher.load_state_dict(student.state_dict())
+                raise FileNotFoundError(f"[!] Khong tim thay checkpoint Teacher hop le tai cac ung vien: {teacher_candidates}")
 
             for p in teacher.parameters():
                 p.requires_grad = False
@@ -676,11 +776,59 @@ def run_training_pipeline(args):
         from src.training.freeze_utils import freeze_clip_backbone
         freeze_clip_backbone(student, verbose=True)
 
-        print("[*] Khoi tao DataLoader da mien...")
-        train_loader, val_loader = build_crossdomain_dataloaders(args)
+        if args.dry_run:
+            print("[DRY-RUN] Khoi tao du lieu gia lap 16 mau kiem thu nhanh tren CPU/GPU...")
+            train_dataset = _DummyDataset(num_samples=16, paired=(args.branch in ["M4", "M5"]))
+            val_dataset = _DummyDataset(num_samples=16, paired=False)
+            train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+            val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False)
+        else:
+            print("[*] Khoi tao DataLoader da mien thuc te...")
+            train_loader, val_loader = build_crossdomain_dataloaders(args)
 
-    trainable_params = [p for p in student.parameters() if p.requires_grad]
-    optimizer = torch.optim.AdamW(trainable_params, lr=args.learning_rate, weight_decay=1e-4)
+    # Task 6.3-R: Differential Learning Rate (Phan chia parameter groups)
+    # Nhom 1 (Module moi: SRM, Gating blocks 7, 15, 23) -> lr2 = args.learning_rate (1e-4)
+    # Nhom 2 (Pretrained Adapters: FAA, LGA, ctx) -> lr1 = args.learning_rate * 0.1 (1e-5)
+    params_new = []
+    params_pretrained = []
+    new_keywords = ["srm_block", "srm", "dynamic_gating", "gating"]
+
+    for name, param in student.named_parameters():
+        if not param.requires_grad:
+            continue
+        name_lower = name.lower()
+        if any(kw in name_lower for kw in new_keywords):
+            params_new.append(param)
+        else:
+            params_pretrained.append(param)
+
+    assert len(params_new) > 0 and len(params_pretrained) > 0, (
+        f"Loi phan nhom tham so: group_new={len(params_new)}, group_pretrained={len(params_pretrained)}"
+    )
+
+    lr_new = args.learning_rate
+    lr_pretrained = lr_new * 0.1
+
+    print(f"[*] Differential Learning Rate (Task 6.3-R):")
+    print(f"    • Nhom 1 (Module moi: SRM/Gating blocks 7, 15, 23): {len(params_new)} tensors, lr = {lr_new:.2e}, weight_decay = 1e-4")
+    for name, param in student.named_parameters():
+        if param.requires_grad and any(kw in name.lower() for kw in new_keywords):
+            print(f"        + {name} (shape={list(param.shape)})")
+    print(f"    • Nhom 2 (Pretrained Adapters FAA/LGA/ctx)       : {len(params_pretrained)} tensors, lr = {lr_pretrained:.2e} (Anchor), weight_decay = 1e-4")
+    for name, param in student.named_parameters():
+        if param.requires_grad and not any(kw in name.lower() for kw in new_keywords):
+            print(f"        + {name} (shape={list(param.shape)})")
+
+    optimizer_groups = []
+    if params_new:
+        optimizer_groups.append({"params": params_new, "lr": lr_new, "weight_decay": 1e-4})
+    if params_pretrained:
+        optimizer_groups.append({"params": params_pretrained, "lr": lr_pretrained, "weight_decay": 1e-4})
+    if not optimizer_groups:
+        trainable_params = [p for p in student.parameters() if p.requires_grad]
+        optimizer_groups.append({"params": trainable_params, "lr": lr_new, "weight_decay": 1e-4})
+
+    optimizer = torch.optim.AdamW(optimizer_groups)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
 
     trainer = CrossDomainTrainer(
@@ -693,9 +841,30 @@ def run_training_pipeline(args):
         scheduler=scheduler,
         device=device,
         save_dir=args.save_dir,
+        save_name=getattr(args, "save_name", "fatformer_anchored_recovery_best.pth"),
         grad_accum_steps=args.grad_accum_steps,
         use_amp=(args.device == "cuda"),
     )
+
+    # Chot chan kiem toan Step-0 Identity giua Student va Teacher
+    if teacher is not None:
+        student.eval()
+        teacher.eval()
+        with torch.no_grad():
+            x_test = torch.randn(2, 3, 224, 224, device=device)
+            student_logits = student(x_test)
+            teacher_logits = teacher(x_test)
+            max_logit_diff = (student_logits - teacher_logits).abs().max().item()
+        print(f"[*] Step-0 Student vs Teacher Max Logit Diff = {max_logit_diff:.10e}")
+        assert max_logit_diff < 1e-4, f"LỖI ZERO-INIT: Student lệch khỏi Teacher tại Step 0 ({max_logit_diff:.10e})!"
+        print("[✓] Chot chan Step-0 Zero-Init Identity: PASS bit-perfect (< 1e-4)!")
+
+        # Chay danh gia moc san Epoch 0 (Pre-train Anchor Check)
+        if not args.dry_run and val_loader is not None:
+            print("[*] Dang chay danh gia moc san Epoch 0 (Pre-train Anchor Check)...")
+            val_0 = trainer.validate()
+            print(f"[Epoch 0 Baseline] Clean Val ACC: {val_0['val_acc']:.2f}% | Real ACC: {val_0['val_r_acc']:.2f}% | Fake ACC: {val_0['val_f_acc']:.2f}% | Composite: {val_0['val_composite']:.2f}%")
+            trainer.best_composite_score = val_0["val_composite"]
 
     if args.dry_run:
         print("\n[DRY-RUN] Bat dau chay kiem thu 1 step Train + 1 step Val...")
@@ -704,7 +873,7 @@ def run_training_pipeline(args):
         print(f"  -> Ket qua Train: Loss={train_metrics['loss_total']:.4f} "
               f"(CE={train_metrics['loss_ce']:.4f}, KD={train_metrics['loss_kd']:.4f}, Cons={train_metrics['loss_cons']:.4f})")
         print(f"  -> Ket qua Val: ACC={val_metrics['val_acc']:.2f}%, Composite={val_metrics['val_composite']:.2f}%")
-        trainer.save_checkpoint(epoch=1, is_best=True)
+        trainer.save_checkpoint(epoch=1, is_best=True, val_metrics=val_metrics)
         print("[DRY-RUN] HOAN THANH XUAT SAC — MA NGUON SAN SANG 100% CHO KAGGLE/COLAB!")
         return
 
@@ -715,13 +884,16 @@ def run_training_pipeline(args):
         val_metrics = trainer.validate()
         elapsed = time.time() - t0
 
-        is_best = val_metrics["val_composite"] > trainer.best_composite_score
+        # Rang buoc: Chi luu checkpoint moi neu duy tri duoc Real_ACC >= 85.0% va Val_ACC > 55.0%
+        is_healthy = (val_metrics["val_r_acc"] >= 85.0) and (val_metrics["val_acc"] > 55.0)
+        is_best = is_healthy and (val_metrics["val_composite"] > trainer.best_composite_score)
         if is_best:
             trainer.best_composite_score = val_metrics["val_composite"]
 
-        trainer.save_checkpoint(epoch, is_best=is_best)
+        trainer.save_checkpoint(epoch, is_best=is_best, val_metrics=val_metrics)
         print(f"Epoch {epoch}/{args.epochs} ({elapsed:.1f}s) | Train Loss: {train_metrics['loss_total']:.4f} | "
-              f"Val ACC: {val_metrics['val_acc']:.2f}% | Composite: {val_metrics['val_composite']:.2f}%")
+              f"Val ACC: {val_metrics['val_acc']:.2f}% (Real: {val_metrics['val_r_acc']:.2f}%, Fake: {val_metrics['val_f_acc']:.2f}%) | "
+              f"Composite: {val_metrics['val_composite']:.2f}% {'[BEST]' if is_best else ''}")
 
         # Ghi vao history CSV
         history_csv = os.path.join(PROJECT_ROOT, "DATASET", "logs", "m6_training_history.csv")
@@ -752,18 +924,19 @@ def parse_arguments():
     defaults = {
         "branch": "M4",
         "device": default_device,
-        "epochs": 5,
-        "batch_size": 8,
-        "learning_rate": 1e-5,
-        "alpha_kd": 0.4,
+        "epochs": 3,
+        "batch_size": 16,
+        "learning_rate": 1e-4,
+        "weight_ce": 0.3,
+        "alpha_kd": 0.7,
         "beta_cons": 0.2,
         "temperature": 2.0,
         "label_smoothing": 0.05,
-        "save_dir": "checkpoints/m4",
+        "save_dir": "checkpoints/m4_recovery",
         "seed": 42,
         "grad_accum_steps": 4,
         "clip_path": "ViT-L-14.pt",
-        "checkpoint_init": "DATASET/checkpoints/fatformer_plan_a_best_weights.pth",
+        "checkpoint_init": "fatformer_4class_ckpt.pth",
         "teacher_checkpoint": "fatformer_4class_ckpt.pth",
         "train_manifest": "DATASET/manifests/data_manifest.json",
         "train_dir": "DATASET/train_crossdomain",
@@ -790,6 +963,8 @@ def parse_arguments():
                 defaults["grad_accum_steps"] = t_cfg.get("grad_accum_steps", defaults["grad_accum_steps"])
         if "loss" in cfg:
             l_cfg = cfg["loss"]
+            if "weight_ce" in l_cfg:
+                defaults["weight_ce"] = float(l_cfg["weight_ce"])
             defaults["alpha_kd"] = float(l_cfg.get("alpha_kd", defaults["alpha_kd"]))
             defaults["beta_cons"] = float(l_cfg.get("beta_cons", defaults["beta_cons"]))
             defaults["temperature"] = float(l_cfg.get("temperature", defaults["temperature"]))
@@ -809,12 +984,15 @@ def parse_arguments():
     parser.add_argument("--device", type=str, default=defaults["device"], help="Thiet bi: cuda hoac cpu")
     parser.add_argument("--epochs", type=int, default=defaults["epochs"], help="So epochs")
     parser.add_argument("--batch_size", type=int, default=defaults["batch_size"], help="Batch size")
-    parser.add_argument("--learning_rate", type=float, default=defaults["learning_rate"], help="Learning rate")
+    parser.add_argument("--learning_rate", type=float, default=defaults["learning_rate"], help="Learning rate cho module moi (SRM/Gating), pretrained adapters giam 10x")
+    parser.add_argument("--weight_ce", type=float, default=defaults["weight_ce"], help="Trong so Cross-Entropy loss tren anh tang cuong (mac dinh 0.3)")
     parser.add_argument("--alpha_kd", type=float, default=defaults["alpha_kd"], help="Trong so KD loss")
     parser.add_argument("--beta_cons", type=float, default=defaults["beta_cons"], help="Trong so Consistency loss")
     parser.add_argument("--temperature", type=float, default=defaults["temperature"], help="Nhiet do KD")
     parser.add_argument("--label_smoothing", type=float, default=defaults["label_smoothing"], help="Label smoothing")
     parser.add_argument("--save_dir", type=str, default=defaults["save_dir"], help="Thu muc luu checkpoint")
+    parser.add_argument("--save_name", type=str, default="crossdomain_model_best.pth",
+                        help="Ten tep checkpoint khi dat best (Phase 6-R dung fatformer_anchored_recovery_best.pth)")
     parser.add_argument("--seed", type=int, default=defaults["seed"], help="Random seed")
     parser.add_argument("--grad_accum_steps", type=int, default=defaults["grad_accum_steps"], help="Gradient accumulation")
     parser.add_argument("--clip_path", type=str, default=defaults["clip_path"], help="Path to CLIP backbone")

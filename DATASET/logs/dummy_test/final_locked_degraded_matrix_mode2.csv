@@ -1,0 +1,25 @@
+variant,variant_desc,group,subset,num_samples,macro_acc,real_acc,fake_acc,auc,ap,elapsed_sec
+jpeg_q30,Nen JPEG sau Q=30 (Artifact 8x8),GANs,progan,20,60.0,20.0,100.0,65.0,63.29670329670329,0.03
+jpeg_q30,Nen JPEG sau Q=30 (Artifact 8x8),GANs,stylegan,20,50.0,20.0,80.0,57.99999999999999,69.96794871794873,0.03
+jpeg_q30,Nen JPEG sau Q=30 (Artifact 8x8),Diffusion,guided,20,45.0,0.0,90.0,51.0,58.88888888888889,0.03
+jpeg_q30,Nen JPEG sau Q=30 (Artifact 8x8),Diffusion,dalle,20,50.0,0.0,100.0,50.0,57.256919035556805,0.04
+jpeg_q50,Nen JPEG trung binh Q=50,GANs,progan,20,50.0,20.0,80.0,52.0,63.492835595776775,0.04
+jpeg_q50,Nen JPEG trung binh Q=50,GANs,stylegan,20,55.0,20.0,90.0,56.99999999999999,64.12317747611866,0.04
+jpeg_q50,Nen JPEG trung binh Q=50,Diffusion,guided,20,45.0,0.0,90.0,38.0,45.93728004022122,0.04
+jpeg_q50,Nen JPEG trung binh Q=50,Diffusion,dalle,20,45.0,20.0,70.0,37.0,45.42632316084328,0.04
+jpeg_q70,Nen JPEG nhe Q=70,GANs,progan,20,60.0,20.0,100.0,65.0,72.59722222222223,0.04
+jpeg_q70,Nen JPEG nhe Q=70,GANs,stylegan,20,55.0,20.0,90.0,51.0,57.734899087840255,0.04
+jpeg_q70,Nen JPEG nhe Q=70,Diffusion,guided,20,45.0,20.0,70.0,46.0,55.82041109904887,0.04
+jpeg_q70,Nen JPEG nhe Q=70,Diffusion,dalle,20,50.0,20.0,80.0,39.0,55.98377061534957,0.04
+blur_s1,Gaussian Blur (sigma=1.0),GANs,progan,20,35.0,0.0,70.0,48.0,61.96489183331288,0.04
+blur_s1,Gaussian Blur (sigma=1.0),GANs,stylegan,20,50.0,0.0,100.0,33.0,48.7313196349574,0.04
+blur_s1,Gaussian Blur (sigma=1.0),Diffusion,guided,20,40.0,10.0,70.0,42.0,54.10270774976658,0.04
+blur_s1,Gaussian Blur (sigma=1.0),Diffusion,dalle,20,65.0,30.0,100.0,60.0,55.472707031530554,0.04
+blur_s2,Gaussian Blur (sigma=2.0),GANs,progan,20,45.0,10.0,80.0,43.0,57.62783999626105,0.04
+blur_s2,Gaussian Blur (sigma=2.0),GANs,stylegan,20,60.0,20.0,100.0,41.0,46.44671504965622,0.03
+blur_s2,Gaussian Blur (sigma=2.0),Diffusion,guided,20,45.0,0.0,90.0,55.00000000000001,54.081441434382604,0.03
+blur_s2,Gaussian Blur (sigma=2.0),Diffusion,dalle,20,55.0,10.0,100.0,64.0,58.711316461316464,0.04
+down_up,Down-Up Bicubic (224 -> 112 -> 224),GANs,progan,20,55.0,10.0,100.0,56.00000000000001,53.175144300144304,0.04
+down_up,Down-Up Bicubic (224 -> 112 -> 224),GANs,stylegan,20,60.0,20.0,100.0,65.0,62.28696303696304,0.04
+down_up,Down-Up Bicubic (224 -> 112 -> 224),Diffusion,guided,20,40.0,10.0,70.0,43.0,52.29275819639596,0.03
+down_up,Down-Up Bicubic (224 -> 112 -> 224),Diffusion,dalle,20,60.0,20.0,100.0,86.0,83.50721500721502,0.04

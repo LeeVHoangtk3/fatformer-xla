@@ -1,6 +1,6 @@
 # KHO LƯU TRỮ NHẬT KÝ & KẾT QUẢ THỰC NGHIỆM (EXPERIMENTAL LOGS & BENCHMARK REPOSITORY)
 > **Dự án**: Nâng cao độ bền vững pháp y cho FatFormer trước biến dạng nén mạng xã hội (FatFormer-XLA)  
-> **Cấu trúc phân loại**: Chuẩn hóa theo 4 Cột Mốc Chiến Lược & Mã Task Nghiệm Thu  
+> **Cấu trúc phân loại**: Chuẩn hóa theo các Cột Mốc Chiến Lược & Mã Task Nghiệm Thu  
 
 ---
 
@@ -8,6 +8,8 @@
 
 ```
 DATASET/logs/
+├── README.md                               # Sơ đồ và danh mục tra cứu toàn bộ log dự án
+│
 ├── m1_baseline_freeze/                     # 🏁 MỐC 1: ĐÓNG BĂNG MỐC SÀN BASELINE (Tuần 1 & Tuần 2)
 │   ├── task_1.1_download_datasets.log     # Nhật ký tải và giải nén 36.45 GB dữ liệu ban đầu
 │   ├── task_1.4_fast_eval_clean_baseline.csv # Thử nghiệm pipeline Fast-Eval (<8 phút)
@@ -24,10 +26,37 @@ DATASET/logs/
 │   └── task_4.2_xla_q30_grouped_comparison.png # Biểu đồ 3 chỉ số và khắc chế Diffusion hàng đầu
 │
 ├── m4_full_benchmark/                      # 🎓 MỐC 4: TỔNG DUYỆT NGHIỆM THU ĐỒ ÁN (Tuần 5)
-│   └── .gitkeep                           # (Sẵn sàng lưu tệp task_5.1_final_full_benchmark_matrix.csv)
+│   ├── final_full_benchmark_matrix.csv     # Ma trận Master 2 chiều (Clean + 6 biến thể Degraded)
+│   ├── task_5.1_clean_results.csv / .md   # Kết quả đo đạc 18 tập test sạch phòng lab
+│   ├── task_5.1_degraded_results.csv / .md # Kết quả đo đạc 6 biến thể nén / mờ
+│   └── task_5.1_master_benchmark_chart.png # Biểu đồ Master đối chứng toàn diện 7 nhóm cột
 │
-└── inspections/                            # 🔍 CÔNG CỤ SOI ẢNH CỤC BỘ (INSPECT IMAGE TOOLS)
-    └── inspection_history.csv             # Nhật ký ghi nhận từng phiên kiểm thử ảnh đơn lẻ
+├── m6_crossdomain_recovery/                # 🚀 MỐC 6 / 6-R: HUẤN LUYỆN, ABLATION & HIỆU CHUẨN XÁC SUẤT
+│   ├── ablation/                           # Nghiên cứu cắt bỏ thành phần (Task 6.5)
+│   │   ├── crossdomain_ablation_matrix.csv # Ma trận số liệu đối chứng 5 nhánh kiến trúc M1-M5
+│   │   └── crossdomain_ablation_chart.png  # Biểu đồ so sánh các cấu hình mô hình
+│   ├── training/                           # Lịch sử hội tụ loss & validation (Task 6.3 / 6.3-R)
+│   │   ├── m6_training_history.csv         # Lịch sử chi tiết loss & validation qua từng epoch
+│   │   ├── m6_training_convergence.png     # Biểu đồ đường cong hội tụ huấn luyện
+│   │   ├── train_val_history.csv           # Dữ liệu theo dõi gradient và validation composite
+│   │   └── weights_only_verification_report.json # Báo cáo kiểm toán trọng số mô hình
+│   └── calibration/                        # Chỉ số mốc sàn & Hiệu chuẩn xác suất (Task 6.4 / 6.4-R)
+│       ├── val_crossdomain_baseline_metrics.json # Mốc sàn tham chiếu cho Gate 4 điều kiện
+│       ├── val_split_indices.json          # Chỉ số phân chia ngẫu nhiên val_calibration / val_selection
+│       └── calibration_and_selection_report.json # Báo cáo kết quả tối ưu nhiệt độ T và quét ngưỡng T*
+│
+├── task_6.6/                               # 🏆 MỐC 6.6: KẾT QUẢ KIỂM CHUẨN KHÓA SỔ DUAL-MODE (82.003 ẢNH)
+│   ├── final_locked_benchmark_report.json  # Báo cáo JSON toàn diện khóa sổ 18 tập test
+│   ├── final_independent_test_matrix.csv   # Ma trận đo đạc trên tập kiểm thử độc lập
+│   ├── final_locked_degraded_matrix.csv    # Ma trận sụt giảm trên 6 biến thể suy biến (Mode 1)
+│   ├── final_locked_degraded_matrix_mode2.csv # Ma trận sụt giảm tại Mode 2 (High-Recall Q30)
+│   ├── final_posthoc_benchmark_matrix.csv  # Ma trận kiểm chuẩn hậu nghiệm (Mode 1)
+│   ├── final_posthoc_benchmark_matrix_mode2.csv # Ma trận kiểm chuẩn hậu nghiệm (Mode 2)
+│   └── task_6.6_three_way_comparison.png   # Biểu đồ đối chứng 3 chiều: Baseline vs WiSE-FT vs Anchored
+│
+├── dummy_test/                             # 🧪 Kiểm thử toán học & Smoke-test autograd bằng dữ liệu giả lập
+└── inspections/                            # 🔍 Công cụ soi ảnh đơn lẻ (inspect_image.py)
+    └── inspection_history.csv             # Lịch sử các phiên phân tích ảnh vi mô
 ```
 
 ---
@@ -75,7 +104,38 @@ DATASET/logs/
 
 ---
 
-### 4. Thư mục `inspections/` (Công cụ soi ảnh cục bộ)
-| Tên Tệp | Mô Tả |
-| :--- | :--- |
-| `inspection_history.csv` | Tự động ghi lại từng phiên soi ảnh (`inspect_image.py`), gồm tên ảnh, kích thước lưới, checkpoint sử dụng, số lượng patch fake và nhãn dự đoán cuối cùng. |
+### 4. Thư mục `m6_crossdomain_recovery/` (Mốc 6 & Phase 6-R)
+*Mục đích: Lưu trữ toàn bộ nhật ký huấn luyện đa miền, nghiên cứu cắt bỏ thành phần (Ablation Study) và hiệu chuẩn xác suất.*
+
+| Thư Mục Con | Tên Tệp | Mã Task | Ý Nghĩa Kỹ Thuật |
+| :--- | :--- | :---: | :--- |
+| **`ablation/`** | `crossdomain_ablation_matrix.csv` | Task 6.5 | Ma trận đối chứng chi tiết các nhánh M1 (Baseline), M2 (Gating Only), M3 (Data Only), M4 (Full Model), M5 (LoRA). |
+| | `crossdomain_ablation_chart.png` | Task 6.5 | Biểu đồ trực quan hóa Ablation Study trên cả ảnh Clean và $Q=30$. |
+| **`training/`** | `m6_training_history.csv` | Task 6.3 | Bảng lịch sử hàm mất mát (CE, KD, Cons) và validation accuracy qua từng epoch. |
+| | `m6_training_convergence.png` | Task 6.3 | Biểu đồ 2 đồ thị: đường cong suy giảm loss và đường cong tăng trưởng validation ACC. |
+| | `train_val_history.csv` | Task 6.3-R | Dữ liệu log tiến trình huấn luyện chi tiết theo từng step. |
+| | `weights_only_verification_report.json` | Task 6.3 | Báo cáo kiểm toán bảo mật và tính toàn vẹn của tệp trọng số state_dict. |
+| **`calibration/`**| `val_crossdomain_baseline_metrics.json`| Task 6.4 | Mốc sàn chuẩn xác suất trên tập validation, dùng làm điều kiện tiên quyết cho Gate 4 điều kiện. |
+| | `val_split_indices.json` | Task 6.4 | Lưu chỉ số phân chia cố định giữa `val_calibration` và `val_selection`. |
+| | `calibration_and_selection_report.json` | Task 6.4 / 6.4-R | Báo cáo kết quả tối ưu nhiệt độ $T^*$ và quét ngưỡng phân loại $T^*$. |
+
+---
+
+### 5. Thư mục `task_6.6/` (Kiểm chuẩn Khóa sổ Dual-Mode)
+*Mục đích: Lưu trữ toàn diện ma trận đo đạc trên 82.003 ảnh kiểm thử ở cả 2 chế độ vận hành (Standard $T^*=0.50$ và High-Recall $T^*=0.40$).*
+
+| Tên Tệp | Mã Task | Ý Nghĩa Kỹ Thuật |
+| :--- | :---: | :--- |
+| `final_locked_benchmark_report.json` | Task 6.6 | Tệp JSON gốc lưu trữ toàn bộ chỉ số đo đạc trên 18 tập test sạch và 6 biến thể suy biến. |
+| `final_independent_test_matrix.csv` | Task 6.6 | Ma trận kết quả đánh giá trên tập kiểm thử độc lập ngoài phân phối (OOD). |
+| `final_locked_degraded_matrix.csv` | Task 6.6 | Ma trận sụt giảm trên 6 biến thể suy biến ở Chế độ 1 ($T^*=0.50$). |
+| `final_locked_degraded_matrix_mode2.csv` | Task 6.6 | Ma trận sụt giảm trên 6 biến thể suy biến ở Chế độ 2 ($T^*=0.40$). |
+| `final_posthoc_benchmark_matrix.csv` | Task 6.6 | Ma trận tổng hợp kiểm chuẩn hậu nghiệm (Mode 1). |
+| `final_posthoc_benchmark_matrix_mode2.csv`| Task 6.6 | Ma trận tổng hợp kiểm chuẩn hậu nghiệm (Mode 2). |
+| `task_6.6_three_way_comparison.png` | Task 6.6 | Biểu đồ so sánh 3 chiều: Baseline vs WiSE-FT vs Anchored Recovery. |
+
+---
+
+### 6. Thư mục `inspections/` & `dummy_test/`
+* `inspections/inspection_history.csv`: Tự động ghi lại từng phiên soi ảnh (`inspect_image.py`), gồm tên ảnh, kích thước lưới, checkpoint sử dụng, số lượng patch fake và nhãn dự đoán cuối cùng.
+* `dummy_test/`: Lưu trữ các tệp ma trận và báo cáo giả lập sinh ra từ cờ `--test_dummy`, bảo đảm các bài kiểm thử phần mềm không làm sai lệch số liệu thực nghiệm.

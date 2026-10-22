@@ -54,6 +54,12 @@ class SpatialResidualBlock(nn.Module):
             nn.Conv2d(64, out_dim, kernel_size=1, bias=False)
         )
 
+        # Zero-init tầng chiếu cuối để bảo toàn Step 0 Identity (Task 6.2-R):
+        # Đảm bảo vết dư ban đầu = 0, loại bỏ hoàn toàn nhiễu ban đầu vào CLIP backbone
+        nn.init.zeros_(self.proj[-1].weight)
+        if self.proj[-1].bias is not None:
+            nn.init.zeros_(self.proj[-1].bias)
+
     def forward(self, x_img):
         """
         x_img: Tensor ảnh gốc dạng [B, 3, H, W]

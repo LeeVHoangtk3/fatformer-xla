@@ -11,14 +11,19 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-csv_path = os.path.join(PROJECT_ROOT, "DATASET", "logs", "m6_training_history.csv")
+csv_candidates = [
+    os.path.join(PROJECT_ROOT, "DATASET", "logs", "m6_crossdomain_recovery", "training", "m6_training_history.csv"),
+    os.path.join(PROJECT_ROOT, "DATASET", "logs", "m6_training_history.csv"),
+    os.path.join(PROJECT_ROOT, "wait", "task6-3", "fatformer-xla", "DATASET", "logs", "m6_training_history.csv"),
+]
+csv_path = None
+for c in csv_candidates:
+    if os.path.exists(c):
+        csv_path = c
+        break
 
-if not os.path.exists(csv_path):
-    fallback = os.path.join(PROJECT_ROOT, "wait", "task6-3", "fatformer-xla", "DATASET", "logs", "m6_training_history.csv")
-    if os.path.exists(fallback):
-        csv_path = fallback
-    else:
-        raise FileNotFoundError(f"Khong tim thay tap tin lich su: {csv_path}")
+if not csv_path:
+    raise FileNotFoundError(f"Khong tim thay tap tin lich su: {csv_candidates[0]}")
 
 df = pd.read_csv(csv_path)
 
@@ -100,9 +105,10 @@ ax2.legend(frameon=True, fontsize=10, loc="lower right")
 plt.suptitle("FATFORMER-XLA: TIẾN TRÌNH HUẤN LUYỆN THÍCH ỨNG ĐA MIỀN (MILESTONE 6)", fontsize=14, fontweight="bold", y=0.98)
 plt.tight_layout()
 
-# Luu vao hai thu muc muc tieu
-out1 = os.path.join(PROJECT_ROOT, "DATASET", "logs", "m6_training_convergence.png")
+# Luu vao cac thu muc muc tieu
+out1 = os.path.join(PROJECT_ROOT, "DATASET", "logs", "m6_crossdomain_recovery", "training", "m6_training_convergence.png")
 out2 = os.path.join(PROJECT_ROOT, "docs", "bao_cao", "C", "m6_training_convergence.png")
+out_legacy = os.path.join(PROJECT_ROOT, "DATASET", "logs", "m6_training_convergence.png")
 
 os.makedirs(os.path.dirname(out1), exist_ok=True)
 os.makedirs(os.path.dirname(out2), exist_ok=True)

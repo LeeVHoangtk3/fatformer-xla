@@ -226,17 +226,26 @@ class CheckpointManager:
         except TypeError:
             checkpoint = torch.load(checkpoint_path, map_location=device)
 
-        state_dict = checkpoint.get("model", checkpoint)
+        state_dict = checkpoint
+        if isinstance(state_dict, dict):
+            for key in ["model", "model_state", "state_dict", "model_state_dict"]:
+                if key in state_dict and isinstance(state_dict[key], dict):
+                    state_dict = state_dict[key]
+                    break
         
-        # Xóa tiền tố 'module.' nếu checkpoint được lưu từ DistributedDataParallel
+        model_to_load = model.module if hasattr(model, "module") else model
+        model_keys = set(model_to_load.state_dict().keys())
+
+        # Xóa tiền tố 'module.' hoặc 'model.' nếu checkpoint được lưu từ Wrapper/DDP
         clean_state_dict = {}
         for k, v in state_dict.items():
-            if k.startswith("module."):
-                clean_state_dict[k[7:]] = v
-            else:
-                clean_state_dict[k] = v
+            clean_k = k
+            if clean_k.startswith("module."):
+                clean_k = clean_k[7:]
+            if clean_k.startswith("model.") and clean_k not in model_keys and clean_k[6:] in model_keys:
+                clean_k = clean_k[6:]
+            clean_state_dict[clean_k] = v
 
-        model_to_load = model.module if hasattr(model, "module") else model
         load_result = model_to_load.load_state_dict(clean_state_dict, strict=strict)
         print(f"[CHECKPOINT] Đã nạp thành công từ: {checkpoint_path} (strict={strict})")
         missing = list(getattr(load_result, "missing_keys", []))
@@ -296,7 +305,22 @@ class CheckpointManager:
             except Exception as e:
                 print(f"[CẢNH BÁO] Không thể nạp trạng thái GradScaler: {e}")
 
-        return checkpoint
+        if not isinstance(checkpoint, dict):
+            checkpoint = {"model": checkpoint}
+
+        class CheckpointLoadResult(dict):
+            @property
+            def missing_keys(self):
+                return self.get("missing_keys", [])
+            @property
+            def unexpected_keys(self):
+                return self.get("unexpected_keys", [])
+
+        result = CheckpointLoadResult(checkpoint)
+        result["missing_keys"] = missing
+        result["unexpected_keys"] = unexpected
+        result["load_result"] = load_result
+        return result
 
     @staticmethod
     def find_latest_checkpoint(dir_path: str) -> Optional[str]:

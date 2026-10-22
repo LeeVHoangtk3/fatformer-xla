@@ -285,13 +285,13 @@ class ForgeryAwareAdapterLayer(nn.Module):
     def forward_freq(self, x):
         B, C = x.shape[:2]
         nq = x.shape[2]
-        q = k = v = x.transpose(0, 1).flatten(1, 2)
-        tgt2 = self.intra_band(q, k, v)[0].reshape(C, B, nq, self.d_model).transpose(0, 1)
+        q = k = v = x.transpose(0, 1).flatten(1, 2).contiguous()
+        tgt2 = self.intra_band(q, k, v)[0].reshape(C, B, nq, self.d_model).transpose(0, 1).contiguous()
         x = x + self.dropout_intra(tgt2)
         x = self.norm_intra(x)
 
-        q = k = v = x.flatten(0, 1).transpose(0, 1)
-        tgt2 = self.inter_band(q, k, v)[0].transpose(0, 1).reshape(B, C, nq, self.d_model)
+        q = k = v = x.flatten(0, 1).transpose(0, 1).contiguous()
+        tgt2 = self.inter_band(q, k, v)[0].transpose(0, 1).reshape(B, C, nq, self.d_model).contiguous()
         x = x + self.dropout_inter(tgt2)
         x = self.norm_inter(x)
 
@@ -301,22 +301,22 @@ class ForgeryAwareAdapterLayer(nn.Module):
     def forward(self, x, x_raw_img=None):
         nq, bs, md = x.shape
         # 1. Frequency branch (Haar DWT)
-        img_patchs = x[1:].transpose(0, 1).reshape(bs, int(math.sqrt(nq)), int(math.sqrt(nq)), md).permute(0, 3, 1, 2)
+        img_patchs = x[1:].transpose(0, 1).contiguous().reshape(bs, int(math.sqrt(nq)), int(math.sqrt(nq)), md).permute(0, 3, 1, 2).contiguous()
         dwt_img_l, dwt_img_h = self.dwt_transform(img_patchs)
         dwt_img = torch.cat([dwt_img_l[:, :, None], dwt_img_h[0]], dim=2)
         hh, ww = dwt_img.shape[-2:]
         dwt_img = dwt_img.flatten(-2)
-        dwt_img = self.dwt_norm(dwt_img).permute(0, 2, 3, 1)
+        dwt_img = self.dwt_norm(dwt_img).permute(0, 2, 3, 1).contiguous()
         dwt_feature = self.forward_freq(dwt_img)
-        dwt_feature = dwt_feature.reshape(bs, 4, hh, ww, md).permute(0, 4, 1, 2, 3)
-        dwt_feature = self.idwt_transform((dwt_feature[:, :, 0], [dwt_feature[:, :, 1:]])).flatten(-2).permute(2, 0, 1)
+        dwt_feature = dwt_feature.reshape(bs, 4, hh, ww, md).permute(0, 4, 1, 2, 3).contiguous()
+        dwt_feature = self.idwt_transform((dwt_feature[:, :, 0], [dwt_feature[:, :, 1:]])).flatten(-2).permute(2, 0, 1).contiguous()
         dwt_feature = torch.cat([torch.zeros_like(x[:1]), dwt_feature], dim=0)
 
         # 2. Spatial branch
-        down = self.first_conv_layer(x.permute(1, 2, 0))
+        down = self.first_conv_layer(x.permute(1, 2, 0).contiguous())
         down = self.non_linear_func(down)
         down = F.dropout(down, p=self.dropout, training=self.training)
-        up = self.second_conv_layer(down).permute(2, 0, 1)
+        up = self.second_conv_layer(down).permute(2, 0, 1).contiguous()
         up = up * self.scale
 
         # Bổ sung vết dư SRM nếu bật chế độ nâng cấp
@@ -326,9 +326,9 @@ class ForgeryAwareAdapterLayer(nn.Module):
             srm_tokens = torch.cat([torch.zeros_like(x[:1]), srm_res], dim=0)
             up = up + srm_tokens * 0.1
 
-        # 3. Dynamic Frequency Gating
+        # 3. Dynamic Frequency Gating (Cơ chế Nhân Tích Lũy - Multiplicative Modulation Task 6.2-R)
         if self.dynamic_gating is not None:
-            scale_factor = self.dynamic_gating(x)
+            scale_factor = self.freq_scale * self.dynamic_gating(x)
         else:
             scale_factor = self.freq_scale
 
@@ -358,10 +358,10 @@ class ResidualAttentionBlock(nn.Module):
         self.attn_mask = self.attn_mask.to(dtype=x.dtype, device=x.device) if self.attn_mask is not None else None
         return self.attn(x, x, x, need_weights=False, attn_mask=self.attn_mask)[0]
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor, x_raw_img: torch.Tensor = None):
         x = x + self.attention(self.ln_1(x))
         if self.forgery_aware_adapter is not None:
-            adapt_x = self.forgery_aware_adapter(x)
+            adapt_x = self.forgery_aware_adapter(x, x_raw_img=x_raw_img)
             x = x + self.mlp(self.ln_2(x)) + adapt_x
         else:
             x = x + self.mlp(self.ln_2(x))
@@ -380,10 +380,10 @@ class Transformer(nn.Module):
             for idx in range(layers)
         ])
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor, x_raw_img: torch.Tensor = None):
         out = {}
         for idx, layer in enumerate(self.resblocks.children()):
-            x = layer(x)
+            x = layer(x, x_raw_img=x_raw_img)
             out['layer' + str(idx)] = x
         return out, x
 
@@ -400,7 +400,7 @@ class VisionTransformer(nn.Module):
         self.positional_embedding = nn.Parameter(scale * torch.randn((input_resolution // patch_size) ** 2 + 1, width))
         self.ln_pre = LayerNorm(width)
 
-        num_vit_adapter = getattr(args, "num_vit_adapter", 8) if args else 8
+        num_vit_adapter = getattr(args, "num_vit_adapter", 3) if args else 3
         add_adapter = [False] * layers
         if num_vit_adapter > 0:
             assert layers % num_vit_adapter == 0, f"layers {layers}, while num_vit_adapter {num_vit_adapter}!"
@@ -413,6 +413,7 @@ class VisionTransformer(nn.Module):
         self.proj = nn.Parameter(scale * torch.randn(width, output_dim))
 
     def forward(self, x: torch.Tensor, return_full=False):
+        raw_img = x
         x = self.conv1(x)
         x = x.reshape(x.shape[0], x.shape[1], -1)
         x = x.permute(0, 2, 1)
@@ -420,9 +421,9 @@ class VisionTransformer(nn.Module):
         x = x + self.positional_embedding.to(x.dtype)
         x = self.ln_pre(x)
 
-        x = x.permute(1, 0, 2)  # NLD -> LND
-        out, x = self.transformer(x)
-        x = x.permute(1, 0, 2)  # LND -> NLD
+        x = x.permute(1, 0, 2).contiguous()  # NLD -> LND
+        out, x = self.transformer(x, x_raw_img=raw_img)
+        x = x.permute(1, 0, 2).contiguous()  # LND -> NLD
 
         x = self.ln_post(x)
         if self.proj is not None:

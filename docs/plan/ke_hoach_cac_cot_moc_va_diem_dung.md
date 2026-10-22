@@ -67,11 +67,22 @@ flowchart TD
         C61 --> B63["B: Task 6.3-B (Distillation KL trên clean + Consistency Loss + Paired Aug)"]
         A62 & B63 --> SMOKE_M6{"🛑 CỔNG KIỂM THỬ KHỚP NỐI M6 (Smoke Gate M6)<br>Pass 1 batch forward-backward & logit teacher"}
         SMOKE_M6 --> C63["C: Task 6.3-C (Huấn luyện Fine-tuning thích ứng trên GPU)"]
-        C63 --> C65["C & B: Task 6.5 (Ablation Matrix M3-M5: Plan A, +Data, +Distill, +LoRA)"]
-        C65 --> C64["C: Task 6.4 (Hiệu chuẩn trên val_calibration & Tuyển chọn trên val_selection)"]
-        C64 --> C66["C: Task 6.6 (Final Benchmark đối chiếu hậu nghiệm Task 5.1 & Tập kiểm thử độc lập)"]
-        C66 --> GATE_M6{"🛑 CỔNG NGHIỆM THU MỐC 6 (Gate 4 Điều Kiện Delta pp So Với Baseline Val):<br>1. Clean Macro ACC >= Base_clean - 1.5 pp<br>2. Clean Fake ACC >= Base_fake_clean - 2.0 pp<br>3. Q30 Overall ACC >= Base_q30<br>4. Q30 Fake ACC >= Base_fake_q30 + 10.0 pp & Q30 Real ACC >= 60.0%"}
-        GATE_M6 -->|Đạt đủ 4 điều kiện| STOP_FINAL["🏆 NGHIỆM THU MÔ HÌNH VÀ BỘ CHỈ SỐ HOÀN CHỈNH"]
+        C63 --> C65["C & B: Task 6.5 (Ablation Matrix M1-M5: Plan A, +Data, +Distill, +LoRA)"]
+        C65 --> C64["C: Task 6.4 (Hiệu chuẩn xác suất & Tuyển chọn ứng viên Fallback M4)"]
+        C64 --> C66["C: Task 6.6 (Locked Benchmark phát hiện sụt giảm Clean ACC 59.39% do T*=0.3700)"]
+    end
+
+    subgraph M6R ["💎 MỐC 6-R: CHIẾN DỊCH KHÔI PHỤC HIỆU NĂNG ĐỈNH CAO (HIGH-ACCURACY ANCHORED RECOVERY)"]
+        direction TB
+        C66 --> DIAG_6R{"🛑 CHẨN ĐOÁN LỖI M4:<br>1. Threshold Collapse T*=0.3700 kéo Real ACC sập 45.75%<br>2. Non-zero residual injection ở SRM<br>3. Representation Drift do Focal Loss"}
+        DIAG_6R --> T61R["C: Task 6.1-R (WiSE-FT Merge CPU: θ = (1-α)θ_orig + α θ_M4)"]
+        DIAG_6R --> T62R["B: Task 6.2-R (Zero-Init SRM & Gating, sai số Step 0 < 10^-6)"]
+        T62R --> T63R["C: Task 6.3-R (Anchored Retrain: Diff LR 1e-5/1e-4 & Loss neo Teacher)"]
+        T61R & T63R --> T64R["C: Task 6.4-R (Hiệu chuẩn ràng buộc Real ACC >= 90% & Khóa T*=0.50)"]
+        T64R --> T65R["C: Task 6.5 Ext (Mở rộng Ma trận Ablation: M1-M5 + M6-WiSE + M6-R)"]
+        T65R --> T66R["C: Task 6.6-R (Single-Pass Dual-Mode Benchmark 18 tập Clean & Degraded)"]
+        T66R --> GATE_6R{"🛑 CỔNG NGHIỆM THU PHASE 6-R (HARD GATES):<br>1. Clean Macro ACC >= 90.00% (91.50% - 95.50%)<br>2. Clean Real ACC >= 90.00% (Chặn đứng báo giả)<br>3. Degraded Q=30 Fake ACC >= 35.00%<br>4. ECE <= 0.050"}
+        GATE_6R -->|VƯỢT TRỘI CẢ 2 MODE| STOP_FINAL["🏆 NGHIỆM THU ĐỒ ÁN TỐT NGHIỆP XUẤT SẮC"]
     end
 
     style M1 fill:#e6fffa,stroke:#319795,stroke-width:2px
@@ -80,7 +91,8 @@ flowchart TD
     style M3B fill:#ebf8ff,stroke:#3182ce,stroke-width:2px
     style M4 fill:#e6fffa,stroke:#319795,stroke-width:2px
     style M5 fill:#fff5f5,stroke:#e53e3e,stroke-width:2px
-    style M6 fill:#ebf8ff,stroke:#3182ce,stroke-width:2px
+    style M6 fill:#fff5f5,stroke:#e53e3e,stroke-width:2px
+    style M6R fill:#e6fffa,stroke:#319795,stroke-width:3px
 ```
 
 ---
@@ -141,23 +153,47 @@ flowchart TD
 | **Thành viên B** | **Task 6.3-B**| Thiết kế hàm loss Distillation + Consistency & Paired Aug | Module `CrossDomainDistillationLoss` và `PairedCleanDegradedAugmentation`; chuẩn bị module LoRA có kiểm soát cho Task 6.5 | Code loss và pipeline augmentation | `[x] ĐÃ HOÀN THÀNH` ([Báo cáo](../bao_cao/B/bao_cao_task_6.3_b_distillation_and_consistency_loss.md)) |
 | **Thành viên B & C** | **Smoke Gate M6** | Cổng kiểm thử khớp nối tích hợp Milestone 6 | Chạy kiểm thử tích hợp 1 batch forward-backward với teacher logit trên GPU trước khi train quy mô lớn | Biên bản pass Smoke Gate M6 | `[x] ĐÃ HOÀN THÀNH` ([Báo cáo](../bao_cao/C/bao_cao_smoke_gate_m6.md)) |
 | **Thành viên C (Lead)**| **Task 6.3-C**| Fine-tuning thích ứng chống domain shift | Huấn luyện với dữ liệu cân bằng và hàm mất mát tích hợp trên GPU; lưu `crossdomain_model_best.pth` | Checkpoint hạ tầng M3, M4, M5 | `[~] THÔNG SUỐT HẠ TẦNG` ([Báo cáo](../bao_cao/C/bao_cao_task_6.3_c_cross_domain_training_execution.md)) |
-| **Thành viên C & B** | **Task 6.5** | Nghiên cứu cắt bỏ thành phần (Ablation đa miền) | Huấn luyện và đối chứng ma trận M1-M5 (Plan A, +Data, +Distill, +LoRA) trên cùng random seed 42 và data manifest | Ma trận Ablation Study hoàn thiện | `[ ] Đang lập kế hoạch` |
-| **Thành viên C (Lead)**| **Task 6.4** | Hiệu chuẩn xác suất & Tuyển chọn Checkpoint | Hiệu chuẩn nhiệt độ $T, T^*$ trên `val_calibration`; tuyển chọn checkpoint chiến thắng trên `val_selection` theo Gate 4 điều kiện | Checkpoint tuyển chọn & Ngưỡng chuẩn | `[ ] Đang lập kế hoạch` |
-| **Thành viên C (Lead)**| **Task 6.6** | Kiểm chuẩn khóa sau cùng (Final Locked Benchmark) | Đối chiếu hậu nghiệm trên 18 tập test Task 5.1 và kiểm thử độc lập trên tập mở rộng; xuất metrics và bootstrap 95% CI | Báo cáo kiểm chuẩn chung cuộc | `[ ] Đang lập kế hoạch` |
+| **Thành viên C & B** | **Task 6.5** | Nghiên cứu cắt bỏ thành phần (Ablation đa miền) | Huấn luyện và đối chứng ma trận M1-M5 (Plan A, +Data, +Distill, +LoRA) trên cùng random seed 42 và data manifest | Ma trận Ablation Study hoàn thiện | `[x] ĐÃ HOÀN THÀNH` ([Báo cáo](../bao_cao/C/bao_cao_task_6.5_cross_domain_ablation_matrix.md)) |
+| **Thành viên C (Lead)**| **Task 6.4** | Hiệu chuẩn xác suất & Tuyển chọn Checkpoint | Hiệu chuẩn nhiệt độ $T, T^*$ trên `val_calibration`; tuyển chọn ứng viên dự phòng M4 do ngưỡng $T^*=0.3700$ làm thiên lệch | Checkpoint tuyển chọn M4 & Cặp tham số $(T=1.0811, T^*=0.3700)$ | `[~] NGHIỆM THU CÓ ĐIỀU KIỆN (M4 FALLBACK)` ([Báo cáo](../bao_cao/C/bao_cao_task_6.4_calibration_and_checkpoint_selection.md)) |
+| **Thành viên C (Lead)**| **Task 6.6** | Kiểm chuẩn khóa sau cùng (Final Locked Benchmark) | Đối chiếu hậu nghiệm trên 18 tập test Task 5.1 và kiểm thử độc lập; phát hiện sụt giảm Clean ACC còn 59.39% do Threshold Collapse | Báo cáo kiểm chuẩn chung cuộc ghi nhận hiện tượng trôi dạt | `[~] HOÀN THÀNH CÓ ĐIỀU KIỆN (M4 FALLBACK)` ([Báo cáo](../bao_cao/C/bao_cao_task_6.6_final_locked_benchmark.md)) |
 
-#### 🛑 Cổng Nghiệm Thu Mốc 6 (Gate 4 Điều Kiện Bắt Buộc Theo Độ Lệch Delta pp So Với Mốc Sàn Baseline Đo Trên val_crossdomain):
-1. **Clean Macro ACC**: $\text{ACC}_{\text{clean}} \ge \text{Base}_{\text{clean}} - 1,5\text{ pp}$ (Không suy giảm quá 1,5 điểm phần trăm so với mốc sàn baseline đo trên cùng tập validation đa miền).
-2. **Clean Fake ACC**: $\text{ACC}_{\text{fake\_clean}} \ge \text{Base}_{\text{fake\_clean}} - 2,0\text{ pp}$ (Bảo toàn năng lực phát hiện ảnh giả ở trạng thái sạch, không đánh đổi độ nhạy).
-3. **Q30 Overall ACC**: $\text{ACC}_{\text{q30}} \ge \text{Base}_{\text{q30}}$ (Độ chính xác tổng thể dưới nén sâu $Q=30$ tối thiểu ngang bằng hoặc vượt mốc sàn baseline).
-4. **Q30 Fake ACC & Real Preservation**: $\text{ACC}_{\text{fake\_q30}} \ge \text{Base}_{\text{fake\_q30}} + 10,0\text{ pp}$ và đồng thời $\text{ACC}_{\text{real\_q30}} \ge 60,0\%$ (Nâng mạnh khả năng nhận diện ảnh giả bị nén sâu thêm tối thiểu 10 điểm phần trăm, đồng thời bảo đảm độ chính xác trên ảnh thật không bị sụp đổ).
+#### 🛑 Kết Quả Cổng Nghiệm Thu Mốc 6:
+- **Hiện tượng**: Checkpoint M4 đạt 92.22% trên `val_selection`, nhưng khi khóa cứng $T^*=0.3700$ trên 82.003 ảnh của 18 tập test lab cũ, Real ACC sụp xuống **45.75%**, kéo Clean Macro ACC rơi xuống **59.39%**.
+- **Quyết định điều hành**: Kích hoạt khẩn cấp **MỐC 6-R (Phase 6-R: High-Accuracy Anchored Recovery)** để khôi phục hiệu năng đỉnh cao.
 
 ---
 
-### 🏆 ĐIỂM DỪNG CHUNG CUỘC: NGHIỆM THU MÔ HÌNH & CHỈ SỐ ĐỊNH LƯỢNG
-*Mục đích: Tập trung toàn bộ nguồn lực vào việc phát triển mô hình bền vững và bộ chỉ số kiểm chuẩn; đã bãi bỏ toàn bộ các nhiệm vụ phụ trợ (Task 5.2, 5.3, 5.4, 5.5) theo chỉ đạo điều hành.*
+### 💎 ĐIỂM DỪNG 5: MỐC 6-R (PHASE 6-R) - CHIẾN DỊCH KHÔI PHỤC HIỆU NĂNG ĐỈNH CAO (HIGH-ACCURACY ANCHORED RECOVERY)
+*Mục đích: Đưa Clean Subset-Macro ACC quay lại vùng 91.50% – 95.50% (ngang ngửa bài báo gốc CVPR 2024 là 96.45%), giữ Clean Real ACC $\ge 90.00\%$, đồng thời bảo toàn ưu thế kháng suy biến đa miền (JPEG Q70/Q50/Q30, Blur, Down-Up).*
 
-Khi mô hình tuyển chọn vượt qua Gate 4 điều kiện ràng buộc tại Task 6.6, dự án chính thức hoàn thành nghiệm thu về mặt kỹ thuật và mô hình học máy:
-1. Mô hình bảo tồn năng lực phân loại trên ảnh sạch phòng lab (Clean Macro ACC $\ge 94,50\%$).
-2. Nâng cao độ chính xác phát hiện ảnh giả bị nén sâu $Q=30$ vượt bậc so với mức sàn baseline $5,78\%$.
-3. Toàn bộ ma trận số liệu và phân tích đóng góp thành phần được kiểm chứng độc lập qua Task 6.5 và Task 6.6.
+| Phân công | Mã Task | Tên Nhiệm Vụ | Nội Dung Kỹ Thuật Chi Tiết | Sản Phẩm Bàn Giao | Trạng Thái |
+| :--- | :---: | :--- | :--- | :--- | :---: |
+| **Thành viên C (Lead)**| **Task 6.1-R** | **Fast-Track WiSE-FT Merge** | Nội suy không gian trọng số $\theta_{\text{wise}} = (1-\alpha)\theta_{\text{orig}} + \alpha\theta_{\text{M4}}$ trên CPU; giảm chấn $\beta_{\text{srm}} \approx 0.10$; grid search $\alpha \in [0.15, 0.40]$ và $T^*$ có ràng buộc $\text{Real} \ge 90\%$ trên `val_selection` | Checkpoint `fatformer_wise_ft_best.pth` + metadata SHA-256 | ⏳ Chờ chạy |
+| **Thành viên B** | **Task 6.2-R** | **Zero-Init & Identity Proof** | Khởi tạo lớp chiếu Conv2d cuối của SRM = 0 (an toàn với `bias=False`); Gating $\lambda(x) \equiv 1.0$ tại Step 0; unit test sai số logit Step 0 $< 10^{-6}$ | Code `srm.py`, `gating.py` + `test_zero_init_identity.py` | ⏳ Chờ chạy |
+| **Thành viên C & B** | **Task 6.3-R** | **Anchored Retraining Pipeline** | Differential LR trong AdamW ($10^{-4}$ cho SRM/gating, $10^{-5}$ cho adapter cũ); loại bỏ Focal Loss; hàm loss neo Teacher $0.3\text{CE} + 0.7\text{KD} + 0.2\text{cons}$; `clean_prob=0.70` | Code `loss.py`, `trainer.py`, `train_crossdomain.py` + checkpoint `fatformer_anchored_recovery_best.pth` | ⏳ Chờ chạy |
+| **Thành viên C (Lead)**| **Task 6.4-R** | **Constrained Calibration & Selection** | **SỬA LỖI TỬ HUYỆT NGƯỠNG**: Quét $T^*$ với ràng buộc cứng $\text{Real\_ACC}_{\text{clean}} \ge 90.0\%$, tối ưu $J_{\text{balanced}} = 0.6\text{Clean} + 0.4\text{Degraded}$, cờ `--lock_standard_threshold` ($T^*=0.50$) | `tools/calibrate_and_select.py` nâng cấp | ⏳ Chờ chạy |
+| **Thành viên C & B** | **Task 6.5 Ext**| **Mở Rộng Ma Trận Ablation Study** | Kế thừa số liệu M1–M5, tích hợp thêm M6-WiSE và M6-R để hoàn thiện ma trận đối chiếu 7 cấu hình | Bảng ma trận đối chứng 7 cấu hình mở rộng | ⏳ Chờ chạy |
+| **Thành viên C (Lead)**| **Task 6.6-R** | **Single-Pass Dual-Mode Benchmark** | Kiểm chuẩn khóa sổ trên 82.003 ảnh Clean và 6 biến thể Degraded với cơ chế duyệt 1 lần xuất song song 2 Mode (Mode 1 Balanced $T^*=0.50$ & Mode 2 High-Recall Q30 $T^*=0.38-0.42$) | `final_locked_benchmark_report.json` + `bao_cao_task_6.6_r_locked_recovery.md` | ⏳ Chờ chạy |
+
+#### 🛑 Cổng Nghiệm Thu Cứng Mốc 6-R (Hard Gates Phase 6-R):
+1. **Clean Subset-Macro ACC (18 tập)**: $\ge \mathbf{90.00\%}$ *(Kỳ vọng vùng $91.50\% – 95.50\%$, tăng $>30\text{ pp}$ so với M4)*.
+2. **Clean Real ACC (Chống báo giả)**: $\ge \mathbf{90.00\%}$ *(Bắt buộc, triệt tiêu hoàn toàn lỗi False Positive của M4)*.
+3. **Clean Fake ACC**: $\ge 88.00\%$ *(Kỳ vọng vùng $90.00\% – 94.00\%$)*.
+4. **Clean ROC-AUC / AP**: $\ge 95.00\% / \ge 95.00\%$.
+5. **Modern Cross-Domain (`val_selection`)**: $\ge 91.00\%$ *(Kỳ vọng $92.50\% – 95.00\%$)*.
+6. **Kháng suy biến Degraded JPEG Q=70 / Q=50 / Q=30**:
+   - $Q=70$: Overall $\ge 75.0\%$, Fake $\ge 65.0\%$.
+   - $Q=50$: Overall $\ge 70.0\%$, Fake $\ge 58.0\%$.
+   - $Q=30$: Overall $\ge 60.0\%$, Fake $\ge 35.0\%$, Real $\ge 75.0\%$.
+7. **Sai số hiệu chuẩn (ECE)**: $\text{ECE} \le 0.050$ ($\le 5.0\%$).
+
+---
+
+### 🏆 ĐIỂM DỪNG CHUNG CUỘC: NGHIỆM THU ĐỒ ÁN TỐT NGHIỆP XUẤT SẮC
+*Mục đích: Khóa sổ toàn diện mô hình học máy và bộ chỉ số kiểm chuẩn hai chiều phục vụ Hội đồng bảo vệ đồ án tốt nghiệp.*
+
+Khi mô hình Phase 6-R vượt qua Cổng nghiệm thu cứng Mốc 6-R tại Task 6.6-R:
+1. **Khôi phục hoàn toàn vị thế Clean**: Clean Macro ACC đạt $91.50\% – 95.50\%$ (tiệm cận đỉnh cao CVPR 2024 là $96.45\%$), bảo đảm tính an toàn khi ứng dụng thực tế với Real ACC $\ge 92.00\%$.
+2. **Bảo tồn ưu thế vượt bậc trước nén sâu**: Fake ACC dưới JPEG $Q=30$ đạt $>35.00\% – 45.00\%$ (vượt trội gấp $6 - 7$ lần mốc sàn baseline $5.78\%$).
+3. **Minh chứng khoa học hoàn hảo**: Chuỗi số liệu 7 cấu hình Ablation Study (M1 $\rightarrow$ M6-R) và báo cáo kiểm chuẩn 2 chế độ vận hành (Standard Balanced & High-Recall Forensic) tạo nên luận cứ học thuật chặt chẽ, khách quan và thuyết phục tuyệt đối.
 

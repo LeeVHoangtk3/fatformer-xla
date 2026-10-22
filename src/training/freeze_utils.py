@@ -62,7 +62,7 @@ def freeze_clip_backbone(
     model: nn.Module,
     trainable_module_prefixes: Optional[list] = None,
     target_trainable_ratio_min: Optional[float] = None,
-    target_trainable_ratio_max: float = 0.08,
+    target_trainable_ratio_max: float = 0.15,
     verbose: bool = True
 ) -> Dict[str, Any]:
     """
@@ -87,17 +87,13 @@ def freeze_clip_backbone(
             "linear2",
             "norm1",
             "norm2",
-            "srm.proj",
-            "gating",
             "ctx",
             "lora",
-            "forgery_aware_adapter.first_conv_layer",
-            "forgery_aware_adapter.second_conv_layer",
-            "forgery_aware_adapter.freq_scale",
-            "forgery_aware_adapter.dwt_norm",
-            "forgery_aware_adapter.norm_intra",
-            "forgery_aware_adapter.norm_inter",
-            "forgery_aware_adapter.norm3",
+            "forgery_aware_adapter",
+            "srm_block",
+            "dynamic_gating",
+            "srm.proj",
+            "gating",
         ]
 
     # Bước 1: Đóng băng TOÀN BỘ mô hình
@@ -114,13 +110,7 @@ def freeze_clip_backbone(
         if ("resblocks" in name or "visual.transformer" in name):
             is_adapter_param = any(
                 sub in name for sub in [
-                    "forgery_aware_adapter.first_conv_layer",
-                    "forgery_aware_adapter.second_conv_layer",
-                    "forgery_aware_adapter.freq_scale",
-                    "forgery_aware_adapter.dwt_norm",
-                    "forgery_aware_adapter.norm_intra",
-                    "forgery_aware_adapter.norm_inter",
-                    "forgery_aware_adapter.norm3",
+                    "forgery_aware_adapter",
                     "lora",
                 ]
             )

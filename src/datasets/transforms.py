@@ -240,35 +240,33 @@ def _apply_fixed_down_up(img: Image.Image, ratio: float) -> Image.Image:
 
 class PairedCleanDegradedAugmentation:
     """
-    Pipeline tăng cường ghép cặp ảnh sạch—suy biến — Task 6.3-B, Milestone 6.
+    Pipeline tăng cường ghép cặp ảnh sạch—suy biến — Task 6.3-B & Task 6.2-R (Phase 6-R).
 
     Với mỗi ảnh đầu vào x, pipeline xuất ra cặp tensor:
         (x_clean, x_degraded)  — cùng nhãn phân loại, cùng kích thước (3, 224, 224)
 
     - x_clean:    Chỉ áp dụng Resize → CenterCrop → ToTensor → Normalize. Bảo toàn cấu
                   trúc vi mô gốc phục vụ tính toán L_KD của CrossDomainDistillationLoss.
-    - x_degraded: Áp dụng thêm một suy biến ngẫu nhiên:
-                    • JPEG nén ngẫu nhiên Q ∈ [30, 70]  (xác suất 50%)
-                    • Gaussian Blur σ ∈ [1.0, 2.0]       (xác suất 30%)
-                    • Down-Up Sampling tỷ lệ 0.5         (xác suất 20%)
-                  Mô phỏng ma trận lượng tử hóa khối 8×8 trong nén ảnh thực tế.
+    - x_degraded: Áp dụng cơ chế Clean-First (clean_prob=0.70):
+                    • 70% xác suất giữ nguyên bản sạch (không áp dụng suy biến vật lý).
+                    • 30% xác suất áp dụng một trong các suy biến nhẹ:
+                        - JPEG nén nhẹ Q ∈ [50, 90] (xác suất 50%)
+                        - Gaussian Blur σ ∈ [0.5, 1.5] (xác suất 30%)
+                        - Down-Up Sampling tỷ lệ 160/224 ≈ 0.714 (xác suất 20%)
+                  Bảo toàn vết giả mạo vi mô của ảnh gốc, tránh trôi dạt biểu diễn.
 
     Trả về Tuple[torch.Tensor, torch.Tensor] để tương thích với DataLoader chuẩn.
     Sử dụng kết hợp với PairedConsistencyLoss và CrossDomainTotalLoss.
-
-    Ví dụ sử dụng trong Dataset:
-        aug = PairedCleanDegradedAugmentation(img_resolution=256, crop_resolution=224)
-        x_clean, x_degraded = aug(pil_image)
-        # clean_mask = (nhãn == 'real')  # Boolean tensor cho CrossDomainDistillationLoss
     """
 
     def __init__(
         self,
         img_resolution: int = 256,
         crop_resolution: int = 224,
-        jpeg_q_range: tuple = (30, 70),
-        blur_sigma_range: tuple = (1.0, 2.0),
-        down_ratio: float = 0.5,
+        clean_prob: float = 0.70,
+        jpeg_q_range: tuple = (50, 90),
+        blur_sigma_range: tuple = (0.5, 1.5),
+        down_ratio: float = 160.0 / 224.0,
         jpeg_prob: float = 0.50,
         blur_prob: float = 0.30,
     ):
@@ -276,12 +274,16 @@ class PairedCleanDegradedAugmentation:
         Args:
             img_resolution:   Kích thước resize trước khi crop.
             crop_resolution:  Kích thước CenterCrop cuối cùng (mặc định 224 cho CLIP ViT-L/14).
-            jpeg_q_range:     Khoảng chất lượng JPEG (min_q, max_q), mặc định (30, 70).
-            blur_sigma_range: Khoảng sigma Gaussian Blur (min_σ, max_σ), mặc định (1.0, 2.0).
-            down_ratio:       Tỷ lệ giảm độ phân giải cho Down-Up Sampling, mặc định 0.5.
+            clean_prob:       Xác suất giữ nguyên bản sạch cho nhánh suy biến (mặc định 0.70).
+            jpeg_q_range:     Khoảng chất lượng JPEG nhẹ (min_q, max_q), mặc định (50, 90).
+            blur_sigma_range: Khoảng sigma Gaussian Blur nhẹ (min_σ, max_σ), mặc định (0.5, 1.5).
+            down_ratio:       Tỷ lệ giảm độ phân giải cho Down-Up Sampling, mặc định 160/224.
             jpeg_prob:        Xác suất chọn JPEG làm suy biến.
             blur_prob:        Xác suất chọn Blur (phần còn lại là Down-Up).
         """
+        self.img_resolution   = img_resolution
+        self.crop_resolution  = crop_resolution
+        self.clean_prob       = clean_prob
         self.jpeg_q_range     = jpeg_q_range
         self.blur_sigma_range = blur_sigma_range
         self.down_ratio       = down_ratio
@@ -313,18 +315,18 @@ class PairedCleanDegradedAugmentation:
         """Áp dụng một suy biến ngẫu nhiên theo phân phối xác suất được cấu hình."""
         r = random.random()
         if r < self.jpeg_prob:
-            # JPEG compression
+            # JPEG compression nhẹ
             q = random.randint(*self.jpeg_q_range)
             buf = io.BytesIO()
             img.save(buf, format="JPEG", quality=q)
             buf.seek(0)
             return Image.open(buf).convert("RGB")
         elif r < self.jpeg_prob + self.blur_prob:
-            # Gaussian Blur
+            # Gaussian Blur nhẹ
             sigma = random.uniform(*self.blur_sigma_range)
             return img.filter(ImageFilter.GaussianBlur(radius=sigma))
         else:
-            # Down-Up Sampling
+            # Down-Up Sampling nhẹ (224 -> 160 -> 224)
             w, h = img.size
             lw = max(16, int(w * self.down_ratio))
             lh = max(16, int(h * self.down_ratio))
@@ -339,12 +341,16 @@ class PairedCleanDegradedAugmentation:
         Returns:
             Tuple[torch.Tensor, torch.Tensor]:
                 x_clean    — tensor (3, 224, 224) không suy biến
-                x_degraded — tensor (3, 224, 224) với suy biến ngẫu nhiên
+                x_degraded — tensor (3, 224, 224) với xác suất 70% sạch / 30% suy biến nhẹ
         """
         # Ảnh sạch
         x_clean = self.clean_transform(img)
 
-        # Ảnh suy biến — áp dụng trên ảnh đã crop (PIL) trước khi normalize
+        # Cơ chế Clean-First Stream (Task 6.2-R): 70% giữ ảnh sạch nguyên bản
+        if self.clean_prob > 0.0 and random.random() < self.clean_prob:
+            return x_clean, x_clean
+
+        # 30% còn lại áp dụng suy biến nhẹ
         img_cropped  = self._resize_crop(img)
         img_degraded = self._apply_degradation(img_cropped)
         x_degraded   = self._to_tensor_norm(img_degraded)

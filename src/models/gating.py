@@ -20,8 +20,11 @@ class DynamicFrequencyGating(nn.Module):
             nn.Linear(hidden_dim, 1),
             nn.Sigmoid()
         )
-        # Khởi tạo bias để ban đầu lambda(x) có giá trị xấp xỉ 1.0 (trung tính)
-        nn.init.constant_(self.mlp[2].bias, 0.0)
+        # Zero-init tầng Linear cuối để bảo đảm Step 0 Identity (Task 6.2-R):
+        # Weight = 0, Bias = 0 => MLP output = 0 => Sigmoid(0) = 0.5 => 0.5 * 2.0 = 1.0 (Đồng nhất tuyệt đối)
+        nn.init.zeros_(self.mlp[2].weight)
+        if self.mlp[2].bias is not None:
+            nn.init.zeros_(self.mlp[2].bias)
 
     def forward(self, x):
         """
