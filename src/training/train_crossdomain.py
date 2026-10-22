@@ -436,9 +436,12 @@ class CrossDomainTrainer:
             self.teacher.eval()
             for p in self.teacher.parameters():
                 p.requires_grad = False
-            if self.device.type == "cuda" and self.use_amp:
-                self.teacher = self.teacher.half()
-                print("[*] Da toi uu hoa mo hinh Teacher sang kieu nua do chinh xac FP16 (tiet kiem 50% VRAM).")
+            # [LƯU Ý TỐI ƯU AMP]: Giữ Teacher ở FP32 Master Weights để tránh lỗi xung đột kiểu dữ liệu
+            # (Input FloatTensor vs Weight HalfTensor) và bảo tồn độ chính xác số học.
+            # torch.amp.autocast('cuda') trong train_epoch sẽ tự động tính toán FP16 trên Tensor Cores.
+            # if self.device.type == "cuda" and self.use_amp:
+            #     self.teacher = self.teacher.half()
+            #     print("[*] Da toi uu hoa mo hinh Teacher sang kieu nua do chinh xac FP16 (tiet kiem 50% VRAM).")
 
     def train_epoch(self, epoch: int) -> Dict[str, float]:
         self.student.train()

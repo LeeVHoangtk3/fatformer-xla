@@ -120,7 +120,7 @@ class CLIPModel(nn.Module):
         self.image_encoder = self.clip_model.visual
         self.text_encoder = TextEncoder(self.clip_model)
         self.logit_scale = self.clip_model.logit_scale
-        self.dtype = self.clip_model.dtype
+        # self.dtype được truy xuất qua @property bên dưới để luôn đồng bộ với kiểu tham số thực tế
         self.num_classes = getattr(args, "num_classes", 2) if args else 2
 
         d_model = self.clip_model.ln_final.weight.shape[0]
@@ -139,6 +139,14 @@ class CLIPModel(nn.Module):
         self.use_gating = getattr(args, "use_gating", False) if args else False
         self.srm = None
         self.gating = None
+
+    @property
+    def dtype(self):
+        """Kiểu dữ liệu động của mô hình, tự động đồng bộ khi model.half() hoặc model.to(dtype)."""
+        try:
+            return next(self.parameters()).dtype
+        except StopIteration:
+            return self.clip_model.dtype
 
     @property
     def visual(self):
@@ -160,7 +168,7 @@ class CLIPModel(nn.Module):
         tokenized_prompts = self.tokenized_prompts
         logit_scale = self.logit_scale.exp()
 
-        image_features = self.image_encoder(image.type(self.dtype), return_full=True)
+        image_features = self.image_encoder(image.to(self.dtype), return_full=True)
         image_features_norm = image_features / image_features.norm(dim=-1, keepdim=True)
 
         prompts = self.language_guided_alignment(image_features)
