@@ -1,4 +1,4 @@
 group,subset,num_samples,macro_acc,real_acc,fake_acc,auc,ap,elapsed_sec
-Diffusion,stable_diffusion_v1_5,20,70.0,80.0,60.0,72.0,71.3290919606709,0.03
-Diffusion,midjourney_v5,20,60.0,70.0,50.0,68.0,69.50033738191632,0.03
-Overall,MEAN_INDEPENDENT,40,65.0,75.0,55.0,70.0,70.41471467129361,0.06
+Diffusion,stable_diffusion_v1_5,20,75.0,80.0,70.0,75.0,82.61554621848738,0.04
+Diffusion,midjourney_v5,20,45.0,70.0,20.0,36.0,44.863179003658885,0.04
+Overall,MEAN_INDEPENDENT,40,60.0,75.0,45.0,55.5,63.73936261107313,0.08
