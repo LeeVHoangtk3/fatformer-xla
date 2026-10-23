@@ -1,0 +1,20 @@
+{
+  "checkpoint_name": "fatformer_anchored_recovery_best.pth",
+  "task": "Task 6.3-R Anchored Recovery Training (Colab)",
+  "timestamp": "2026-10-23 14:53:55",
+  "sha256": "F70A11DF9D7F45C11C60C4E117F8D1302C4F426B1F1B567CB2E50387B0111DEF",
+  "size_bytes": 1972817087,
+  "hyperparameters": {
+    "branch": "M4",
+    "epochs": 3,
+    "batch_size": 16,
+    "grad_accum_steps": 1,
+    "learning_rate": 0.0003,
+    "anchor_learning_rate": 5e-05,
+    "weight_ce": 0.7,
+    "alpha_kd": 0.3,
+    "beta_cons": 0.2,
+    "checkpoint_init": "DATASET/pretrained/fatformer_4class_ckpt.pth",
+    "teacher_checkpoint": "DATASET/pretrained/fatformer_4class_ckpt.pth"
+  }
+}

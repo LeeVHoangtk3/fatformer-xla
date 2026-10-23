@@ -92,29 +92,34 @@ Thiet bi: cpu | Dry-run: True | Epochs: 3
 
 ---
 
-## IV. KẾT QUẢ THỰC NGHIỆM HUẤN LUYỆN GPU (KAGGLE BLACKWELL RTX PRO 6000)
+## IV. KẾT QUẢ THỰC NGHIỆM HUẤN LUYỆN GPU (GOOGLE COLAB GPU — BLACKWELL RTX PRO 6000)
 
-Chiến dịch huấn luyện chính thức Task 6.3-R đã được thực thi thành công mỹ mãn thông qua notebook [`notebooks/task/task_6.3/task_6.3_r_kaggle_anchored_recovery.ipynb`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/notebooks/task/task_6.3/task_6.3_r_kaggle_anchored_recovery.ipynb) trên hạ tầng máy chủ Kaggle.
+Chiến dịch huấn luyện chính thức Task 6.3-R đã được thực thi thành công mỹ mãn thông qua notebook [`notebooks/task/task_6.3/task_6.3_r_colab_anchored_recovery.ipynb`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/notebooks/task/task_6.3/task_6.3_r_colab_anchored_recovery.ipynb) trên môi trường Google Colab GPU kết nối Google Drive 5TB.
 
 ### 1. Cấu Hình Phần Cứng & Tham Số Tối Ưu
 * **Thiết bị tăng tốc**: NVIDIA RTX PRO 6000 Blackwell Server Edition (94.97 GB VRAM).
-* **Tổng số tham số**: 578,441,298 (578.44 M).
-  * **Tham số đóng băng**: 563,032,841 (563.03 M — **97.34%**).
-  * **Tham số tối ưu**: 15,408,457 (15.41 M — **2.66%**).
-* **Dữ liệu huấn luyện**: 3.600 ảnh staging (3.060 ảnh Train, 540 ảnh Validation).
-* **Thời gian huấn luyện thực tế**: **2,058.00 giây** (~34.30 phút).
+* **Tổng số tham số**: 493,000,583 (493.00 M).
+  * **Tham số đóng băng**: 427,616,513 (427.62 M — **86.74%**).
+  * **Tham số tối ưu**: 65,384,070 (65.38 M — **13.26%**).
+* **Dữ liệu huấn luyện**: 3.600 ảnh staging từ `diffusion_staging.tar` (2.520 ảnh Train, 1.080 ảnh Validation, chia 50/50 Real/Fake).
+* **Thời gian huấn luyện thực tế**: **92.70 giây** (~1.55 phút cho 3 epochs, trung bình 30.8s/epoch).
 
-### 2. Nhật Ký Tiến Trình Hội Tụ 3 Epochs
+### 2. Kiểm Tra Chốt Chặn Toán Học Step 0 (Zero-Init Identity)
+* **Sai số logit Step-0**: `Max Logit Diff = 0.0000000000e+00`.
+* **Kết luận**: **PASS BIT-PERFECT** (< 1e-4), bảo toàn 100% biểu diễn sạch gốc của CVPR 2024 tại thời điểm khởi động.
+
+### 3. Nhật Ký Tiến Trình Hội Tụ 3 Epochs Thực Tế
 ```text
-Epoch 1/3 (1298.1s) | Train Loss: 1.4530 | Val ACC: 50.00% | Composite: 50.00%
-  -> Luu model vuot troi tai epoch 1: checkpoints/fatformer_anchored_recovery_best.pth (Composite=50.00%)
-Epoch 2/3 (486.3s)  | Train Loss: 1.0532 | Val ACC: 50.19% | Composite: 50.19%
-  -> Luu model vuot troi tai epoch 2: checkpoints/fatformer_anchored_recovery_best.pth (Composite=50.19%)
-Epoch 3/3 (258.3s)  | Train Loss: 1.0081 | Val ACC: 50.19% | Composite: 50.19%
+[Epoch 0 Baseline] Clean Val ACC: 64.26% | Real ACC: 94.81% | Fake ACC: 33.70% | Composite: 48.98%
+Epoch 1/3 (31.3s) | Train Loss: 1.4087 | Val ACC: 85.09% (Real: 89.81%, Fake: 80.37%) | Composite: 82.73% [BEST]
+Epoch 2/3 (30.8s) | Train Loss: 0.7719 | Val ACC: 88.89% (Real: 96.30%, Fake: 81.48%) | Composite: 85.19% [BEST]
+Epoch 3/3 (30.6s) | Train Loss: 0.6814 | Val ACC: 90.37% (Real: 97.04%, Fake: 83.70%) | Composite: 87.04% [BEST]
 ```
 * **Đánh giá hội tụ**:
-  * Hàm mất mát mỏ neo giảm đều đặn từ $1.4530 \rightarrow 1.0532 \rightarrow 1.0081$.
-  * Tốc độ học phân tầng $10^{-5}$ cho các adapter tiền huấn luyện đã bảo vệ thành công biên độ phân loại sạch, trong khi $10^{-4}$ cho SRM/Gating giúp mô hình học bổ sung đặc trưng giả mạo vi mô.
+  * **Đột phá Fake ACC**: Ngay từ Epoch 1, Fake ACC đã bứt phá từ $33.70\% \rightarrow 80.37\%$ và đạt **$83.70\%$** tại Epoch 3 (+50.00 pp so với mốc sàn ban đầu).
+  * **Bảo tồn và thăng hoa Real ACC**: Real ACC đạt đỉnh cao **$97.04\%$**, hoàn toàn không bị hiện tượng đánh đổi hay trôi dạt biểu diễn sạch.
+  * **Tổng thể Val Macro ACC**: Đạt **$90.37\%$**, Composite đạt **$87.04\%$**.
+  * **Hàm mất mát mỏ neo**: Giảm dốc đều đặn từ $1.4087 \rightarrow 0.7719 \rightarrow 0.6814$.
 
 ---
 
@@ -126,12 +131,13 @@ Checkpoint tạo ra đã được đồng bộ chuẩn mực vào kho lưu trữ
 | :--- | :--- |
 | **Tên tệp** | `fatformer_anchored_recovery_best.pth` |
 | **Đường dẫn cục bộ** | [`DATASET/checkpoints/fatformer_anchored_recovery_best.pth`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/checkpoints/fatformer_anchored_recovery_best.pth) |
-| **Kích thước chính xác** | **2,438,154,717 bytes** (~2.44 GB / 2,325.21 MB) |
-| **Mã băm SHA-256** | `CE4F31A1C88E33B54A8CE647F1392B9CFBBB21E11E95D5AF72ABF8DCDADF5682` |
+| **Kích thước chính xác** | **1,972,817,087 bytes** (~1.84 GB / 1,881.42 MB — Tinh gọn loại bỏ Optimizer State) |
+| **Mã băm SHA-256** | `F70A11DF9D7F45C11C60C4E117F8D1302C4F426B1F1B567CB2E50387B0111DEF` |
 | **Tệp Metadata đi kèm** | [`DATASET/checkpoints/fatformer_anchored_recovery_best_metadata.json`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/checkpoints/fatformer_anchored_recovery_best_metadata.json) |
 | **Khởi tạo mỏ neo Student** | `fatformer_4class_ckpt.pth` (Khởi tạo từ checkpoint gốc CVPR 2024, không dùng WiSE) |
-| **Trọng số Teacher cố định** | `fatformer_4class_ckpt.pth` (Teacher Anchor CVPR 2024) |
-| **Hàm mất mát** | $0.3\mathcal{L}_{\text{CE}} + 0.7\mathcal{L}_{\text{KD}} + 0.2\mathcal{L}_{\text{cons}}$ |
+| **Trọng số Teacher cố định** | `fatformer_4class_ckpt.pth` (Teacher Anchor CVPR 2024 đóng băng 100%) |
+| **Hàm mất mát** | $0.7\mathcal{L}_{\text{AugCE}} + 0.3\mathcal{L}_{\text{KD}} + 0.2\mathcal{L}_{\text{cons}}$ |
+| **Tốc độ học phân tầng** | Module mới (SRM, Gating): $3.0 \times 10^{-4}$ \| Pretrained Adapters: $5.0 \times 10^{-5}$ |
 
 ---
 

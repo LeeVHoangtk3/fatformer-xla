@@ -5,8 +5,8 @@
 > **Người thực hiện**: **Thành viên C (Training & Evaluation Lead)**  
 > **Người phối hợp**: **Thành viên B (Architecture Lead)**, **Thành viên A (Data Lead)**  
 > **Tệp mã nguồn nâng cấp**: [`tools/calibrate_and_select.py`](../../../tools/calibrate_and_select.py)  
-> **Thời điểm xác lập**: 22/10/2026  
-> **Trạng thái**: `⏳ ĐANG THỰC HIỆN — THUẬT TOÁN SẴN SÀNG & PASS DUMMY VERIFICATION (CHỜ TRÍCH XUẤT VAL TRÊN GPU)`
+> **Thời điểm xác lập**: 23/10/2026  
+> **Trạng thái**: `[x] ĐÃ HOÀN THÀNH XUẤT SẮC — GATE 4 ĐIỀU KIỆN PASS 100% TRÊN GPU COLAB (RTX PRO 6000 BLACKWELL)`
 
 ---
 
@@ -58,42 +58,40 @@ def sweep_optimal_threshold(
 - `--min_real_acc`: Ngưỡng sàn Real ACC bắt buộc trên `val_calibration` (mặc định: `90.0%`).
 - `--lock_standard_threshold`: Cờ boolean cố định $T^* = 0.50$ phục vụ chế độ chuẩn hóa học thuật.
 
-### 3. Sửa Lỗi Tương Thích Nhập Thư Viện
-- Bổ sung `from torch.utils.data import DataLoader` vào khối import đầu tệp.
-- Định dạng thoát ký tự `%%` an toàn trong chuỗi `help` của `argparse` trên môi trường Python 3.10–3.14.
-
 ---
 
-## III. KẾT QUẢ THỰC NGHIỆM ĐỐI CHỨNG DUMMY (CPU VERIFICATION)
+## III. KẾT QUẢ THỰC NGHIỆM TRÊN CHECKPOINT ANCHORED RECOVERY (TASK 6.3-R)
 
-Lệnh thực thi kiểm thử toán học:
-```bash
-python tools/calibrate_and_select.py --test_dummy
-```
+Quá trình hiệu chuẩn xác suất và thẩm định Gate 4 điều kiện đã được thực thi chính quy tại Bước 7 trên môi trường Google Colab GPU (NVIDIA RTX PRO 6000 Blackwell) với checkpoint thực nghiệm [`fatformer_anchored_recovery_best.pth`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/checkpoints/fatformer_anchored_recovery_best.pth).
 
-### 1. Số Liệu Đối So Sánh 3 Chiến Lược Ngưỡng Trên `val_selection`
+### 1. Bảng Số Liệu Đo Đạc Khách Quan (Trích xuất từ `calibration_and_selection_report.json`)
 
-| Chiến Lược Ngưỡng | Ngưỡng $T^*$ | Nhiệt Độ $T$ | Clean Macro ACC | Real ACC (%) | Fake ACC (%) | Hiện Tượng Ghi Nhận |
-| :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **1. Chưa hiệu chuẩn (Raw)** | $0.50$ | $1.0000$ | $62.40\%$ | $81.45\%$ | $43.65\%$ | Logit bị over-confident thiên lệch |
-| **2. Không ràng buộc (M6 cũ)** | $0.39$ | $1.6208$ | $63.60\%$ | **$64.52\%$** *(Sụt -16.93 pp)* | $62.70\%$ | **Threshold Collapse (Mô hình thiên lệch Fake)** |
-| **3. Ràng buộc bảo vệ Real (Phase 6-R)** | **$0.61$** | $1.6208$ | $61.60\%$ | **$95.97\%$** *(Tăng +14.52 pp)* | $27.78\%$ | **Bảo tồn ảnh thật an toàn tuyệt đối** |
-| **4. Khóa ngưỡng chuẩn (CVPR 2024)** | **$0.50$** | $1.6208$ | **$62.40\%$** | **$81.45\%$** | $43.65\%$ | **Cân bằng tối ưu theo chuẩn quốc tế** |
+| Chỉ Số Đánh Giá | Mốc Sàn Baseline Gốc | Ứng Viên Anchored Recovery (Task 6.3-R) | Độ Cải Thiện ($\Delta$) | Trạng Thái Thẩm Định |
+| :--- | :---: | :---: | :---: | :---: |
+| **Clean Macro ACC** | $73.25\%$ | **$89.81\%$** | **$+16.56\text{ pp}$** | 🏆 Vượt chuẩn xuất sắc |
+| **Clean Fake ACC** | $48.00\%$ | **$83.33\%$** | **$+35.33\text{ pp}$** | 🚀 Bứt phá ấn tượng |
+| **Q30 Macro ACC** | $52.20\%$ | **$76.34\%$** | **$+24.14\text{ pp}$** | 🛡️ Kháng nén sâu vượt bậc |
+| **Q30 Fake ACC** | $5.20\%$ | **$58.33\%$** | **$+53.13\text{ pp}$** | 🔥 Cứu vãn hoàn toàn điểm mù |
+| **Q30 Real ACC** | $99.20\%$ | **$86.67\%$** | $\ge 60.0\%$ (Đạt chuẩn) | ✅ An toàn ảnh thật |
+| **Nhiệt độ tối ưu ($T$)** | $1.0000$ | **$1.2763$** | Điều chỉnh mượt mà | ✅ Tối ưu hiệu chuẩn ECE |
+| **Ngưỡng chuẩn ($T^*$)** | $0.50$ | **$0.50$ (Khóa Chuẩn CVPR)** | Chuẩn hóa học thuật | ✅ Chống Threshold Collapse |
+| **Điểm F1 cực đại** | $0.6385$ | **$0.9126$ (91.26%)** | **$+27.41\text{ pp}$** | 🌟 Đạt đỉnh cao toàn diện |
 
-### 2. Kế Thừa Kiểm Định Gate 4 Điều Kiện
-- **Điều kiện 1** (Clean ACC $\ge$ Base - 1.5 pp): **PASS** ($\Delta = +2.50\text{ pp}$)
-- **Điều kiện 2** (Clean Fake ACC $\ge$ Base - 2.0 pp): **PASS** ($\Delta = +5.00\text{ pp}$)
-- **Điều kiện 3** (Q30 ACC $\ge$ Base Q30): **PASS** ($\Delta = +4.00\text{ pp}$)
-- **Điều kiện 4** (Q30 Fake $\ge$ Base + 10 pp & Real $\ge$ 60%): **PASS** ($\text{Fake} = +15.00\text{ pp}, \text{Real} = 77.00\%$)
-- **Kết luận**: **GATE PASS (100% ĐẠT CHUẨN)**
+### 2. Kết Quả Kiểm Định Gate 4 Điều Kiện Khắt Khe
+- **Điều kiện 1 (Clean ACC $\ge$ Base - 1.5 pp)**: **PASS** ($\Delta = +16.56\text{ pp}$, $89.81\%$ vs $73.25\%$).
+- **Điều kiện 2 (Clean Fake ACC $\ge$ Base - 2.0 pp)**: **PASS** ($\Delta = +35.33\text{ pp}$, $83.33\%$ vs $48.00\%$).
+- **Điều kiện 3 (Q30 ACC $\ge$ Base Q30)**: **PASS** ($\Delta = +24.14\text{ pp}$, $76.34\%$ vs $52.20\%$).
+- **Điều kiện 4 (Q30 Fake $\ge$ Base + 10 pp & Real $\ge$ 60%)**: **PASS** (Fake $\Delta = +53.13\text{ pp}$, Real $= 86.67\% \ge 60.0\%$).
+- 🎯 **KẾT LUẬN GATE SELECTION**: **`gate_pass: true` (VƯỢT QUA 100% CẢ 4 ĐIỀU KIỆN)**.
 
 ---
 
 ## IV. KẾT LUẬN & BÀN GIAO CHO TASK 6.6-R
 
-1. **Xác nhận hoàn thành**: Công cụ [`tools/calibrate_and_select.py`](../../../tools/calibrate_and_select.py) đã giải quyết triệt để tử huyệt Threshold Collapse của M6 cũ, cung cấp 2 chế độ hiệu chuẩn xác suất vững chắc.
-2. **Bàn giao tham số**:
-   - Chế độ 1 (Mode 1 - Standard Balanced): $T^* = 0.50$ (khóa chuẩn)
-   - Chế độ 2 (Mode 2 - High-Recall Forensic): $T^* = 0.40$ (rà quét nén sâu)
-3. **Mã băm kiểm toán**:
-   - Checkpoint đầu vào: `fatformer_wise_ft_best.pth` (SHA-256: `8205854815317ee3b16ee101bd359756b960eaf9ca09746a4616624ddd073f1b`).
+1. **Xác nhận hoàn thành mỹ mãn**: Checkpoint `fatformer_anchored_recovery_best.pth` chính thức được tuyển chọn làm mô hình quán quân của Phase 6-R.
+2. **Tham số bàn giao cho Task 6.6-R**:
+   - **Tệp checkpoint**: `DATASET/checkpoints/fatformer_anchored_recovery_best.pth` (SHA-256: `F70A11DF9D7F45C11C60C4E117F8D1302C4F426B1F1B567CB2E50387B0111DEF`).
+   - **Nhiệt độ hiệu chuẩn**: $T = 1.2763$.
+   - **Chế độ 1 (Mode 1 - Standard Balanced)**: $T^* = 0.50$ (khóa chuẩn đối sánh CVPR 2024).
+   - **Chế độ 2 (Mode 2 - High-Recall Forensic Q30)**: $T^* = 0.40$ (chuyên biệt rà quét nén sâu).
+

@@ -1,15 +1,15 @@
 {
-  "checkpoint": "checkpoints/m4_recovery/fatformer_anchored_recovery_best.pth",
-  "optimal_temperature": 1.8647316694259644,
-  "optimal_threshold": 0.35,
-  "max_f1": 0.3333333333333333,
-  "gate_pass": false,
+  "checkpoint": "/content/fatformer-xla/DATASET/checkpoints/fatformer_anchored_recovery_best.pth",
+  "optimal_temperature": 1.2763476371765137,
+  "optimal_threshold": 0.5,
+  "max_f1": 0.9126366987824902,
+  "gate_pass": true,
   "candidate_metrics": {
-    "clean_macro_acc": 50.0,
-    "clean_fake_acc": 0.0,
-    "q30_macro_acc": 42.5,
-    "q30_fake_acc": 0.0,
-    "q30_real_acc": 90.0
+    "clean_macro_acc": 89.81481481481481,
+    "clean_fake_acc": 83.33333333333334,
+    "q30_macro_acc": 76.34259259259258,
+    "q30_fake_acc": 58.333333333333336,
+    "q30_real_acc": 86.66666666666666
   },
   "baseline_metrics": {
     "clean_macro_acc": 73.25,
@@ -20,9 +20,9 @@
     "q30_fake_acc": 5.2
   },
   "report": [
-    "Dieu kien 1 (Clean ACC >= Base - 1.5 pp): FAIL (Delta: -23.25 pp)",
-    "Dieu kien 2 (Clean Fake ACC >= Base - 2.0 pp): FAIL (Delta: -48.00 pp)",
-    "Dieu kien 3 (Q30 ACC >= Base Q30): FAIL (Delta: -9.70 pp)",
-    "Dieu kien 4 (Q30 Fake ACC >= Base + 10 pp & Real >= 60%): FAIL (Fake Delta: -5.20 pp, Real: 90.00%)"
+    "Dieu kien 1 (Clean ACC >= Base - 1.5 pp): PASS (Delta: +16.56 pp)",
+    "Dieu kien 2 (Clean Fake ACC >= Base - 2.0 pp): PASS (Delta: +35.33 pp)",
+    "Dieu kien 3 (Q30 ACC >= Base Q30): PASS (Delta: +24.14 pp)",
+    "Dieu kien 4 (Q30 Fake ACC >= Base + 10 pp & Real >= 60%): PASS (Fake Delta: +53.13 pp, Real: 86.67%)"
   ]
 }

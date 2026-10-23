@@ -1,0 +1,4 @@
+branch,epoch,train_loss,val_macro_acc,val_composite,time_sec
+M4,1,1.4087,85.09,82.73,31.3
+M4,2,0.7719,88.89,85.19,30.8
+M4,3,0.6814,90.37,87.04,30.6
