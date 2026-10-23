@@ -591,26 +591,15 @@ class CrossDomainTrainer:
 
     def save_checkpoint(self, epoch: int, is_best: bool = False, val_metrics: Optional[Dict[str, float]] = None) -> None:
         """
-        Chinh sach xoay vong checkpoint nham bao ve bo nho dia luu tru:
-        - checkpoint_latest.pth & fatformer_anchored_recovery_last.pth: Luon ghi de sau moi epoch.
-        - fatformer_anchored_recovery_best.pth / save_name: Chi luu model.state_dict() va metadata
-          (dung luong gon ~2.0 GB, khong kem optimizer, nap khop 100%).
+        Tối ưu lưu trữ Kaggle (Phương án 1):
+        - Bỏ Optimizer State (tiết kiệm ~60% dung lượng, ~1.5 GB).
+        - Chỉ ghi vật lý 1 tệp duy nhất (best hoặc latest).
+        - Sử dụng Hardlink (os.link) cho các bí danh (last, alt_name) để chia sẻ chung block ổ cứng, ngốn 0 MB.
         """
         model_sd = self.student.module.state_dict() if hasattr(self.student, "module") else self.student.state_dict()
-        state_latest = {
-            "epoch": epoch,
-            "model": model_sd,
-            "model_state": model_sd,
-            "optimizer_state": self.optimizer.state_dict() if self.optimizer else None,
-            "best_score": self.best_composite_score,
-            "val_metrics": val_metrics or {},
-        }
-
-        latest_path = os.path.join(self.save_dir, "checkpoint_latest.pth")
-        torch.save(state_latest, latest_path)
-
-        last_clean_path = os.path.join(self.save_dir, "fatformer_anchored_recovery_last.pth")
-        clean_state_last = {
+        
+        # State tinh gọn, không chứa Optimizer
+        clean_state = {
             "model": model_sd,
             "metadata": {
                 "epoch": epoch,
@@ -621,30 +610,46 @@ class CrossDomainTrainer:
                 "branch": "M4",
             }
         }
-        torch.save(clean_state_last, last_clean_path)
+
+        # 1. Xóa các tệp cũ để OS giải phóng không gian ngay lập tức
+        latest_path = os.path.join(self.save_dir, "checkpoint_latest.pth")
+        last_clean_path = os.path.join(self.save_dir, "fatformer_anchored_recovery_last.pth")
+        best_path = os.path.join(self.save_dir, self.save_name)
+        alt_name = "fatformer_anchored_recovery_best.pth" if self.save_name == "crossdomain_model_best.pth" else "crossdomain_model_best.pth"
+        alt_path = os.path.join(self.save_dir, alt_name)
+
+        for p in [latest_path, last_clean_path]:
+            if os.path.exists(p):
+                try:
+                    os.remove(p)
+                except Exception:
+                    pass
+
+        # 2. Ghi vật lý tệp chính
+        primary_save_path = best_path if is_best else latest_path
+        torch.save(clean_state, primary_save_path)
+        
+        # 3. Tạo Hardlink ngốn 0 MB cho các bí danh còn lại
+        def make_hardlink(src, dst):
+            if os.path.abspath(src) == os.path.abspath(dst):
+                return
+            if os.path.exists(dst):
+                try:
+                    os.remove(dst)
+                except Exception:
+                    pass
+            try:
+                os.link(src, dst)
+            except Exception:
+                shutil.copy2(src, dst)
 
         if is_best:
-            v_acc = val_metrics.get("val_acc", 0.0) if val_metrics else 0.0
-            comp = val_metrics.get("val_composite", self.best_composite_score) if val_metrics else self.best_composite_score
-            best_clean_state = {
-                "model": model_sd,
-                "metadata": {
-                    "epoch": epoch,
-                    "val_acc": v_acc,
-                    "val_r_acc": val_metrics.get("val_r_acc", 0.0) if val_metrics else 0.0,
-                    "val_f_acc": val_metrics.get("val_f_acc", 0.0) if val_metrics else 0.0,
-                    "composite": comp,
-                    "branch": "M4",
-                }
-            }
-            best_path = os.path.join(self.save_dir, self.save_name)
-            torch.save(best_clean_state, best_path)
-            print(f"  -> Luu model vuot troi tai epoch {epoch}: {best_path} (Val ACC={v_acc:.2f}%, Composite={comp:.2f}%)")
-
-            # Luu dong thoi ca fatformer_anchored_recovery_best.pth va crossdomain_model_best.pth de tuong thich 100%
-            alt_name = "fatformer_anchored_recovery_best.pth" if self.save_name == "crossdomain_model_best.pth" else "crossdomain_model_best.pth"
-            alt_path = os.path.join(self.save_dir, alt_name)
-            torch.save(best_clean_state, alt_path)
+            make_hardlink(primary_save_path, latest_path)
+            make_hardlink(primary_save_path, alt_path)
+            comp = val_metrics.get("val_composite", 0.0) if val_metrics else 0.0
+            print(f"  -> Luu model vuot troi tai epoch {epoch}: {best_path} (Composite={comp:.2f}%) [Dung Hardlink 0MB cho ban copy]")
+        
+        make_hardlink(latest_path, last_clean_path)
 
         # Neu phat hien moi truong Google Colab voi Drive duoc mount, tu dong sao luu them ban copy sang Drive
         for drive_base in [
@@ -655,7 +660,6 @@ class CrossDomainTrainer:
                 drive_branch_dir = os.path.join(drive_base, os.path.basename(self.save_dir))
                 try:
                     os.makedirs(drive_branch_dir, exist_ok=True)
-                    import shutil
                     shutil.copy2(latest_path, os.path.join(drive_branch_dir, "checkpoint_latest.pth"))
                     if is_best:
                         shutil.copy2(best_path, os.path.join(drive_branch_dir, self.save_name))
