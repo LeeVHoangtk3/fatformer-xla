@@ -232,19 +232,15 @@ class PairedConsistencyLoss(nn.Module):
         logits_clean: torch.Tensor,
         logits_degraded: torch.Tensor,
     ) -> torch.Tensor:
-        """
-        Args:
-            logits_clean:    Logit tổng hợp ảnh sạch (B, C)
-            logits_degraded: Logit tổng hợp ảnh suy biến (B, C) — cùng shape
-        Returns:
-            Scalar: β_cons · (1/2) · MSE(logits_clean, logits_degraded)
-        """
         if logits_clean.shape != logits_degraded.shape:
             raise ValueError(
                 f"Shape không khớp: logits_clean {logits_clean.shape} "
                 f"vs logits_degraded {logits_degraded.shape}"
             )
-        mse = F.mse_loss(logits_clean, logits_degraded.to(logits_clean.dtype), reduction="mean")
+        # BẮT BUỘC detach() logits_clean: Chỉ ép nhánh suy biến học theo nhánh sạch,
+        # tuyệt đối không để nhánh suy biến kéo lệch logit của nhánh ảnh sạch!
+        target_clean = logits_clean.detach().to(logits_degraded.dtype)
+        mse = F.mse_loss(logits_degraded, target_clean, reduction="mean")
         return self.beta_cons * 0.5 * mse
 
 
@@ -254,20 +250,20 @@ class CrossDomainTotalLoss(nn.Module):
 
     Công thức chuẩn hóa Phase 6-R (Cân bằng & Selective Teacher-Correct):
         L_total = weight_ce · L_AugCE + α_kd · L_KD(Teacher-Correct) + β_cons · L_cons
-                = 0.5 · L_AugCE + 0.5 · L_KD + 0.2 · L_cons
+                = 0.7 · [0.7 · CE(clean) + 0.3 · CE(degraded)] + 0.3 · L_KD + 0.2 · L_cons
 
     Kết hợp:
-        1. L_AugCE: CrossEntropyLoss với Label Smoothing 0.05 (trọng số 0.5)
-        2. L_KD   : Chưng cất tri thức KL Selective Teacher-Correct (trọng số 0.5, T=2.0)
-        3. L_cons : PairedConsistencyLoss đồng bộ logit clean <-> degraded (trọng số 0.2)
+        1. L_AugCE: CrossEntropyLoss với Label Smoothing 0.05 (trọng số 0.7, 70% clean + 30% degraded)
+        2. L_KD   : Chưng cất tri thức KL Selective Teacher-Correct (trọng số 0.3, T=2.0)
+        3. L_cons : PairedConsistencyLoss đồng bộ logit clean (detached) <-> degraded (trọng số 0.2)
     """
 
     def __init__(
         self,
-        weight_ce: float = 0.5,
+        weight_ce: float = 0.7,
         label_smoothing: float = 0.05,
         temperature: float = 2.0,
-        alpha_kd: float = 0.5,
+        alpha_kd: float = 0.3,
         beta_cons: float = 0.2,
     ):
         super().__init__()
@@ -284,20 +280,14 @@ class CrossDomainTotalLoss(nn.Module):
         logits_degraded: Optional[torch.Tensor] = None,
         clean_mask: Optional[torch.Tensor] = None,
     ) -> dict:
-        """
-        Args:
-            logits:           Logit student tổng hợp (B, C)
-            targets:          Nhãn ground-truth (B,)
-            teacher_logits:   Logit teacher đóng băng (B, C). None → bỏ qua L_KD.
-            logits_degraded:  Logit ảnh suy biến (B, C). None → bỏ qua L_cons.
-            clean_mask:       Boolean mask (B,) xác định mẫu sạch cho L_KD.
-        Returns:
-            dict với keys: 'loss_total', 'loss_ce', 'loss_kd', 'loss_cons'
-        """
-        loss_ce_raw = self.ce_loss(logits, targets)
-        loss_ce     = self.weight_ce * loss_ce_raw
-        loss_kd     = torch.tensor(0.0, device=logits.device)
-        loss_cons   = torch.tensor(0.0, device=logits.device)
+        if logits_degraded is not None:
+            loss_ce_raw = 0.7 * self.ce_loss(logits, targets) + 0.3 * self.ce_loss(logits_degraded, targets)
+        else:
+            loss_ce_raw = self.ce_loss(logits, targets)
+
+        loss_ce   = self.weight_ce * loss_ce_raw
+        loss_kd   = logits.sum() * 0.0
+        loss_cons = logits.sum() * 0.0
 
         if teacher_logits is not None and self.kd_loss.alpha_kd > 0.0:
             loss_kd = self.kd_loss(logits, teacher_logits, labels=targets, clean_mask=clean_mask)

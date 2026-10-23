@@ -36,7 +36,15 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 
 from src.training.loss import CrossDomainTotalLoss
 from src.datasets.transforms import PairedCleanDegradedAugmentation
@@ -465,7 +473,7 @@ class CrossDomainTrainer:
                 x_degraded = None
 
             targets = targets.to(self.device)
-            clean_mask = (targets == 0)  # Nhan 0 la anh that sach
+            clean_mask = None  # Luồng x_clean đã là ảnh sạch cho cả Real (0) và Fake (1)
 
             # Tinh toan logit mo hinh mau (teacher) khong qua dao ham va tiet kiem VRAM
             teacher_logits = None
@@ -652,7 +660,7 @@ class CrossDomainTrainer:
                     if is_best:
                         shutil.copy2(best_path, os.path.join(drive_branch_dir, self.save_name))
                         if self.save_name != "crossdomain_model_best.pth":
-                            shutil.copy2(alt_path, os.path.join(drive_branch_dir, "crossdomain_model_best.pth"))
+                            shutil.copy2(alt_path, os.path.join(drive_branch_dir, alt_name))
                     print(f"  [✓] Da dong bo checkpoint an toan sang Google Drive: {drive_branch_dir}")
                 except Exception as e:
                     print(f"  [!] Canh bao dong bo Drive ({drive_base}): {e}")
@@ -667,9 +675,9 @@ def run_training_pipeline(args):
     print(f"Thiet bi: {device} | Dry-run: {args.dry_run} | Epochs: {args.epochs}")
     print("=" * 80)
 
-    # 1. Khoi tao Loss (Anchored Recovery Task 6.3-R: 0.3 CE + 0.7 KD + 0.2 Cons)
+    # 1. Khoi tao Loss (Anchored Recovery Task 6.3-R: 0.7 CE + 0.3 KD + 0.2 Cons)
     criterion = CrossDomainTotalLoss(
-        weight_ce=getattr(args, "weight_ce", 0.3),
+        weight_ce=getattr(args, "weight_ce", 0.7),
         label_smoothing=args.label_smoothing,
         temperature=args.temperature,
         alpha_kd=args.alpha_kd if args.branch in ["M4", "M5"] else 0.0,
@@ -826,8 +834,8 @@ def run_training_pipeline(args):
         f"Loi phan nhom tham so: group_new={len(params_new)}, group_pretrained={len(params_pretrained)}"
     )
 
-    lr_new = getattr(args, "learning_rate", 2e-4)
-    lr_pretrained = getattr(args, "anchor_learning_rate", 3e-5)
+    lr_new = getattr(args, "learning_rate", 3e-4)
+    lr_pretrained = getattr(args, "anchor_learning_rate", 5e-5)
 
     print(f"[*] Differential Learning Rate (Task 6.3-R):")
     print(f"    • Nhom 1 (Module moi: SRM/Gating blocks 7, 15, 23): {len(params_new)} tensors, lr = {lr_new:.2e}, weight_decay = 1e-4")
@@ -963,23 +971,23 @@ def parse_arguments():
         "device": default_device,
         "epochs": 3,
         "batch_size": 16,
-        "learning_rate": 2e-4,
-        "anchor_learning_rate": 3e-5,
-        "weight_ce": 0.5,
-        "alpha_kd": 0.5,
+        "learning_rate": 3e-4,
+        "anchor_learning_rate": 5e-5,
+        "weight_ce": 0.7,
+        "alpha_kd": 0.3,
         "beta_cons": 0.2,
         "temperature": 2.0,
         "label_smoothing": 0.05,
         "save_dir": "checkpoints/m4_recovery",
         "seed": 42,
-        "grad_accum_steps": 4,
+        "grad_accum_steps": 1,
         "clip_path": "ViT-L-14.pt",
         "checkpoint_init": "fatformer_4class_ckpt.pth",
         "teacher_checkpoint": "fatformer_4class_ckpt.pth",
         "train_manifest": "DATASET/manifests/data_manifest.json",
         "train_dir": "DATASET/train_crossdomain",
         "val_dir": "DATASET/val_crossdomain",
-        "num_workers": 0,
+        "num_workers": 2,
     }
 
     # 2. Neu co config YAML, nap cac truong vao defaults truoc khi xu ly CLI
@@ -1025,8 +1033,8 @@ def parse_arguments():
     parser.add_argument("--batch_size", type=int, default=defaults["batch_size"], help="Batch size")
     parser.add_argument("--learning_rate", type=float, default=defaults["learning_rate"], help="Learning rate cho module moi (SRM/Gating)")
     parser.add_argument("--anchor_learning_rate", type=float, default=defaults["anchor_learning_rate"], help="Learning rate cho pretrained adapters (FAA/LGA/ctx)")
-    parser.add_argument("--weight_ce", type=float, default=defaults["weight_ce"], help="Trong so Cross-Entropy loss tren anh tang cuong (mac dinh 0.5)")
-    parser.add_argument("--alpha_kd", type=float, default=defaults["alpha_kd"], help="Trong so KD loss (mac dinh 0.5)")
+    parser.add_argument("--weight_ce", type=float, default=defaults["weight_ce"], help="Trong so Cross-Entropy loss tren anh tang cuong (mac dinh 0.7)")
+    parser.add_argument("--alpha_kd", type=float, default=defaults["alpha_kd"], help="Trong so KD loss (mac dinh 0.3)")
     parser.add_argument("--beta_cons", type=float, default=defaults["beta_cons"], help="Trong so Consistency loss (mac dinh 0.2)")
     parser.add_argument("--temperature", type=float, default=defaults["temperature"], help="Nhiet do KD")
     parser.add_argument("--label_smoothing", type=float, default=defaults["label_smoothing"], help="Label smoothing")
@@ -1041,7 +1049,7 @@ def parse_arguments():
     parser.add_argument("--train_manifest", type=str, default=defaults["train_manifest"], help="Duong dan tep manifest json")
     parser.add_argument("--train_dir", type=str, default=defaults["train_dir"], help="Thu muc du lieu train")
     parser.add_argument("--val_dir", type=str, default=defaults["val_dir"], help="Thu muc du lieu val")
-    parser.add_argument("--num_workers", type=int, default=defaults["num_workers"], help="So luong workers cho DataLoader (mac dinh 0 chong OOM)")
+    parser.add_argument("--num_workers", type=int, default=defaults["num_workers"], help="So luong workers cho DataLoader (mac dinh 2)")
 
     args = parser.parse_args()
 
