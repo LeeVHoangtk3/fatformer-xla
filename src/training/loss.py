@@ -155,42 +155,50 @@ class CrossDomainDistillationLoss(nn.Module):
         clean_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """
-        Args:
-            student_logits: Logit student, shape (B, C) — có gradient
-            teacher_logits: Logit teacher, shape (B, C) — không cần gradient (nên truyền .detach())
-            labels:         Nhãn ground-truth (B,) dùng để lọc mẫu Teacher đoán ĐÚNG (Selective Teacher-Correct KD).
-            clean_mask:     Boolean mask shape (B,) xác định mẫu ảnh sạch.
-                            Nếu None → áp dụng trên toàn batch.
-        Returns:
-            Scalar: α_kd · τ² · KL(student ‖ teacher)
+        Class-Balanced Selective Teacher-Correct Knowledge Distillation:
+        - Chỉ chưng cất trên các mẫu mà Teacher dự đoán ĐÚNG với nhãn thật `labels`.
+        - Cân bằng 50/50 trọng số KL giữa nhóm Real đúng và nhóm Fake đúng để chống thiên lệch lớp Real.
         """
         if self.alpha_kd == 0.0:
-            return torch.tensor(0.0, device=student_logits.device)
-
-        # Selective Teacher-Correct Masking (Triệt tiêu Blind Teacher Distillation Paradox)
-        if labels is not None:
-            teacher_preds = teacher_logits.detach().argmax(dim=-1)
-            valid_kd_mask = (teacher_preds == labels)
-            if clean_mask is not None:
-                valid_kd_mask = valid_kd_mask & clean_mask.bool()
-        elif clean_mask is not None:
-            valid_kd_mask = clean_mask.bool()
-        else:
-            valid_kd_mask = None
-
-        if valid_kd_mask is not None:
-            student_logits = student_logits[valid_kd_mask]
-            teacher_logits = teacher_logits[valid_kd_mask]
-
-        if student_logits.numel() == 0:
-            # Không có mẫu Teacher đoán đúng trong batch → trả về zero loss với tensor đúng graph
             return student_logits.sum() * 0.0
 
         tau = self.temperature
-        student_log_prob = F.log_softmax(student_logits / tau, dim=-1)  # (N, C)
-        teacher_prob     = F.softmax(teacher_logits.detach() / tau, dim=-1).to(student_log_prob.dtype)  # (N, C) — no grad
+        student_log_prob = F.log_softmax(student_logits / tau, dim=-1)  # (B, C)
+        teacher_prob = F.softmax(teacher_logits.detach() / tau, dim=-1).to(student_log_prob.dtype)  # (B, C)
 
-        kl = self.kl_loss(student_log_prob, teacher_prob)
+        # Tính KL divergence cho từng mẫu trong batch: shape (B,)
+        kl_per_sample = F.kl_div(student_log_prob, teacher_prob, reduction="none").sum(dim=-1)
+
+        if labels is not None:
+            teacher_preds = teacher_logits.detach().argmax(dim=-1)
+            correct_mask = (teacher_preds == labels)
+            if clean_mask is not None:
+                correct_mask = correct_mask & clean_mask.bool()
+
+            real_correct_mask = correct_mask & (labels == 0)
+            fake_correct_mask = correct_mask & (labels == 1)
+
+            has_real = bool(real_correct_mask.any().item())
+            has_fake = bool(fake_correct_mask.any().item())
+
+            if has_real and has_fake:
+                kl_real = kl_per_sample[real_correct_mask].mean()
+                kl_fake = kl_per_sample[fake_correct_mask].mean()
+                kl = 0.5 * (kl_real + kl_fake)
+            elif has_real:
+                # Giảm chấn lực kéo một chiều nếu trong batch không có mẫu Fake nào Teacher đoán đúng
+                kl = 0.25 * kl_per_sample[real_correct_mask].mean()
+            elif has_fake:
+                kl = kl_per_sample[fake_correct_mask].mean()
+            else:
+                return student_logits.sum() * 0.0
+        else:
+            if clean_mask is not None:
+                kl_per_sample = kl_per_sample[clean_mask.bool()]
+            if kl_per_sample.numel() == 0:
+                return student_logits.sum() * 0.0
+            kl = kl_per_sample.mean()
+
         return self.alpha_kd * (tau ** 2) * kl
 
 

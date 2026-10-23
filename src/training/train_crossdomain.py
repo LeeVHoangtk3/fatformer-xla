@@ -652,7 +652,7 @@ class CrossDomainTrainer:
                     if is_best:
                         shutil.copy2(best_path, os.path.join(drive_branch_dir, self.save_name))
                         if self.save_name != "crossdomain_model_best.pth":
-                            shutil.copy2(compat_path, os.path.join(drive_branch_dir, "crossdomain_model_best.pth"))
+                            shutil.copy2(alt_path, os.path.join(drive_branch_dir, "crossdomain_model_best.pth"))
                     print(f"  [✓] Da dong bo checkpoint an toan sang Google Drive: {drive_branch_dir}")
                 except Exception as e:
                     print(f"  [!] Canh bao dong bo Drive ({drive_base}): {e}")
