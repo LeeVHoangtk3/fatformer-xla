@@ -151,12 +151,14 @@ class CrossDomainDistillationLoss(nn.Module):
         self,
         student_logits: torch.Tensor,
         teacher_logits: torch.Tensor,
+        labels: Optional[torch.Tensor] = None,
         clean_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """
         Args:
             student_logits: Logit student, shape (B, C) — có gradient
             teacher_logits: Logit teacher, shape (B, C) — không cần gradient (nên truyền .detach())
+            labels:         Nhãn ground-truth (B,) dùng để lọc mẫu Teacher đoán ĐÚNG (Selective Teacher-Correct KD).
             clean_mask:     Boolean mask shape (B,) xác định mẫu ảnh sạch.
                             Nếu None → áp dụng trên toàn batch.
         Returns:
@@ -165,17 +167,28 @@ class CrossDomainDistillationLoss(nn.Module):
         if self.alpha_kd == 0.0:
             return torch.tensor(0.0, device=student_logits.device)
 
-        if clean_mask is not None:
-            student_logits = student_logits[clean_mask]
-            teacher_logits = teacher_logits[clean_mask]
+        # Selective Teacher-Correct Masking (Triệt tiêu Blind Teacher Distillation Paradox)
+        if labels is not None:
+            teacher_preds = teacher_logits.detach().argmax(dim=-1)
+            valid_kd_mask = (teacher_preds == labels)
+            if clean_mask is not None:
+                valid_kd_mask = valid_kd_mask & clean_mask.bool()
+        elif clean_mask is not None:
+            valid_kd_mask = clean_mask.bool()
+        else:
+            valid_kd_mask = None
+
+        if valid_kd_mask is not None:
+            student_logits = student_logits[valid_kd_mask]
+            teacher_logits = teacher_logits[valid_kd_mask]
 
         if student_logits.numel() == 0:
-            # Không có mẫu clean trong batch → trả về zero loss (không ảnh hưởng gradient)
+            # Không có mẫu Teacher đoán đúng trong batch → trả về zero loss với tensor đúng graph
             return student_logits.sum() * 0.0
 
         tau = self.temperature
-        student_log_prob = F.log_softmax(student_logits / tau, dim=-1)  # (B, C)
-        teacher_prob     = F.softmax(teacher_logits.detach() / tau, dim=-1).to(student_log_prob.dtype)  # (B, C) — no grad
+        student_log_prob = F.log_softmax(student_logits / tau, dim=-1)  # (N, C)
+        teacher_prob     = F.softmax(teacher_logits.detach() / tau, dim=-1).to(student_log_prob.dtype)  # (N, C) — no grad
 
         kl = self.kl_loss(student_log_prob, teacher_prob)
         return self.alpha_kd * (tau ** 2) * kl
@@ -231,22 +244,22 @@ class CrossDomainTotalLoss(nn.Module):
     """
     Hàm mất mát đa mục tiêu neo chặt Teacher (Anchored Recovery Loss) — Task 6.3-B & Task 6.3-R.
 
-    Công thức chuẩn hóa Phase 6-R:
-        L_total = weight_ce · L_AugCE + α_kd · L_KD + β_cons · L_cons
-                = 0.3 · L_AugCE + 0.7 · L_KD + 0.2 · L_cons
+    Công thức chuẩn hóa Phase 6-R (Cân bằng & Selective Teacher-Correct):
+        L_total = weight_ce · L_AugCE + α_kd · L_KD(Teacher-Correct) + β_cons · L_cons
+                = 0.5 · L_AugCE + 0.5 · L_KD + 0.2 · L_cons
 
     Kết hợp:
-        1. L_AugCE: CrossEntropyLoss với Label Smoothing 0.05 (trọng số 0.3)
-        2. L_KD   : Chưng cất tri thức KL neo chặt vào Teacher fatformer gốc (trọng số 0.7, T=2.0)
+        1. L_AugCE: CrossEntropyLoss với Label Smoothing 0.05 (trọng số 0.5)
+        2. L_KD   : Chưng cất tri thức KL Selective Teacher-Correct (trọng số 0.5, T=2.0)
         3. L_cons : PairedConsistencyLoss đồng bộ logit clean <-> degraded (trọng số 0.2)
     """
 
     def __init__(
         self,
-        weight_ce: float = 0.3,
+        weight_ce: float = 0.5,
         label_smoothing: float = 0.05,
         temperature: float = 2.0,
-        alpha_kd: float = 0.7,
+        alpha_kd: float = 0.5,
         beta_cons: float = 0.2,
     ):
         super().__init__()
@@ -279,7 +292,7 @@ class CrossDomainTotalLoss(nn.Module):
         loss_cons   = torch.tensor(0.0, device=logits.device)
 
         if teacher_logits is not None and self.kd_loss.alpha_kd > 0.0:
-            loss_kd = self.kd_loss(logits, teacher_logits, clean_mask=clean_mask)
+            loss_kd = self.kd_loss(logits, teacher_logits, labels=targets, clean_mask=clean_mask)
 
         if logits_degraded is not None and self.cons_loss.beta_cons > 0.0:
             loss_cons = self.cons_loss(logits, logits_degraded)

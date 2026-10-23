@@ -571,8 +571,9 @@ class CrossDomainTrainer:
         r_acc = (real_correct / real_total * 100.0) if real_total > 0 else 0.0
         f_acc = (fake_correct / fake_total * 100.0) if fake_total > 0 else 0.0
 
-        # Diem composite danh gia su can bang giua Real va Fake
-        composite = 0.5 * macro_acc + 0.25 * r_acc + 0.25 * f_acc
+        # Diem composite danh gia su can bang giua Real va Fake (uu tien ca Real va Fake moi)
+        min_rf = min(r_acc, f_acc)
+        composite = 0.5 * macro_acc + 0.5 * min_rf
         return {
             "val_acc": macro_acc,
             "val_r_acc": r_acc,
@@ -583,7 +584,7 @@ class CrossDomainTrainer:
     def save_checkpoint(self, epoch: int, is_best: bool = False, val_metrics: Optional[Dict[str, float]] = None) -> None:
         """
         Chinh sach xoay vong checkpoint nham bao ve bo nho dia luu tru:
-        - checkpoint_latest.pth: Luon ghi de de phuc vu phuc hoi phien (chua day du optimizer, scheduler).
+        - checkpoint_latest.pth & fatformer_anchored_recovery_last.pth: Luon ghi de sau moi epoch.
         - fatformer_anchored_recovery_best.pth / save_name: Chi luu model.state_dict() va metadata
           (dung luong gon ~2.0 GB, khong kem optimizer, nap khop 100%).
         """
@@ -600,6 +601,20 @@ class CrossDomainTrainer:
         latest_path = os.path.join(self.save_dir, "checkpoint_latest.pth")
         torch.save(state_latest, latest_path)
 
+        last_clean_path = os.path.join(self.save_dir, "fatformer_anchored_recovery_last.pth")
+        clean_state_last = {
+            "model": model_sd,
+            "metadata": {
+                "epoch": epoch,
+                "val_acc": val_metrics.get("val_acc", 0.0) if val_metrics else 0.0,
+                "val_r_acc": val_metrics.get("val_r_acc", 0.0) if val_metrics else 0.0,
+                "val_f_acc": val_metrics.get("val_f_acc", 0.0) if val_metrics else 0.0,
+                "composite": val_metrics.get("val_composite", self.best_composite_score) if val_metrics else self.best_composite_score,
+                "branch": "M4",
+            }
+        }
+        torch.save(clean_state_last, last_clean_path)
+
         if is_best:
             v_acc = val_metrics.get("val_acc", 0.0) if val_metrics else 0.0
             comp = val_metrics.get("val_composite", self.best_composite_score) if val_metrics else self.best_composite_score
@@ -608,6 +623,8 @@ class CrossDomainTrainer:
                 "metadata": {
                     "epoch": epoch,
                     "val_acc": v_acc,
+                    "val_r_acc": val_metrics.get("val_r_acc", 0.0) if val_metrics else 0.0,
+                    "val_f_acc": val_metrics.get("val_f_acc", 0.0) if val_metrics else 0.0,
                     "composite": comp,
                     "branch": "M4",
                 }
@@ -809,8 +826,8 @@ def run_training_pipeline(args):
         f"Loi phan nhom tham so: group_new={len(params_new)}, group_pretrained={len(params_pretrained)}"
     )
 
-    lr_new = args.learning_rate
-    lr_pretrained = lr_new * 0.1
+    lr_new = getattr(args, "learning_rate", 2e-4)
+    lr_pretrained = getattr(args, "anchor_learning_rate", 3e-5)
 
     print(f"[*] Differential Learning Rate (Task 6.3-R):")
     print(f"    • Nhom 1 (Module moi: SRM/Gating blocks 7, 15, 23): {len(params_new)} tensors, lr = {lr_new:.2e}, weight_decay = 1e-4")
@@ -868,6 +885,12 @@ def run_training_pipeline(args):
             val_0 = trainer.validate()
             print(f"[Epoch 0 Baseline] Clean Val ACC: {val_0['val_acc']:.2f}% | Real ACC: {val_0['val_r_acc']:.2f}% | Fake ACC: {val_0['val_f_acc']:.2f}% | Composite: {val_0['val_composite']:.2f}%")
             trainer.best_composite_score = val_0["val_composite"]
+            trainer.epoch0_val_acc = val_0["val_acc"]
+            trainer.epoch0_composite = val_0["val_composite"]
+
+            # [YÊU CẦU 2.1]: Luu ngay lap tuc checkpoint moc san Epoch 0 xuong o dia de dam bao best_ckpt luon ton tai 100%
+            trainer.save_checkpoint(epoch=0, is_best=True, val_metrics=val_0)
+            print(f"  [✓] Da khoi tao va bao luu checkpoint neo san Epoch 0 tai: {os.path.join(trainer.save_dir, trainer.save_name)}")
 
     if args.dry_run:
         print("\n[DRY-RUN] Bat dau chay kiem thu 1 step Train + 1 step Val...")
@@ -887,11 +910,14 @@ def run_training_pipeline(args):
         val_metrics = trainer.validate()
         elapsed = time.time() - t0
 
-        # Rang buoc: Chi luu checkpoint moi neu duy tri duoc Real_ACC >= 85.0% va Val_ACC > 55.0%
-        is_healthy = (val_metrics["val_r_acc"] >= 85.0) and (val_metrics["val_acc"] > 55.0)
-        is_best = is_healthy and (val_metrics["val_composite"] > trainer.best_composite_score)
+        # Rang buoc tuyen chon: Duy tri Real_ACC >= 85.0% va cai thien composite hoac val_acc
+        is_healthy = (val_metrics["val_r_acc"] >= 85.0)
+        is_best = is_healthy and (
+            val_metrics["val_composite"] >= trainer.best_composite_score or
+            val_metrics["val_acc"] > getattr(trainer, "epoch0_val_acc", 0.0)
+        )
         if is_best:
-            trainer.best_composite_score = val_metrics["val_composite"]
+            trainer.best_composite_score = max(trainer.best_composite_score, val_metrics["val_composite"])
 
         trainer.save_checkpoint(epoch, is_best=is_best, val_metrics=val_metrics)
         print(f"Epoch {epoch}/{args.epochs} ({elapsed:.1f}s) | Train Loss: {train_metrics['loss_total']:.4f} | "
@@ -916,6 +942,14 @@ def run_training_pipeline(args):
             except Exception:
                 pass
 
+    # [YÊU CẦU 2.2]: Chot chan an toan: Dam bao checkpoint best.pth ton tai 100% truoc khi ket thuc
+    best_ckpt_path = os.path.join(trainer.save_dir, trainer.save_name)
+    if not os.path.exists(best_ckpt_path):
+        print(f"[!] Canh bao: Fallback luu checkpoint epoch cuoi cung thanh {best_ckpt_path}")
+        trainer.save_checkpoint(epoch=args.epochs, is_best=True, val_metrics=val_metrics)
+    assert os.path.exists(best_ckpt_path), f"CRITICAL LỖI: Checkpoint {best_ckpt_path} không tồn tại sau huấn luyện!"
+    print(f"[✓] XAC NHAN: Checkpoint best hop le ton tai 100%: {best_ckpt_path}")
+
 
 def parse_arguments():
     # 1. Quet truoc de kiem tra co truyen --config hay khong
@@ -929,9 +963,10 @@ def parse_arguments():
         "device": default_device,
         "epochs": 3,
         "batch_size": 16,
-        "learning_rate": 1e-4,
-        "weight_ce": 0.3,
-        "alpha_kd": 0.7,
+        "learning_rate": 2e-4,
+        "anchor_learning_rate": 3e-5,
+        "weight_ce": 0.5,
+        "alpha_kd": 0.5,
         "beta_cons": 0.2,
         "temperature": 2.0,
         "label_smoothing": 0.05,
@@ -959,6 +994,7 @@ def parse_arguments():
             defaults["epochs"] = t_cfg.get("epochs", defaults["epochs"])
             defaults["batch_size"] = t_cfg.get("batch_size", defaults["batch_size"])
             defaults["learning_rate"] = float(t_cfg.get("learning_rate", defaults["learning_rate"]))
+            defaults["anchor_learning_rate"] = float(t_cfg.get("anchor_learning_rate", defaults["anchor_learning_rate"]))
             defaults["save_dir"] = t_cfg.get("save_dir", defaults["save_dir"])
             if "device" in t_cfg:
                 defaults["device"] = t_cfg.get("device", defaults["device"])
@@ -987,10 +1023,11 @@ def parse_arguments():
     parser.add_argument("--device", type=str, default=defaults["device"], help="Thiet bi: cuda hoac cpu")
     parser.add_argument("--epochs", type=int, default=defaults["epochs"], help="So epochs")
     parser.add_argument("--batch_size", type=int, default=defaults["batch_size"], help="Batch size")
-    parser.add_argument("--learning_rate", type=float, default=defaults["learning_rate"], help="Learning rate cho module moi (SRM/Gating), pretrained adapters giam 10x")
-    parser.add_argument("--weight_ce", type=float, default=defaults["weight_ce"], help="Trong so Cross-Entropy loss tren anh tang cuong (mac dinh 0.3)")
-    parser.add_argument("--alpha_kd", type=float, default=defaults["alpha_kd"], help="Trong so KD loss")
-    parser.add_argument("--beta_cons", type=float, default=defaults["beta_cons"], help="Trong so Consistency loss")
+    parser.add_argument("--learning_rate", type=float, default=defaults["learning_rate"], help="Learning rate cho module moi (SRM/Gating)")
+    parser.add_argument("--anchor_learning_rate", type=float, default=defaults["anchor_learning_rate"], help="Learning rate cho pretrained adapters (FAA/LGA/ctx)")
+    parser.add_argument("--weight_ce", type=float, default=defaults["weight_ce"], help="Trong so Cross-Entropy loss tren anh tang cuong (mac dinh 0.5)")
+    parser.add_argument("--alpha_kd", type=float, default=defaults["alpha_kd"], help="Trong so KD loss (mac dinh 0.5)")
+    parser.add_argument("--beta_cons", type=float, default=defaults["beta_cons"], help="Trong so Consistency loss (mac dinh 0.2)")
     parser.add_argument("--temperature", type=float, default=defaults["temperature"], help="Nhiet do KD")
     parser.add_argument("--label_smoothing", type=float, default=defaults["label_smoothing"], help="Label smoothing")
     parser.add_argument("--save_dir", type=str, default=defaults["save_dir"], help="Thu muc luu checkpoint")
