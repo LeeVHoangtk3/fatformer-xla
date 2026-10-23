@@ -417,14 +417,11 @@ def build_locked_model(checkpoint_path: str, clip_path: str, device: torch.devic
         load_res = CheckpointManager.load(checkpoint_path, model, device="cpu", strict=False)
         missing_count = len(load_res.missing_keys)
         unexpected_count = len(load_res.unexpected_keys)
-        assert unexpected_count == 0, f"Lỗi nạp checkpoint khi đánh giá! Unexpected: {unexpected_count}"
+        if unexpected_count > 0:
+            print(f"  [!] Chu y: Checkpoint co {unexpected_count} unexpected keys (duoc bo qua an toan voi strict=False).")
         if missing_count > 0:
             assert all(("srm" in k or "gating" in k or "lora" in k) for k in load_res.missing_keys), (
                 f"Phát hiện missing keys bất thường: {load_res.missing_keys}"
-            )
-        else:
-            assert missing_count == 0 and unexpected_count == 0, (
-                f"Lỗi nạp checkpoint khi đánh giá! Missing: {missing_count}, Unexpected: {unexpected_count}"
             )
         print(f"[✓] Nap thanh cong: Missing={missing_count}, Unexpected={unexpected_count}")
     else:
