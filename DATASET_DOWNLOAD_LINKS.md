@@ -19,6 +19,7 @@ Tài liệu này cung cấp **đầy đủ 100% các liên kết tải trực ti
 7. [Tập Kiểm Thử 10 Biến Thể Diffusion: Official DMs Benchmark](#7-tap-kiem-thu-diffusion)
 8. [Tập Xúc Tác In-The-Wild: GenImage SD v1.5 & Midjourney v5](#8-tap-xuc-tac-genimage)
 9. [Bộ Lệnh Colab Tải Siêu Tốc & Đóng Gói .TAR Chống Lỗi](#9-bo-lenh-colab-chuan-hoa)
+10. [Hệ Thống Kho Dữ Liệu Kaggle Datasets & Mirrors](#10-ha-tang-du-lieu-kaggle)
 
 ---
 
@@ -36,6 +37,15 @@ Tài liệu này cung cấp **đầy đủ 100% các liên kết tải trực ti
 | **GANs Testset** | Hugging Face CNNDetection | `.zip` $\rightarrow$ `.tar` | **18.74 GB** | **90.329 ảnh** | `MyDrive/Fatformer/datasets/test_benchmark_gans.tar` |
 | **Degraded Testset** | Sinh tự động (Task 2.1) | Nén nội bộ $\rightarrow$ `.tar` | **19.55 GB** | **661.974 ảnh** | `MyDrive/Fatformer/datasets/test_degraded.tar` |
 | 🏆 **TỔNG KHO TRÊN DRIVE** | Đóng gói nguyên khối | `.tar` | **55.98 GB** | **927.927 ảnh** | Chiếm **~1.12%** dung lượng gói Drive 5TB |
+
+### 1.1. Bảng Tra Cứu Kaggle Datasets & Mirrors (Đám Mây NVMe SSD)
+
+| Tên Dataset (Kaggle Slug) | Định Dạng | Dung Lượng | Thành Phần Dữ Liệu | Mục Đích Phục Vụ | Trạng Thái |
+| :--- | :---: | :---: | :--- | :--- | :---: |
+| **[`hoangleev/fatformer-assets-pack`](https://www.kaggle.com/datasets/hoangleev/fatformer-assets-pack)** | Tự động bung | 17.75 GB | `ViT-L-14.pt`, `fatformer_4class_ckpt.pth`, `progan_train`, `progan_val`, `diffusion_staging` | Huấn luyện Finetune & Xác thực (Task 4.3, 5.1, 6.3) | `Ready` |
+| **[`hoangleev/fatformer-test-datasets`](https://www.kaggle.com/datasets/hoangleev/fatformer-test-datasets)** | `.tar` (PAX) | 39.51 GB | 3 file tar: `test_benchmark_diffusion.tar` (1.22 GB), `test_benchmark_gans.tar` (18.74 GB), `test_degraded.tar` (19.55 GB) | Lưu trữ nguyên bản 3 bộ test chuẩn hóa tên file | `Ready` |
+| **[`hoangleev/fatformer-eval-benchmarks`](https://www.kaggle.com/datasets/hoangleev/fatformer-eval-benchmarks)** | Giải nén sẵn | ~40.0 GB | 18 thư mục con của 8 họ GANs và 10 họ Diffusion | Kiểm chuẩn tốc độ cao (Inference Benchmark) | `Ready` |
+| **[`hoangleev/fatformer-code`](https://www.kaggle.com/datasets/hoangleev/fatformer-code)** | Tệp nén / Mã nguồn | ~2 MB | `train.py`, `src/`, `configs/`, `tools/` | Mã nguồn thực thi trên Kaggle Notebook | `Ready` |
 
 ---
 
@@ -695,4 +705,34 @@ rm -rf /content/train
 ```
 
 ---
-*Tài liệu này được biên soạn độc quyền cho dự án FatFormer-XLA, đảm bảo 100% khả năng tái lập thực nghiệm và tối ưu hóa hạ tầng Google Drive 5TB.*
+
+<a name="10-ha-tang-du-lieu-kaggle"></a>
+## 10. HỆ THỐNG KHO DỮ LIỆU TRÊN NỀN TẢNG KAGGLE (KAGGLE DATASETS & BENCHMARK MIRRORS)
+
+Để phục vụ huấn luyện trên máy chủ Kaggle GPU (RTX Pro 6000 Blackwell 95GB VRAM / T4 x2) và kiểm chuẩn độc lập tốc độ cao mà không bị nghẽn I/O từ Google Drive, toàn bộ hệ sinh thái dữ liệu của dự án FatFormer-XLA được tổ chức thành các kho Dataset chuyên biệt:
+
+### 10.1. Danh Sách Các Dataset Kaggle Chính Thức
+
+1. **`hoangleev/fatformer-assets-pack` (17.75 GB)**:
+   - Chứa trọng số tiền huấn luyện `ViT-L-14.pt`, `fatformer_4class_ckpt.pth`, từ điển BPE và dữ liệu huấn luyện `progan_train`, `progan_val`, `diffusion_staging`.
+   - Được Kaggle tự động giải nén ra NVMe SSD tại `/kaggle/input/datasets/hoangleev/fatformer-assets-pack/` hoặc `/kaggle/input/fatformer-assets-pack/`.
+2. **`hoangleev/fatformer-test-datasets` (39.51 GB)**:
+   - Chứa trọn vẹn 3 tệp `.tar` kiểm thử đã được chuẩn hóa theo chuẩn `tarfile.PAX_FORMAT`:
+     - `test_benchmark_diffusion.tar` (1.22 GB, 20.033 mục).
+     - `test_benchmark_gans.tar` (18.74 GB, 90.460 mục).
+     - `test_degraded.tar` (19.55 GB, 662.953 mục).
+3. **`hoangleev/fatformer-eval-benchmarks` (~40.0 GB)**:
+   - Bản mirror đã giải nén sẵn của toàn bộ các tập kiểm chuẩn Diffusion và GANs, cho phép nạp trực tiếp qua `ImageFolder` mà không cần tốn thời gian giải nén tại mỗi phiên chạy.
+4. **`hoangleev/fatformer-code` (~2 MB)**:
+   - Gói mã nguồn Python sạch sẽ, được nạp tại `/kaggle/input/datasets/hoangleev/fatformer-code`.
+
+### 10.2. Quy Trình Khử Ký Tự Cấm & Tải Lên Chống Tràn Đĩa Bằng Colab
+
+- **Vấn đề**: Tệp dữ liệu ban đầu từ nguồn gốc chứa các ký tự cấm của Kaggle API như dấu hai chấm `:` trong nhãn thời gian của ảnh GANs (ví dụ: `2015-12-31 17:23:30_fake.png`). Ngoài ra, nếu bung ~40 GB dữ liệu ra ổ đĩa Colab trước khi upload sẽ dẫn đến lỗi đầy đĩa (Disk Full).
+- **Giải pháp chuẩn hóa**: Đã được thực thi thành công trong notebook [`notebooks/upload_3_test_set_kaggle.ipynb`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/notebooks/upload_3_test_set_kaggle.ipynb):
+  - Sử dụng bộ lọc luồng (stream filter) duyệt từng header trong file `.tar` và khử ký tự cấm bằng regex `re.compile(r'[:*?"<>|\\]')`.
+  - Cơ chế hardlink staging qua `os.link` giúp tạo cấu trúc tệp upload mà không tốn thêm byte đĩa cứng nào.
+  - Tải lên Kaggle theo từng phiên bản gia số (`kaggle datasets version -p /content/kaggle_upload`).
+
+---
+*Tài liệu này được biên soạn độc quyền cho dự án FatFormer-XLA, đảm bảo 100% khả năng tái lập thực nghiệm và tối ưu hóa hạ tầng Google Drive 5TB cùng Kaggle NVMe Cloud.*

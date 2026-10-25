@@ -298,7 +298,9 @@ Từ kết quả thực nghiệm trên 136.003 lượt suy luận, dự án FatF
 
 ## VII. BẢNG KÊ KHAI ĐƯỜNG DẪN VẬT LÝ & TOÀN VẸN MÃ BĂM (ARTIFACTS & HASH AUDIT)
 
-Để bảo đảm tính minh bạch khoa học và khả năng tái lập 100% kết quả (Reproducibility), toàn bộ các tệp trọng số đã được kiểm kê mã băm SHA-256 và đường dẫn lưu trữ:
+Để bảo đảm tính minh bạch khoa học và khả năng tái lập 100% kết quả (Reproducibility), toàn bộ các tệp trọng số và kho dữ liệu kiểm chuẩn đã được kiểm kê mã băm SHA-256 và đường dẫn lưu trữ:
+
+### 7.1. Bảng Kê Khai Trọng Số Checkpoint & Mã Băm SHA-256
 
 | Tên Checkpoint | Dung Lượng | Mã Băm SHA-256 | Đường Dẫn Lưu Trữ Cục Bộ (Local Workspace) | Đường Dẫn Google Drive 5TB Đồng Bộ |
 | :--- | :---: | :--- | :--- | :--- |
@@ -309,6 +311,19 @@ Từ kết quả thực nghiệm trên 136.003 lượt suy luận, dự án FatF
 | **`fatformer_wise_ft_best.pth`** | 4.47 GB | `8205854815317ee3b16ee101bd359756b960eaf9ca09746a4616624ddd073f1b` | `DATASET/checkpoints/wise_ft/fatformer_wise_ft_best.pth` | `/content/drive/MyDrive/Fatformer/checkpoint/fatformer_wise_ft_best.pth` |
 | **`fatformer_anchored_recovery_best.pth`** | 1.84 GB | `F70A11DF9D7F45C11C60C4E117F8D1302C4F426B1F1B567CB2E50387B0111DEF` | `wait/task6-3-r/fatformer_anchored_recovery_best.pth` & `checkpoints/m4_recovery/` | `/content/drive/MyDrive/Fatformer/checkpoint/fatformer_anchored_recovery_best.pth` |
 | **`fatformer_anchored_recovery_last.pth`** | 1.84 GB | `5A9C1043E822E543D7517E938782D741BE6A717B9C455823EA319B4C333215D3` | `wait/task6-3-r/fatformer_anchored_recovery_last.pth` & `checkpoints/m4_recovery/` | `/content/drive/MyDrive/Fatformer/checkpoint/fatformer_anchored_recovery_last.pth` |
+
+### 7.2. Bảng Kê Khai Kho Dữ Liệu Kiểm Thử & Hạ Tầng Phân Phối Đa Nền Tảng (Drive 5TB & Kaggle Mirrors)
+
+Nhằm phục vụ quá trình huấn luyện và kiểm chuẩn độc lập tốc độ cao trên các hạ tầng tính toán đám mây (Kaggle Server RTX Pro 6000 / Colab Pro), toàn bộ các tập dữ liệu benchmark đã được đồng bộ hóa và đóng gói:
+
+| Tập Dữ Liệu Benchmark | Định Dạng | Dung Lượng | Số Lượng Mục / Ảnh | Quy Cách Chuẩn Hóa PAX | Đường Dẫn Google Drive 5TB | Kho Lưu Trữ Kaggle Dataset |
+| :--- | :---: | :---: | :---: | :--- | :--- | :--- |
+| **`test_benchmark_diffusion.tar`** | `.tar` (PAX) | 1.22 GB | 20.033 mục (20.000 ảnh) | 0 mục đổi tên (Khớp 100%) | `MyDrive/Fatformer/datasets/test_benchmark_diffusion.tar` | [`hoangleev/fatformer-test-datasets`](https://www.kaggle.com/datasets/hoangleev/fatformer-test-datasets) |
+| **`test_benchmark_gans.tar`** | `.tar` (PAX) | 18.74 GB | 90.460 mục (90.329 ảnh) | Đã chuẩn hóa 1.094 tên file chứa ký tự cấm (`:`) | `MyDrive/Fatformer/datasets/test_benchmark_gans.tar` | [`hoangleev/fatformer-test-datasets`](https://www.kaggle.com/datasets/hoangleev/fatformer-test-datasets) |
+| **`test_degraded.tar`** | `.tar` (PAX) | 19.55 GB | 662.953 mục (661.974 ảnh) | Đã chuẩn hóa 6.564 tên file chứa ký tự cấm (`:`) | `MyDrive/Fatformer/datasets/test_degraded.tar` | [`hoangleev/fatformer-test-datasets`](https://www.kaggle.com/datasets/hoangleev/fatformer-test-datasets) |
+| 🌐 **Kaggle Uncompressed Mirror** | Giải nén sẵn | ~40 GB | 18 tập test sạch | Giải nén sẵn trên SSD NVMe | - | [`hoangleev/fatformer-eval-benchmarks`](https://www.kaggle.com/datasets/hoangleev/fatformer-eval-benchmarks) *(Status: ready)* |
+
+- **Notebook Tải Lên & Khử Lỗi Tên File**: Toàn bộ quy trình nạp 3 tập test từ Google Drive lên Kaggle Dataset mà không gây tràn ổ đĩa Colab được quản lý tại [`notebooks/upload_3_test_set_kaggle.ipynb`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/notebooks/upload_3_test_set_kaggle.ipynb). Notebook sử dụng cơ chế streaming filter loại bỏ các ký tự đặc biệt (`:*?"<>|\`), tạo hard-link và đẩy trực tiếp qua Kaggle API.
 
 ---
 
