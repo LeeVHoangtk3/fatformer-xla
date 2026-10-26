@@ -2,7 +2,8 @@
 
 Tài liệu thiết kế kiến trúc và cấu trúc tổng thể toàn diện của đồ án **FatFormer-XLA** được đặt tại:
 
-👉 **[Bản Thiết Kế Kiến Trúc & Tổng Quan Hệ Thống (tong_quan_du_an.md)](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/overall/tong_quan_du_an.md)**
+👉 **[Bản Thiết Kế Kiến Trúc & Tổng Quan Hệ Thống (tong_quan_du_an.md)](tong_quan_du_an.md)**  
+👉 **[Báo Cáo Nghiệm Thu Kiểm Định Ngoại Vi CommunityForensics-Eval (CVPR 2025)](bao_cao_kiem_dinh_communityforensics_eval.md)**  
 
 ---
 

@@ -1,0 +1,318 @@
+{
+  "clean": {
+    "baseline": {
+      "by_subset": {
+        "1_commercial": {
+          "macro_acc": 56.17,
+          "real_acc": 94.33,
+          "fake_acc": 18.0,
+          "auc": 75.52,
+          "ap": 72.54,
+          "total_samples": 600
+        },
+        "2_latent_diffusion": {
+          "macro_acc": 64.5,
+          "real_acc": 94.67,
+          "fake_acc": 34.33,
+          "auc": 73.65,
+          "ap": 75.56,
+          "total_samples": 600
+        },
+        "3_pixel_diffusion": {
+          "macro_acc": 65.0,
+          "real_acc": 93.5,
+          "fake_acc": 36.5,
+          "auc": 74.55,
+          "ap": 76.69,
+          "total_samples": 400
+        },
+        "4_modern_gans": {
+          "macro_acc": 95.0,
+          "real_acc": 92.0,
+          "fake_acc": 98.0,
+          "auc": 99.5,
+          "ap": 99.6,
+          "total_samples": 200
+        },
+        "5_other_autoregressive": {
+          "macro_acc": 59.5,
+          "real_acc": 94.0,
+          "fake_acc": 25.0,
+          "auc": 72.97,
+          "ap": 73.16,
+          "total_samples": 200
+        }
+      },
+      "overall": {
+        "macro_acc": 64.65,
+        "real_acc": 94.0,
+        "fake_acc": 35.3,
+        "auc": 76.21,
+        "ap": 78.22,
+        "total_samples": 2000
+      }
+    },
+    "wise_ft": {
+      "by_subset": {
+        "1_commercial": {
+          "macro_acc": 50.0,
+          "real_acc": 100.0,
+          "fake_acc": 0.0,
+          "auc": 65.18,
+          "ap": 64.56,
+          "total_samples": 600
+        },
+        "2_latent_diffusion": {
+          "macro_acc": 50.0,
+          "real_acc": 100.0,
+          "fake_acc": 0.0,
+          "auc": 43.22,
+          "ap": 44.84,
+          "total_samples": 600
+        },
+        "3_pixel_diffusion": {
+          "macro_acc": 50.0,
+          "real_acc": 100.0,
+          "fake_acc": 0.0,
+          "auc": 57.87,
+          "ap": 56.48,
+          "total_samples": 400
+        },
+        "4_modern_gans": {
+          "macro_acc": 70.5,
+          "real_acc": 100.0,
+          "fake_acc": 41.0,
+          "auc": 91.23,
+          "ap": 93.75,
+          "total_samples": 200
+        },
+        "5_other_autoregressive": {
+          "macro_acc": 50.0,
+          "real_acc": 100.0,
+          "fake_acc": 0.0,
+          "auc": 47.05,
+          "ap": 46.58,
+          "total_samples": 200
+        }
+      },
+      "overall": {
+        "macro_acc": 52.05,
+        "real_acc": 100.0,
+        "fake_acc": 4.1,
+        "auc": 57.07,
+        "ap": 60.41,
+        "total_samples": 2000
+      }
+    },
+    "anchored": {
+      "by_subset": {
+        "1_commercial": {
+          "macro_acc": 73.17,
+          "real_acc": 53.33,
+          "fake_acc": 93.0,
+          "auc": 83.29,
+          "ap": 80.55,
+          "total_samples": 600
+        },
+        "2_latent_diffusion": {
+          "macro_acc": 72.0,
+          "real_acc": 50.33,
+          "fake_acc": 93.67,
+          "auc": 82.31,
+          "ap": 73.97,
+          "total_samples": 600
+        },
+        "3_pixel_diffusion": {
+          "macro_acc": 62.75,
+          "real_acc": 50.5,
+          "fake_acc": 75.0,
+          "auc": 65.57,
+          "ap": 62.35,
+          "total_samples": 400
+        },
+        "4_modern_gans": {
+          "macro_acc": 71.5,
+          "real_acc": 44.0,
+          "fake_acc": 99.0,
+          "auc": 88.02,
+          "ap": 76.14,
+          "total_samples": 200
+        },
+        "5_other_autoregressive": {
+          "macro_acc": 60.5,
+          "real_acc": 25.0,
+          "fake_acc": 96.0,
+          "auc": 81.62,
+          "ap": 78.68,
+          "total_samples": 200
+        }
+      },
+      "overall": {
+        "macro_acc": 69.3,
+        "real_acc": 48.1,
+        "fake_acc": 90.5,
+        "auc": 79.28,
+        "ap": 73.53,
+        "total_samples": 2000
+      }
+    }
+  },
+  "jpeg_q30": {
+    "baseline": {
+      "by_subset": {
+        "1_commercial": {
+          "macro_acc": 49.83,
+          "real_acc": 99.67,
+          "fake_acc": 0.0,
+          "auc": 58.13,
+          "ap": 56.31,
+          "total_samples": 600
+        },
+        "2_latent_diffusion": {
+          "macro_acc": 50.0,
+          "real_acc": 100.0,
+          "fake_acc": 0.0,
+          "auc": 25.56,
+          "ap": 37.51,
+          "total_samples": 600
+        },
+        "3_pixel_diffusion": {
+          "macro_acc": 50.25,
+          "real_acc": 100.0,
+          "fake_acc": 0.5,
+          "auc": 72.97,
+          "ap": 70.57,
+          "total_samples": 400
+        },
+        "4_modern_gans": {
+          "macro_acc": 54.0,
+          "real_acc": 100.0,
+          "fake_acc": 8.0,
+          "auc": 86.48,
+          "ap": 88.54,
+          "total_samples": 200
+        },
+        "5_other_autoregressive": {
+          "macro_acc": 49.5,
+          "real_acc": 99.0,
+          "fake_acc": 0.0,
+          "auc": 20.68,
+          "ap": 35.17,
+          "total_samples": 200
+        }
+      },
+      "overall": {
+        "macro_acc": 50.35,
+        "real_acc": 99.8,
+        "fake_acc": 0.9,
+        "auc": 50.0,
+        "ap": 55.1,
+        "total_samples": 2000
+      }
+    },
+    "wise_ft": {
+      "by_subset": {
+        "1_commercial": {
+          "macro_acc": 50.0,
+          "real_acc": 100.0,
+          "fake_acc": 0.0,
+          "auc": 60.46,
+          "ap": 59.04,
+          "total_samples": 600
+        },
+        "2_latent_diffusion": {
+          "macro_acc": 50.0,
+          "real_acc": 100.0,
+          "fake_acc": 0.0,
+          "auc": 30.95,
+          "ap": 39.22,
+          "total_samples": 600
+        },
+        "3_pixel_diffusion": {
+          "macro_acc": 50.0,
+          "real_acc": 100.0,
+          "fake_acc": 0.0,
+          "auc": 65.78,
+          "ap": 62.2,
+          "total_samples": 400
+        },
+        "4_modern_gans": {
+          "macro_acc": 51.0,
+          "real_acc": 100.0,
+          "fake_acc": 2.0,
+          "auc": 73.32,
+          "ap": 78.18,
+          "total_samples": 200
+        },
+        "5_other_autoregressive": {
+          "macro_acc": 50.0,
+          "real_acc": 100.0,
+          "fake_acc": 0.0,
+          "auc": 34.98,
+          "ap": 41.06,
+          "total_samples": 200
+        }
+      },
+      "overall": {
+        "macro_acc": 50.1,
+        "real_acc": 100.0,
+        "fake_acc": 0.2,
+        "auc": 50.93,
+        "ap": 54.11,
+        "total_samples": 2000
+      }
+    },
+    "anchored": {
+      "by_subset": {
+        "1_commercial": {
+          "macro_acc": 65.67,
+          "real_acc": 64.67,
+          "fake_acc": 66.67,
+          "auc": 72.72,
+          "ap": 71.93,
+          "total_samples": 600
+        },
+        "2_latent_diffusion": {
+          "macro_acc": 46.83,
+          "real_acc": 56.0,
+          "fake_acc": 37.67,
+          "auc": 47.57,
+          "ap": 46.4,
+          "total_samples": 600
+        },
+        "3_pixel_diffusion": {
+          "macro_acc": 41.75,
+          "real_acc": 63.5,
+          "fake_acc": 20.0,
+          "auc": 34.66,
+          "ap": 41.95,
+          "total_samples": 400
+        },
+        "4_modern_gans": {
+          "macro_acc": 34.5,
+          "real_acc": 50.0,
+          "fake_acc": 19.0,
+          "auc": 29.96,
+          "ap": 39.26,
+          "total_samples": 200
+        },
+        "5_other_autoregressive": {
+          "macro_acc": 40.5,
+          "real_acc": 45.0,
+          "fake_acc": 36.0,
+          "auc": 37.91,
+          "ap": 43.53,
+          "total_samples": 200
+        }
+      },
+      "overall": {
+        "macro_acc": 49.6,
+        "real_acc": 58.4,
+        "fake_acc": 40.8,
+        "auc": 50.07,
+        "ap": 50.57,
+        "total_samples": 2000
+      }
+    }
+  }
+}
