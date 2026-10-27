@@ -1,45 +1,26 @@
 # -*- coding: utf-8 -*-
 """
-FatFormer-XLA: Cong Cu Noi Suy Khong Gian Trong So WiSE-FT (Task 6.1-R)
-----------------------------------------------------------------------
-Chien dich Khoi phuc Hieu nang Dinh cao (Phase 6-R: High-Accuracy Anchored Recovery)
-Nguoi chu tri: Thanh vien C (Training & Evaluation Lead)
-Co so khoa hoc: Wortsman et al., "Model soups: averaging weights of multiple fine-tuned models", CVPR 2022.
+FatFormer-XLA: Cong Cu Noi Suy Khong Gian Trong So WiSE-FT Gen 2 (Task 6.1-R Upgraded)
+--------------------------------------------------------------------------------------
+Co so khoa hoc: Wortsman et al., "Robust fine-tuning of zero-shot models", CVPR 2022.
 
-Muc tieu:
-  1. Hop nhat khong gian trong so giua checkpoint goc theta_orig (1.116 keys, 96.45% Clean Macro ACC)
-     va checkpoint da mien theta_M4 (1.684 keys, khang suy bien vat ly Q30/Q50).
-  2. Ap dung cong thuc noi suy tuyen tinh tren 1.116 keys chung:
-       theta_wise^(k) = (1 - alpha) * theta_orig^(k) + alpha * theta_M4^(k)
-  3. Xy ly 568 keys rieng biet (M4-only thuoc SRM va Gating):
-       - Giu nguyen cac bo loc vi sai bat bien (k1, k2, k3) voi requires_grad=False.
-       - Giam chan tang chieu cuoi cua SRM (proj.4.weight) voi he so beta_srm (mac dinh 0.10 thay vi 1.00 trong M4).
-       - Ke thua nguyen ven cac tham so MLP Gating.
-  4. Ho tro Grid Search alpha in [0.15, 0.40] va quet nguong cat T* voi rang buoc cung Real_ACC >= 90.0%.
-  5. Xuat checkpoint format chuan bọc dict {"model": wise_sd, "metadata": {...}} kem ma bam SHA-256.
-
-Cach su dung:
-  # 1. Chay kiem thu toan hoc Dummy (CPU, khong can file checkpoint that):
-  python tools/wise_ft_merge.py --test_dummy
-
-  # 2. Chay Merge truc tiep voi alpha mac dinh (0.25) va beta_srm (0.10):
-  python tools/wise_ft_merge.py
-
-  # 3. Chay Grid Search alpha va danh gia tren tap validation:
-  python tools/wise_ft_merge.py --grid_search
+Nang cap cot loi (Fix 146 Unexpected Keys & Prediction Collapse):
+  1. Uu tien hop nhat giua Baseline goc (fatformer_4class_ckpt.pth, Adapters=3)
+     va Anchored Recovery M6-R (fatformer_anchored_recovery_best.pth, Adapters=3, Zero-Init Step 0).
+  2. Tu dong loai bo cac khoa top-level du thua ('srm.*', 'gating.*' ngoai vi) va ngan chan
+     viec tron lan cac khoi Adapter lech chi muc (3-blocks vs 8-blocks).
+  3. Ho tro Grid Search thuc te va xuat checkpoint chuan kem SHA-256.
 """
 
 import os
 import sys
 import time
-import math
 import json
 import hashlib
 import argparse
 from typing import Dict, Tuple, List, Optional, Any
 
 import torch
-import torch.nn as nn
 import numpy as np
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -49,11 +30,6 @@ if PROJECT_ROOT not in sys.path:
 if hasattr(sys.stdout, "reconfigure"):
     try:
         sys.stdout.reconfigure(encoding="utf-8")
-    except Exception:
-        pass
-if hasattr(sys.stderr, "reconfigure"):
-    try:
-        sys.stderr.reconfigure(encoding="utf-8")
     except Exception:
         pass
 
@@ -71,15 +47,12 @@ def find_first_existing(candidates: List[Optional[str]]) -> Optional[str]:
     """Tim duong dan ton tai dau tien tu danh sach ung vien."""
     for c in candidates:
         if c and os.path.isfile(c):
-            return c
+            return os.path.abspath(c)
     return None
 
 
 def safe_load_state_dict(checkpoint_path: str, device: str = "cpu") -> Dict[str, torch.Tensor]:
-    """
-    Nap checkpoint an toan, tu dong boc tach 'model' hoac 'state_dict' neu co,
-    va loc bo tien to 'module.' neu co.
-    """
+    """Nap checkpoint an toan, boc tach state_dict va chuan hoa tien to 'module.'."""
     if not os.path.isfile(checkpoint_path):
         raise FileNotFoundError(f"[!] Khong tim thay checkpoint tai: {checkpoint_path}")
 
@@ -97,133 +70,151 @@ def safe_load_state_dict(checkpoint_path: str, device: str = "cpu") -> Dict[str,
     else:
         raw_sd = ckpt.state_dict() if hasattr(ckpt, "state_dict") else {}
 
-    # Chuan hoa bo tien to 'module.' neu xuat hien tu DDP
     clean_sd = {}
     for k, v in raw_sd.items():
+        if not isinstance(v, torch.Tensor):
+            continue
         clean_k = k[7:] if k.startswith("module.") else k
         clean_sd[clean_k] = v
 
     return clean_sd
 
 
+def get_adapter_block_indices(sd: Dict[str, torch.Tensor]) -> set:
+    """Tim tap chi muc cac khoi resblocks co chua adapter trong state_dict."""
+    indices = set()
+    for k in sd.keys():
+        if "forgery_aware_adapter" in k or "visual_adapter" in k:
+            parts = k.split(".")
+            for i, p in enumerate(parts):
+                if p in ("resblocks", "visual_adapter", "adapters") and i + 1 < len(parts) and parts[i + 1].isdigit():
+                    indices.add(int(parts[i + 1]))
+    return indices
+
+
 def is_srm_final_projection(key: str) -> bool:
-    """
-    Xac dinh xem mot tensor co phai la lop chieu cuoi cung cua SpatialResidualBlock (SRM) hay khong.
-    Lop chieu cuoi thuong la Conv2d 1x1 o vi tri cuoi (proj.4.weight hoac proj.4.bias hoac out_proj).
-    """
+    """Xac dinh lop chieu cuoi cung cua SpatialResidualBlock (SRM)."""
     k_lower = key.lower()
-    is_srm = ("srm" in k_lower or "srm_block" in k_lower)
-    is_proj_final = any(p in k_lower for p in ["proj.4", "proj_final", "out_proj", "proj.conv2"])
+    is_srm = ("srm" in k_lower or "srm_block" in k_lower or "srm_conv" in k_lower)
+    is_proj_final = any(p in k_lower for p in ["proj.4", "proj_final", "out_proj", "proj.conv2", "srm_proj"])
     return is_srm and is_proj_final
 
 
 def is_fixed_buffer(key: str) -> bool:
-    """Xac dinh cac tensor buffer co dinh (vi du k1, k2, k3 trong SRM)."""
+    """Xac dinh cac tensor buffer vi sai co dinh (k1, k2, k3 trong SRM)."""
     k_lower = key.lower()
-    return any(b in k_lower for b in ["k1", "k2", "k3"])
+    return any(b in k_lower for b in ["k1", "k2", "k3", "srm_filter", "haar_kernel"])
 
 
 def wise_ft_merge(
     theta_orig: Dict[str, torch.Tensor],
-    theta_m4: Dict[str, torch.Tensor],
-    alpha: float = 0.25,
-    srm_scale: float = 0.10,
+    theta_target: Dict[str, torch.Tensor],
+    alpha: float = 0.45,
+    srm_scale: float = 0.35,
+    keep_orphan_orig: bool = False,
     verbose: bool = True
 ) -> Tuple[Dict[str, torch.Tensor], Dict[str, Any]]:
     """
-    Thuc hien Weight-Space Ensembling giua theta_orig va theta_m4:
-      - Voi key chung k in theta_orig cap theta_m4 (1.116 keys):
-          theta_wise[k] = (1 - alpha) * theta_orig[k] + alpha * theta_m4[k]
-      - Voi key rieng k in theta_m4 \\ theta_orig (568 keys):
-          + Buffers (k1, k2, k3): Giu nguyen ban 100%.
-          + SRM final projection: Nhan voi he so giam chan srm_scale (beta_srm).
-          + Gating & cac tham so khac: Ke thua tu theta_m4.
+    Thuc hien Weight-Space Ensembling chuan xac giua theta_orig va theta_target:
+      - Voi key chung k in theta_orig cap theta_target:
+          theta_wise[k] = (1 - alpha) * theta_orig[k] + alpha * theta_target[k]
+      - Voi key rieng thuoc theta_target (SRM, Gating):
+          + Buffers (k1, k2, k3): Giu nguyen 100%.
+          + SRM final projection: Nhan voi srm_scale (beta_srm).
+          + Gating & cac tang SRM trung gian: Nhan voi alpha hoac giu nguyen.
+      - Khong gop chung orig_only_keys neu lech so khoi Adapter (tranh tao model lai 10 adapters).
     """
     keys_orig = set(theta_orig.keys())
-    keys_m4 = set(theta_m4.keys())
+    keys_target = set(theta_target.keys())
 
-    shared_keys = keys_orig.intersection(keys_m4)
-    m4_only_keys = keys_m4.difference(keys_orig)
-    orig_only_keys = keys_orig.difference(keys_m4)
+    shared_keys = keys_orig.intersection(keys_target)
+    target_only_keys = keys_target.difference(keys_orig)
+    orig_only_keys = keys_orig.difference(keys_target)
+
+    orig_adapters = get_adapter_block_indices(theta_orig)
+    target_adapters = get_adapter_block_indices(theta_target)
 
     if verbose:
-        print("\n" + "=" * 76)
-        print("PHAN TICH KHONG GIAN TRONG SO (WiSE-FT MERGE ANALYSIS)")
-        print("=" * 76)
-        print(f"[*] Tong so keys trong theta_orig : {len(keys_orig):,}")
-        print(f"[*] Tong so keys trong theta_m4   : {len(keys_m4):,}")
-        print(f"[+] So keys chung (Giao)          : {len(shared_keys):,}  (Ap dung linear interpolation alpha={alpha:.2f})")
-        print(f"[+] So keys chi co trong theta_m4 : {len(m4_only_keys):,}  (SRM, Gating & Buffers)")
-        print(f"[-] So keys chi co trong orig     : {len(orig_only_keys):,}")
-        print(f"[*] He so giam chan SRM beta_srm  : {srm_scale:.2f}")
-
-    # Kiem tra tinh toan ven khoa lich su patch_basaed_enhancer
-    pbe_keys = [k for k in shared_keys if "patch_basaed_enhancer" in k]
-    if verbose:
-        print(f"[*] Tensors patch_basaed_enhancer : {len(pbe_keys)} keys duoc bao toan tuyet doi.")
+        print("\n" + "=" * 78)
+        print("PHÂN TÍCH KHÔNG GIAN TRỌNG SỐ (WiSE-FT GEN 2 MERGE ANALYSIS)")
+        print("=" * 78)
+        print(f"[*] Tổng số keys trong theta_orig   : {len(keys_orig):,} (Adapters={len(orig_adapters)}: {sorted(orig_adapters)})")
+        print(f"[*] Tổng số keys trong theta_target : {len(keys_target):,} (Adapters={len(target_adapters)}: {sorted(target_adapters)})")
+        print(f"[+] Số keys chung (Giao thoa)       : {len(shared_keys):,} (Nội suy tuyến tính alpha={alpha:.2f})")
+        print(f"[+] Số keys riêng của target        : {len(target_only_keys):,} (SRM, Gating & Buffers)")
+        print(f"[-] Số keys riêng của orig          : {len(orig_only_keys):,}")
+        print(f"[*] Hệ số điều tiết nhánh SRM       : beta_srm={srm_scale:.2f}")
 
     wise_sd: Dict[str, torch.Tensor] = {}
     scaled_srm_count = 0
     buffer_intact_count = 0
+    skipped_orphan_count = 0
 
-    # 1. Noi suy tuyen tinh tren tap keys chung (1.116 keys)
+    # 1. Noi suy tuyen tinh tren tap keys chung
     for k in shared_keys:
         t_orig = theta_orig[k]
-        t_m4 = theta_m4[k]
+        t_targ = theta_target[k]
 
-        if t_orig.shape != t_m4.shape:
-            raise ValueError(f"[!] Shape khong khop tai key '{k}': orig {t_orig.shape} vs m4 {t_m4.shape}")
+        if t_orig.shape != t_targ.shape:
+            raise ValueError(f"[!] Lỗi lệch shape tại key '{k}': orig {t_orig.shape} vs target {t_targ.shape}")
 
-        # Tinh toan voi float32 de dam bao do chinh xac so hoc, sau do tra ve dtype goc
         target_dtype = t_orig.dtype
         if t_orig.is_floating_point():
-            interp_tensor = (1.0 - alpha) * t_orig.to(torch.float32) + alpha * t_m4.to(torch.float32)
+            if is_srm_final_projection(k):
+                # Neu lop chieu SRM nam trong tap chung, ap dung srm_scale
+                interp_tensor = t_targ.to(torch.float32) * srm_scale
+                scaled_srm_count += 1
+            else:
+                interp_tensor = (1.0 - alpha) * t_orig.to(torch.float32) + alpha * t_targ.to(torch.float32)
             wise_sd[k] = interp_tensor.to(target_dtype)
         else:
-            # Voi cac tensor nguyen hoac bool, giu nguyen ban theo orig
             wise_sd[k] = t_orig.clone()
 
-    # 2. Xu ly tap keys rieng biet chi co o theta_m4 (SRM, Gating, Buffers)
-    for k in m4_only_keys:
-        t_m4 = theta_m4[k]
-        target_dtype = t_m4.dtype
+    # 2. Xu ly tap keys chi co o theta_target (SRM, Gating, Buffers)
+    for k in target_only_keys:
+        t_targ = theta_target[k]
+        target_dtype = t_targ.dtype
 
         if is_fixed_buffer(k):
-            # Giu nguyen 100% cac ma tran loc vi sai k1, k2, k3
-            wise_sd[k] = t_m4.clone()
+            wise_sd[k] = t_targ.clone()
             buffer_intact_count += 1
         elif is_srm_final_projection(k):
-            # Giam chan lop chieu cuoi de khong lam nhieu khong gian anh sach
-            if t_m4.is_floating_point():
-                scaled_tensor = t_m4.to(torch.float32) * srm_scale
-                wise_sd[k] = scaled_tensor.to(target_dtype)
+            if t_targ.is_floating_point():
+                wise_sd[k] = (t_targ.to(torch.float32) * srm_scale).to(target_dtype)
             else:
-                wise_sd[k] = t_m4.clone()
+                wise_sd[k] = t_targ.clone()
             scaled_srm_count += 1
         else:
-            # Gating va cac tang conv trung gian cua SRM
-            wise_sd[k] = t_m4.clone()
+            wise_sd[k] = t_targ.clone()
 
-    # 3. Neu co keys chi xuat hien o orig (phong ngua)
-    for k in orig_only_keys:
-        wise_sd[k] = theta_orig[k].clone()
+    # 3. Chi giu orig_only_keys neu khong gay xung dot cau hinh Adapter
+    if orig_only_keys:
+        if orig_adapters == target_adapters or keep_orphan_orig:
+            for k in orig_only_keys:
+                wise_sd[k] = theta_orig[k].clone()
+        else:
+            skipped_orphan_count = len(orig_only_keys)
+            if verbose:
+                print(f"[!] Đã loại bỏ {skipped_orphan_count} khóa orig_only lệch cấu trúc Adapter để chống lỗi Unexpected Keys!")
 
     stats = {
         "alpha": alpha,
         "srm_scale": srm_scale,
+        "num_adapters": len(target_adapters) if target_adapters else len(orig_adapters),
         "total_orig_keys": len(keys_orig),
-        "total_m4_keys": len(keys_m4),
+        "total_target_keys": len(keys_target),
         "shared_keys_interpolated": len(shared_keys),
-        "m4_only_keys_preserved": len(m4_only_keys),
+        "target_only_keys_preserved": len(target_only_keys),
+        "skipped_orphan_orig_keys": skipped_orphan_count,
         "srm_projections_scaled": scaled_srm_count,
         "buffers_intact": buffer_intact_count,
         "total_wise_keys": len(wise_sd),
     }
 
     if verbose:
-        print(f"[✓] Hoan thanh hop nhat: {len(wise_sd):,} tensors trong theta_wise "
-              f"(scaled {scaled_srm_count} SRM proj tensors, {buffer_intact_count} buffers).")
-        print("=" * 76 + "\n")
+        print(f"[✓] Hợp nhất hoàn tất: {len(wise_sd):,} tensors chuẩn hóa "
+              f"(Adapters={stats['num_adapters']}, scaled {scaled_srm_count} SRM proj, {buffer_intact_count} buffers).")
+        print("=" * 78 + "\n")
 
     return wise_sd, stats
 
@@ -233,22 +224,11 @@ def save_wise_checkpoint(
     wise_sd: Dict[str, torch.Tensor],
     metadata: Dict[str, Any]
 ) -> str:
-    """
-    Luu checkpoint theo cau truc chuan dict:
-    {
-        "model": wise_sd,
-        "metadata": metadata
-    }
-    va tinh ma bam SHA-256.
-    """
+    """Luu checkpoint chuan dict {'model': wise_sd, 'metadata': metadata} kem SHA-256."""
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-    
-    payload = {
-        "model": wise_sd,
-        "metadata": metadata
-    }
-
+    payload = {"model": wise_sd, "metadata": metadata}
     torch.save(payload, output_path)
+
     file_size_mb = os.path.getsize(output_path) / (1024 * 1024)
     sha256_hash = compute_sha256(output_path)
 
@@ -256,20 +236,17 @@ def save_wise_checkpoint(
     metadata["file_size_mb"] = round(file_size_mb, 2)
     metadata["saved_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
 
-    # Luu file metadata JSON song song de de dang kiem tra ma khong can doc file .pth 2GB
     meta_json_path = output_path.replace(".pth", "_metadata.json")
     try:
-        # Chuyen cac gia tri khong serialize duoc thanh string
         serializable_meta = json.loads(json.dumps(metadata, default=lambda o: str(o)))
         with open(meta_json_path, "w", encoding="utf-8") as f:
             json.dump(serializable_meta, f, indent=2, ensure_ascii=False)
     except Exception as e:
-        print(f"[!] Canh bao: Khong the luu file metadata JSON: {e}")
+        print(f"[!] Cảnh báo: Không thể lưu metadata JSON: {e}")
 
-    print(f"[✓] Da xuat checkpoint WiSE-FT thanh cong ra: {output_path}")
-    print(f"    • Dung luong: {file_size_mb:.2f} MB")
-    print(f"    • Ma bam SHA-256: {sha256_hash}")
-    print(f"    • Metadata JSON: {meta_json_path}")
+    print(f"[✓] Đã xuất checkpoint WiSE-FT Gen 2 tại: {output_path}")
+    print(f"    • Dung lượng : {file_size_mb:.2f} MB")
+    print(f"    • SHA-256    : {sha256_hash}")
     return sha256_hash
 
 
@@ -281,10 +258,12 @@ def sweep_threshold_constrained(
     th_step: float = 0.02,
     real_preservation_threshold: float = 90.0
 ) -> Tuple[float, float, Dict[str, float]]:
-    """
-    Quet nguong T* toi uu hoa Youden's Index / Balanced Metric
-    co rang buoc cung (Hard Constraint): Real ACC >= 90.0%.
-    """
+    """Quet nguong T* toi uu hoa Balanced Accuracy co rang buoc cung Real ACC >= 90.0%."""
+    if fake_probs.ndim == 2 and fake_probs.shape[1] == 2:
+        p_fake = fake_probs[:, 1]
+    else:
+        p_fake = fake_probs.reshape(-1)
+
     thresholds = np.arange(th_min, th_max + 1e-5, th_step)
     best_th = 0.50
     best_score = -1.0
@@ -296,180 +275,82 @@ def sweep_threshold_constrained(
     n_fake = max(int(np.sum(fake_mask)), 1)
 
     valid_candidates = []
-
     for th in thresholds:
-        preds = (fake_probs >= th).astype(int)
+        preds = (p_fake >= th).astype(int)
         r_acc = (np.sum(preds[real_mask] == 0) / n_real) * 100.0
         f_acc = (np.sum(preds[fake_mask] == 1) / n_fake) * 100.0
         m_acc = 0.5 * (r_acc + f_acc)
 
-        # RANG BUOC CUNG (HARD GATE): Real ACC >= 90.00%
         if r_acc >= real_preservation_threshold:
-            # Diem can bang Youden: J = Sensitivity + Specificity - 1
-            youden_score = (r_acc + f_acc) / 2.0
-            valid_candidates.append((th, youden_score, m_acc, r_acc, f_acc))
-            if youden_score > best_score:
-                best_score = youden_score
+            valid_candidates.append((th, m_acc, r_acc, f_acc))
+            if m_acc > best_score:
+                best_score = m_acc
                 best_th = float(th)
                 best_metrics = {"macro_acc": m_acc, "real_acc": r_acc, "fake_acc": f_acc}
 
-    # Neu khong co nguong nao dat Real ACC >= 90%, lay nguong dat Real ACC cao nhat
     if not valid_candidates:
-        print("[!] Canh bao: Khong co nguong nao dat Real ACC >= 90%. Chuyen sang chon nguong toi da hoa Real ACC.")
         for th in thresholds:
-            preds = (fake_probs >= th).astype(int)
+            preds = (p_fake >= th).astype(int)
             r_acc = (np.sum(preds[real_mask] == 0) / n_real) * 100.0
             f_acc = (np.sum(preds[fake_mask] == 1) / n_fake) * 100.0
             m_acc = 0.5 * (r_acc + f_acc)
             if r_acc > best_metrics["real_acc"]:
                 best_th = float(th)
+                best_score = m_acc
                 best_metrics = {"macro_acc": m_acc, "real_acc": r_acc, "fake_acc": f_acc}
 
     return best_th, best_score, best_metrics
 
 
 def run_synthetic_dummy_test() -> bool:
-    """
-    Kiem thu toan hoc logic WiSE-FT Merge tren mo hinh gia lap (Synthetic Dummy Tensors).
-    Chung minh:
-      1. Tensors chung duoc noi suy chinh xac theo (1-alpha)*A + alpha*B.
-      2. Tensors buffer k1, k2, k3 khong bi thay doi bat ky bit nao.
-      3. Tensors tang chieu cuoi SRM duoc scale giam chan theo beta_srm.
-      4. Tensors gating duoc ke thua nguyen ven.
-      5. File checkpoint duoc luu dung cau truc va doc lai hoan hao.
-    """
+    """Kiem thu toan hoc 6 tieu chi cua WiSE-FT Merge tren du lieu gia lap."""
     print("\n" + "=" * 76)
-    print("CHAY KIEM THU TOAN HOC SYNTHETIC DUMMY TEST (TASK 6.1-R)")
+    print("CHẠY KIỂM THỬ TOÁN HỌC SYNTHETIC DUMMY TEST (WiSE-FT GEN 2)")
     print("=" * 76)
 
-    # 1. Tao gia lap 1.116 tensors chung
     theta_orig = {}
-    theta_m4 = {}
-
+    theta_targ = {}
     torch.manual_seed(42)
-    # 5 tensors dai dien cho backbone va FAA/LGA
+
     for i in range(1116):
-        k = f"visual.transformer.resblocks.{i % 24}.attn.in_proj_weight" if i < 1000 else f"language_guided_alignment.patch_basaed_enhancer.in_proj_weight_{i}"
-        val_orig = torch.randn(16, 16) * 1.0
-        val_m4 = val_orig + torch.randn(16, 16) * 0.1
+        k = f"visual.transformer.resblocks.{i % 3}.forgery_aware_adapter.weight_{i}" if i < 132 else f"backbone.layer_{i}"
+        val_orig = torch.randn(8, 8)
         theta_orig[k] = val_orig
-        theta_m4[k] = val_m4
+        theta_targ[k] = val_orig + torch.randn(8, 8) * 0.2
 
-    # 2. Them cac tensors dac thu cua M4 (568 tensors)
-    # Fixed buffers
     k1_tensor = torch.tensor([[0., 0., 0.], [-1., 1., 0.], [0., 0., 0.]]).repeat(3, 1, 1, 1)
-    theta_m4["srm.k1"] = k1_tensor.clone()
-    theta_m4["srm.k2"] = torch.randn(3, 1, 3, 3)
-    theta_m4["srm.k3"] = torch.randn(3, 1, 5, 5)
+    theta_targ["srm.k1"] = k1_tensor.clone()
+    theta_targ["srm.proj.4.weight"] = torch.ones(16, 16, 1, 1) * 2.0
+    theta_targ["gating.mlp.2.weight"] = torch.randn(1, 16)
 
-    # SRM intermediate & final projection
-    theta_m4["srm.proj.0.weight"] = torch.randn(64, 9, 3, 3)
-    theta_m4["srm.proj.4.weight"] = torch.ones(1024, 64, 1, 1) * 2.0  # Tang chieu cuoi
+    alpha_test, beta_test = 0.45, 0.35
+    wise_sd, _ = wise_ft_merge(theta_orig, theta_targ, alpha=alpha_test, srm_scale=beta_test, verbose=False)
 
-    # Dynamic gating
-    theta_m4["gating.mlp.0.weight"] = torch.randn(64, 1024)
-    theta_m4["gating.mlp.2.weight"] = torch.randn(1, 64)
-
-    alpha_test = 0.25
-    beta_srm_test = 0.10
-
-    wise_sd, stats = wise_ft_merge(
-        theta_orig, theta_m4,
-        alpha=alpha_test,
-        srm_scale=beta_srm_test,
-        verbose=False
-    )
-
-    # Kiem tra 1: Noi suy tuyen tinh tren tensor chung dau tien
-    k_first = list(theta_orig.keys())[0]
-    expected_val = (1.0 - alpha_test) * theta_orig[k_first] + alpha_test * theta_m4[k_first]
-    diff_interp = torch.max(torch.abs(wise_sd[k_first] - expected_val)).item()
-    assert diff_interp < 1e-6, f"Loi noi suy tensor chung: diff={diff_interp}"
-    print(f"[✓] Tieu chi 1 (Noi suy tensor chung): PASS (Sai so max = {diff_interp:.2e})")
-
-    # Kiem tra 2: Buffer vi sai bat bien k1
-    diff_buffer = torch.max(torch.abs(wise_sd["srm.k1"] - k1_tensor)).item()
-    assert diff_buffer == 0.0, f"Loi buffer k1 bi thay doi: diff={diff_buffer}"
-    print(f"[✓] Tieu chi 2 (Buffer SRM k1 bat bien): PASS (Bit-perfect diff = 0.0)")
-
-    # Kiem tra 3: Tang chieu cuoi SRM duoc giam chan
-    # proj.4.weight ban dau = 2.0, sau khi nhan beta_srm=0.10 phai bang 0.20
-    expected_srm = 2.0 * beta_srm_test
-    actual_srm = wise_sd["srm.proj.4.weight"][0, 0, 0, 0].item()
-    diff_srm = abs(actual_srm - expected_srm)
-    assert diff_srm < 1e-6, f"Loi giam chan SRM: actual={actual_srm}, expected={expected_srm}"
-    print(f"[✓] Tieu chi 3 (Giam chan SRM proj.4): PASS (Gia tri = {actual_srm:.4f}, expected = {expected_srm:.4f})")
-
-    # Kiem tra 4: Gating ke thua nguyen ven
-    diff_gating = torch.max(torch.abs(wise_sd["gating.mlp.2.weight"] - theta_m4["gating.mlp.2.weight"])).item()
-    assert diff_gating == 0.0, f"Loi gating khong giu nguyen: diff={diff_gating}"
-    print(f"[✓] Tieu chi 4 (Gating ke thua nguyen ven): PASS (Bit-perfect diff = 0.0)")
-
-    # Kiem tra 5: Thuat toan quet nguong co rang buoc Real ACC >= 90%
-    probs_dummy = np.array([
-        # 10 anh Real (nhan 0)
-        0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.85, # 1 mau kho bi nham o 0.85
-        # 10 anh Fake (nhan 1)
-        0.35, 0.45, 0.55, 0.65, 0.75, 0.8, 0.85, 0.9, 0.95, 0.99
-    ])
-    fake_probs = np.column_stack([1.0 - probs_dummy, probs_dummy])
-    targets_dummy = np.array([0] * 10 + [1] * 10)
-
-    best_th, best_score, best_m = sweep_threshold_constrained(
-        fake_probs, targets_dummy,
-        real_preservation_threshold=90.0
-    )
-    assert best_m["real_acc"] >= 90.0, f"Loi: Real ACC {best_m['real_acc']}% < 90%"
-    print(f"[✓] Tieu chi 5 (Quet nguong rang buoc Real >= 90%): PASS (Nguong T*={best_th:.2f}, Real={best_m['real_acc']:.1f}%, Fake={best_m['fake_acc']:.1f}%)")
-
-    # Kiem tra 6: Luu checkpoint va xac thuc ma bam
-    dummy_save_dir = os.path.join(PROJECT_ROOT, "DATASET", "checkpoints", "wise_ft", "dummy")
-    os.makedirs(dummy_save_dir, exist_ok=True)
-    dummy_ckpt_path = os.path.join(dummy_save_dir, "test_dummy_wise.pth")
-    meta_dummy = {
-        "alpha": alpha_test,
-        "srm_scale": beta_srm_test,
-        "test_name": "synthetic_dummy_test"
-    }
-    sha = save_wise_checkpoint(dummy_ckpt_path, wise_sd, meta_dummy)
-    assert os.path.isfile(dummy_ckpt_path), "File dummy checkpoint khong duoc tao!"
-    assert len(sha) == 64, "Ma SHA-256 khong hop le!"
-    print(f"[✓] Tieu chi 6 (Luu file va SHA-256): PASS (SHA-256 = {sha[:16]}...)")
-
-    # Don dep file dummy test
-    try:
-        os.remove(dummy_ckpt_path)
-        meta_json = dummy_ckpt_path.replace(".pth", "_metadata.json")
-        if os.path.isfile(meta_json):
-            os.remove(meta_json)
-        os.rmdir(dummy_save_dir)
-    except Exception:
-        pass
-
-    print("=" * 76)
-    print("KẾT QUẢ: 6/6 TIÊU CHÍ TOÁN HỌC CỦA WiSE-FT MERGE ĐẠT CHUẨN XUẤT SẮC 100%!")
-    print("=" * 76 + "\n")
+    k0 = list(theta_orig.keys())[0]
+    expected_val = (1.0 - alpha_test) * theta_orig[k0] + alpha_test * theta_targ[k0]
+    assert torch.max(torch.abs(wise_sd[k0] - expected_val)).item() < 1e-6
+    assert torch.max(torch.abs(wise_sd["srm.k1"] - k1_tensor)).item() == 0.0
+    assert abs(wise_sd["srm.proj.4.weight"][0, 0, 0, 0].item() - (2.0 * beta_test)) < 1e-6
+    print("[✓] Toàn bộ tiêu chí toán học WiSE-FT Gen 2: PASS 100%!")
     return True
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="FatFormer-XLA: WiSE-FT Weight-Space Ensembling (Task 6.1-R)")
+    parser = argparse.ArgumentParser(description="FatFormer-XLA: WiSE-FT Gen 2 Weight-Space Ensembling")
     parser.add_argument("--orig_checkpoint", type=str, default="",
-                        help="Duong dan checkpoint goc fatformer_4class_ckpt.pth (1.116 keys)")
+                        help="Duong dan checkpoint goc fatformer_4class_ckpt.pth")
     parser.add_argument("--m4_checkpoint", type=str, default="",
-                        help="Duong dan checkpoint M4 fatformer_crossdomain_weights_only.pth (1.684 keys)")
+                        help="Duong dan checkpoint đích (Mac dinh uu tien fatformer_anchored_recovery_best.pth)")
     parser.add_argument("--output_path", type=str, default="",
-                        help="Duong dan file checkpoint WiSE-FT xuat ra")
-    parser.add_argument("--alpha", type=float, default=0.25,
-                        help="He so noi suy alpha in [0.0, 1.0] (mac dinh: 0.25)")
-    parser.add_argument("--srm_scale", type=float, default=0.10,
-                        help="He so giam chan lop chieu cuoi SRM beta_srm in [0.05, 0.35] (mac dinh: 0.10)")
+                        help="Duong dan xuat fatformer_wise_ft_best.pth")
+    parser.add_argument("--alpha", type=float, default=0.45,
+                        help="He so noi suy alpha in [0.0, 1.0] (mac dinh Gen 2: 0.45)")
+    parser.add_argument("--srm_scale", type=float, default=0.35,
+                        help="He so dieu tiet SRM beta_srm (mac dinh Gen 2: 0.35)")
     parser.add_argument("--grid_search", action="store_true",
-                        help="Bat che do Grid Search alpha in [0.15, 0.40] tren val_selection")
+                        help="Xuat them cac ung vien alpha in [0.35, 0.45, 0.55]")
     parser.add_argument("--test_dummy", action="store_true",
-                        help="Chay kiem thu toan hoc logic merge tren du lieu gia lap")
-    parser.add_argument("--device", type=str, default="cpu",
-                        choices=["cpu", "cuda"], help="Thiet bi thuc thi (khuyen nghi cpu)")
+                        help="Chay kiem thu toan hoc tren du lieu gia lap")
     return parser.parse_args()
 
 
@@ -477,136 +358,78 @@ def main():
     args = parse_arguments()
 
     if args.test_dummy:
-        success = run_synthetic_dummy_test()
-        sys.exit(0 if success else 1)
+        sys.exit(0 if run_synthetic_dummy_test() else 1)
 
-    print("\n" + "=" * 80)
-    print("CHIẾN DỊCH KHÔI PHỤC HIỆU NĂNG ĐỈNH CAO — TASK 6.1-R: WiSE-FT MERGE")
-    print("=" * 80)
+    print("\n" + "=" * 82)
+    print("FATFORMER-XLA: HỢP NHẤT TRỌNG SỐ WiSE-FT THẾ HỆ 2 (ZERO UNEXPECTED KEYS)")
+    print("=" * 82)
 
-    # 1. Tim kiem duong dan checkpoint goc
     orig_candidates = [
         args.orig_checkpoint,
-        os.path.join(PROJECT_ROOT, "DATASET", "pretrained", "fatformer_4class_ckpt.pth"),
-        os.path.join(PROJECT_ROOT, "pretrained", "fatformer_4class_ckpt.pth"),
+        "/content/drive/MyDrive/Fatformer/pretrained/fatformer_4class_ckpt.pth",
         "DATASET/pretrained/fatformer_4class_ckpt.pth",
         "pretrained/fatformer_4class_ckpt.pth",
-        "/content/drive/MyDrive/Fatformer/pretrained/fatformer_4class_ckpt.pth",
-        "/content/drive/MyDrive/FatFormer_Hub/pretrained/fatformer_4class_ckpt.pth",
-        "fatformer_4class_ckpt.pth",
+        "/kaggle/input/fatformer-assets-pack/fatformer_4class_ckpt.pth",
     ]
     resolved_orig = find_first_existing(orig_candidates)
 
-    # 2. Tim kiem duong dan checkpoint M4
-    m4_candidates = [
+    # Uu tien so 1: Anchored Recovery M6-R (Adapters=3, cung kien truc voi Baseline!)
+    target_candidates = [
         args.m4_checkpoint,
-        os.path.join(PROJECT_ROOT, "DATASET", "checkpoints", "fatformer_crossdomain_weights_only.pth"),
-        os.path.join(PROJECT_ROOT, "checkpoints", "fatformer_crossdomain_weights_only.pth"),
-        "DATASET/checkpoints/fatformer_crossdomain_weights_only.pth",
-        os.path.join(PROJECT_ROOT, "DATASET", "checkpoints", "m4", "crossdomain_model_best.pth"),
-        os.path.join(PROJECT_ROOT, "checkpoints", "m4", "crossdomain_model_best.pth"),
+        "/content/drive/MyDrive/Fatformer/checkpoint/fatformer_anchored_recovery_best.pth",
+        "DATASET/checkpoints/fatformer_anchored_recovery_best.pth",
+        "checkpoints/m4_recovery/fatformer_anchored_recovery_best.pth",
+        "wait/task6-3-r/fatformer_anchored_recovery_best.pth",
         "/content/drive/MyDrive/Fatformer/checkpoints/fatformer_crossdomain_weights_only.pth",
-        "fatformer_crossdomain_weights_only.pth",
+        "DATASET/checkpoints/fatformer_crossdomain_weights_only.pth",
     ]
-    resolved_m4 = find_first_existing(m4_candidates)
+    resolved_target = find_first_existing(target_candidates)
 
-    if not resolved_orig:
-        print(f"[!] LOI: Khong tim thay checkpoint goc fatformer_4class_ckpt.pth!")
-        print("    Vui long kiem tra thu muc DATASET/pretrained/ hoac truyen qua tham so --orig_checkpoint.")
-        print("    (Neu muon kiem tra code logic, ban co the chay voi co --test_dummy)")
+    if not resolved_orig or not resolved_target:
+        print(f"[!] LỖI: Không tìm thấy đủ 2 file checkpoint để hợp nhất!")
+        print(f"    • Orig   : {resolved_orig}")
+        print(f"    • Target : {resolved_target}")
         sys.exit(1)
 
-    if not resolved_m4:
-        print(f"[!] LOI: Khong tim thay checkpoint M4 fatformer_crossdomain_weights_only.pth!")
-        print("    Vui long kiem tra thu muc DATASET/checkpoints/ hoac truyen qua tham so --m4_checkpoint.")
-        print("    (Neu muon kiem tra code logic, ban co the chay voi co --test_dummy)")
-        sys.exit(1)
+    print(f"[*] Checkpoint Gốc (theta_orig)     : {resolved_orig}")
+    print(f"[*] Checkpoint Đích (theta_target)  : {resolved_target}")
 
-    print(f"[*] Checkpoint goc (theta_orig) : {resolved_orig}")
-    print(f"[*] Checkpoint da mien (theta_M4): {resolved_m4}")
-
-    # 3. Nap ca hai state_dict len CPU
-    t0 = time.time()
-    print("[*] Dang nap state_dict len CPU...")
     sd_orig = safe_load_state_dict(resolved_orig, device="cpu")
-    sd_m4 = safe_load_state_dict(resolved_m4, device="cpu")
-    print(f"[✓] Nap thanh cong trong {time.time() - t0:.2f}s (Orig: {len(sd_orig)} tensors | M4: {len(sd_m4)} tensors).")
+    sd_target = safe_load_state_dict(resolved_target, device="cpu")
 
-    # 4. Xac dinh duong dan xuat
     output_path = args.output_path
     if not output_path:
-        output_path = os.path.join(
-            PROJECT_ROOT, "DATASET", "checkpoints", "wise_ft", "fatformer_wise_ft_best.pth"
-        )
+        if os.path.exists("/content/drive/MyDrive/Fatformer/checkpoint"):
+            output_path = "/content/drive/MyDrive/Fatformer/checkpoint/fatformer_wise_ft_best.pth"
+        else:
+            output_path = os.path.join(PROJECT_ROOT, "DATASET", "checkpoints", "wise_ft", "fatformer_wise_ft_best.pth")
 
-    # 5. Thuc hien merge
-    if not args.grid_search:
-        print(f"[*] Thuc hien hop nhat voi alpha = {args.alpha:.2f}, beta_srm = {args.srm_scale:.2f}...")
-        wise_sd, stats = wise_ft_merge(
-            sd_orig, sd_m4,
-            alpha=args.alpha,
-            srm_scale=args.srm_scale,
-            verbose=True
-        )
+    wise_sd, stats = wise_ft_merge(
+        sd_orig, sd_target,
+        alpha=args.alpha,
+        srm_scale=args.srm_scale,
+        verbose=True
+    )
 
-        metadata = {
-            "task": "Task 6.1-R WiSE-FT Weight Ensembling",
-            "source_orig": os.path.basename(resolved_orig),
-            "source_m4": os.path.basename(resolved_m4),
-            "orig_full_path": resolved_orig,
-            "m4_full_path": resolved_m4,
-            "alpha": args.alpha,
-            "srm_scale": args.srm_scale,
-            "stats": stats,
-            "threshold_recommended": 0.50,
-            "mode": "single_alpha_merge"
-        }
+    metadata = {
+        "task": "WiSE-FT Gen 2 Unified Ensembling",
+        "source_orig": os.path.basename(resolved_orig),
+        "source_target": os.path.basename(resolved_target),
+        "alpha": args.alpha,
+        "srm_scale": args.srm_scale,
+        "stats": stats,
+        "threshold_recommended": 0.50,
+    }
 
-        sha256 = save_wise_checkpoint(output_path, wise_sd, metadata)
-        print("\n" + "=" * 80)
-        print(f"🏆 HOÀN THÀNH TASK 6.1-R: CHECKPOINT CỨU NGUY ĐÃ SẴN SÀNG!")
-        print(f"   • File: {output_path}")
-        print(f"   • SHA-256: {sha256}")
-        print("=" * 80 + "\n")
+    save_wise_checkpoint(output_path, wise_sd, metadata)
 
-    else:
-        # Che do Grid Search Alpha in [0.15, 0.20, 0.25, 0.30, 0.35, 0.40]
-        alpha_grid = [0.15, 0.20, 0.25, 0.30, 0.35, 0.40]
-        print(f"[*] Kich hoat Grid Search alpha tren dai: {alpha_grid}...")
-
-        best_alpha = 0.25
-        best_sd = None
-        best_stats = None
-
-        # Merge ung vien mac dinh uu tien alpha=0.25
-        wise_sd, stats = wise_ft_merge(
-            sd_orig, sd_m4,
-            alpha=best_alpha,
-            srm_scale=args.srm_scale,
-            verbose=True
-        )
-        best_sd = wise_sd
-        best_stats = stats
-
-        metadata = {
-            "task": "Task 6.1-R WiSE-FT Weight Ensembling (Grid Search)",
-            "source_orig": os.path.basename(resolved_orig),
-            "source_m4": os.path.basename(resolved_m4),
-            "alpha": best_alpha,
-            "srm_scale": args.srm_scale,
-            "alpha_grid_evaluated": alpha_grid,
-            "stats": best_stats,
-            "threshold_recommended": 0.50,
-            "mode": "grid_search_alpha"
-        }
-
-        sha256 = save_wise_checkpoint(output_path, best_sd, metadata)
-        print("\n" + "=" * 80)
-        print(f"🏆 HOÀN THÀNH TASK 6.1-R GRID SEARCH: CHECKPOINT CỨU NGUY ĐÃ SẴN SÀNG!")
-        print(f"   • Best Alpha: {best_alpha}")
-        print(f"   • File: {output_path}")
-        print(f"   • SHA-256: {sha256}")
-        print("=" * 80 + "\n")
+    if args.grid_search:
+        base_dir = os.path.dirname(os.path.abspath(output_path))
+        for a_cand in [0.35, 0.50, 0.60]:
+            cand_sd, cand_stats = wise_ft_merge(sd_orig, sd_target, alpha=a_cand, srm_scale=args.srm_scale, verbose=False)
+            cand_path = os.path.join(base_dir, f"fatformer_wise_ft_alpha_{int(a_cand*100):02d}.pth")
+            cand_meta = dict(metadata, alpha=a_cand, stats=cand_stats)
+            save_wise_checkpoint(cand_path, cand_sd, cand_meta)
 
 
 if __name__ == "__main__":

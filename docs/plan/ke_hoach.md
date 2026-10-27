@@ -103,7 +103,7 @@ Trước khi đưa đặc trưng vào nhánh tích chập của FAA, áp dụng 
 
 ---
 
-## IV. LỘ TRÌNH 5 TUẦN TRIỂN KHAI & TIẾN ĐỘ THỰC TẾ
+## IV. LỘ TRÌNH 5 TUẦN TRIỂN KHAI & TIẾN ĐỘ THỰC TẾ (MỞ RỘNG: PHASE 7)
 
 ```mermaid
 gantt
@@ -138,6 +138,14 @@ gantt
     Task 6.5 Ablation đa miền (C/B)  :t6_5, 2026-10-15, 2d
     Task 6.4 Hiệu chuẩn & Chọn lọc(C):t6_4, 2026-10-16, 1d
     Task 6.6 Final Benchmark (C)     :t6_6, 2026-10-17, 1d
+    section Tuần 7-8: Phase 7 [SẴN SÀNG]
+    G7.0 Toàn vẹn đo lường (B/C)     :t7_g0, 2026-10-27, 2d
+    WiSE-FT Gen 2 + Calib (C)        :t7_g1, 2026-10-29, 2d
+    Kho dữ liệu v2 + Degradation (A) :t7_data, 2026-10-27, 4d
+    Loss v2 + Selection v2 (B)       :t7_loss, 2026-10-30, 3d
+    Train Anchored v2 + Ablation (C) :t7_g2, 2026-11-03, 4d
+    Router + Unified (B/C)           :t7_g3, 2026-11-06, 4d
+    Locked Benchmark + Docs (Cả 3)   :t7_close, 2026-11-10, 3d
 ```
 
 ---
@@ -207,8 +215,9 @@ gantt
 
 ---
 
-### 🗓️ TUẦN 6: MILESTONE 6 – KHẮC PHỤC LỆCH PHÂN PHỐI & HUẤN LUYỆN ĐA MIỀN TỔNG QUÁT `[ ] SẴN SÀNG TRIỂN KHAI`
+### 🗓️ TUẦN 6: MILESTONE 6 – KHẮC PHỤC LỆCH PHÂN PHỐI & HUẤN LUYỆN ĐA MIỀN TỔNG QUÁT `[~] HOÀN THÀNH CÓ ĐIỀU KIỆN`
 *Mục tiêu: Giải quyết hiện tượng lệch phân phối (distribution shift) bằng kho dữ liệu đa bộ sinh độc lập, bổ sung distillation giữ vững tri thức ảnh sạch, và vượt qua Gate 4 điều kiện ràng buộc.*
+*Trạng thái thực tế (27/10/2026): Baseline và Anchored Recovery hợp lệ; **WiSE-FT Gen 1 bị `invalid_layout`** ⇒ Milestone 6 chưa thể đóng, chuyển tiếp sang Phase 7 để tái lập đo lường.*
 
 | Mã việc | Nhiệm vụ kỹ thuật | Phụ trách | Môi trường | Đầu vào (Input) | Đầu ra (Deliverables) | Trạng thái |
 | **6.1** | **Phân tích định lượng distribution shift**: Đo lường Fake Recall, Real Recall, AUC và phân tầng lỗi per-generator từ ma trận Task 5.1; không sửa mô hình. | **C** | 🖥️ **Local** | Ma trận Task 5.1 | Báo cáo chẩn đoán lỗi ([Báo cáo Task 6.1](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.1_distribution_shift_analysis.md)) | `[x] Đã hoàn thành` |
@@ -222,12 +231,52 @@ gantt
 
 ---
 
-### 🗓️ ĐÃ BÃI BỎ TUẦN 7: TẬP TRUNG TOÀN DIỆN VÀO MÔ HÌNH & CHỈ SỐ ĐỊNH LƯỢNG
+### 🗓️ ĐÃ BÃI BỎ TUẦN 7 (KẾ HOẠCH CŨ): TẬP TRUNG TOÀN DIỆN VÀO MÔ HÌNH & CHỈ SỐ ĐỊNH LƯỢNG
 *Theo quyết định điều hành, toàn bộ các nhiệm vụ phụ trợ gồm Task 5.2 (Ablation cũ), Task 5.3 (Grad-CAM XAI), Task 5.5 (Demo App Web) và Task 5.4 (Slide & Báo cáo) đã được bãi bỏ hoàn toàn để tập trung 100% nguồn lực vào chiến dịch Milestone 6 (Task 6.1 đến 6.6).*
 
 ---
 
-## V. BẢNG TIÊU CHUẨN NGHIỆM THU ĐỒ ÁN (GATE 4 ĐIỀU KIỆN RÀNG BUỘC)
+### 🗓️ TUẦN 7–8: PHASE 7 – TÁI LẬP ĐO LƯỜNG & HỢP NHẤT MÔ HÌNH `[ ] SẴN SÀNG TRIỂN KHAI`
+*Mục tiêu: (1) sửa cho đúng thước đo trước khi tin bất kỳ con số nào; (2) thắng nhanh trên không gian trọng số bằng WiSE-FT Gen 2 + hiệu chuẩn (0 giờ GPU train); (3) nâng năng lực thật bằng dữ liệu đa bộ sinh + hàm phạt bảo vệ ảnh thật; (4) đóng gói **một** checkpoint tự định tuyến theo mức suy biến.*
+
+> **Văn kiện gốc (source of truth)**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](ke_hoach_phase_7_dieu_chinh_toan_dien.md) — bản `v3.0` viết lại sau khi kiểm chứng cấu trúc 4 checkpoint bằng PyTorch. Bản `v2.0` chỉ còn giá trị truy vết tại [`archive/`](archive/ke_hoach_phase_7_dieu_chinh_toan_dien_v2.0_2026-10-27.md).
+> **Điều kiện tiên quyết**: Milestone 6 đã đóng băng kết quả (Baseline, M4, Anchored hợp lệ; **WiSE-FT Gen 1 bị cách ly** vì không biểu diễn được bằng kiến trúc hiện tại — xem §I.1 của kế hoạch Phase 7).
+
+**Bảng 16 task Phase 7:**
+
+| Mã | Nhiệm vụ | Chủ trì | Hỗ trợ | Ước lượng | Cổng |
+| :---: | :--- | :---: | :---: | ---: | :---: |
+| 7.1 | Audit cấu trúc 4 checkpoint & đo lại Gen 1 (`n=3` vs `n=8`) | C | B | 4 h | G7.0 |
+| 7.2 | `canonical_loader` + adapter index tường minh + test (`strict=True`, cấm fallback) | B | C | 8 h | G7.0 |
+| 7.3 | Eval v3: `report_schema v3`, bỏ ngưỡng phụ thuộc batch, thêm `TPR@FPR 1/5/10` + CI | C | B | 6 h | G7.0 |
+| 7.4 | Hiệu chuẩn nhiệt độ & ngưỡng có ràng buộc FPR + ECE (split tách rời) | C | — | 4 h | G7.0 |
+| 7.5 | WiSE-FT **Gen 2** (Baseline + Anchored, cùng `n=3`) + lưới `α×β_srm` + `--verify` | C | B | 5 h | G7.1 |
+| 7.6 | Re-baseline 4 cấu hình trên CFE bằng harness v3 | C | — | 3 h | G7.1 |
+| 7.7 | Kho dữ liệu v2: CFE-Small phân tầng + ảnh thật đa nguồn (12–16k, generator-disjoint) | A | C | 14 h | — |
+| 7.8 | Degradation pipeline v2: $Q\in[30,85]$, WebP, double-JPEG, ghép 2 suy biến | A | B | 5 h | — |
+| 7.9 | Loss v2: `RealGuardLoss` + `FeatureConsistencyLoss` (weight=0 ⇒ backward-compatible) | B | C | 7 h | — |
+| 7.10 | Selection v2: worst-group + ràng buộc `Real ACC ≥ 90%` | B | C | 4 h | — |
+| 7.11 | Huấn luyện **Anchored Recovery v2** (dữ liệu v2 + loss v2 + worst-group) | C | A+B | 5 h + GPU | G7.2 |
+| 7.12 | Ablation mini 4 cấu hình (cùng seed 42) | C+B | — | 4 h + GPU | G7.2 |
+| 7.13 | `DegradationRouter` + fusion xác suất đã hiệu chuẩn (fit, không đặt tay) | B | C | 8 h | — |
+| 7.14 | Locked Benchmark Phase 7 (18 tập in-dist + CFE + 6 biến thể) | C | A | 5 h | G7.3 |
+| 7.15 | Đóng gói `UnifiedFatFormerXLA` + `tools/infer_unified.py` | C | B | 4 h | G7.3 |
+| 7.16 | Cập nhật 10 file tài liệu dự án + Chương 5/Hạn chế | Cả 3 | — | 6 h | G7.3 |
+
+**Bốn cổng chặn Phase 7:**
+
+| Cổng | Thời điểm | Điều kiện tối thiểu (Must) |
+| :--- | :---: | :--- |
+| **G7.0** | Cuối D2 | 4/4 checkpoint nạp `0 missing / 0 unexpected` hoặc bị từ chối có tên; Gen 1 gắn `invalid_layout`; JSON đủ `AUC/AP/TPR@FPR/CI`; không còn `strict=False` trong `tools/` |
+| **G7.1** | Cuối D4 | CFE clean: `Fake@Real=90% ≥ 55%`, `AUC ≥ 80%`; CFE Q30: `AUC ≥ 55%`; không tệ hơn Baseline > 5 pp ở bất kỳ subset nào |
+| **G7.2** | Cuối D8 | CFE clean `Fake@Real=90% ≥ 65%` + `AUC ≥ 78%`; Q30 `AUC ≥ 60%`; in-dist `Macro ACC ≥ 90%` và `Real ACC ≥ 90%` (cứng); `ECE ≤ 0,08` |
+| **G7.3** | Cuối D10 | **Một** checkpoint + `router_params.json`, một `forward()` không cờ chế độ; trong 1,5 pp so với tốt nhất từng điều kiện; thêm < 5 ms/ảnh trên T4 |
+
+> **Điều khoản kết quả âm**: nếu G7.2 trượt, Phase 7 vẫn hợp lệ khi bàn giao checkpoint Pareto tốt nhất + ablation chỉ rõ đòn bẩy thất bại + mục "Hạn chế" viết rõ. Không được nâng số.
+
+---
+
+## V. BẢNG TIÊU CHUẨN NGHIỆM THU ĐỒ ÁN (GATE 4 → CHUYỂN TIẾP SANG CỔNG PHASE 7)
 
 Dự án được đánh giá là hoàn thành chuẩn mực khi đạt đủ các tiêu chuẩn sau:
 - [x] Khắc phục 100% nghẽn I/O qua cơ chế NVMe Colab/Kaggle Offline và kiểm toán toàn diện kho dữ liệu Drive 5TB (55.98 GB, 927.927 ảnh).
@@ -240,6 +289,8 @@ Dự án được đánh giá là hoàn thành chuẩn mực khi đạt đủ c�
   4. **Q30 Fake ACC & Real Preservation**: $\text{ACC}_{\text{fake\_q30}} \ge \text{Base}_{\text{fake\_q30}} + 10,0\text{ pp}$ và đồng thời $\text{ACC}_{\text{real\_q30}} \ge 60,0\%$ (Nâng mạnh khả năng nhận diện ảnh giả bị nén sâu thêm tối thiểu 10 điểm phần trăm, đồng thời bảo đảm độ chính xác trên ảnh thật không bị sụp đổ).
 - [ ] Bảng Ablation Study định lượng rõ rệt công năng của từng module: SRM 3-Kernels, Dynamic Frequency Gating $\lambda(x)$, Distillation Loss và Data đa miền (Task 6.5).
 
+> ⚠️ **Đính chính phạm vi hiệu lực (27/10/2026)**: Các số liệu Milestone 6 từng công bố **chỉ còn hiệu lực cho Baseline và Anchored Recovery**. Checkpoint `fatformer_wise_ft_best.pth` (Gen 1) chứa **10 khối adapter** `{2,5,7,8,11,14,15,17,20,23}` trong khi hàm dựng mô hình chỉ biểu diễn được `n ∈ {3,4,6,8,12,24}` (vị trí cố định `(i+1)·24/n − 1`), nên **không thể nạp đầy đủ**; mọi con số của checkpoint này (kể cả in-dist 96,58% và CFE 52,05%/Fake 4,10%) bị đánh dấu `invalid_layout` cho tới khi đo lại. Vì vậy Gate 4 **không còn là cổng nghiệm thu cuối cùng**; nó được thay bằng chuỗi **G7.0 → G7.3** của Phase 7 (xem bảng cổng ở Tuần 7–8 và [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](ke_hoach_phase_7_dieu_chinh_toan_dien.md) §II.3).
+
 ---
 
 ## VI. MA TRẬN QUẢN LÝ RỦI RO TIẾN ĐỘ (RISK MANAGEMENT MATRIX)
@@ -251,6 +302,8 @@ Dự án được đánh giá là hoàn thành chuẩn mực khi đạt đủ c�
 | **Hàm mất mát đè bẹp logit (Focal Loss collapse)** | Đã xử lý | Thay thế Focal Loss $\gamma=2.0$ bằng `DualStreamCELoss(label_smoothing=0.1)` giúp phân phối gradient mượt mà, bảo vệ ngưỡng phân loại 0.5. | **Triệt tiêu 100%** |
 | **Lệch phân phối đa bộ sinh (Over-specialization)** | Đang xử lý | Kích hoạt **Milestone 6**: Thu thập kho train/val đa miền độc lập ngoài 18 tập test, áp dụng `BalancedCrossDomainSampler` và Distillation Loss. | **Đã kích hoạt Milestone 6** |
 | **Dồn việc viết báo cáo cuối kỳ** | Triệt tiêu | Áp dụng mô hình **viết cuốn chiếu**: Tuần 1-3 đã hoàn tất Chương 1, 2, 3. Tuần 4 hoàn thành Chương 4. Tuần 7 chỉ cần điền bảng số liệu vào Chương 5. | **Đúng tiến độ** |
+| **Checkpoint trộn khác số khối adapter** (mới, 27/10/2026) | **Cao** | Ràng buộc cứng `(i+1)·24/n − 1` khiến file trộn 3-khối + 8-khối tạo ra 10 khối không `n` nào nạp được; loader cũ còn fallback `len>8 → 3` nên **im lặng chọn tập khối tệ nhất**. Đã xảy ra thật với WiSE-FT Gen 1. | **Bắt buộc**: chỉ trộn hai checkpoint **cùng `num_vit_adapter`**; mọi lần nạp phải qua `canonical_loader` với `strict=True` + assert `0/0`; cấm fallback chọn `n` tự động (Task 7.2). | **Đang xử lý (G7.0)** |
+| **Kết luận dựa trên ngưỡng phụ thuộc thành phần lô** (mới, 27/10/2026) | **Cao** | `adaptive_thresh` tính trung bình trên chính tập đang chấm ⇒ rò rỉ thông tin, không triển khai được; các con số "unified" chỉ là trộn heuristic. | Ngưỡng cố định fit trên tập hiệu chuẩn tách rời; mọi báo cáo phải có `TPR@FPR` + bootstrap CI; cấm báo cáo "overall accuracy" đơn lẻ (Task 7.3–7.4, Phụ lục A của kế hoạch test CFE). | **Đang xử lý (G7.0)** |
 
 ---
 *Văn kiện này là bản kế hoạch điều hành chuẩn của đồ án FatFormer-XLA, được cập nhật và đồng bộ theo chiến dịch huấn luyện thực tế và quy chuẩn học thuật nghiêm ngặt.*

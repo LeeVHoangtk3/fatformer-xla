@@ -13,6 +13,11 @@
 > **Thời điểm nghiệm thu**: 24/10/2026  
 > **Trạng thái nghiệm thu**: `[x] ĐÃ HOÀN THÀNH XUẤT SẮC — TOÀN BỘ CÁC CHỈ TIÊU HARD GATES PHASE 6-R PASS 100% TRÊN GPU CLOUD`
 
+> 🚨 **ĐÍNH CHÍNH 27/10/2026 — PHẠM VI HIỆU LỰC BỊ THU HẸP**
+> Báo cáo này **chỉ còn hiệu lực cho cột Anchored Recovery**. Cột WiSE-FT (96,58% Macro ACC, 98,10% Real ACC, 99,15% AUC, 6,73% Q30 Fake) **bị vô hiệu** vì checkpoint `fatformer_wise_ft_best.pth` chứa **10 khối adapter** `{2,5,7,8,11,14,15,17,20,23}` — không `n ∈ {3,4,6,8,12,24}` nào nạp đầy đủ được (ràng buộc `(i+1)·24/n − 1`), và tại `7,15,23` còn mất nhánh SRM + Gating (66 vs 94 tensor/khối).
+> ⚠️ **Vì vậy câu "PASS 100%" ở dòng trạng thái trên là không còn đúng** — Hard Gate 1 và các gate liên quan WiSE-FT phải được đo lại.
+> Chi tiết: [`bao_cao_kiem_dinh_communityforensics_eval.md` Phần IX](../overall/bao_cao_kiem_dinh_communityforensics_eval.md#ix-đính-chính-kỹ-thuật-ngày-27102026) và [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §I. Việc thay thế: Task 7.1 (đo lại `n=3` vs `n=8`) và Task 7.5 (Gen 2).
+
 ---
 
 ## I. ĐỐI CHIẾU & KẾ THỪA BÁO CÁO NHIỆM VỤ TIỀN ĐỀ (TUÂN THỦ QUY TẮC 4)

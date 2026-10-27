@@ -201,12 +201,13 @@ sequenceDiagram
 ## VI. SỔ TAY QUY CHUẨN VẬNG HÀNH & KỸ THUẬT VÀNG (ENGINEERING RULES)
 
 > [!IMPORTANT]
-> **5 NGUYÊN TẮC KỸ THUẬT BẤT DI BẤT DỊCH CỦA DỰ ÁN:**
+> **6 NGUYÊN TẮC KỸ THUẬT BẤT DI BẤT DỊCH CỦA DỰ ÁN:**
 > 1. **Bảo tồn Lỗi Chính Tả Bắt Buộc**: Biến `self.patch_basaed_enhancer` trong [`src/models/clip_models.py`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/src/models/clip_models.py) **tuyệt đối không được sửa** thành `patch_based_enhancer` để tránh lỗi `Missing key` khi nạp checkpoint tác giả.
-> 2. **Số Lượng Adapter Chuẩn**: Cấu hình `--num_vit_adapter 3` (tương ứng các lớp 7, 15, 23 của ViT-L/14) là cấu hình duy nhất khớp 100% với checkpoint `fatformer_4class_ckpt.pth`.
+> 2. **Số Lượng Adapter Chuẩn**: Cấu hình `--num_vit_adapter 3` (tương ứng các lớp 7, 15, 23 của ViT-L/14) là cấu hình duy nhất khớp 100% với checkpoint `fatformer_4class_ckpt.pth`. **Ràng buộc vị trí adapter (bắt buộc)**: `src/models/clip/model.py` sinh vị trí theo `add_adapter[(i+1)*24/n − 1] = True`, nên chỉ `n ∈ {3,4,6,8,12,24}` là biểu diễn được (`n=3 → {7,15,23}`, `n=8 → {2,5,8,11,14,17,20,23}`). Hệ quả: **chỉ được trộn/nạp hai checkpoint có cùng `num_vit_adapter`**; mọi checkpoint lai khác số khối (ví dụ Gen 1 với 10 khối `{2,5,7,8,11,14,15,17,20,23}`) **không thể nạp đầy đủ** và phải bị đánh dấu `invalid_layout`. Mọi lần nạp phải đi qua `src/models/canonical_loader.py` với `strict=True` + assert `0 missing / 0 unexpected`; **nghiêm cấm** `strict=False` và nghiêm cấm fallback tự chọn `n` trong pipeline báo cáo.
 > 3. **Chuẩn Hóa Hình Ảnh**: Sử dụng Mean và Std của ImageNet `[0.485, 0.456, 0.406]` và `[0.229, 0.224, 0.225]`, **không dùng** bộ chuẩn hóa mặc định của OpenAI CLIP.
 > 4. **An Toàn Git**: Tuyệt đối không commit file `.pt`, `.pth` hay thư mục `checkpoints/`. Mọi checkpoint lớn chỉ lưu trữ trên Google Drive 5TB hoặc lưu local.
 > 5. **Quy Tắc I/O Colab**: Tuyệt đối không để DataLoader đọc trực tiếp từ Drive mount; luôn copy file `.tar` vào `/content/` và giải nén trước khi chạy.
+> 6. **Quy Tắc Đo Lường**: Mọi báo cáo kết quả phải theo **Khế ước đo lường v3** ([Phụ lục A](../../plan/ke_hoach_test_communityforensics_eval.md)): `AUC`/`AP`/`TPR@FPR 1-5-10` + bootstrap CI 95%, ngưỡng fit trên tập hiệu chuẩn **tách rời**, công bố `missing/unexpected/status` của checkpoint. **Cấm** báo cáo "overall accuracy" đơn lẻ và cấm trích dẫn số liệu của checkpoint `invalid_layout`.
 
 ---
 

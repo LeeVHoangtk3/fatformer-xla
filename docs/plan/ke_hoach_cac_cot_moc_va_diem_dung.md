@@ -189,11 +189,52 @@ flowchart TD
 
 ---
 
+### 🧪 ĐIỂM DỪNG 6: PHASE 7 – TÁI LẬP ĐO LƯỜNG & HỢP NHẤT MÔ HÌNH (MILESTONE 7)
+*Mục đích: Trước khi tuyên bố bất kỳ kết quả nào cho Hội đồng, phải bảo đảm mọi con số được đo bằng một thước đo trung thực, tái lập được và gắn với một checkpoint nạp đầy đủ. Sau đó mới nâng năng lực thật và hợp nhất về một checkpoint tự định tuyến.*
+
+**Bối cảnh bắt buộc (đính chính 27/10/2026)**: Kết quả Mốc 6-R **chỉ còn hiệu lực với Baseline và Anchored Recovery**. Checkpoint `fatformer_wise_ft_best.pth` (WiSE-FT Gen 1) chứa **10 khối adapter** `{2,5,7,8,11,14,15,17,20,23}`, trong khi `src/models/clip/model.py` chỉ sinh được vị trí `(i+1)·24/n − 1` với `n ∈ {3,4,6,8,12,24}` ⇒ **không `n` nào biểu diễn được 10 khối**. Tại 3 khối `7,15,23`, bản Gen 1 chỉ có 66 tensor/khối (mức Baseline) thay vì 94 như M4/Anchored ⇒ nhánh SRM + Gating trong 3 adapter đó **đã mất trong lúc trộn**. Do đó Gen 1 bị **cách ly** với nhãn `invalid_layout`, và mọi số liệu của nó (bao gồm in-dist 96,58% và CFE 52,05%/Fake 4,10%) **không được trích dẫn như kết quả hiện hành**.
+
+| Phân công | Mã Task | Tên Nhiệm Vụ | Nội Dung Kỹ Thuật Chi Tiết | Sản Phẩm Bàn Giao | Trạng Thái |
+| :--- | :---: | :--- | :--- | :--- | :---: |
+| **Thành viên C (Lead)** | **Task 7.1** | Audit cấu trúc 4 checkpoint & đo lại Gen 1 | Đo `n_keys`, `adapter_blocks`, `expressible_n`, `blocks_dropped`, `has_srm_per_block`, `alias_equality`; chấm Gen 1 hai lần (`n=3` vs `n=8`) trên CFE clean 2.000 ảnh | `checkpoint_structure_audit.json`, `wise_ft_legacy_reinterpretation.json` | `[ ] Sẵn sàng` |
+| **Thành viên B** | **Task 7.2** | `canonical_loader` + adapter index tường minh | `strict=True` + assert `0/0`; trả `dropped`/`partial` thay vì fallback; cấm `len(indices) > 8 → 3`; unit test 5 tình huống | `src/models/canonical_loader.py`, `tests/test_canonical_loader.py` | `[ ] Sẵn sàng` |
+| **Thành viên C** | **Task 7.3** | Evaluation v3 (khế ước đo lường) | Bỏ `strict=False` và ngưỡng phụ thuộc batch; thêm `TPR@FPR 1/5/10`, `ECE`, bootstrap CI, `git_commit`, `sha256`, `layout.status` | `tools/eval_communityforensics.py` v3 + `report_schema v3` | `[ ] Sẵn sàng` |
+| **Thành viên C** | **Task 7.4** | Hiệu chuẩn & ngưỡng có ràng buộc | Fit `T` (L-BFGS) + `T*` với `FPR ≤ 5%/10%` trên tập hiệu chuẩn **tách rời**; ECE 10 bin | `logs/phase7/calibration/<model>.json` | `[ ] Sẵn sàng` |
+| **Thành viên C** | **Task 7.5** | WiSE-FT **Gen 2** | Trộn Baseline + Anchored (**cùng `n=3`**), lưới `α×β_srm` 12 điểm, `--verify` bắt buộc, cấm tái dùng tên file cũ | `fatformer_wise_ft_v2_best.pth` + `_metadata.json` | `[ ] Sẵn sàng` |
+| **Thành viên C** | **Task 7.6** | Re-baseline 4 cấu hình | Baseline / Anchored / Gen 2 / Ensemble trên CFE clean + Q30 bằng harness v3 | `cfe_v3_baseline_matrix.{json,md}` | `[ ] Sẵn sàng` |
+| **Thành viên A** | **Task 7.7** | Kho dữ liệu v2 | 12–16k ảnh, 5 họ 2024–2025, generator-disjoint, ảnh thật đa nguồn; chia `train/val_calib/val_select`; kiểm toán SHA-256 + pHash | `data_manifest_v2.json`, `data_isolation_report.json` | `[ ] Sẵn sàng` |
+| **Thành viên A** | **Task 7.8** | Degradation pipeline v2 | $Q\in[30,85]$ (≥35% trong $[30,45]$), WebP, double-JPEG, blur, down-up, ghép 2 suy biến 25%; `clean_prob=0.60` | `configs/degradation_v2.yaml` + histogram | `[ ] Sẵn sàng` |
+| **Thành viên B** | **Task 7.9** | Loss v2 | `RealGuardLoss` (chỉ phạt khi student vượt teacher trên mẫu Real, dùng ReLU) + `FeatureConsistencyLoss`; weight mặc định 0 | `src/training/loss.py` + 3 unit test | `[ ] Sẵn sàng` |
+| **Thành viên B** | **Task 7.10** | Selection metric v2 | `worst_group = min` trên $\{clean, Q30\} \times \{real, fake\}$; chỉ lưu `best.pth` khi `Real ACC ≥ 90%` | `Trainer.validate()` + CSV 6 cột | `[ ] Sẵn sàng` |
+| **Thành viên C** | **Task 7.11** | Anchored Recovery v2 | Warm start Baseline + Zero-Init; `n=3`; LR phân tầng; 4–6 epoch; dữ liệu v2 + loss v2 | `fatformer_anchored_v2_best.pth` + `train_history.csv` | `[ ] Sẵn sàng` |
+| **Thành viên C & B** | **Task 7.12** | Ablation mini | 4 cấu hình cùng seed 42: `+data`, `+data+guard`, `+data+featcons`, full | Bảng 4×8 chỉ số | `[ ] Sẵn sàng` |
+| **Thành viên B** | **Task 7.13** | `DegradationRouter` + fusion | 3 tín hiệu không tham chiếu (blockiness, $V_{Lap}$, $\bar\lambda$); logistic fit trên `val_calib`; **không đặt tay hằng số** | `src/models/degradation_router.py` + `router_params.json` | `[ ] Sẵn sàng` |
+| **Thành viên C** | **Task 7.14** | Locked Benchmark Phase 7 | 18 tập in-dist (82.003 ảnh) + CFE clean/Q30 + 6 biến thể suy biến, một lượt | `final_phase7_report.{json,md}` | `[ ] Sẵn sàng` |
+| **Thành viên C** | **Task 7.15** | Đóng gói Unified | Một `.pth` + `router_params.json`; `forward(x)` duy nhất không cờ chế độ | `unified_fatformer.py`, `tools/infer_unified.py` | `[ ] Sẵn sàng` |
+| **Cả 3** | **Task 7.16** | Cập nhật tài liệu dự án | 10 file tại §VIII của kế hoạch Phase 7; grep xóa số cũ `52.05 / 4.10 / 96.58` | Tài liệu đồng bộ | `[ ] Sẵn sàng` |
+
+#### 🛑 Bốn cổng chặn Phase 7
+
+| Cổng | Thời điểm | Điều kiện tối thiểu (Must) |
+| :--- | :---: | :--- |
+| **G7.0 — Toàn vẹn đo lường** | Cuối D2 | 4/4 checkpoint nạp `0 missing / 0 unexpected` **hoặc** bị từ chối kèm lỗi có tên (`IncompatibleAdapterLayout`); Gen 1 gắn `invalid_layout` + có bảng `n=3` vs `n=8`; JSON đủ `AUC/AP/TPR@FPR 1-5-10/CI`; `grep strict=False tools/` rỗng |
+| **G7.1 — Thắng nhanh (0 h GPU train)** | Cuối D4 | CFE clean @ `FPR=10%`: `Fake@Real=90% ≥ 55%` (stretch ≥ 70%); `AUC ≥ 80%`; CFE Q30 `AUC ≥ 55%`; không tệ hơn Baseline > 5 pp ở bất kỳ subset nào |
+| **G7.2 — Năng lực thật** | Cuối D8 | CFE clean `Fake@Real=90% ≥ 65%` + `AUC ≥ 78%`; Q30 `AUC ≥ 60%` + `Fake@Real=90% ≥ 40%`; in-dist `Macro ACC ≥ 90%` **và** `Real ACC ≥ 90%` (cứng); worst-subset `Fake ≥ 45%`; `ECE ≤ 0,08` |
+| **G7.3 — Hợp nhất** | Cuối D10 | **Một** checkpoint + `router_params.json`; một `forward()`; trong **1,5 pp** so với kết quả tốt nhất theo từng điều kiện; thêm **< 5 ms/ảnh** trên T4; không cần metadata ngoài ảnh |
+
+> **Điều khoản kết quả âm (bắt buộc tôn trọng)**: Nếu G7.2 trượt, Phase 7 vẫn được nghiệm thu **hợp lệ** khi bàn giao đủ: (a) checkpoint Pareto tốt nhất, (b) ma trận ablation chỉ rõ đòn bẩy nào thất bại, (c) mục "Hạn chế" viết rõ trong báo cáo. Nghiêm cấm điều chỉnh ngưỡng sau khi đã nhìn kết quả để "cho đạt".
+
+---
+
 ### 🏆 ĐIỂM DỪNG CHUNG CUỘC: NGHIỆM THU ĐỒ ÁN TỐT NGHIỆP XUẤT SẮC
 *Mục đích: Khóa sổ toàn diện mô hình học máy và bộ chỉ số kiểm chuẩn hai chiều phục vụ Hội đồng bảo vệ đồ án tốt nghiệp.*
 
-Khi mô hình Phase 6-R vượt qua Cổng nghiệm thu cứng Mốc 6-R tại Task 6.6-R:
-1. **Khôi phục hoàn toàn vị thế Clean**: Clean Macro ACC đạt $91.50\% – 95.50\%$ (tiệm cận đỉnh cao CVPR 2024 là $96.45\%$), bảo đảm tính an toàn khi ứng dụng thực tế với Real ACC $\ge 92.00\%$.
-2. **Bảo tồn ưu thế vượt bậc trước nén sâu**: Fake ACC dưới JPEG $Q=30$ đạt $>35.00\% – 45.00\%$ (vượt trội gấp $6 - 7$ lần mốc sàn baseline $5.78\%$).
-3. **Minh chứng khoa học hoàn hảo**: Chuỗi số liệu 7 cấu hình Ablation Study (M1 $\rightarrow$ M6-R) và báo cáo kiểm chuẩn 2 chế độ vận hành (Standard Balanced & High-Recall Forensic) tạo nên luận cứ học thuật chặt chẽ, khách quan và thuyết phục tuyệt đối.
+> ⚠️ **Sửa phạm vi tuyên bố (27/10/2026)**: Mục này **không còn được phép tuyên bố "đã vượt cổng"** dựa trên số liệu Mốc 6-R, vì (1) WiSE-FT Gen 1 bị `invalid_layout` (xem Điểm dừng 6), và (2) tiêu chí cũ dùng "overall accuracy" + ngưỡng chọn trên cùng tập báo cáo. Tuyên bố chung cuộc chỉ có hiệu lực **sau khi G7.0–G7.3 hoàn tất** và báo cáo dùng `report_schema v3` (AUC/AP/TPR@FPR + CI, tập hiệu chuẩn tách rời).
+
+Khi mô hình Phase 7 vượt qua chuỗi cổng G7.0 → G7.3:
+1. **Khôi phục hoàn toàn vị thế Clean**: in-dist Macro ACC đạt mức Must $\ge 90,00\%$ (stretch $\ge 94,00\%$) với `Real ACC ≥ 90%` là ràng buộc **cứng**, đo trên 18 tập test đã khóa bằng harness v3.
+2. **Bảo tồn ưu thế trước nén sâu**: báo cáo `AUC` và `Fake@Real=90%` cho JPEG Q30 thay vì chỉ "overall accuracy"; mức Must là `AUC ≥ 60%`, stretch $\ge 65\%$.
+3. **Minh chứng khoa học**: chuỗi ablation M1 → M6-R → Phase 7 (16 task) với mọi con số kèm điều kiện vận hành `TPR@FPR`, CI 95%, và mục "Hạn chế" nêu rõ đòn bẩy nào không hiệu quả.
+4. **Một mô hình duy nhất**: một file checkpoint + `router_params.json`, một `forward()`, không cần cờ chế độ — điều kiện G7.3.
+
 

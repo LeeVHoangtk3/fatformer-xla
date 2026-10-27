@@ -10,12 +10,15 @@
 
 ## I. MỤC TIÊU VÀ Ý NGHĨA HỌC THUẬT
 
+> 🚨 **CẬP NHẬT 27/10/2026 — ĐỌC TRƯỚC**: Kế hoạch này được viết trước khi phát hiện `fatformer_wise_ft_best.pth` là `invalid_layout`. Vì vậy mọi mục tiêu "chứng minh WiSE-FT ưu việt" và mọi cột WiSE-FT trong các bảng mẫu bên dưới **đã hết hiệu lực**. Kế hoạch hiện hành là [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](ke_hoach_phase_7_dieu_chinh_toan_dien.md); khế ước đo lường bắt buộc ở **Phụ lục A**. Thiết kế đích là **một checkpoint tự định tuyến**, không phải hệ thống kép.
+
 1. **Xóa tan nghi vấn "Học thuộc phòng lab" (Overfitting to Lab Benchmarks)**:
    - Các tập test trong giai đoạn trước (ProGAN, StyleGAN, LDM, Glide) đều xuất phát từ các mô hình sinh giai đoạn 2019–2023.
    - Việc đưa vào tập dữ liệu độc lập **CommunityForensics-Eval (CVPR 2025)** chứng minh năng lực tổng quát hóa thực sự của FatFormer-XLA trên các mô hình sinh tiên tiến nhất năm 2024–2025 mà mô hình chưa từng được huấn luyện.
-2. **Khẳng định tính ưu việt của Kiến trúc Hệ thống Kép (Dual-Operating Architecture)**:
-   - Đánh giá song song trên 2 trạng thái: **Ảnh Sạch (Clean)** và **Ảnh Nén Sâu Mạng Xã Hội (JPEG $Q=30$)**.
-   - Chứng minh **WiSE-FT** duy trì độ chính xác đỉnh cao và bảo vệ ảnh thật trên ảnh sạch, trong khi **Anchored Recovery** cứu vãn sự cố sụp đổ khi ảnh bị nén sâu qua không gian mạng.
+2. ~~**Khẳng định tính ưu việt của Kiến trúc Hệ thống Kép (Dual-Operating Architecture)**~~
+   - ~~Chứng minh **WiSE-FT** duy trì độ chính xác đỉnh cao ... **Anchored Recovery** cứu vãn ...~~
+   - ✅ **Mục tiêu thay thế**: đo trung thực **Baseline** vs **Anchored** vs **WiSE-FT Gen 2** (Task 7.5) trên cùng harness v3, rồi kiểm chứng giả thuyết "một checkpoint tự định tuyến" ở **G7.3**.
+   - ✅ Vẫn giữ đánh giá song song 2 trạng thái: **Clean** và **JPEG Q=30 in-memory**.
 
 ---
 
@@ -217,16 +220,17 @@ print(f"[✓] Đã lưu thành công gói kiểm chuẩn tại: {DRIVE_TAR_PATH}
 ## IV. KHUNG KẾT QUẢ ĐỐI CHỨNG HỌC THUẬT (ĐƯA VÀO CHƯƠNG 5 BÁO CÁO ĐỒ ÁN)
 
 ### Bảng A: Kết Quả Kiểm Chuẩn Trên Miền Ảnh Sạch (Clean CommunityForensics-Eval — 2.000 Ảnh)
-*Mục đích: Chứng minh WiSE-FT bảo toàn độ chính xác đỉnh cao và chống báo oan ảnh thật trên các mô hình 2024–2025.*
+*~~Mục đích: Chứng minh WiSE-FT bảo toàn độ chính xác đỉnh cao và chống báo oan ảnh thật trên các mô hình 2024–2025.~~*
+*⚠️ Mục đích đã sửa: đo trung thực Baseline vs Anchored vs **Gen 2**, báo cáo theo Phụ lục A (AUC/AP/TPR@FPR + CI). Cột "WiSE-FT Mode 1" chỉ còn là chỗ giữ cho Gen 2.*
 
-| Tập Kiểm Chuẩn Con | Họ Kiến Trúc & Mô Hình Đại Diện | Số Mẫu (Real/Fake) | Baseline CVPR 2024 ($T^*=0.50$) | WiSE-FT Mode 1 ($T=1.08, T^*=0.50$) | Anchored Mode 2 ($T=1.28, T^*=0.40$) | Phân Tích Học Thuật & Pháp Y |
+| Tập Kiểm Chuẩn Con | Họ Kiến Trúc & Mô Hình Đại Diện | Số Mẫu (Real/Fake) | Baseline CVPR 2024 ($T^*=0.50$) | ~~WiSE-FT Mode 1~~ → **Gen 2** (Task 7.5) | Anchored Mode 2 ($T=1.28, T^*=0.40$) | Phân Tích Học Thuật & Pháp Y |
 | :--- | :--- | :---: | :---: | :---: | :---: | :--- |
 | **1_commercial** | Midjourney v6, DALL-E 3 | 600 (300/300) | *X.XX%* | *Y.YY%* | *Z.ZZ%* | Khả năng tổng quát hóa trên AI thương mại đóng |
 | **2_latent_diffusion**| SDXL, Flux.1 | 600 (300/300) | *X.XX%* | *Y.YY%* | *Z.ZZ%* | Nhận diện dấu vết khuếch tán tiềm ẩn thế hệ mới |
 | **3_pixel_diffusion** | DeepFloyd, ADM | 400 (200/200) | *X.XX%* | *Y.YY%* | *Z.ZZ%* | Đánh giá trên nhóm khuếch tán không gian điểm ảnh |
 | **4_modern_gans** | StyleGAN3, GigaGAN | 200 (100/100) | *X.XX%* | *Y.YY%* | *Z.ZZ%* | Kiểm tra khả năng duy trì tri thức họ GAN hiện đại |
 | **5_other_autoregressive**| Other / Autoregressive | 200 (100/100) | *X.XX%* | *Y.YY%* | *Z.ZZ%* | Kiểm thử Zero-shot trên kiến trúc phi truyền thống |
-| 🏆 **SUBSET-MACRO MEAN**| **Trung bình không trọng số (5 họ)** | **2.000** | *...%* | **...% 🏆** | *...%* | **WiSE-FT giữ vững vị thế ở Chế độ Tiêu chuẩn** |
+| 🏆 **SUBSET-MACRO MEAN**| **Trung bình không trọng số (5 họ)** | **2.000** | *...%* | *...%* | *...%* | *Bỏ kỳ vọng "WiSE-FT giữ vững"; chờ số Gen 2* |
 | 📊 **OVERALL POOLED MICRO**| **Toàn bộ 2.000 ảnh gộp (Micro ACC)** | **2.000** | *...%* | **...% 🏆** | *...%* | Đánh giá tổng hợp toàn bộ tập mẫu |
 | • Clean Real ACC | COCO, FFHQ, RAISE, LAION | 1.000 | *...%* | **...% 🏆** | *...%* | Bảo vệ ảnh thật tự nhiên, chống báo động giả |
 | • Clean Fake ACC | Toàn bộ 5 họ AI mới | 1.000 | *...%* | *...%* | **...% 🔥** | Độ nhạy bắt ảnh giả trên miền chưa từng huấn luyện |
@@ -235,9 +239,10 @@ print(f"[✓] Đã lưu thành công gói kiểm chuẩn tại: {DRIVE_TAR_PATH}
 ---
 
 ### Bảng B: Kết Quả Kiểm Chuẩn Dưới Biến Dạng Nén Sâu (JPEG Q=30 CommunityForensics-Eval — 2.000 Ảnh)
-*Mục đích: Chứng minh Baseline gốc và WiSE-FT sụp đổ khi ảnh AI mới bị nén qua mạng xã hội, trong khi Anchored Recovery cứu vãn ngoạn mục.*
+*~~Mục đích: Chứng minh Baseline gốc và WiSE-FT sụp đổ khi ảnh AI mới bị nén qua mạng xã hội, trong khi Anchored Recovery cứu vãn ngoạn mục.~~*
+*⚠️ Mục đích đã sửa: kiểm tra liệu có mô hình nào nâng được **AUC** dưới Q=30 (không chỉ hạ ngưỡng). AUC Q30 của Anchored hiện là 50,07% ⇒ chưa đạt.*
 
-| Chỉ Số Đo Đạc Dưới Nén Sâu ($Q=30$) | Số Mẫu | Baseline CVPR 2024 | WiSE-FT (Chế Độ 1) | Anchored Recovery (Chế Độ 2) | Kết Luận Đối Chứng |
+| Chỉ Số Đo Đạc Dưới Nén Sâu ($Q=30$) | Số Mẫu | Baseline CVPR 2024 | ~~WiSE-FT (Chế Độ 1)~~ → **Gen 2** | Anchored Recovery (Chế Độ 2) | Kết Luận Đối Chứng |
 | :--- | :---: | :---: | :---: | :---: | :--- |
 | **1_commercial Fake ACC ($Q=30$)** | 300 Fake | ~X.X% (Liệt) | ~Y.Y% | **Z.ZZ% 🔥** | Bắt được ảnh thương mại dù bị lưới DCT $8\times8$ phá hủy |
 | **2_latent_diffusion Fake ACC ($Q=30$)** | 300 Fake | ~X.X% (Liệt) | ~Y.Y% | **Z.ZZ% 🔥** | Khối SRM 3-Kernels và Gating $\lambda(x)$ phát huy tác dụng |
@@ -263,3 +268,97 @@ Script sẽ tự động:
 2. Suy luận trên 3 checkpoint: Baseline gốc, WiSE-FT, Anchored Recovery.
 3. Chạy song song 2 trạng thái: Clean và in-memory JPEG $Q=30$.
 4. Tự động xuất tệp `communityforensics_benchmark_report.md` và `communityforensics_benchmark_report.json` với đúng định dạng Bảng A & B.
+
+> ⚠️ **Cảnh báo (27/10/2026)**: Mô tả ở mục V phản ánh **bản script cũ**. Bản cập nhật hiện tại **vẫn còn** các khuyết tật E1–E6 (xem Phụ lục A.6 và [báo cáo đính chính](../bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md#ix-đính-chính-kỹ-thuật-ngày-27102026)). Không dùng kết quả của script cho tới khi **G7.0** hoàn tất.
+
+---
+
+## PHỤ LỤC A — KHẾ ƯỚC ĐO LƯỜNG v3 (BẮT BUỘC TỪ 27/10/2026)
+
+Phụ lục này thay thế mọi quy ước báo cáo trước đây cho các bài kiểm chuẩn OOD (CommunityForensics-Eval và các tập mở rộng). Mọi báo cáo không tuân thủ sẽ bị **trả lại, không nghiệm thu**.
+
+### A.1. Chỉ số bắt buộc
+
+| Nhóm | Chỉ số | Ghi chú |
+| :--- | :--- | :--- |
+| **Chính** | `ROC-AUC`, `AP` | Tính trên xác suất **đã hiệu chuẩn**; AP phải xử lý edge-case chia 0 |
+| **Chính** | `TPR@FPR = 1%`, `5%`, `10%` | Đây là chỉ số thay thế "Fake ACC" khi so sánh mô hình |
+| **Phụ** | `Real ACC`, `Fake ACC` tại `T*` cố định | Chỉ báo cáo **kèm** giá trị `T*` và nguồn fit |
+| **Hiệu chuẩn** | `ECE` (10 bin), `NLL` | Trước và sau hiệu chuẩn |
+| **Độ bất định** | Bootstrap CI 95% cho AUC, AP, TPR | 1.000 lần resample, seed cố định |
+| **Phân tầng** | 5 subset × 4 nhóm generator × 2 điều kiện | Không gộp mất chi tiết |
+
+### A.2. Tập hiệu chuẩn phải tách rời
+
+- `T`, `T*`, và tham số router **chỉ được fit** trên một trong hai nguồn:
+  1. `val_calibration` in-dist (ưu tiên), **hoặc**
+  2. 400 ảnh CFE tách khỏi 2.000 ảnh báo cáo; nếu không đủ thì **cross-validation 5-fold** và báo cáo cả 5 fold.
+- **Nghiêm cấm**: fit và báo cáo trên cùng một tập; dùng `mean` của tập đang chấm để suy ra ngưỡng; chọn ngưỡng sau khi đã xem kết quả.
+- Mọi JSON phải ghi `calibration_source`, `n_calib`, và `fold_id` (nếu dùng CV).
+
+### A.3. Điều kiện vận hành phải công bố
+
+Mỗi con số phải kèm **ngữ cảnh triển khai**:
+- `FPR mục tiêu` (1/5/10%) và `T*` tương ứng.
+- Điều kiện ảnh: `clean` hoặc `Q30` (và nếu khác, ghi rõ tham số).
+- `degrade_order`: `post_resize` (mặc định, khớp dữ liệu 224×224 hiện tại) hoặc `pre_resize` (chỉ dùng cho ảnh độ phân giải gốc).
+
+### A.4. Cấm báo cáo "overall accuracy" đơn lẻ
+
+- Không được dùng "Overall ACC" làm chỉ số chính, không được so sánh hai mô hình chỉ bằng Overall ACC.
+- Lý do: Overall ACC phụ thuộc tỷ lệ real/fake của tập và che giấu hiện tượng "báo oan ảnh thật để bắt thêm ảnh giả".
+- Nếu buộc phải nêu (ví dụ để đối chiếu báo cáo cũ), phải đặt trong ngoặc kèm nhãn *(chỉ để tham chiếu lịch sử)* và **kèm ngay** `Real ACC` + `Fake ACC` + `T*`.
+
+### A.5. Trạng thái nạp checkpoint phải công bố
+
+Mỗi báo cáo phải có bảng:
+
+| Checkpoint | `n_keys` | `adapter_blocks` | `n` dùng | `missing` | `unexpected` | `status` |
+| :--- | ---: | :--- | :---: | ---: | ---: | :--- |
+| *(tên file)* | | | | **0** | **0** | `ok` / `invalid_layout` / `partial` |
+
+- `missing > 0` hoặc `unexpected > 0` ⇒ **status ≠ ok** ⇒ kết quả không được dùng làm kết quả chính.
+- Không chấp nhận `strict=False` trong bất kỳ đường nạp nào thuộc pipeline báo cáo.
+- Mọi JSON phải có `git_commit`, `sha256` của từng checkpoint, `report_schema: "v3"`.
+
+### A.6. Sáu khuyết tật phải vá trước khi báo cáo có hiệu lực
+
+| Mã | Vị trí | Mô tả | Task |
+| :--- | :--- | :--- | :---: |
+| E1 | `eval_communityforensics.py` | `strict=False` + lọc theo shape | 7.2–7.3 |
+| E2 | `eval_communityforensics.py` | fallback `len(indices) > 8 → 3` | 7.2 |
+| E3 | `eval_communityforensics.py` | ngưỡng thích ứng theo `mean_w` của tập đang chấm | 7.4 |
+| E4 | `eval_communityforensics.py` | hệ số router đặt tay | 7.13 |
+| E5 | `eval_communityforensics.py` | nhiệt độ hard-code, thiếu `TPR@FPR 1/10`, thiếu CI | 7.3 |
+| E6 | `wise_ft_merge.py` | calibration chết, không `--verify`, buffer detection chuỗi con, không quét `β_srm` | 7.5 |
+
+### A.7. Mẫu JSON tối thiểu
+
+```json
+{
+  "report_schema": "v3",
+  "git_commit": "<sha>",
+  "timestamp_utc": "2026-10-27T00:00:00Z",
+  "dataset": {"name": "communityforensics_eval", "n": 2000, "degrade": "clean"},
+  "checkpoints": [
+    {"path": "...", "sha256": "...", "n_keys": 1200, "adapter_blocks": [7,15,23],
+     "n_used": 3, "missing": 0, "unexpected": 0, "status": "ok"}
+  ],
+  "calibration": {"source": "val_calibration", "n": 540, "T": 1.2763, "T_star": 0.40, "fpr_target": 0.05},
+  "metrics": {
+    "auc": 0.0, "ap": 0.0,
+    "tpr_at_fpr": {"0.01": 0.0, "0.05": 0.0, "0.10": 0.0},
+    "real_acc": 0.0, "fake_acc": 0.0, "ece": 0.0,
+    "ci95": {"auc": [0.0, 0.0], "tpr_at_fpr_0.05": [0.0, 0.0]}
+  },
+  "per_subset": [{"subset": "1_commercial", "n_real": 300, "n_fake": 300, "auc": 0.0, "tpr_at_fpr_0.05": 0.0}]
+}
+```
+
+### A.8. Quy tắc trích dẫn trong luận văn / slide
+
+1. Luôn ghi **điều kiện**: `CFE clean, TPR@FPR=5%, AUC` — không ghi "độ chính xác 90%".
+2. Không trích dẫn số của checkpoint có `status: invalid_layout` (hiện tại: `fatformer_wise_ft_best.pth`).
+3. Khi so sánh với bài báo gốc CVPR 2024, phải nêu rõ khác biệt về metric (paper dùng ACC; ta dùng AUC + TPR@FPR).
+4. Mọi bảng phải có cột `CI 95%`; nếu chênh lệch giữa hai mô hình nhỏ hơn nửa độ rộng CI ⇒ **không được kết luận mô hình này tốt hơn**.
+

@@ -26,8 +26,11 @@
    - [5.1. Thảm họa Quên Tri Thức Sạch (Catastrophic Forgetting)](#51-thảm-họa-quên-tri-thức-sạch-catastrophic-forgetting)
    - [5.2. Sự cố Sụp Đổ Ranh Giới Quyết Định (Threshold Collapse)](#52-sự-cố-sụp-đổ-ranh-giới-quyết-định-threshold-collapse)
    - [5.3. Đột Phá Kép WiSE-FT và Anchored Recovery](#53-đột-phá-kép-wise-ft-và-anchored-recovery)
+   - [5.4. Đính Chính Kỹ Thuật Ngày 27/10/2026 — Vì Sao Kết Luận "Đột Phá Kép" Chưa Đứng Vững](#54-đính-chính-kỹ-thuật-ngày-27102026--vì-sao-kết-luận-đột-phá-kép-chưa-đứng-vững)
 6. [Chiến Lược Hệ Thống Kép (Dual-Operating Architecture)](#vi-chiến-lược-hệ-thống-kép-dual-operating-architecture)
 7. [Bảng Kê Khai Đường Dẫn Vật Lý & Toàn Vẹn Mã Băm (Artifacts & Hash Audit)](#vii-bảng-kê-khai-đường-dẫn-vật-lý--toàn-vẹn-mã-băm-artifacts--hash-audit)
+
+> 🚨 **ĐỌC TRƯỚC**: Mọi số liệu của checkpoint `fatformer_wise_ft_best.pth` (Thế Hệ 4) trong tài liệu này đã bị đánh dấu **`invalid_layout`** kể từ 27/10/2026. Nguyên nhân và bằng chứng ở **§5.4**. Kế hoạch thay thế: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](ke_hoach_phase_7_dieu_chinh_toan_dien.md) — Task 7.5 (Gen 2), Task 7.1 (đo lại `n=3` vs `n=8`).
 
 ---
 
@@ -58,7 +61,7 @@ flowchart TD
     end
 
     subgraph G4["22-24/10/2026: CHIẾN DỊCH KHÔI PHỤC ĐỈNH CAO PHASE 6-R"]
-        WISE["fatformer_wise_ft_best.pth<br/>(Task 6.1-R: WiSE-FT α=0.25)<br/>Clean ACC: 96.58% | Real ACC: 98.10%<br/>🏆 CHẾ ĐỘ TIÊU CHUẨN"]
+        WISE["fatformer_wise_ft_best.pth<br/>(Task 6.1-R: WiSE-FT α=0.25)<br/>⚠️ status: invalid_layout<br/>(10 khối adapter, không nạp đủ)"]
         ANCH["fatformer_anchored_recovery_best.pth<br/>(Task 6.3-R: Zero-Init + Anchor Loss)<br/>Q30 Fake: 40.42% | Blur Fake: 85.49%<br/>🔥 CHẾ ĐỘ FORENSIC"]
         
         CK0 & M4_FALLBACK -->|"Nội suy không gian trọng số"| WISE
@@ -90,9 +93,10 @@ Bảng tổng hợp xếp hạng theo **thời gian sinh ra thực tế trong d�
 | **3a**| **`m3/crossdomain_model_best.pth`** | [Task 6.3-C](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.3_c_cross_domain_training_execution.md) | 20/10/2026 | Kaggle Server RTX PRO 6000 | 2.44 GB | 15.39M (2.66%) | 61.20% | 51.30% | 31.20% | 🧪 Ứng viên Ablation M3 (Data Only) |
 | **3b**| **`fatformer_crossdomain_weights_only.pth`** *(M4)* | [Task 6.3-C](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.3_c_cross_domain_training_execution.md) / [Task 6.4](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.4_calibration_and_checkpoint_selection.md) | 20/10/2026 | Kaggle Server RTX PRO 6000 | 2.31 GB | 15.39M (2.66%) | 59.39% | 45.75% | 37.09% | ⚠️ Trạng thái Fallback do lỗi quét ngưỡng |
 | **3c**| **`m5/crossdomain_model_best.pth`** | [Task 6.3-C](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.3_c_cross_domain_training_execution.md) | 20/10/2026 | Kaggle Server RTX PRO 6000 | 2.44 GB | 15.58M (2.69%) | 62.15% | 49.80% | 34.60% | 🧪 Ứng viên Ablation M5 (LoRA Adapter) |
-| **4** | **`fatformer_wise_ft_best.pth`** *(WiSE-FT)* | [Task 6.1-R](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.1_r_wise_ft_weight_ensembling.md) | 22/10/2026 | Workstation Local / Zero-Compute | 4.47 GB | 0M (Nội suy) | **96.58%** | **98.10%** | 6.73% | 🏆 **SẢN PHẨM: CHẾ ĐỘ TIÊU CHUẨN** |
-| **5a**| **`fatformer_anchored_recovery_best.pth`** | [Task 6.3-R](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.3_r_anchored_recovery_training.md) | 23/10/2026 | Google Colab RTX PRO 6000 | 1.84 GB | 14.85M (2.56%) | 74.75% | 50.52% | **40.42%** | 🔥 **SẢN PHẨM: CHẾ ĐỘ FORENSIC** |
+| **4** | **`fatformer_wise_ft_best.pth`** *(WiSE-FT Gen 1)* | [Task 6.1-R](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.1_r_wise_ft_weight_ensembling.md) | 22/10/2026 | Workstation Local / Zero-Compute | 4.47 GB | 0M (Nội suy) | ~~96.58%~~ | ~~98.10%~~ | ~~6.73%~~ | 🚫 **`invalid_layout`** — 10 khối adapter, không `n` nào nạp đủ (§5.4) |
+| **5a**| **`fatformer_anchored_recovery_best.pth`** | [Task 6.3-R](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.3_r_anchored_recovery_training.md) | 23/10/2026 | Google Colab RTX PRO 6000 | 1.84 GB | 14.85M (2.56%) | 74.75% | 50.52% | **40.42%** | 🔥 **SẢN PHẨM HỢP LỆ: CHẾ ĐỘ FORENSIC** |
 | **5b**| **`fatformer_anchored_recovery_last.pth`** | [Task 6.3-R](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.3_r_anchored_recovery_training.md) | 23/10/2026 | Google Colab RTX PRO 6000 | 1.84 GB | 14.85M (2.56%) | 73.90% | 49.80% | 39.85% | 📁 Checkpoint Epoch 3/3 đối chứng |
+| **6** | **`fatformer_wise_ft_v2_best.pth`** *(Gen 2)* | **Task 7.5 (Phase 7 — dự kiến)** | — | Local CPU (nội suy) | ~1.97 GB (dự kiến) | 0M (Nội suy) | *chờ đo* | *chờ đo* | *chờ đo* | 🧪 **DỰ KIẾN**: Baseline + Anchored, cùng `n=3`, verify `0/0` |
 
 ---
 
@@ -149,18 +153,32 @@ Bảng tổng hợp xếp hạng theo **thời gian sinh ra thực tế trong d�
 
 ---
 
-### 5. Thế Hệ 4: Checkpoint WiSE-FT Nội Suy Trọng Số Tuyệt Đối (`fatformer_wise_ft_best.pth`)
+### 5. Thế Hệ 4: Checkpoint WiSE-FT Nội Suy Trọng Số Tuyệt Đối (`fatformer_wise_ft_best.pth`) — ⚠️ `invalid_layout`
+
+> 🚨 **ĐÍNH CHÍNH BẮT BUỘC (27/10/2026) — đọc trước khi trích dẫn bất kỳ số nào bên dưới**
+>
+> Kiểm tra trực tiếp bằng `torch.load` cho thấy file này chứa **1.816 tensor với 10 khối adapter** `{2, 5, 7, 8, 11, 14, 15, 17, 20, 23}`. Hàm dựng mô hình `src/models/clip/model.py` chỉ sinh vị trí adapter theo công thức cố định `(i+1)·24/n − 1`, nên chỉ biểu diễn được `n ∈ {3, 4, 6, 8, 12, 24}`:
+> - `n=3` → `{7,15,23}`, `n=8` → `{2,5,8,11,14,17,20,23}` — **không `n` nào tạo ra tập 10 khối**.
+> - Tại 3 khối `7, 15, 23`, bản Gen 1 chỉ có **66 tensor/khối** (đúng mức Baseline, **không có** `srm_block`/`dynamic_gating`) trong khi M4 và Anchored có **94 tensor/khối** ⇒ nhánh SRM + Gating bên trong 3 adapter đó **đã bị mất trong lúc trộn**.
+> - Script eval cũ gặp 10 khối đã rơi vào fallback `len(indices) > 8 → n=3`, tức **nạp đúng 3/10 khối** và bỏ toàn bộ 5 khối M4 thuần.
+>
+> **Hệ quả**: mọi con số của checkpoint này — bao gồm **Clean Macro ACC 96,58%**, **CFE clean 52,05%**, **CFE Fake 4,10%**, **CFE Q30 Fake 0,20%** — mang nhãn `status: invalid_layout` và **không được trích dẫn như kết quả hiện hành**. Chúng chỉ còn giá trị như một quan sát lịch sử "một checkpoint lai không thể nạp đầy đủ thì hiệu năng sụp". Việc thay thế được giao cho **Task 7.5 (WiSE-FT Gen 2)** với điều kiện hai checkpoint bố mẹ **cùng `num_vit_adapter = 3`**.
+> Chi tiết bằng chứng: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](ke_hoach_phase_7_dieu_chinh_toan_dien.md) §I.1–I.4.
+
 - **Nguồn gốc xuất xứ**: Được kiến tạo tại [Task 6.1-R](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.1_r_wise_ft_weight_ensembling.md) vào ngày 22/10/2026 nhằm khắc phục ngay lập tức hiện tượng sụt giảm Clean ACC mà không cần tiêu tốn tài nguyên huấn luyện lại.
 - **Bản chất toán học (Weight-Space Ensembling)**:
   - Thay vì fine-tune tiếp tục trên gradient dễ gây dịch chuyển biểu diễn, WiSE-FT thực hiện nội suy tuyến tính trực tiếp trên không gian trọng số giữa mô hình tiền huấn luyện gốc ($W_0$ - Baseline CVPR 2024) và mô hình thích ứng đa miền ($W_1$ - Checkpoint M4):
     $$W_{\text{WiSE}} = \alpha W_1 + (1 - \alpha) W_0$$
-  - Thông số tối ưu thực nghiệm: $\alpha = 0.25$ (giữ 75% bản sắc mô hình gốc, tiếp nhận 25% khả năng đa miền), kết hợp hệ số suy giảm SRM $\beta_{\text{srm}} = 0.10$.
-  - Hiệu chuẩn xác suất: Nhiệt độ $T = 1.0811$, khóa tuyệt đối ngưỡng đối sánh quốc tế $T^* = 0.50$.
-- **Đặc tính kiểm thử xuất sắc ([Task 6.6-R](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.6_r_locked_recovery.md))**:
-  - *Clean Benchmark 18 tập (82.003 ảnh)*: **Clean Macro ACC đạt 96.58%** (chính thức **vượt qua mốc sàn gốc 96.45%** của bài báo CVPR 2024).
-  - *Clean Real ACC*: Đạt **98.10%** (chống báo oan người dùng vô tội gần như tuyệt đối, False Positive < 1.9%).
-  - *Clean ROC-AUC*: **99.15%**, Average Precision (AP): **99.30%**.
-  - *Hạn chế*: Khả năng nhận diện ảnh giả tại nén sâu $Q=30$ chỉ đạt **6.73%** (vẫn bị chi phối bởi không gian trọng số gốc).
+  - Thông số đã dùng: $\alpha = 0.25$ (giữ 75% bản sắc mô hình gốc), kết hợp hệ số suy giảm SRM $\beta_{\text{srm}} = 0.10$.
+  - Hiệu chuẩn xác suất: Nhiệt độ $T = 1.0811$, khóa tuyệt đối ngưỡng $T^* = 0.50$.
+  - ⚠️ **Lỗi thiết kế**: $W_0$ có `n=3` khối, $W_1$ có `n=8` khối. Phép trộn theo khoá tạo ra **hợp 10 khối** — không biểu diễn được. Đây là nguyên nhân gốc, không phải "146 unexpected keys".
+- **Đặc tính kiểm thử (⚠️ `invalid_layout` — chỉ để truy vết, không dùng làm kết quả)**:
+  - *Clean Benchmark 18 tập (82.003 ảnh)*: ghi nhận 96,58% trong báo cáo cũ — **không tái lập được** vì không nạp đầy đủ checkpoint.
+  - *Clean Real ACC*: 98,10% (cùng lý do trên).
+  - *Clean ROC-AUC / AP*: 99,15% / 99,30% (cùng lý do trên).
+  - *Hạn chế*: Fake ACC tại $Q=30$ chỉ 6,73%.
+  - **Trạng thái chính thức**: `status: invalid_layout`; chờ **§7 — Thế Hệ 6 (Gen 2)** thay thế.
+
 
 ---
 
@@ -174,11 +192,23 @@ Bảng tổng hợp xếp hạng theo **thời gian sinh ra thực tế trong d�
   - **Tốc độ học phân tầng cực nhỏ**: $3 \times 10^{-4}$ cho adapter và $5 \times 10^{-5}$ cho frequency gating.
   - **Hiệu chuẩn xác suất chuẩn hóa (Task 6.4-R)**: Nhiệt độ tối ưu $T = 1.2763$. Thiết lập cơ chế vận hành kép: Mode 1 ($T^* = 0.50$) và Mode 2 ($T^* = 0.40$).
 - **Đặc tính kiểm thử áp đảo ([Task 6.6-R](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.6_r_locked_recovery.md))**:
-  - *Kháng nén sâu JPEG Q=30*: Fake ACC đạt **40.42%** ở Mode 2 (**gấp gần 6 lần mức 6.73% của WiSE-FT và gấp 7 lần mức 5.78% của Baseline gốc**).
-  - *Kháng nén vừa JPEG Q=50*: Fake ACC đạt **59.93%** (so với 24.56% của WiSE-FT).
-  - *Kháng mờ Gaussian $\sigma=1.0$*: Fake ACC đạt **85.49%** (so với 62.67% của WiSE-FT).
-  - *Kháng co giãn Down-Up*: Fake ACC đạt **84.53%** (so với 57.60% của WiSE-FT).
+  - *Kháng nén sâu JPEG Q=30*: Fake ACC đạt **40.42%** ở Mode 2 (so với 5.78% của Baseline gốc; ~~6.73% của WiSE-FT~~ — **không dùng** vì `invalid_layout`).
+  - *Kháng nén vừa JPEG Q=50*: Fake ACC đạt **59.93%**.
+  - *Kháng mờ Gaussian $\sigma=1.0$*: Fake ACC đạt **85.49%**.
+  - *Kháng co giãn Down-Up*: Fake ACC đạt **84.53%**.
+  - ⚠️ *Lưu ý*: các số trên là Fake ACC tại một ngưỡng, **không phải AUC**. `AUC Q30` của Anchored chỉ **50,07%** (xem báo cáo CFE Bảng B) ⇒ phần lớn "thành tích" Q30 đến từ hạ ngưỡng, đánh đổi Real ACC. Phase 7 phải nâng AUC thật (G7.2).
   - *Độ nhạy ảnh giả trên ảnh sạch*: Fake ACC đạt đỉnh **97.61%** (Mode 1) và **98.97%** (Mode 2). ProGAN 100%, CycleGAN 100%, StarGAN 100%, GauGAN 100%, VQ-Diffusion 100%.
+
+### 7. Thế Hệ 6: WiSE-FT **Gen 2** — `[DỰ KIẾN, chưa tồn tại]`
+- **Trạng thái**: `planned` — sẽ được tạo tại **Task 7.5 (Phase 7)**, không sớm hơn G7.0.
+- **Khác biệt cốt lõi so với Gen 1**: hai checkpoint bố mẹ **cùng `num_vit_adapter = 3`**:
+  - $W_0$ = `fatformer_4class_ckpt.pth` (Baseline, 1.116 tensor, khối `{7,15,23}`, 66 tensor/khối, không SRM/Gating).
+  - $W_1$ = `fatformer_anchored_recovery_best.pth` (Anchored, 1.200 tensor, khối `{7,15,23}`, 94 tensor/khối, có SRM/Gating Zero-Init).
+  - ⇒ Hợp khối vẫn là `{7,15,23}` ⇒ **biểu diễn được với `n=3`**, nạp được `strict=True` với `0 missing / 0 unexpected`.
+- **Không gian tìm kiếm**: `α ∈ {0.35, 0.45, 0.55, 0.65}` × `β_srm ∈ {0.25, 0.35, 0.50}` = 12 ứng viên; chọn theo `Fake@Real=90%` tối đa, hoà thì ưu tiên AUC Q30.
+- **Điều kiện bắt buộc trước khi công nhận**: `tools/wise_ft_merge.py --verify` phải in `missing=0, unexpected=0`; metadata phải có `alpha`, `beta`, `sha256`, `layout`.
+- **Đường dẫn dự kiến**: `DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth` (**không** tái sử dụng tên file Gen 1 để tránh nhầm lẫn).
+- **Cổng nghiệm thu**: G7.1 (xem §II.3 của kế hoạch Phase 7). Nếu G7.1 trượt, ghi nhận là "trộn tuyến tính không đủ" và chuyển toàn bộ kỳ vọng sang G7.2 (huấn luyện lại).
 
 ---
 
@@ -210,11 +240,13 @@ Tất cả số liệu dưới đây được đo đạc chính thức trong cá
 | | `pndm` | 2.000 | 96.40% | 49.60% | 54.15% | **96.95%** | 94.50% | 94.50% |
 | | `vqdiffusion` | 2.000 | 99.50% | 81.90% | 80.60% | **99.70%** | 95.00% | 95.00% |
 | **TRUNG BÌNH DIFF**| **MEAN_DIFFUSION**| **20.000** | **95.00%** | **64.29%** | **55.18%** | **95.85%** | **76.41%** | **73.66%** |
-| **TỔNG HỢP TOÀN BỘ**| **OVERALL MACRO** | **82.003** | **96.45%** | **67.34%** | **59.39%** | **96.58%** 🏆 | **77.31%** | **74.75%** |
+| **TỔNG HỢP TOÀN BỘ**| **OVERALL MACRO** | **82.003** | **96.45%** | **67.34%** | **59.39%** | ~~96.58%~~ 🚫 | **77.31%** | **74.75%** |
 | • Clean Real ACC | (Bảo vệ ảnh thật) | 82.003 | **99.37%** | 90.70% | 45.75% | **98.10%** 🏆 | 57.01% | 50.52% |
 | • Clean Fake ACC | (Bắt ảnh giả) | 82.003 | 93.54% | 43.98% | 73.02% | 95.07% | **97.61%** | **98.97%** 🔥 |
 | • Clean ROC-AUC | (Năng lực phân tách) | 82.003 | 99.10% | 69.96% | 68.90% | **99.15%** 🏆 | 96.71% | 96.71% |
 | • Clean AP | (Độ chính xác trung bình) | 82.003 | 99.25% | 73.58% | 70.68% | **99.30%** 🏆 | 96.64% | 96.64% |
+
+> ⚠️ **Cột "WiSE-FT (Task 6.6-R)" trong bảng trên là `invalid_layout`** (xem §5 và §5.4). Các con số 96,58% / 98,10% / 99,15% / 99,30% **không tái lập được** vì checkpoint chứa 10 khối adapter, không `n` nào nạp đầy đủ. Không dùng cột này làm kết quả chính thức, không so sánh "hơn/kém" với nó. Cột hợp lệ để đối chiếu hiện tại: Baseline, M4 Fallback (dùng `n=8`), Anchored M1/M2. Cột WiSE-FT sẽ được thay bằng **Gen 2** sau Task 7.5.
 
 ---
 
@@ -231,6 +263,9 @@ Số liệu đo lường khả năng phát hiện ảnh giả (**Fake ACC %**) t
 | **Làm mờ Gaussian $\sigma=2.0$** | Hạt nhân Gauss $\sigma=2.0$ | 28.50% | 45.10% | 19.91% | 48.71% | 71.73% | **79.73%** 🔥 | **Tăng gấp 2.80 lần (+51.23 pp)** |
 | **Co giãn Down-Up Bicubic** | $224 \rightarrow 112 \rightarrow 224$ | 35.80% | 58.20% | 29.09% | 57.60% | 80.44% | **84.53%** 🔥 | **Tăng gấp 2.36 lần (+48.73 pp)** |
 
+> ⚠️ **Cột "WiSE-FT (Task 6.6-R)" trong bảng trên là `invalid_layout`** (xem §5.4). Không trích dẫn các số 6,73% / 24,56% / 38,84% / 62,67% / 48,71% / 57,60% như năng lực thật của một mô hình WiSE-FT hợp lệ — chúng là kết quả của một checkpoint nạp thiếu khối. Đối chiếu hợp lệ hiện có: Baseline vs M4 (fallback `n=8`) vs Anchored.
+> ⚠️ **Toàn bộ bảng dùng "Fake ACC" tại một ngưỡng đơn lẻ** — theo Khế ước đo lường v3 (Phụ lục A của [`ke_hoach_test_communityforensics_eval.md`](ke_hoach_test_communityforensics_eval.md)), báo cáo Phase 7 phải kèm `AUC`, `AP`, `TPR@FPR` và CI 95%, không dùng riêng Fake ACC.
+
 ---
 
 ## V. PHÂN TÍCH ĐÁNH ĐỔI HỌC THUẬT & BÀI HỌC XƯƠNG MÁU
@@ -244,15 +279,35 @@ Số liệu đo lường khả năng phát hiện ảnh giả (**Fake ACC %**) t
 - **Hậu quả**: Để kéo thêm Fake Recall trên các tập dữ liệu khó, thuật toán đã tự động hạ ngưỡng phân loại từ $0.50$ xuống $0.3700$. Hậu quả là tại bài test Clean 18 tập độc lập ([Task 6.6](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.6_final_locked_benchmark.md)), tỷ lệ báo động giả (False Positive) bùng nổ, kéo Real ACC rơi tự do xuống 45.75%.
 - **Biện pháp khắc phục**: Đã được chuẩn hóa tại [Task 6.4-R](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.4_r_real_preserving_calibration.md) thông qua cờ `--lock_standard_threshold` ($T^*=0.50$) và ràng buộc cứng `min_real_acc >= 90.0%`.
 
-### 5.3. Đột Phá Kép WiSE-FT và Anchored Recovery
-- Dự án đã chứng minh trên thực nghiệm rằng **không thể tồn tại một điểm trọng số duy nhất (single point solution)** vừa đạt mức hoàn hảo 96.5% trên ảnh sạch phòng lab, vừa đồng thời đạt >40% Fake ACC trên ảnh bị nén sâu $Q=30$.
-- Do đó, việc tách thành **hai giải pháp chuyên biệt**:
-  1. **WiSE-FT**: Đưa biểu diễn về gần điểm gốc qua nội suy trọng số để đạt độ chính xác phòng lab đỉnh cao.
-  2. **Anchored Recovery**: Tối ưu hóa có mỏ neo để tối đa hóa khả năng bắt ảnh giả bị phá hủy cấu trúc tần số cao.
+### 5.3. Đột Phá Kép WiSE-FT và Anchored Recovery — ⚠️ Kết luận tạm thời, đã bị đính chính
+- Dự án **từng** kết luận rằng **không thể tồn tại một điểm trọng số duy nhất (single point solution)** vừa đạt mức hoàn hảo 96.5% trên ảnh sạch phòng lab, vừa đồng thời đạt >40% Fake ACC trên ảnh bị nén sâu $Q=30$.
+- ⚠️ **Đính chính**: kết luận này được rút ra từ một phép thử **không hợp lệ** (Gen 1 không nạp được đầy đủ — §5.4). Vì vậy nó được hạ xuống thành **giả thuyết mở**, không phải định lý. Phase 7 kiểm chứng lại bằng G7.3.
+- Thiết kế **tạm thời** (nếu G7.3 thất bại) là tách hai giải pháp chuyên biệt:
+  1. **WiSE-FT**: Đưa biểu diễn về gần điểm gốc qua nội suy trọng số để đạt độ chính xác phòng lab cao — **phải tái tạo bằng Gen 2** (Baseline + Anchored, cùng `n=3`).
+  2. **Anchored Recovery**: Tối ưu hóa có mỏ neo để tối đa hóa khả năng bắt ảnh giả bị phá hủy cấu trúc tần số cao (đã hợp lệ).
+
+### 5.4. Đính Chính Kỹ Thuật Ngày 27/10/2026 — Vì Sao Kết Luận "Đột Phá Kép" Chưa Đứng Vững
+- **Sự thật đo được (bằng `torch.load`, không suy đoán)**:
+
+| Checkpoint | Số tensor | Khối adapter | `n` biểu diễn được | SRM/Gating trong adapter | Kết luận |
+| :--- | ---: | :--- | :--- | :---: | :--- |
+| `fatformer_4class_ckpt.pth` (Baseline) | 1.116 | `{7,15,23}` | `n=3` | ❌ (66 tensor/khối) | Hợp lệ |
+| `fatformer_crossdomain_weights_only.pth` (M4) | 1.684 | `{2,5,8,11,14,17,20,23}` | `n=8` | ✅ (94 tensor/khối) | Hợp lệ |
+| `fatformer_wise_ft_best.pth` (Gen 1) | 1.816 | `{2,5,7,8,11,14,15,17,20,23}` | **không có `n`** | ⚠️ 66/94 tại `7,15,23` | **`invalid_layout`** |
+| `fatformer_anchored_recovery_best.pth` (Anchored) | 1.200 | `{7,15,23}` | `n=3` | ✅ (94 tensor/khối) | Hợp lệ |
+
+- **Ba kết luận phải sửa**:
+  1. "WiSE-FT đạt 96,58% Clean Macro ACC và vượt mốc sàn 96,45%" → **không tái lập được**, vì không có `n` nào nạp đầy đủ 10 khối. Số liệu bị đánh dấu `invalid_layout`.
+  2. "WiSE-FT sụp đổ vì 146 unexpected keys do `strict=False`" → **sai nguyên nhân**. 146 keys chỉ là `srm.*`/`gating.*` top-level đã chết (`CLIPModel.srm = None`). Nguyên nhân thật là **chọn sai tập khối adapter** (eval cũ fallback về `n=3`, nạp 3/10 khối và bỏ 5 khối M4 thuần).
+  3. "Không thể tồn tại một điểm trọng số duy nhất" → đây là **giả thuyết chưa được kiểm chứng đúng cách**, vì phép thử tương ứng (Gen 1) không nạp được. Giả thuyết này được chuyển thành **câu hỏi nghiên cứu của Phase 7 (G7.3)**: nếu Gen 2 + router vẫn không đạt, khi đó mới kết luận là "cần hai chế độ".
+- **Kiểm tra alias**: 100% key `image_encoder.*` bằng đúng tensor `clip_model.visual.*` trong cả 4 file (395/672/738/437 cặp khớp) ⇒ sụp đổ **không** do ghi đè alias.
+- **Không được làm**: "sửa" Gen 1 bằng cách hạ `strict=False`, tăng `n`, hay thêm fallback chọn `n` tự động. Gen 1 chỉ dùng để **đo lại** (`n=3` vs `n=8`) trong Task 7.1 nhằm chứng minh chẩn đoán.
 
 ---
 
 ## VI. CHIẾN LƯỢC HỆ THỐNG KÉP (DUAL-OPERATING ARCHITECTURE)
+
+> ⚠️ **Cảnh báo (27/10/2026)**: Sơ đồ và số liệu "Chế độ Tiêu chuẩn" bên dưới dựa trên `fatformer_wise_ft_best.pth` — checkpoint đã bị đánh dấu **`invalid_layout`** (§5.4). Vì vậy kiến trúc kép này **chưa phải thiết kế chính thức**; nó chỉ còn là phương án dự phòng. Thiết kế đích của Phase 7 là **một checkpoint duy nhất tự định tuyến** (`UnifiedFatFormerXLA`, Task 7.13–7.15, cổng G7.3). Chỉ quay lại kiến trúc kép nếu G7.3 thất bại và có ghi nhận trung thực.
 
 Từ kết quả thực nghiệm trên 136.003 lượt suy luận, dự án FatFormer-XLA đề xuất **Kiến Trúc Hai Chế Độ Vận Hành Phối Hợp** đáp ứng trọn vẹn cả hai môi trường thực tế:
 
