@@ -1,0 +1,315 @@
+{
+  "schema": "checkpoint_structure_audit/v1",
+  "generated_at": "2026-10-27T10:44:14.146995+00:00",
+  "torch_version": "2.10.0+cpu",
+  "checkpoints": [
+    {
+      "path": "DATASET/pretrained/fatformer_4class_ckpt.pth",
+      "sha256": "3b904401ad4ce7d0bc33661e83742ec4b659850c076b73cd544e87e26d8cb3db",
+      "size_bytes": 1971052681,
+      "n_keys": 1116,
+      "adapter_blocks": [
+        7,
+        15,
+        23
+      ],
+      "expressible_n": [
+        3
+      ],
+      "layout": {
+        "n": 3,
+        "indices": [
+          7,
+          15,
+          23
+        ],
+        "dropped": [],
+        "partial": false
+      },
+      "blocks_dropped": {
+        "3": [],
+        "4": [
+          7,
+          15
+        ],
+        "6": [],
+        "8": [
+          7,
+          15
+        ],
+        "12": [],
+        "24": []
+      },
+      "has_srm_per_block": {
+        "7": false,
+        "15": false,
+        "23": false
+      },
+      "tensor_count_per_block": {
+        "7": 66,
+        "15": 66,
+        "23": 66
+      },
+      "alias_equality": {
+        "image_encoder_vs_clip": 1.0
+      },
+      "dead_keys": [],
+      "has_gating": false,
+      "has_top_level_srm": false
+    },
+    {
+      "path": "DATASET/checkpoints/m4/crossdomain_model_best_m4.pth",
+      "sha256": "b5ad83966047038c8b2dc062c88857f9bfc02adb8eae03620b0c09efc8f2acdb",
+      "size_bytes": 2438133069,
+      "n_keys": 1684,
+      "adapter_blocks": [
+        2,
+        5,
+        8,
+        11,
+        14,
+        17,
+        20,
+        23
+      ],
+      "expressible_n": [
+        8
+      ],
+      "layout": {
+        "n": 8,
+        "indices": [
+          2,
+          5,
+          8,
+          11,
+          14,
+          17,
+          20,
+          23
+        ],
+        "dropped": [],
+        "partial": false
+      },
+      "blocks_dropped": {
+        "3": [
+          2,
+          5,
+          8,
+          11,
+          14,
+          17,
+          20
+        ],
+        "4": [
+          2,
+          8,
+          14,
+          20
+        ],
+        "6": [
+          2,
+          5,
+          8,
+          14,
+          17,
+          20
+        ],
+        "8": [],
+        "12": [
+          2,
+          8,
+          14,
+          20
+        ],
+        "24": []
+      },
+      "has_srm_per_block": {
+        "2": true,
+        "5": true,
+        "8": true,
+        "11": true,
+        "14": true,
+        "17": true,
+        "20": true,
+        "23": true
+      },
+      "tensor_count_per_block": {
+        "2": 94,
+        "5": 94,
+        "8": 94,
+        "11": 94,
+        "14": 94,
+        "17": 94,
+        "20": 94,
+        "23": 94
+      },
+      "alias_equality": {
+        "image_encoder_vs_clip": 1.0
+      },
+      "dead_keys": [],
+      "has_gating": true,
+      "has_top_level_srm": true
+    },
+    {
+      "path": "DATASET/checkpoints/wise_ft/fatformer_wise_ft_best.pth",
+      "sha256": "8205854815317ee3b16ee101bd359756b960eaf9ca09746a4616624ddd073f1b",
+      "size_bytes": 4690597581,
+      "n_keys": 1816,
+      "adapter_blocks": [
+        2,
+        5,
+        7,
+        8,
+        11,
+        14,
+        15,
+        17,
+        20,
+        23
+      ],
+      "expressible_n": [],
+      "layout": {
+        "n": null,
+        "indices": [
+          2,
+          5,
+          7,
+          8,
+          11,
+          14,
+          15,
+          17,
+          20,
+          23
+        ],
+        "dropped": [
+          7,
+          15
+        ],
+        "partial": true
+      },
+      "blocks_dropped": {
+        "3": [
+          2,
+          5,
+          8,
+          11,
+          14,
+          17,
+          20
+        ],
+        "4": [
+          2,
+          7,
+          8,
+          14,
+          15,
+          20
+        ],
+        "6": [
+          2,
+          5,
+          8,
+          14,
+          17,
+          20
+        ],
+        "8": [
+          7,
+          15
+        ],
+        "12": [
+          2,
+          8,
+          14,
+          20
+        ],
+        "24": []
+      },
+      "has_srm_per_block": {
+        "2": true,
+        "5": true,
+        "7": false,
+        "8": true,
+        "11": true,
+        "14": true,
+        "15": false,
+        "17": true,
+        "20": true,
+        "23": true
+      },
+      "tensor_count_per_block": {
+        "2": 94,
+        "5": 94,
+        "7": 66,
+        "8": 94,
+        "11": 94,
+        "14": 94,
+        "15": 66,
+        "17": 94,
+        "20": 94,
+        "23": 94
+      },
+      "alias_equality": {
+        "image_encoder_vs_clip": 1.0
+      },
+      "dead_keys": [],
+      "has_gating": true,
+      "has_top_level_srm": true
+    },
+    {
+      "path": "DATASET/checkpoints/anchored_recorvey_phase_6r/fatformer_anchored_recovery_best.pth",
+      "sha256": "f70a11df9d7f45c11c60c4e117f8d1302c4f426b1f1b567cb2e50387b0111def",
+      "size_bytes": 1972817087,
+      "n_keys": 1200,
+      "adapter_blocks": [
+        7,
+        15,
+        23
+      ],
+      "expressible_n": [
+        3
+      ],
+      "layout": {
+        "n": 3,
+        "indices": [
+          7,
+          15,
+          23
+        ],
+        "dropped": [],
+        "partial": false
+      },
+      "blocks_dropped": {
+        "3": [],
+        "4": [
+          7,
+          15
+        ],
+        "6": [],
+        "8": [
+          7,
+          15
+        ],
+        "12": [],
+        "24": []
+      },
+      "has_srm_per_block": {
+        "7": true,
+        "15": true,
+        "23": true
+      },
+      "tensor_count_per_block": {
+        "7": 94,
+        "15": 94,
+        "23": 94
+      },
+      "alias_equality": {
+        "image_encoder_vs_clip": 1.0
+      },
+      "dead_keys": [],
+      "has_gating": true,
+      "has_top_level_srm": false
+    }
+  ]
+}
