@@ -14,10 +14,11 @@ Công cụ kiểm thử pháp y cho ảnh với FatFormer Checkpoint (CVPR 2024 
      + PHẦN 4: HỒ SƠ ĐÁNH GIÁ PHÁP Y & KẾT LUẬN TOÀN CỤC
      + PHẦN 5: DANH MỤC THÀNH PHẨM & ARTIFACTS XUẤT RA
    - Tự động xuất file nhật ký phiên: session_report.txt ngay trong thư mục check_XX.
-2. Chế độ Mặc định: Grid Multi-Patch 4x4 (16 mảnh 224x224 ở độ phân giải gốc).
-   - Bảo toàn 100% vết vi sai tần số cao của AI, không bị làm mờ bởi Resize.
-   - Hỗ trợ tùy chỉnh kích thước lưới qua --grid_size (3, 4, 5...).
-3. Chế độ Standard: Resize 256x256 -> CenterCrop 224x224 (Quy chuẩn bài báo).
+2. Chế độ Mặc định: Quét Toàn Cục Standard (Resize 256x256 -> CenterCrop 224x224 theo quy chuẩn CVPR 2024).
+   - Đồng nhất 100% với phân phối dữ liệu lúc huấn luyện và benchmark.
+   - Suy luận tức thì (~1-2 giây trên CPU), trực quan hóa FAA Heatmap Overlay toàn cảnh.
+3. Chế độ Nâng cao: Lưới Đa Mảnh (--mode grid, mặc định 4x4 = 16 mảnh ở độ phân giải gốc).
+   - Bảo toàn 100% vết vi sai tần số cao của AI, định vị tọa độ can thiệp AI cục bộ.
 4. Tự động nhận diện cấu hình (SRM, Dynamic Gating, ViT Adapters).
 
 VÍ DỤ SỬ DỤNG (USAGE EXAMPLES):
@@ -341,27 +342,59 @@ def select_image_interactive(user_path):
 
 def auto_detect_checkpoint_config(ckpt_path, manual_srm=None, manual_gating=None, manual_adapters=None):
     """
-    Tự động suy luận cấu hình mô hình (SRM, Dynamic Gating, ViT Adapters).
+    Tự động suy luận cấu hình mô hình (SRM, Dynamic Gating, ViT Adapters) trực tiếp từ checkpoint keys.
     """
+    detected_srm = False
+    detected_gating = False
+    detected_adapters = 8
+    model_type_str = "FatFormer Baseline (CVPR 2024)"
+
+    if os.path.exists(ckpt_path):
+        try:
+            ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
+            sd = ckpt.get("model", ckpt.get("state_dict", ckpt))
+            if isinstance(sd, dict):
+                adapter_blocks = set()
+                has_srm = False
+                has_gating = False
+                for k in sd.keys():
+                    if "forgery_aware_adapter" in k or "adapter" in k:
+                        parts = k.split(".")
+                        for p_idx, p in enumerate(parts):
+                            if p == "resblocks" and p_idx + 1 < len(parts) and parts[p_idx + 1].isdigit():
+                                adapter_blocks.add(int(parts[p_idx + 1]))
+                    if "srm" in k.lower():
+                        has_srm = True
+                    if "gating" in k.lower() or "gate" in k.lower():
+                        has_gating = True
+
+                detected_srm = has_srm
+                detected_gating = has_gating
+
+                if adapter_blocks == {7, 15, 23} or len(adapter_blocks) == 3:
+                    detected_adapters = 3
+                elif adapter_blocks == {2, 5, 8, 11, 14, 17, 20, 23} or len(adapter_blocks) == 8:
+                    detected_adapters = 8
+                elif len(adapter_blocks) > 0 and 24 % len(adapter_blocks) == 0:
+                    detected_adapters = len(adapter_blocks)
+                else:
+                    detected_adapters = 8 if (has_srm or has_gating) else 3
+        except Exception:
+            pass
+
     filename = os.path.basename(ckpt_path).lower()
-    is_robust = ("robust" in filename) or ("srm" in filename) or ("final" in filename) or ("epoch" in filename)
+    is_robust_name = ("robust" in filename) or ("srm" in filename) or ("final" in filename) or ("m4" in filename)
 
-    if manual_srm is not None:
-        use_srm = manual_srm
+    use_srm = manual_srm if manual_srm is not None else (detected_srm or ("srm" in filename))
+    use_gating = manual_gating if manual_gating is not None else (detected_gating or ("gating" in filename))
+    num_vit_adapter = manual_adapters if manual_adapters is not None else detected_adapters
+
+    if "anchored" in filename:
+        model_type_str = "FatFormer Anchored Recovery (Phase 6R)"
+    elif is_robust_name or use_srm or use_gating:
+        model_type_str = "FatFormer-XLA Robust"
     else:
-        use_srm = is_robust
-
-    if manual_gating is not None:
-        use_gating = manual_gating
-    else:
-        use_gating = is_robust
-
-    if manual_adapters is not None:
-        num_vit_adapter = manual_adapters
-    else:
-        num_vit_adapter = 8
-
-    model_type_str = "FatFormer-XLA Robust (Task 4.2 Final)" if is_robust else "FatFormer Baseline (CVPR 2024)"
+        model_type_str = "FatFormer Baseline (CVPR 2024)"
 
     return use_srm, use_gating, num_vit_adapter, model_type_str
 
@@ -738,8 +771,8 @@ VÍ DỤ SỬ DỤNG:
                         help="Đường dẫn đến file ảnh cần kiểm tra (để trống để chọn tương tác).")
     parser.add_argument("--ckpt", "-c", "--checkpoint", type=str, default=None, 
                         help="Đường dẫn file checkpoint .pth (để trống để chọn tương tác).")
-    parser.add_argument("--mode", "-m", type=str, default="grid", choices=["grid", "standard", "native_center"],
-                        help="Chế độ kiểm tra: grid (Lưới đa mảnh độ phân giải gốc - Mặc định), standard (Resize 224), native_center (1 ô tâm).")
+    parser.add_argument("--mode", "-m", type=str, default="standard", choices=["standard", "global", "grid", "native_center"],
+                        help="Chế độ kiểm tra: standard/global (Quét toàn cục CVPR 2024 - Mặc định), grid (Lưới đa mảnh độ phân giải gốc), native_center (1 ô tâm).")
     parser.add_argument("--grid_size", "-g", type=int, default=4, 
                         help="Kích thước lưới khi chọn mode grid (Mặc định: 4, tức 4x4 = 16 mảnh).")
     parser.add_argument("--clip_path", type=str, default=None, help="Đường dẫn ViT-L-14.pt.")
@@ -758,6 +791,8 @@ VÍ DỤ SỬ DỤNG:
     parser.add_argument("--num_vit_adapter", type=int, default=None, 
                         help="Số lượng adapter trong ViT (Mặc định: 8)")
     args = parser.parse_args()
+    if args.mode == 'global':
+        args.mode = 'standard'
 
     # 1. Chọn file Checkpoint & Ảnh
     ckpt_path = select_checkpoint_interactive(args.ckpt)
@@ -848,7 +883,7 @@ VÍ DỤ SỬ DỤNG:
     model = build_model(model_args)
     model = model.to(device)
 
-    strict = not (use_srm or use_gating)
+    strict = False
     CheckpointManager.load(ckpt_path, model, device=device, strict=strict)
     logger.print("  * Trạng thái mô hình      : [✓] Khớp trọng số thành công, sẵn sàng suy luận!")
 

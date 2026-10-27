@@ -11080,5 +11080,50 @@
     "missing_keys": [],
     "unexpected_keys_count": 0,
     "unexpected_keys": []
+  },
+  {
+    "timestamp": "2026-10-27 23:45:34",
+    "checkpoint_path": "D:\\GIT REPO\\.nam4\\fatformer-xla\\DATASET\\checkpoints\\anchored_recovery_phase_6r\\fatformer_anchored_recovery_best.pth",
+    "strict_mode": false,
+    "missing_keys_count": 0,
+    "missing_keys": [],
+    "unexpected_keys_count": 0,
+    "unexpected_keys": []
+  },
+  {
+    "timestamp": "2026-10-27 23:53:55",
+    "checkpoint_path": "D:\\GIT REPO\\.nam4\\fatformer-xla\\DATASET\\checkpoints\\anchored_recovery_phase_6r\\fatformer_anchored_recovery_best.pth",
+    "strict_mode": false,
+    "missing_keys_count": 0,
+    "missing_keys": [],
+    "unexpected_keys_count": 0,
+    "unexpected_keys": []
+  },
+  {
+    "timestamp": "2026-10-28 00:05:45",
+    "checkpoint_path": "D:\\GIT REPO\\.nam4\\fatformer-xla\\DATASET\\checkpoints\\anchored_recovery_phase_6r\\fatformer_anchored_recovery_best.pth",
+    "strict_mode": false,
+    "missing_keys_count": 0,
+    "missing_keys": [],
+    "unexpected_keys_count": 0,
+    "unexpected_keys": []
+  },
+  {
+    "timestamp": "2026-10-28 00:08:46",
+    "checkpoint_path": "D:\\GIT REPO\\.nam4\\fatformer-xla\\DATASET\\checkpoints\\anchored_recovery_phase_6r\\fatformer_anchored_recovery_best.pth",
+    "strict_mode": false,
+    "missing_keys_count": 0,
+    "missing_keys": [],
+    "unexpected_keys_count": 0,
+    "unexpected_keys": []
+  },
+  {
+    "timestamp": "2026-10-28 00:15:06",
+    "checkpoint_path": "D:\\GIT REPO\\.nam4\\fatformer-xla\\DATASET\\checkpoints\\anchored_recovery_phase_6r\\fatformer_anchored_recovery_best.pth",
+    "strict_mode": false,
+    "missing_keys_count": 0,
+    "missing_keys": [],
+    "unexpected_keys_count": 0,
+    "unexpected_keys": []
   }
 ]
