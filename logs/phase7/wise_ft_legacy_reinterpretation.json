@@ -1,0 +1,57 @@
+{
+  "schema": "gen1_reinterpretation/v1",
+  "generated_at": "2026-10-27T11:28:44.628051+00:00",
+  "checkpoint": "/content/drive/MyDrive/Fatformer/checkpoint/fatformer_wise_ft_best.pth",
+  "split": "cfe_clean_2000",
+  "temperature": 1.0,
+  "threshold": 0.5,
+  "runs": [
+    {
+      "layout": "n3",
+      "loaded_blocks": [
+        7,
+        15,
+        23
+      ],
+      "dropped": [
+        2,
+        5,
+        8,
+        11,
+        14,
+        17,
+        20
+      ],
+      "acc": 64.75,
+      "real_acc": 94.0,
+      "fake_acc": 35.5,
+      "auc": 76.29,
+      "ap": 78.24
+    },
+    {
+      "layout": "n8",
+      "loaded_blocks": [
+        2,
+        5,
+        8,
+        11,
+        14,
+        17,
+        20,
+        23
+      ],
+      "dropped": [
+        7,
+        15
+      ],
+      "acc": 52.05,
+      "real_acc": 100.0,
+      "fake_acc": 4.1,
+      "auc": 57.07,
+      "ap": 60.41
+    }
+  ],
+  "delta_fake_acc": -31.4,
+  "verdict": "inconclusive",
+  "verdict_explanation": "Chênh lệch từ 3 đến 10 pp: Không đủ bằng chứng kết luận loader là nguyên nhân duy nhất; giữ nhãn invalid_layout."
+}

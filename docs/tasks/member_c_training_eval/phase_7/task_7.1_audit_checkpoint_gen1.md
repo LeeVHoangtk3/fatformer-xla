@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU** + ☁️ **T4 ~10 phút**
 - **Độ ưu tiên**: 🔴 Khẩn cấp — **mở khoá toàn bộ Phase 7**
 - **Cổng liên quan**: **G7.0** (toàn vẹn đo lường, cuối D2)
-- **Trạng thái**: `[ ] Sẵn sàng`
+- **Trạng thái**: `[x] Đã hoàn thành (PASS G7.0)`
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.1
 
 ---
@@ -192,14 +192,14 @@ Trong **mọi** trường hợp, Gen 1 bị gắn `invalid_layout` và **không*
 
 ## 6. Definition of Done
 
-- [ ] `tools/audit_checkpoint_compat.py` chạy được trên 4 checkpoint, không crash.
-- [ ] `logs/phase7/checkpoint_structure_audit.json` có **đủ 4** checkpoint và **đủ** các trường ở §5.1 (không trường nào `null` ngoài `layout.n` của Gen 1).
-- [ ] `n_keys` khớp bảng §1: 1.116 / 1.684 / 1.816 / 1.200.
-- [ ] `logs/phase7/wise_ft_legacy_reinterpretation.json` có 2 run `n3`/`n8` + `verdict`.
-- [ ] `logs/phase7/gen1_n3_vs_n8.png` tồn tại, có nhãn trục rõ ràng.
-- [ ] Báo cáo 1 trang trả lời đủ 4 câu ở §5.4.
-- [ ] **Không** số nào của Gen 1 xuất hiện như kết quả chính thức ở bất kỳ tài liệu nào (grep `Gen 1` + số trong `docs/`).
-- [ ] Ghi rõ Gen 1 = `invalid_layout` trong báo cáo và trong `README_C.md`.
+- [x] `tools/audit_checkpoint_compat.py` chạy được trên 4 checkpoint, không crash.
+- [x] `logs/phase7/checkpoint_structure_audit.json` có **đủ 4** checkpoint và **đủ** các trường ở §5.1 (không trường nào `null` ngoài `layout.n` của Gen 1).
+- [x] `n_keys` khớp bảng §1: 1.116 / 1.684 / 1.816 / 1.200.
+- [x] `logs/phase7/wise_ft_legacy_reinterpretation.json` có 2 run `n3`/`n8` + `verdict`.
+- [x] `logs/phase7/gen1_n3_vs_n8.png` tồn tại, có nhãn trục rõ ràng.
+- [x] Báo cáo 1 trang trả lời đủ 4 câu ở §5.4 ([`docs/bao_cao/C/bao_cao_task_7.1_checkpoint_audit.md`](../../../../docs/bao_cao/C/bao_cao_task_7.1_checkpoint_audit.md)).
+- [x] **Không** số nào của Gen 1 xuất hiện như kết quả chính thức ở bất kỳ tài liệu nào (grep `Gen 1` + số trong `docs/`).
+- [x] Ghi rõ Gen 1 = `invalid_layout` trong báo cáo và trong `README_C.md`.
 
 ---
 
