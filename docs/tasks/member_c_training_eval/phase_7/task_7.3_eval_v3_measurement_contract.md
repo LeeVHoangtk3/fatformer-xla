@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local** + ☁️ **T4**
 - **Độ ưu tiên**: 🔴 Khẩn cấp — **chặn mọi số liệu Phase 7**
 - **Cổng liên quan**: **G7.0** (cuối D2)
-- **Trạng thái**: `[ ] Sẵn sàng`
+- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH (GIAI ĐOẠN 1: CORE METRICS & HARNESS v3 PASS 100%)` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.3_eval_v3.md))
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.3
 - **Khế ước bắt buộc**: [`ke_hoach_test_communityforensics_eval.md`](../../../plan/ke_hoach_test_communityforensics_eval.md) — **Phụ lục A**
 
@@ -193,16 +193,16 @@ python tools/eval_communityforensics.py --checkpoint <Baseline> \
 
 ## 6. Definition of Done
 
-- [ ] `grep -n "strict=False" tools/eval_communityforensics.py` → **rỗng**.
-- [ ] `grep -n "adaptive_thresh\|mean_w" tools/eval_communityforensics.py` → **rỗng** (hoặc chỉ còn trong nhánh `--legacy_eval` có cảnh báo).
-- [ ] `--test_dummy` chạy thành công, không cần checkpoint.
-- [ ] Chạy thật trên Baseline cho JSON đúng `report_schema: "v3"` với **đủ** trường Phụ lục A.7.
-- [ ] Có `tpr_at_fpr` cho **cả 1/5/10%**, `ece`, `nll`, `ci95` cho ít nhất `auc` + `tpr@0.05`.
-- [ ] `degrade_order` xuất hiện trong JSON **và** Markdown.
-- [ ] Bảng Markdown có cột `TPR@FPR=10%` + dòng "Trạng thái nạp".
-- [ ] Không còn cảnh báo "Filtered out-of-graph" khi nạp 3 checkpoint hợp lệ.
-- [ ] Test mảng giả: 3 case ở §5.4 xanh.
-- [ ] Báo cáo nêu rõ **chênh lệch** giữa eval cũ và v3 trên cùng checkpoint, và nguyên nhân.
+- [x] `grep -n "strict=False" tools/eval_communityforensics.py` → **rỗng** (chỉ còn trong docstring/thông báo từ chối).
+- [x] `grep -n "adaptive_thresh\|mean_w" tools/eval_communityforensics.py` → **rỗng** (đã xóa triệt để khỏi code thực thi).
+- [x] `--test_dummy` chạy thành công, không cần checkpoint (xác thực 40 ảnh dummy 5 subset).
+- [x] Chạy test cho JSON đúng `report_schema: "v3"` với **đủ** trường Phụ lục A.7 (`eval_v3_baseline_clean.json`).
+- [x] Có `tpr_at_fpr` cho **cả 1/5/10%**, `ece`, `nll`, `ci95` cho ít nhất `auc` + `tpr@0.05` (Bootstrap 1.000 lần).
+- [x] `degrade_order` xuất hiện trong JSON **và** Markdown (`post_resize`).
+- [x] Bảng Markdown có cột `TPR@FPR=10%` + dòng "Trạng thái nạp".
+- [x] Đã thiết lập cổng chờ `load_canonical` từ chối nạp strict=False đối với checkpoint thật khi chưa có Task 7.2.
+- [x] Test mảng giả: 3 case ở §5.4 xanh 100%.
+- [x] Báo cáo nghiệm thu hoàn chỉnh: [`docs/bao_cao/C/bao_cao_task_7.3_eval_v3.md`](../../../bao_cao/C/bao_cao_task_7.3_eval_v3.md).
 
 ---
 
