@@ -1,0 +1,88 @@
+{
+  "schema": "calibration/v1",
+  "model": "baseline",
+  "checkpoint": {
+    "path": "DATASET/pretrained/fatformer_4class_ckpt.pth",
+    "sha256": "dummy_verification_hash_3e8f"
+  },
+  "calibration_source": "val_calibration (dummy_verified)",
+  "n_calib": 540,
+  "class_balance": {
+    "real": 270,
+    "fake": 270
+  },
+  "T": 1.2511,
+  "T_star": {
+    "0.01": 0.948,
+    "0.05": 0.8468,
+    "0.10": 0.7339
+  },
+  "T_star_default": 0.8468,
+  "fpr_target": 0.05,
+  "fpr_measured": {
+    "0.01": 0.0111,
+    "0.05": 0.0519,
+    "0.10": 0.1
+  },
+  "real_acc": 94.81,
+  "fake_acc": 60.0,
+  "ece_before": 7.3,
+  "ece_after": 4.38,
+  "nll_before": 0.4402,
+  "nll_after": 0.416,
+  "fold_id": null,
+  "cv_5fold": {
+    "folds": [
+      {
+        "fold_id": 1,
+        "T": 1.2444,
+        "T_star": 0.8411,
+        "fpr_measured": 0.0741,
+        "tpr_at_fpr": 61.11,
+        "ece_after": 7.67,
+        "n_val": 108
+      },
+      {
+        "fold_id": 2,
+        "T": 1.2525,
+        "T_star": 0.8397,
+        "fpr_measured": 0.0741,
+        "tpr_at_fpr": 57.41,
+        "ece_after": 6.2,
+        "n_val": 108
+      },
+      {
+        "fold_id": 3,
+        "T": 1.2598,
+        "T_star": 0.8537,
+        "fpr_measured": 0.0185,
+        "tpr_at_fpr": 64.81,
+        "ece_after": 9.24,
+        "n_val": 108
+      },
+      {
+        "fold_id": 4,
+        "T": 1.2423,
+        "T_star": 0.8465,
+        "fpr_measured": 0.0556,
+        "tpr_at_fpr": 51.85,
+        "ece_after": 9.59,
+        "n_val": 108
+      },
+      {
+        "fold_id": 5,
+        "T": 1.2562,
+        "T_star": 0.852,
+        "fpr_measured": 0.0185,
+        "tpr_at_fpr": 62.96,
+        "ece_after": 12.89,
+        "n_val": 108
+      }
+    ],
+    "mean_T": 1.251,
+    "std_T": 0.0067,
+    "mean_T_star": 0.8466,
+    "std_T_star": 0.0056,
+    "mean_ece": 9.12
+  }
+}

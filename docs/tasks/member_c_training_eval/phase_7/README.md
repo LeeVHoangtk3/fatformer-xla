@@ -14,7 +14,7 @@
 | :---: | :--- | :--- | :---: | ---: | :---: | :---: |
 | **7.1** | [`task_7.1_audit_checkpoint_gen1.md`](task_7.1_audit_checkpoint_gen1.md) | Audit cấu trúc & đo lại Gen 1 (`n=3` vs `n=8`) | D1–D2 | 4 h | **G7.0** | `[x] Đã hoàn thành (PASS G7.0)` |
 | **7.3** | [`task_7.3_eval_v3_measurement_contract.md`](task_7.3_eval_v3_measurement_contract.md) | Evaluation v3: khế ước đo lường, bỏ `strict=False`, bỏ ngưỡng batch | D2–D3 | 6 h | **G7.0** | `[x] Đã hoàn thành (Giai đoạn 1 PASS 100%)` |
-| **7.4** | [`task_7.4_calibration_threshold_fpr.md`](task_7.4_calibration_threshold_fpr.md) | Hiệu chuẩn nhiệt độ & ngưỡng ràng buộc FPR + ECE | D3 | 4 h | **G7.0** | `[ ] Sẵn sàng` |
+| **7.4** | [`task_7.4_calibration_threshold_fpr.md`](task_7.4_calibration_threshold_fpr.md) | Hiệu chuẩn nhiệt độ & ngưỡng ràng buộc FPR + ECE | D3 | 4 h | **G7.0** | `[x] Đã hoàn thành (PASS 100%)` |
 | **7.5** | [`task_7.5_wise_ft_gen2.md`](task_7.5_wise_ft_gen2.md) | WiSE-FT **Gen 2** + lưới `α×β_srm` + verify | D3–D4 | 5 h | **G7.1** | `[ ] Sẵn sàng` |
 | **7.6** | [`task_7.6_rebaseline_cfe_v3.md`](task_7.6_rebaseline_cfe_v3.md) | Re-baseline 4 cấu hình trên CFE bằng harness v3 | D4 | 3 h | **G7.1** | `[ ] Sẵn sàng` |
 | **7.11** | [`task_7.11_train_anchored_v2.md`](task_7.11_train_anchored_v2.md) | Huấn luyện Anchored Recovery v2 | D6–D7 | 5 h + GPU | **G7.2** | `[ ] Sẵn sàng` |

@@ -701,7 +701,11 @@ def main():
             with open(args.calibration, "r", encoding="utf-8") as f:
                 calib_data = json.load(f)
             temp_val = float(calib_data.get("T", 1.0))
-            fixed_thresh = float(calib_data.get("T_star", 0.50))
+            raw_t_star = calib_data.get("T_star_default", calib_data.get("T_star", 0.50))
+            if isinstance(raw_t_star, dict):
+                fixed_thresh = float(raw_t_star.get("0.05", 0.50))
+            else:
+                fixed_thresh = float(raw_t_star)
             thresh_source = f"calibration.json ({args.calibration})"
             print(f"[*] Đã nạp cấu hình hiệu chuẩn: T={temp_val}, T*={fixed_thresh}")
         except Exception as e:

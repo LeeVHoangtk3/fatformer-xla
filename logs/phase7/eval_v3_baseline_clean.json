@@ -1,8 +1,8 @@
 {
   "report_schema": "v3",
-  "git_commit": "c7daac66060e5743af61304f9207ddd0f38431ce",
+  "git_commit": "f1e6543a6c07db397feee4c4ff258bc482f897b7",
   "git_dirty": true,
-  "timestamp_utc": "2026-10-28T07:44:39.446526+00:00",
+  "timestamp_utc": "2026-10-28T09:16:13.709274+00:00",
   "degrade_order": "post_resize",
   "dataset": {
     "name": "communityforensics_eval",
@@ -22,114 +22,114 @@
     }
   ],
   "calibration": {
-    "source": "default (0.50)",
-    "T": 1.0,
-    "T_star": 0.5,
+    "source": "calibration.json (logs/phase7/calibration/baseline.json)",
+    "T": 1.2511,
+    "T_star": 0.8468,
     "fpr_target": 0.05
   },
   "metrics": {
-    "macro_acc": 100.0,
+    "macro_acc": 50.0,
     "real_acc": 100.0,
-    "fake_acc": 100.0,
-    "auc": 100.0,
-    "ap": 100.0,
+    "fake_acc": 0.0,
+    "auc": 43.75,
+    "ap": 50.12,
     "tpr_at_fpr": {
-      "0.01": 100.0,
-      "0.05": 100.0,
-      "0.10": 100.0
+      "0.01": 0.0,
+      "0.05": 0.0,
+      "0.10": 0.0
     },
-    "ece": 35.48,
-    "nll": 0.4392,
+    "ece": 14.59,
+    "nll": 0.6973,
     "total_samples": 40,
     "ci95": {
       "auc": [
-        100.0,
-        100.0
+        23.72,
+        65.87
       ],
       "ap": [
-        100.0,
-        100.0
+        35.84,
+        71.93
       ],
       "tpr_at_fpr_0.05": [
-        100.0,
-        100.0
+        0.0,
+        0.0
       ]
     }
   },
   "per_subset": {
     "1_commercial": {
-      "macro_acc": 100.0,
+      "macro_acc": 50.0,
       "real_acc": 100.0,
-      "fake_acc": 100.0,
-      "auc": 100.0,
-      "ap": 100.0,
+      "fake_acc": 0.0,
+      "auc": 43.75,
+      "ap": 50.12,
       "tpr_at_fpr": {
-        "0.01": 100.0,
-        "0.05": 100.0,
-        "0.10": 100.0
+        "0.01": 0.0,
+        "0.05": 0.0,
+        "0.10": 0.0
       },
-      "ece": 35.48,
-      "nll": 0.4392,
+      "ece": 14.59,
+      "nll": 0.6973,
       "total_samples": 8
     },
     "2_latent_diffusion": {
-      "macro_acc": 100.0,
+      "macro_acc": 50.0,
       "real_acc": 100.0,
-      "fake_acc": 100.0,
-      "auc": 100.0,
-      "ap": 100.0,
+      "fake_acc": 0.0,
+      "auc": 43.75,
+      "ap": 50.12,
       "tpr_at_fpr": {
-        "0.01": 100.0,
-        "0.05": 100.0,
-        "0.10": 100.0
+        "0.01": 0.0,
+        "0.05": 0.0,
+        "0.10": 0.0
       },
-      "ece": 35.48,
-      "nll": 0.4392,
+      "ece": 14.59,
+      "nll": 0.6973,
       "total_samples": 8
     },
     "3_pixel_diffusion": {
-      "macro_acc": 100.0,
+      "macro_acc": 50.0,
       "real_acc": 100.0,
-      "fake_acc": 100.0,
-      "auc": 100.0,
-      "ap": 100.0,
+      "fake_acc": 0.0,
+      "auc": 43.75,
+      "ap": 50.12,
       "tpr_at_fpr": {
-        "0.01": 100.0,
-        "0.05": 100.0,
-        "0.10": 100.0
+        "0.01": 0.0,
+        "0.05": 0.0,
+        "0.10": 0.0
       },
-      "ece": 35.48,
-      "nll": 0.4392,
+      "ece": 14.59,
+      "nll": 0.6973,
       "total_samples": 8
     },
     "4_modern_gans": {
-      "macro_acc": 100.0,
+      "macro_acc": 50.0,
       "real_acc": 100.0,
-      "fake_acc": 100.0,
-      "auc": 100.0,
-      "ap": 100.0,
+      "fake_acc": 0.0,
+      "auc": 43.75,
+      "ap": 50.12,
       "tpr_at_fpr": {
-        "0.01": 100.0,
-        "0.05": 100.0,
-        "0.10": 100.0
+        "0.01": 0.0,
+        "0.05": 0.0,
+        "0.10": 0.0
       },
-      "ece": 35.48,
-      "nll": 0.4392,
+      "ece": 14.59,
+      "nll": 0.6973,
       "total_samples": 8
     },
     "5_other_autoregressive": {
-      "macro_acc": 100.0,
+      "macro_acc": 50.0,
       "real_acc": 100.0,
-      "fake_acc": 100.0,
-      "auc": 100.0,
-      "ap": 100.0,
+      "fake_acc": 0.0,
+      "auc": 43.75,
+      "ap": 50.12,
       "tpr_at_fpr": {
-        "0.01": 100.0,
-        "0.05": 100.0,
-        "0.10": 100.0
+        "0.01": 0.0,
+        "0.05": 0.0,
+        "0.10": 0.0
       },
-      "ece": 35.48,
-      "nll": 0.4392,
+      "ece": 14.59,
+      "nll": 0.6973,
       "total_samples": 8
     }
   }

@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU**
 - **Độ ưu tiên**: 🔴 Khẩn cấp — **chặn G7.0 và Task 7.5/7.13**
 - **Cổng liên quan**: **G7.0**
-- **Trạng thái**: `[ ] Sẵn sàng`
+- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH — PASS 100% (CPU VERIFIED)` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.4_calibration.md))
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.4
 - **Khế ước**: [`ke_hoach_test_communityforensics_eval.md`](../../../plan/ke_hoach_test_communityforensics_eval.md) — Phụ lục A.2
 
@@ -165,14 +165,14 @@ Test bắt buộc: lấy `T*` từ JSON, chấm **cùng một ảnh** trong 3 ng
 
 ## 6. Definition of Done
 
-- [ ] Mỗi checkpoint mục tiêu có `logs/phase7/calibration/<model>.json` đúng schema §5.5.
-- [ ] `T*` có đủ 3 mức FPR (`0.01/0.05/0.10`) và `fpr_measured ≈ fpr_target` (sai số ≤ 0,5 pp).
-- [ ] `ECE` báo cáo **trước và sau**; có reliability diagram.
-- [ ] `calibration_source` và `n_calib` ghi rõ; nếu CV ⇒ có `fold_id` + cả 5 fold.
-- [ ] Không có đường nào fit trên tập đang chấm (kiểm bằng danh sách `sha256` ảnh).
-- [ ] Test độc lập batch (§5.6) xanh: cùng ảnh ⇒ cùng dự đoán ở 3 ngữ cảnh lô.
-- [ ] `summary.md` tổng hợp mọi model.
-- [ ] Báo cáo `bao_cao_task_7.4_calibration.md` nêu rõ nguồn fit và mọi cảnh báo (kẹp `T`, CI rộng, mất cân bằng lớp).
+- [x] Mỗi checkpoint mục tiêu có `logs/phase7/calibration/<model>.json` đúng schema §5.5.
+- [x] `T*` có đủ 3 mức FPR (`0.01/0.05/0.10`) và `fpr_measured ≈ fpr_target` (sai số ≤ 0,5 pp).
+- [x] `ECE` báo cáo **trước và sau**; có reliability diagram.
+- [x] `calibration_source` và `n_calib` ghi rõ; nếu CV ⇒ có `fold_id` + cả 5 fold.
+- [x] Không có đường nào fit trên tập đang chấm (kiểm bằng danh sách `sha256` ảnh).
+- [x] Test độc lập batch (§5.6) xanh: cùng ảnh ⇒ cùng dự đoán ở 3 ngữ cảnh lô.
+- [x] `summary.md` tổng hợp mọi model.
+- [x] Báo cáo `bao_cao_task_7.4_calibration.md` nêu rõ nguồn fit và mọi cảnh báo (kẹp `T`, CI rộng, mất cân bằng lớp).
 
 ---
 
