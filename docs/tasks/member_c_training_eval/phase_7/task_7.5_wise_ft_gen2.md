@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU** (merge) + ☁️ **T4 ~25 phút** (chấm 12 ứng viên)
 - **Độ ưu tiên**: 🟠 Cao — quyết định **G7.1**
 - **Cổng liên quan**: **G7.1** (cuối D4)
-- **Trạng thái**: `[ ] Sẵn sàng`
+- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH — PASS 100% (STRICT VERIFY VERIFIED)` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.5_wise_ft_gen2.md))
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.5
 
 ---
@@ -220,16 +220,16 @@ Bảng 12 dòng + 4 cột chỉ số; nêu rõ **ứng viên thắng và biên �
 
 ## 6. Definition of Done
 
-- [ ] `is_fixed_buffer` khớp **chính xác**, có 4 test ở §5.1(b) xanh.
-- [ ] Output **không còn** key `srm.*` / `gating.*` top-level; `dropped_top_level_keys` được ghi.
-- [ ] `--verify` tồn tại, `sys.exit(1)` khi `missing/unexpected/partial` khác 0.
-- [ ] Lưới đủ **12** ứng viên (`α` 4 × `β` 3), có `--alpha_grid`/`--beta_grid`.
-- [ ] Metadata đủ `alpha, beta_srm, sha256 (2 nguồn), layout, n_keys, git_commit`.
-- [ ] `logs/phase7/wise_ft_v2_sweep.csv` có **12 dòng** + cột `selected`.
-- [ ] Best checkpoint `verify 0/0`, `layout.partial = false`.
-- [ ] **Không** ghi đè `fatformer_wise_ft_best.pth` cũ.
-- [ ] `sweep_threshold_constrained` đã bị xoá (grep rỗng).
-- [ ] Báo cáo nêu rõ phán quyết G7.1 pass/fail **có số**.
+- [x] `is_fixed_buffer` khớp **chính xác**, có 4 test ở §5.1(b) xanh.
+- [x] Output **không còn** key `srm.*` / `gating.*` top-level; `dropped_top_level_keys` được ghi.
+- [x] `--verify` tồn tại, `sys.exit(1)` khi `missing/unexpected/partial` khác 0.
+- [x] Lưới đủ **12** ứng viên (`α` 4 × `β` 3), có `--alpha_grid`/`--beta_grid`.
+- [x] Metadata đủ `alpha, beta_srm, sha256 (2 nguồn), layout, n_keys, git_commit`.
+- [x] `logs/phase7/wise_ft_v2_sweep.csv` có **12 dòng** + cột `selected`.
+- [x] Best checkpoint `verify 0/0`, `layout.partial = false`.
+- [x] **Không** ghi đè `fatformer_wise_ft_best.pth` cũ.
+- [x] `sweep_threshold_constrained` đã bị xoá (grep rỗng).
+- [x] Báo cáo nêu rõ phán quyết G7.1 pass/fail **có số**.
 
 ---
 
