@@ -389,7 +389,8 @@ class Transformer(nn.Module):
 
 
 class VisionTransformer(nn.Module):
-    def __init__(self, input_resolution: int, patch_size: int, width: int, layers: int, heads: int, output_dim: int, args=None):
+    def __init__(self, input_resolution: int, patch_size: int, width: int, layers: int, heads: int, output_dim: int, args=None,
+                 adapter_block_indices=None):
         super().__init__()
         self.input_resolution = input_resolution
         self.output_dim = output_dim
@@ -400,13 +401,46 @@ class VisionTransformer(nn.Module):
         self.positional_embedding = nn.Parameter(scale * torch.randn((input_resolution // patch_size) ** 2 + 1, width))
         self.ln_pre = LayerNorm(width)
 
-        num_vit_adapter = getattr(args, "num_vit_adapter", 3) if args else 3
-        add_adapter = [False] * layers
-        if num_vit_adapter > 0:
-            assert layers % num_vit_adapter == 0, f"layers {layers}, while num_vit_adapter {num_vit_adapter}!"
-            n_spilt = layers // num_vit_adapter
-            for i in range(num_vit_adapter):
-                add_adapter[(i + 1) * n_spilt - 1] = True
+        configured_n = getattr(args, "num_vit_adapter", None) if args is not None else None
+        explicit_indices = adapter_block_indices
+        if explicit_indices is None and args is not None:
+            explicit_indices = getattr(args, "adapter_block_indices", None)
+
+        if explicit_indices is not None:
+            if not isinstance(explicit_indices, (list, tuple)):
+                raise TypeError("adapter_block_indices phải là list hoặc tuple các số nguyên.")
+            if any(isinstance(i, bool) or not isinstance(i, int) for i in explicit_indices):
+                raise TypeError("adapter_block_indices chỉ được chứa số nguyên.")
+            idx = list(explicit_indices)
+            if len(set(idx)) != len(idx):
+                raise ValueError("adapter_block_indices chứa index trùng lặp.")
+            if any(i < 0 or i >= layers for i in idx):
+                raise ValueError(f"adapter_block_indices phải nằm trong [0, {layers}).")
+            idx_set = set(idx)
+
+            if configured_n is not None:
+                if configured_n < 0 or (configured_n > 0 and layers % configured_n != 0):
+                    raise ValueError(f"num_vit_adapter={configured_n} không hợp lệ với layers={layers}.")
+                expected = set()
+                if configured_n > 0:
+                    stride = layers // configured_n
+                    expected = {(i + 1) * stride - 1 for i in range(configured_n)}
+                if idx_set != expected:
+                    raise ValueError(
+                        "adapter_block_indices mâu thuẫn với num_vit_adapter: "
+                        f"indices={sorted(idx)}, expected={sorted(expected)} for n={configured_n}."
+                    )
+            self.adapter_block_indices = tuple(idx)
+            add_adapter = [i in idx_set for i in range(layers)]
+        else:
+            num_vit_adapter = configured_n if configured_n is not None else 3
+            add_adapter = [False] * layers
+            if num_vit_adapter > 0:
+                assert layers % num_vit_adapter == 0, f"layers {layers}, while num_vit_adapter {num_vit_adapter}!"
+                n_spilt = layers // num_vit_adapter
+                for i in range(num_vit_adapter):
+                    add_adapter[(i + 1) * n_spilt - 1] = True
+            self.adapter_block_indices = tuple(i for i, enabled in enumerate(add_adapter) if enabled)
 
         self.transformer = Transformer(width, layers, heads, add_adapter=add_adapter, args=args)
         self.ln_post = LayerNorm(width)

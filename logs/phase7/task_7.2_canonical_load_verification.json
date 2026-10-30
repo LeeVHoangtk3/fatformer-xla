@@ -1,0 +1,68 @@
+{
+  "pass": true,
+  "results": {
+    "Baseline": {
+      "status": "LOADED",
+      "missing": 0,
+      "unexpected": 0,
+      "layout": {
+        "n": 3,
+        "indices": [7, 15, 23],
+        "dropped": [],
+        "missing": [],
+        "partial": false,
+        "expressible": true
+      },
+      "n_keys": 1116,
+      "sha256": "3b904401ad4ce7d0bc33661e83742ec4b659850c076b73cd544e87e26d8cb3db",
+      "dropped_alias": 0,
+      "dropped_top_level": 0
+    },
+    "Anchored": {
+      "status": "LOADED",
+      "missing": 0,
+      "unexpected": 0,
+      "layout": {
+        "n": 3,
+        "indices": [7, 15, 23],
+        "dropped": [],
+        "missing": [],
+        "partial": false,
+        "expressible": true
+      },
+      "n_keys": 1200,
+      "sha256": "f70a11df9d7f45c11c60c4e117f8d1302c4f426b1f1b567cb2e50387b0111def",
+      "dropped_alias": 0,
+      "dropped_top_level": 0
+    },
+    "M4": {
+      "status": "LOADED",
+      "missing": 0,
+      "unexpected": 0,
+      "layout": {
+        "n": 8,
+        "indices": [2, 5, 8, 11, 14, 17, 20, 23],
+        "dropped": [],
+        "missing": [],
+        "partial": false,
+        "expressible": true
+      },
+      "n_keys": 1684,
+      "sha256": "b5ad83966047038c8b2dc062c88857f9bfc02adb8eae03620b0c09efc8f2acdb",
+      "dropped_alias": 0,
+      "dropped_top_level": 14
+    },
+    "Gen1": {
+      "status": "REJECTED",
+      "error": "Checkpoint adapter layout không biểu diễn được chính xác: blocks=[2, 5, 7, 8, 11, 14, 15, 17, 20, 23], nearest_n=8, dropped=[7, 15], missing=[]. Checkpoint bị từ chối; không ánh xạ ngầm sang n=3/n=8.",
+      "layout": {
+        "n": 8,
+        "indices": [2, 5, 8, 11, 14, 17, 20, 23],
+        "dropped": [7, 15],
+        "missing": [],
+        "partial": true,
+        "expressible": false
+      }
+    }
+  }
+}

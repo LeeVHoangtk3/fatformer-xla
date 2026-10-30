@@ -265,7 +265,7 @@ flowchart LR
 
 ### Lộ Trình Hiện Hành: Phase 7 (Unified Single Checkpoint)
 - [x] **Cổng G7.0 (Toàn vẹn đo lường)**: Hoàn thành Task 7.1 — Kiểm toán 4 checkpoint, đóng vết và cô lập WiSE-FT Gen 1.
-- [ ] **Cổng G7.1 (Tương thích kiến trúc)**: Task 7.2 & 7.3 — Xây dựng `CanonicalCheckpointLoader` hỗ trợ tùy biến vị trí adapter và kiểm thử nạp chéo.
+- [~] **Cổng G7.1 (Tương thích kiến trúc)**: Task 7.2 — Implementation complete (`canonical_loader.py`, `adapter_block_indices`, audit refactored, báo cáo). Chờ xác nhận DoD: `pytest`, nạp 4 checkpoint thực tế 0/0, smoke 1 batch. Task 7.3 — pending.
 - [ ] **Cổng G7.2 (Khôi phục Anchor)**: Huấn luyện mô hình Anchor thế hệ mới trên tập dữ liệu chuẩn hóa.
 - [ ] **Cổng G7.3 (Nghiệm thu Đích)**: Đóng gói checkpoint thống nhất duy nhất `UnifiedFatFormerXLA`.
 
