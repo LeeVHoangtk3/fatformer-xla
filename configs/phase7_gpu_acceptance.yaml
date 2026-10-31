@@ -1,0 +1,78 @@
+# -*- coding: utf-8 -*-
+# FatFormer-XLA: Cấu Hình Chạy Nghiệm Thu GPU Phase 7 (Cổng G7.1 & Tasks 7.3 - 7.6)
+# =================================================================================
+
+phase: "phase7"
+name: "phase7_gpu_acceptance"
+seed: 42
+
+environment:
+  require_cuda: true
+  expected_branch: "hoang"
+  require_clean_git: true
+
+data:
+  # Đường dẫn dataset CFE trên Colab/Kaggle hoặc local
+  cfe_root: "DATASET/test_communityforensics"
+  expected_samples: 2000
+  subsets:
+    - "1_commercial"
+    - "2_latent_diffusion"
+    - "3_pixel_diffusion"
+    - "4_modern_gans"
+    - "5_other_autoregressive"
+  degrade_order: "post_resize"
+  calib_split_ratio: 0.20  # Tách 20% mẫu làm held-out calibration cho Task 7.4
+
+checkpoints:
+  clip_vit_l14:
+    path: "DATASET/pretrained/ViT-L-14.pt"
+    # SHA-256 của trọng số CLIP ViT-L/14 chuẩn OpenAI
+    expected_sha256: null
+  
+  baseline:
+    path: "DATASET/pretrained/fatformer_4class_ckpt.pth"
+    expected_sha256: "3b904401ad4ce7d0bc33661e83742ec4b659850c076b73cd544e87e26d8cb3db"
+    n_keys: 1116
+    adapter_layout: [7, 15, 23]
+    use_modules: false
+
+  anchored:
+    path: "DATASET/checkpoints/anchored_recovery_phase_6r/fatformer_anchored_recovery_best.pth"
+    expected_sha256: "f70a11df9d7f45c11c60c4e117f8d1302c4f426b1f1b567cb2e50387b0111def"
+    n_keys: 1200
+    adapter_layout: [7, 15, 23]
+    use_modules: true
+
+calibration:
+  target_fpr: 0.05
+  output_dir: "DATASET/logs/phase7/calibration"
+  baseline_json: "DATASET/logs/phase7/calibration/baseline.json"
+  anchored_json: "DATASET/logs/phase7/calibration/anchored.json"
+
+wise_ft_gen2:
+  candidates_dir: "DATASET/checkpoints/phase7/candidates"
+  alpha_grid: [0.35, 0.45, 0.55, 0.65]
+  beta_grid: [0.25, 0.35, 0.50]
+  best_checkpoint_path: "DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth"
+  best_metadata_path: "DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best_metadata.json"
+  sweep_csv: "DATASET/logs/phase7/wise_ft_v2_sweep.csv"
+  verify_strict: true
+
+rebaseline:
+  measured_artifacts_dir: "DATASET/logs/phase7"
+  output_json: "DATASET/logs/phase7/cfe_v3_baseline_matrix.json"
+  output_md: "DATASET/logs/phase7/cfe_v3_baseline_matrix.md"
+
+gate_g7_1:
+  must:
+    fake_at_real90_q30: 55.0
+    auc_clean: 80.0
+    auc_q30: 55.0
+  stretch:
+    fake_at_real90_q30: 70.0
+
+runtime:
+  batch_size: 32
+  num_workers: 2
+  device: "cuda"

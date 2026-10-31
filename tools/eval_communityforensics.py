@@ -195,10 +195,17 @@ def calculate_metrics_v3(
     p_clipped = np.clip(fake_probs, eps, 1.0 - eps)
     nll = float(-np.mean(targets * np.log(p_clipped) + (1.0 - targets) * np.log(1.0 - p_clipped)))
 
+    # 6. Fake@Real90
+    fake_at_real90 = None
+    if n_pos > 0 and n_neg > 0:
+        thr_fpr10 = float(np.quantile(fake_probs[targets == 0], 0.90))
+        fake_at_real90 = round(float((fake_probs[targets == 1] >= thr_fpr10).mean() * 100.0), 2)
+
     return {
         "macro_acc": round(float(macro_acc), 2),
         "real_acc": round(float(real_acc), 2) if real_acc is not None else None,
         "fake_acc": round(float(fake_acc), 2) if fake_acc is not None else None,
+        "fake_at_real90": fake_at_real90,
         "auc": round(float(auc), 2) if auc is not None else None,
         "ap": round(float(ap), 2) if ap is not None else None,
         "tpr_at_fpr": tpr_at_fpr,
@@ -372,7 +379,7 @@ class CommunityForensicsDataset(Dataset):
             print(f"  [!] Cảnh báo đọc file lỗi ({file_path}): {e}")
             img = Image.new("RGB", (224, 224), color=(128, 128, 128))
 
-        if self.condition == "jpeg_q30":
+        if self.condition in ["q30", "jpeg_q30"]:
             if self.degrade_order == "pre_resize":
                 img = compress_jpeg_q30(img)
                 img = self.spatial_crop(img)
@@ -475,11 +482,11 @@ def infer_records_v3(
     num_workers: int = 2,
     temperature: float = 1.0,
     threshold: float = 0.50
-) -> Tuple[Dict[str, Any], torch.Tensor, torch.Tensor, torch.Tensor]:
-    """Suy luận trên danh sách ảnh và tính toán toàn bộ chỉ số v3."""
+) -> Tuple[Dict[str, Any], torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Suy luận trên danh sách ảnh và tính toán toàn bộ chỉ số v3, kèm logits thô."""
     if not records:
         empty_m = calculate_metrics_v3(np.array([]), np.array([]), threshold=threshold)
-        return empty_m, torch.empty((0, 2)), torch.empty((0,)), torch.empty((0,))
+        return empty_m, torch.empty((0, 2)), torch.empty((0,)), torch.empty((0,)), torch.empty((0, 2))
 
     ds = CommunityForensicsDataset(records, condition=condition, degrade_order=degrade_order)
     loader = DataLoader(
@@ -505,9 +512,9 @@ def infer_records_v3(
         all_targets.append(labels)
         all_blockiness.append(b_scores.float())
 
-    logits_cat = torch.cat(all_logits, dim=0)
-    targets_cat = torch.cat(all_targets, dim=0)
-    blockiness_cat = torch.cat(all_blockiness, dim=0)
+    logits_cat = torch.cat(all_logits, dim=0) if all_logits else torch.empty((0, 2))
+    targets_cat = torch.cat(all_targets, dim=0) if all_targets else torch.empty((0,), dtype=torch.long)
+    blockiness_cat = torch.cat(all_blockiness, dim=0) if all_blockiness else torch.empty((0,))
 
     scaled_logits = logits_cat / max(temperature, 1e-4)
     probs = F.softmax(scaled_logits, dim=-1)
@@ -515,7 +522,7 @@ def infer_records_v3(
     targets_np = targets_cat.numpy()
 
     metrics = calculate_metrics_v3(fake_probs_np, targets_np, threshold=threshold)
-    return metrics, probs, targets_cat, blockiness_cat
+    return metrics, probs, targets_cat, blockiness_cat, logits_cat
 
 
 def compute_unified_router_predictions_v3(
@@ -659,6 +666,19 @@ def parse_args():
     parser.add_argument("--baseline_ckpt", type=str, default="")
     parser.add_argument("--wise_ckpt", type=str, default="")
     parser.add_argument("--anchored_ckpt", type=str, default="")
+    parser.add_argument("--model_type", type=str, default="baseline",
+                        choices=["baseline", "anchored", "wise_ft_v2", "candidate", "custom"],
+                        help="Loại kiến trúc mô hình (baseline, anchored, wise_ft_v2, candidate)")
+    parser.add_argument("--model_name", type=str, default=None,
+                        help="Tên định danh mô hình cho tệp đầu ra (mặc định lấy theo model_type)")
+    parser.add_argument("--condition", type=str, default="clean",
+                        choices=["clean", "q30", "jpeg_q30", "all"],
+                        help="Điều kiện ảnh: clean, q30, hoặc all (cả clean và q30)")
+    parser.add_argument("--save_logits_npz", action="store_true", default=True,
+                        help="Tự động xuất tệp NPZ chứa logits [N,2] và targets [N]")
+    parser.add_argument("--no_save_logits_npz", dest="save_logits_npz", action="store_false")
+    parser.add_argument("--export_candidate_eval", type=str, default=None,
+                        help="Đường dẫn xuất tệp sidecar _eval.json cho candidate sweep 7.5")
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--num_workers", type=int, default=2)
     parser.add_argument("--device", type=str, default="auto", choices=["auto", "cuda", "cpu"])
@@ -678,10 +698,12 @@ def main():
     device = torch.device(device_str)
 
     git_commit, is_dirty = get_git_info()
+    model_name = args.model_name or args.model_type or "baseline"
 
     print("=" * 88)
     print("FATFORMER-XLA: PIPELINE KIỂM CHUẨN NGOẠI VI COMMUNITYFORENSICS-EVAL (CHUẨN HÓA v3.0)")
     print("=" * 88)
+    print(f"• Mô hình đánh giá   : {model_name} (Kiến trúc: {args.model_type})")
     print(f"• Thiết bị tính toán : {device_str.upper()} ({torch.cuda.get_device_name(0) if device_str == 'cuda' else 'CPU'})")
     print(f"• Git Commit         : {git_commit} {'(DIRTY)' if is_dirty else '(CLEAN)'}")
     print(f"• Thứ tự nén         : {args.degrade_order}")
@@ -733,113 +755,180 @@ def main():
         print(f"[!] Lỗi: Không tìm thấy ảnh nào trong {args.data_dir}!")
         return 1
 
-    # Đánh giá trên Clean
-    all_results = {"clean": {"baseline": {}}}
-    print("\n" + "=" * 88)
-    print(f"BẮT ĐẦU ĐÁNH GIÁ CHUỖI: ẢNH SẠCH (CLEAN CFE - {total_scanned} ẢNH)")
-    print("=" * 88)
-
+    # Khởi tạo mô hình
+    ckpt_target = (
+        args.checkpoint
+        or (args.baseline_ckpt if args.model_type == "baseline" else "")
+        or (args.anchored_ckpt if args.model_type == "anchored" else "")
+        or (args.wise_ckpt if args.model_type == "wise_ft_v2" else "")
+    )
     model, load_report = build_cfe_model_v3(
-        model_type="baseline",
-        ckpt_path=args.checkpoint or args.baseline_ckpt,
+        model_type=args.model_type,
+        ckpt_path=ckpt_target,
         clip_path=args.clip_path,
         device=device,
         is_dummy=args.test_dummy
     )
 
-    subset_metrics = {}
-    pooled_probs_list = []
-    pooled_targets_list = []
+    # Xác định danh sách điều kiện cần đánh giá
+    if args.condition == "all":
+        conditions_to_run = ["clean", "q30"]
+    elif args.condition in ["q30", "jpeg_q30"]:
+        conditions_to_run = ["q30"]
+    else:
+        conditions_to_run = ["clean"]
 
-    for sub in CFE_SUBSETS:
-        recs = records_by_subset.get(sub, [])
-        m_sub, sub_probs, sub_targets, _ = infer_records_v3(
-            model=model,
-            records=recs,
-            condition="clean",
+    os.makedirs(args.output_dir, exist_ok=True)
+    cond_overall_metrics: Dict[str, Dict[str, Any]] = {}
+    all_results_for_md: Dict[str, Dict[str, Any]] = {}
+
+    for cond in conditions_to_run:
+        cond_label = "ẢNH SẠCH (CLEAN CFE)" if cond == "clean" else f"NÉN JPEG Q=30 ({cond.upper()})"
+        print("\n" + "=" * 88)
+        print(f"BẮT ĐẦU ĐÁNH GIÁ ĐIỀU KIỆN: {cond_label} — {total_scanned} ẢNH")
+        print("=" * 88)
+
+        subset_metrics = {}
+        pooled_probs_list = []
+        pooled_targets_list = []
+        pooled_logits_list = []
+
+        for sub in CFE_SUBSETS:
+            recs = records_by_subset.get(sub, [])
+            m_sub, sub_probs, sub_targets, _, sub_logits = infer_records_v3(
+                model=model,
+                records=recs,
+                condition=cond,
+                degrade_order=args.degrade_order,
+                device=device,
+                batch_size=args.batch_size,
+                num_workers=args.num_workers,
+                temperature=temp_val,
+                threshold=fixed_thresh
+            )
+            subset_metrics[sub] = m_sub
+            if len(recs) > 0:
+                pooled_probs_list.append(sub_probs)
+                pooled_targets_list.append(sub_targets)
+                pooled_logits_list.append(sub_logits)
+
+            tpr1 = m_sub.get("tpr_at_fpr", {}).get("0.01", "—")
+            tpr5 = m_sub.get("tpr_at_fpr", {}).get("0.05", "—")
+            tpr10 = m_sub.get("tpr_at_fpr", {}).get("0.10", "—")
+            print(f"  • {sub:<23}: ACC={m_sub['macro_acc']:>5.2f}% | Real={str(m_sub['real_acc']):>5}% | Fake={str(m_sub['fake_acc']):>5}% | AUC={str(m_sub['auc']):>5}% | TPR@5%={str(tpr5):>5}% | TPR@10%={str(tpr10):>5}%")
+
+        if pooled_probs_list:
+            all_probs_cat = torch.cat(pooled_probs_list, dim=0)
+            all_targets_cat = torch.cat(pooled_targets_list, dim=0)
+            all_logits_cat = torch.cat(pooled_logits_list, dim=0)
+
+            overall_m = calculate_metrics_v3(all_probs_cat[:, 1].numpy(), all_targets_cat.numpy(), threshold=fixed_thresh)
+            ci95 = compute_bootstrap_ci(all_probs_cat[:, 1].numpy(), all_targets_cat.numpy(), n_boot=1000, seed=args.seed)
+            overall_m["ci95"] = ci95
+        else:
+            all_logits_cat = torch.empty((0, 2))
+            all_targets_cat = torch.empty((0,), dtype=torch.long)
+            overall_m = calculate_metrics_v3(np.array([]), np.array([]), threshold=fixed_thresh)
+
+        print(f"\n  🏆 OVERALL POOLED ({cond}): ACC={overall_m['macro_acc']:.2f}% | Real={str(overall_m['real_acc'])}% | Fake={str(overall_m['fake_acc'])}% | Fake@Real90={str(overall_m.get('fake_at_real90'))}% | AUC={str(overall_m['auc'])}% | ECE={overall_m['ece']:.2f}%")
+        print(f"     Khoảng tin cậy 95% CI: AUC={overall_m.get('ci95', {}).get('auc')} | AP={overall_m.get('ci95', {}).get('ap')} | TPR@5%={overall_m.get('ci95', {}).get('tpr_at_fpr_0.05')}")
+
+        cond_overall_metrics[cond] = overall_m
+        if cond not in all_results_for_md:
+            all_results_for_md[cond] = {}
+        all_results_for_md[cond][model_name] = {
+            "by_subset": subset_metrics,
+            "overall": overall_m,
+        }
+
+        # Lưu logits và targets NPZ nếu được yêu cầu
+        if args.save_logits_npz and len(all_logits_cat) > 0:
+            npz_name = f"logits_{model_name}_{cond}.npz"
+            npz_path = os.path.join(args.output_dir, npz_name)
+            np.savez_compressed(
+                npz_path,
+                logits=all_logits_cat.numpy(),
+                targets=all_targets_cat.numpy(),
+                model=model_name,
+                condition=cond,
+                temperature=temp_val,
+                threshold=fixed_thresh,
+            )
+            print(f"  [✓] Logits NPZ: {os.path.abspath(npz_path)}")
+
+        # Xuất file schema v3 JSON & MD cho condition này
+        schema_v3_output = {
+            "report_schema": "v3-dummy" if args.test_dummy else "v3",
+            "evidence_level": "synthetic" if args.test_dummy else "measured",
+            "gate_eligible": not args.test_dummy,
+            "git_commit": git_commit,
+            "git_dirty": is_dirty,
+            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+            "degrade_order": args.degrade_order,
+            "dataset": {"name": "communityforensics_eval", "n": total_scanned, "condition": cond},
+            "checkpoints": [{
+                "path": ckpt_target or "dummy",
+                "load_report": load_report,
+                "status": "ok" if args.test_dummy else load_report.get("status", "ok")
+            }],
+            "calibration": {
+                "source": thresh_source,
+                "T": temp_val,
+                "T_star": fixed_thresh,
+                "fpr_target": calib_data.get("fpr_target", 0.05)
+            },
+            "metrics": overall_m,
+            "per_subset": subset_metrics
+        }
+
+        json_path = os.path.join(args.output_dir, f"eval_v3_{model_name}_{cond}.json")
+        md_path = os.path.join(args.output_dir, f"eval_v3_{model_name}_{cond}.md")
+
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(schema_v3_output, f, indent=2, ensure_ascii=False)
+
+        report_md = generate_markdown_report_v3(
+            all_results={cond: {model_name: all_results_for_md[cond][model_name]}},
+            git_commit=git_commit,
+            is_dirty=is_dirty,
             degrade_order=args.degrade_order,
-            device=device,
-            batch_size=args.batch_size,
-            num_workers=args.num_workers,
-            temperature=temp_val,
             threshold=fixed_thresh
         )
-        subset_metrics[sub] = m_sub
-        if len(recs) > 0:
-            pooled_probs_list.append(sub_probs)
-            pooled_targets_list.append(sub_targets)
+        with open(md_path, "w", encoding="utf-8") as f:
+            f.write(report_md)
 
-        tpr1 = m_sub.get("tpr_at_fpr", {}).get("0.01", "—")
-        tpr5 = m_sub.get("tpr_at_fpr", {}).get("0.05", "—")
-        tpr10 = m_sub.get("tpr_at_fpr", {}).get("0.10", "—")
-        print(f"  • {sub:<23}: ACC={m_sub['macro_acc']:>5.2f}% | Real={str(m_sub['real_acc']):>5}% | Fake={str(m_sub['fake_acc']):>5}% | AUC={str(m_sub['auc']):>5}% | TPR@5%={str(tpr5):>5}% | TPR@10%={str(tpr10):>5}%")
+        print(f"  [✓] JSON v3   : {os.path.abspath(json_path)}")
+        print(f"  [✓] MD v3     : {os.path.abspath(md_path)}")
 
-    if pooled_probs_list:
-        all_probs_cat = torch.cat(pooled_probs_list, dim=0)
-        all_targets_cat = torch.cat(pooled_targets_list, dim=0)
-        overall_m = calculate_metrics_v3(all_probs_cat[:, 1].numpy(), all_targets_cat.numpy(), threshold=fixed_thresh)
-        ci95 = compute_bootstrap_ci(all_probs_cat[:, 1].numpy(), all_targets_cat.numpy(), n_boot=1000, seed=args.seed)
-        overall_m["ci95"] = ci95
-    else:
-        overall_m = calculate_metrics_v3(np.array([]), np.array([]), threshold=fixed_thresh)
-
-    print(f"\n  🏆 OVERALL POOLED: ACC={overall_m['macro_acc']:.2f}% | Real={str(overall_m['real_acc'])}% | Fake={str(overall_m['fake_acc'])}% | AUC={str(overall_m['auc'])}% | ECE={overall_m['ece']:.2f}%")
-    print(f"     Khoảng tin cậy 95% CI: AUC={overall_m.get('ci95', {}).get('auc')} | AP={overall_m.get('ci95', {}).get('ap')} | TPR@5%={overall_m.get('ci95', {}).get('tpr_at_fpr_0.05')}")
-
-    all_results["clean"]["baseline"] = {
-        "by_subset": subset_metrics,
-        "overall": overall_m,
-    }
-
-    # Xuất file schema v3
-    os.makedirs(args.output_dir, exist_ok=True)
-    schema_v3_output = {
-        "report_schema": "v3-dummy" if args.test_dummy else "v3",
-        "evidence_level": "synthetic" if args.test_dummy else "measured",
-        "gate_eligible": not args.test_dummy,
-        "git_commit": git_commit,
-        "git_dirty": is_dirty,
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-        "degrade_order": args.degrade_order,
-        "dataset": {"name": "communityforensics_eval", "n": total_scanned, "condition": "clean"},
-        "checkpoints": [{
-            "path": args.checkpoint or args.baseline_ckpt or "dummy",
-            "load_report": load_report,
-            "status": "ok" if args.test_dummy else load_report.get("status", "ok")
-        }],
-        "calibration": {
-            "source": thresh_source,
-            "T": temp_val,
-            "T_star": fixed_thresh,
-            "fpr_target": calib_data.get("fpr_target", 0.05)
-        },
-        "metrics": overall_m,
-        "per_subset": subset_metrics
-    }
-
-    cond_name = "clean"
-    json_path = os.path.join(args.output_dir, f"eval_v3_baseline_{cond_name}.json")
-    md_path = os.path.join(args.output_dir, f"eval_v3_baseline_{cond_name}.md")
-
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(schema_v3_output, f, indent=2, ensure_ascii=False)
-
-    report_md = generate_markdown_report_v3(
-        all_results=all_results,
-        git_commit=git_commit,
-        is_dirty=is_dirty,
-        degrade_order=args.degrade_order,
-        threshold=fixed_thresh
-    )
-
-    with open(md_path, "w", encoding="utf-8") as f:
-        f.write(report_md)
+    # Xuất sidecar cho WiSE-FT Candidate Sweep nếu có đủ clean và q30
+    if args.export_candidate_eval or (args.model_type == "candidate" and "clean" in cond_overall_metrics and "q30" in cond_overall_metrics):
+        sidecar_path = args.export_candidate_eval
+        if not sidecar_path and ckpt_target:
+            sidecar_path = ckpt_target.replace(".pth", "_eval.json")
+        if sidecar_path:
+            clean_m = cond_overall_metrics.get("clean", {})
+            q30_m = cond_overall_metrics.get("q30", {})
+            sidecar_data = {
+                "schema": "candidate_eval/v1",
+                "evidence_level": "synthetic" if args.test_dummy else "measured",
+                "candidate": os.path.basename(ckpt_target or model_name),
+                "checkpoint": ckpt_target,
+                "metrics": {
+                    "real_acc_clean": float(clean_m.get("real_acc", 0.0) or 0.0),
+                    "fake_at_real90_clean": float(clean_m.get("fake_at_real90", 0.0) or clean_m.get("tpr_at_fpr", {}).get("0.10", 0.0) or 0.0),
+                    "auc_clean": float(clean_m.get("auc", 0.0) or 0.0),
+                    "real_acc_q30": float(q30_m.get("real_acc", 0.0) or 0.0),
+                    "fake_at_real90_q30": float(q30_m.get("fake_at_real90", 0.0) or q30_m.get("tpr_at_fpr", {}).get("0.10", 0.0) or 0.0),
+                    "auc_q30": float(q30_m.get("auc", 0.0) or 0.0),
+                }
+            }
+            os.makedirs(os.path.dirname(os.path.abspath(sidecar_path)), exist_ok=True)
+            with open(sidecar_path, "w", encoding="utf-8") as f:
+                json.dump(sidecar_data, f, indent=2, ensure_ascii=False)
+            print(f"\n[✓] Đã xuất sidecar ứng viên WiSE-FT: {sidecar_path}")
 
     print("\n" + "=" * 88)
     print("HOÀN TẤT THỰC THI EVALUATION v3 THEO ĐÚNG KHẾ ƯỚC PHỤ LỤC A!")
-    print("=" * 88)
-    print(f"  [✓] JSON v3 : {os.path.abspath(json_path)}")
-    print(f"  [✓] MD v3   : {os.path.abspath(md_path)}")
     print("=" * 88)
     return 0
 

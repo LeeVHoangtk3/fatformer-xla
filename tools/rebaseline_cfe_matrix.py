@@ -229,19 +229,40 @@ def generate_mock_cfe_predictions(
     return fake_probs, targets, logits
 
 
+def load_measured_predictions(
+    measured_dir: str,
+    model_name: str,
+    condition: str,
+    temperature: float
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Tải mảng logits và targets đo thật từ file NPZ do eval_communityforensics.py sinh ra."""
+    npz_path = os.path.join(measured_dir, f"logits_{model_name}_{condition}.npz")
+    if not os.path.isfile(npz_path):
+        raise FileNotFoundError(f"Không tìm thấy file logits đo thật: {npz_path}")
+    data = np.load(npz_path, allow_pickle=False)
+    logits = data["logits"]
+    targets = data["targets"]
+
+    scaled_logits = logits / max(temperature, 1e-4)
+    exp_z = np.exp(scaled_logits - np.max(scaled_logits, axis=-1, keepdims=True))
+    probs = exp_z / np.sum(exp_z, axis=-1, keepdims=True)
+    fake_probs = probs[:, 1]
+    return fake_probs, targets, logits
+
+
 def run_rebaseline_evaluation(
     calibration_path: str,
     output_json_path: str,
     output_md_path: str,
     is_dummy: bool = False,
+    measured_dir: str = "",
     seed: int = 42
 ) -> Dict[str, Any]:
     """Thực thi kiểm chuẩn đối đầu 4 cấu hình x 2 điều kiện và xuất ma trận kết quả."""
-    if not is_dummy:
+    if not is_dummy and not measured_dir:
         raise RuntimeError(
-            "Re-baseline chính thức phải chạy tools/eval_communityforensics.py "
-            "trên checkpoint và CFE thật. Công cụ này chỉ còn chế độ --test_dummy "
-            "để kiểm thử phép tính; không được phép phát hành G7.1 từ số mô phỏng."
+            "Re-baseline chính thức phải chạy với --measured_dir chỉ định thư mục chứa artifact đo thật "
+            "từ tools/eval_communityforensics.py. Dùng --test_dummy chỉ để chạy kiểm thử toán học mô phỏng."
         )
     print("\n" + "=" * 88)
     print("FATFORMER-XLA: TIẾN TRÌNH TÁI LẬP MỐC SÀN 4 CẤU HÌNH TRÊN CFE (TASK 7.6)")
@@ -312,13 +333,17 @@ def run_rebaseline_evaluation(
     for cond in conditions:
         print(f"\n--- ĐANG ĐO ĐẠC ĐIỀU KIỆN: {cond.upper()} ---")
 
-        # Sinh / thu thập dự đoán cho 3 mô hình cơ sở
-        p_base, y_base, log_base = generate_mock_cfe_predictions("baseline", cond, temperature=temp_baseline, seed=seed)
-        p_anch, y_anch, log_anch = generate_mock_cfe_predictions("anchored", cond, temperature=temp_anchored, seed=seed)
-        p_wise, y_wise, log_wise = generate_mock_cfe_predictions("wise_ft_v2", cond, temperature=temp_baseline, seed=seed)
+        if measured_dir:
+            print(f"[*] Đang tải mảng logits đo thật từ: {measured_dir}")
+            p_base, y_base, log_base = load_measured_predictions(measured_dir, "baseline", cond, temperature=temp_baseline)
+            p_anch, y_anch, log_anch = load_measured_predictions(measured_dir, "anchored", cond, temperature=temp_anchored)
+            p_wise, y_wise, log_wise = load_measured_predictions(measured_dir, "wise_ft_v2", cond, temperature=temp_baseline)
+        else:
+            p_base, y_base, log_base = generate_mock_cfe_predictions("baseline", cond, temperature=temp_baseline, seed=seed)
+            p_anch, y_anch, log_anch = generate_mock_cfe_predictions("anchored", cond, temperature=temp_anchored, seed=seed)
+            p_wise, y_wise, log_wise = generate_mock_cfe_predictions("wise_ft_v2", cond, temperature=temp_baseline, seed=seed)
 
         # 4. Ensemble: Trung bình logit đã hiệu chuẩn theo đúng §5.1
-        # p_ens = 0.5 * softmax(log_base / T_b) + 0.5 * softmax(log_anch / T_a)
         exp_base = np.exp((log_base / temp_baseline) - np.max(log_base / temp_baseline, axis=-1, keepdims=True))
         prob_base = exp_base / np.sum(exp_base, axis=-1, keepdims=True)
 
@@ -345,11 +370,35 @@ def run_rebaseline_evaluation(
             print(f"  • {m:<11} [{cond}]: AUC={res['auc']:>5.2f}% | AP={res['ap']:>5.2f}% | "
                   f"Fake@Real90={res['fake_at_real90']:>5.2f}% | Real ACC={res['real_acc']:>5.2f}%")
 
+    # Đánh giá Cổng G7.1
+    best_model = "wise_ft_v2"
+    far90_q30 = results[best_model]["q30"]["fake_at_real90"]
+    auc_clean = results[best_model]["clean"]["auc"]
+    auc_q30 = results[best_model]["q30"]["auc"]
+
+    if measured_dir:
+        pass_must = (far90_q30 >= 55.0 and auc_clean >= 80.0 and auc_q30 >= 55.0)
+        pass_stretch = (pass_must and far90_q30 >= 70.0)
+        gate_verdict = "PASS" if pass_must else "FAIL"
+        evidence_level = "measured"
+        report_schema = "v3"
+        gate_eligible = True
+    else:
+        pass_must = False
+        pass_stretch = False
+        gate_verdict = "NOT_EVALUATED"
+        evidence_level = "synthetic"
+        report_schema = "v3-dummy"
+        gate_eligible = False
+
     # Đóng gói JSON report
     report_json = {
-        "report_schema": "v3-dummy",
-        "evidence_level": "synthetic",
-        "gate_verdict": "NOT_EVALUATED",
+        "report_schema": report_schema,
+        "evidence_level": evidence_level,
+        "gate_eligible": gate_eligible,
+        "gate_verdict": gate_verdict,
+        "pass_must": pass_must,
+        "pass_stretch": pass_stretch,
         "git_commit": git_commit,
         "harness": "eval_communityforensics.py",
         "degrade_order": "post_resize",
@@ -374,20 +423,16 @@ def run_rebaseline_evaluation(
         json.dump(report_json, f, indent=2, ensure_ascii=False)
     print(f"\n[✓] Đã xuất báo cáo ma trận JSON: {output_json_path}")
 
-    # Đánh giá Cổng G7.1
-    # Tiêu chí G7.1: Fake@Real90 (Q30) >= 55% (Must), AUC clean >= 80%, AUC Q30 >= 55%
-    best_model = "wise_ft_v2"
-    far90_q30 = results[best_model]["q30"]["fake_at_real90"]
-    auc_clean = results[best_model]["clean"]["auc"]
-    auc_q30 = results[best_model]["q30"]["auc"]
-
-    pass_must = False
-    pass_stretch = False
-
     # Đóng gói Markdown Report
-    md_content = f"""# MA TRẬN DUMMY — KHÔNG DÙNG NGHIỆM THU G7.1
-> **CẢNH BÁO**: Toàn bộ xác suất bên dưới là dữ liệu tổng hợp để kiểm thử công thức.  
-> **Evidence level**: `synthetic` | **Gate verdict**: `NOT_EVALUATED`
+    title_banner = (
+        f"# BÁO CÁO NGHIỆM THU MA TRẬN 4 CẤU HÌNH TRÊN CFE & PHÁN QUYẾT G7.1\n> **Evidence level**: `{evidence_level}` | **Gate verdict**: `{gate_verdict}`"
+        if measured_dir else
+        f"# MA TRẬN DUMMY — KHÔNG DÙNG NGHIỆM THU G7.1\n> **CẢNH BÁO**: Toàn bộ xác suất bên dưới là dữ liệu tổng hợp để kiểm thử công thức.  \n> **Evidence level**: `synthetic` | **Gate verdict**: `NOT_EVALUATED`"
+    )
+
+    verdict_display = f"**CỔNG G7.1: [{'X' if gate_verdict == 'PASS' else ' '}] {gate_verdict}**" if measured_dir else "**CỔNG G7.1: [ ] NOT_EVALUATED — cần chạy checkpoint và CFE thật**"
+
+    md_content = f"""{title_banner}
 
 ## MA TRẬN TÁI LẬP MỐC SÀN 4 CẤU HÌNH TRÊN COMMUNITYFORENSICS-EVAL
 > **Dự án**: FatFormer-XLA | **Nhiệm vụ**: Task 7.6 (Phase 7 — D4)  
@@ -443,13 +488,13 @@ So sánh giữa kết quả cũ (báo cáo ngày 26/10) và kết quả chuẩn 
 ## 3. Phán Quyết Cổng Chất Lượng G7.1 (§5.4)
 
 - **Cấu hình xuất sắc nhất**: **`{best_model}`**
-- **Fake@Real90 (JPEG Q=30)**: **{far90_q30:.2f}%** → `N/A (synthetic)`
-- **AUC (Clean)**: **{auc_clean:.2f}%** → `N/A (synthetic)`
-- **AUC (JPEG Q=30)**: **{auc_q30:.2f}%** → `N/A (synthetic)`
+- **Fake@Real90 (JPEG Q=30)**: **{far90_q30:.2f}%** (Yêu cầu Must: $\\ge 55\\%$, Stretch: $\\ge 70\\%$)
+- **AUC (Clean)**: **{auc_clean:.2f}%** (Yêu cầu Must: $\\ge 80\\%$)
+- **AUC (JPEG Q=30)**: **{auc_q30:.2f}%** (Yêu cầu Must: $\\ge 55\\%$)
 
 ### KẾT LUẬN:
-**CỔNG G7.1: [ ] NOT_EVALUATED — cần chạy checkpoint và CFE thật**  
-*(Ghi chú: Mô hình WiSE-FT Gen 2 đã xác lập điểm vượt trội Pareto cả trên Clean lẫn Degraded Q30, chính thức chứng minh việc hợp nhất không gian trọng số chuẩn hóa hoàn toàn khả thi và không bị suy biến năng lực).*
+{verdict_display}
+*(Must: {'PASS' if pass_must else 'FAIL'} | Stretch: {'PASS' if pass_stretch else 'FAIL'})*
 """
 
     os.makedirs(os.path.dirname(os.path.abspath(output_md_path)), exist_ok=True)
@@ -464,6 +509,8 @@ def main():
     parser = argparse.ArgumentParser(description="FatFormer-XLA: Task 7.6 Re-baseline 4 Configurations on CFE")
     parser.add_argument("--calibration", type=str, default="DATASET/logs/phase7/calibration/baseline.json",
                         help="Tệp cấu hình hiệu chuẩn từ Task 7.4")
+    parser.add_argument("--measured_dir", type=str, default="",
+                        help="Thư mục chứa các tệp artifact đo thật (NPZ logits)")
     parser.add_argument("--output_json", type=str, default="DATASET/logs/phase7/cfe_v3_baseline_matrix.json",
                         help="Đường dẫn xuất tệp ma trận JSON")
     parser.add_argument("--output_md", type=str, default="DATASET/logs/phase7/cfe_v3_baseline_matrix.md",
@@ -474,7 +521,7 @@ def main():
                         help="Random seed cho bootstrap CI")
     args = parser.parse_args()
 
-    if args.test_dummy:
+    if args.test_dummy and not args.measured_dir:
         if os.path.normpath(args.output_json) == os.path.normpath("DATASET/logs/phase7/cfe_v3_baseline_matrix.json"):
             args.output_json = "DATASET/logs/phase7/dummy/cfe_v3_baseline_matrix.json"
         if os.path.normpath(args.output_md) == os.path.normpath("DATASET/logs/phase7/cfe_v3_baseline_matrix.md"):
@@ -485,6 +532,7 @@ def main():
         output_json_path=args.output_json,
         output_md_path=args.output_md,
         is_dummy=args.test_dummy,
+        measured_dir=args.measured_dir,
         seed=args.seed
     )
 
