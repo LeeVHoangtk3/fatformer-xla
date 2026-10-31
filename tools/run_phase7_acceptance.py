@@ -68,7 +68,7 @@ def get_git_info() -> Tuple[str, str, bool]:
 
     try:
         status_out = subprocess.check_output(
-            ["git", "status", "--porcelain"],
+            ["git", "status", "--porcelain", "--", ".", ":(exclude)DATASET/**", ":(exclude)*.ipynb", ":(exclude)*.ipynb_checkpoints/**"],
             cwd=PROJECT_ROOT, stderr=subprocess.DEVNULL
         ).decode("utf-8").strip()
         is_dirty = len(status_out) > 0
@@ -105,7 +105,7 @@ def run_preflight_checks(cfg: Dict[str, Any], allow_cpu: bool = False, allow_dir
     expected_branch = cfg.get("environment", {}).get("expected_branch", "hoang")
     print(f"  [✓] Git Branch      : {branch} (Kỳ vọng: {expected_branch})")
     print(f"  [✓] Git Commit      : {commit[:16]}...")
-    if branch != expected_branch and expected_branch != "any":
+    if branch != expected_branch and branch != "HEAD" and expected_branch != "any":
         raise RuntimeError(f"[PREFLIGHT FAIL] Đang ở nhánh '{branch}', yêu cầu phải ở nhánh '{expected_branch}'.")
     require_clean_git = bool(cfg.get("environment", {}).get("require_clean_git", True))
     if require_clean_git and is_dirty and not allow_dirty:
@@ -390,6 +390,7 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
                     "--model_type", m_type,
                     "--model_name", m_name,
                     "--condition", cond,
+                    "--save_logits_npz",
                     "--batch_size", batch_size,
                     "--num_workers", num_workers,
                     "--device", device,
@@ -488,6 +489,7 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
                 "--model_type", "candidate",
                 "--model_name", cand_name,
                 "--condition", "all",
+                "--save_logits_npz",
                 "--calibration", base_calib_json,
                 "--batch_size", batch_size,
                 "--num_workers", num_workers,
@@ -541,6 +543,7 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
                 "--model_type", "wise_ft_v2",
                 "--model_name", "wise_ft_v2",
                 "--condition", cond,
+                "--save_logits_npz",
                 "--calibration", base_calib_json,
                 "--batch_size", batch_size,
                 "--num_workers", num_workers,
