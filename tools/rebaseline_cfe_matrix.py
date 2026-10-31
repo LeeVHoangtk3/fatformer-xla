@@ -233,12 +233,27 @@ def load_measured_predictions(
     measured_dir: str,
     model_name: str,
     condition: str,
-    temperature: float
+    temperature: float,
+    use_eval_split: bool = False
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Tải mảng logits và targets đo thật từ file NPZ do eval_communityforensics.py sinh ra."""
-    npz_path = os.path.join(measured_dir, f"logits_{model_name}_{condition}.npz")
-    if not os.path.isfile(npz_path):
-        raise FileNotFoundError(f"Không tìm thấy file logits đo thật: {npz_path}")
+    if use_eval_split:
+        npz_name = f"logits_{model_name}_{condition}_eval_split.npz"
+        npz_path = os.path.join(measured_dir, npz_name)
+        if not os.path.isfile(npz_path):
+            # Fallback nếu chưa split (chỉ khi có cảnh báo rõ ràng)
+            fallback_npz = os.path.join(measured_dir, f"logits_{model_name}_{condition}.npz")
+            if os.path.isfile(fallback_npz):
+                print(f"  [!] CẢNH BÁO: Không tìm thấy {npz_name}, dùng tạm tập gộp {fallback_npz}")
+                npz_path = fallback_npz
+            else:
+                raise FileNotFoundError(f"[DATA LEAKAGE PREVENTION] Không tìm thấy mảng eval_split: {npz_path}")
+    else:
+        npz_name = f"logits_{model_name}_{condition}.npz"
+        npz_path = os.path.join(measured_dir, npz_name)
+        if not os.path.isfile(npz_path):
+            raise FileNotFoundError(f"Không tìm thấy file logits đo thật: {npz_path}")
+
     data = np.load(npz_path, allow_pickle=False)
     logits = data["logits"]
     targets = data["targets"]
@@ -254,8 +269,10 @@ def run_rebaseline_evaluation(
     calibration_path: str,
     output_json_path: str,
     output_md_path: str,
+    calibration_anchored_path: str = "",
     is_dummy: bool = False,
     measured_dir: str = "",
+    use_eval_split: bool = False,
     seed: int = 42
 ) -> Dict[str, Any]:
     """Thực thi kiểm chuẩn đối đầu 4 cấu hình x 2 điều kiện và xuất ma trận kết quả."""
@@ -270,23 +287,41 @@ def run_rebaseline_evaluation(
 
     git_commit = get_git_commit()
 
-    # Nạp calibration
+    # Nạp calibration cho Baseline
     temp_baseline = 1.2511
-    temp_anchored = 1.2800
+    temp_anchored = 1.2511
     fixed_thresh = 0.8468
-    calib_source = "logs/phase7/calibration/baseline.json"
+    calib_source = calibration_path or "DATASET/logs/phase7/calibration/baseline.json"
 
-    if os.path.exists(calibration_path):
+    if os.path.exists(calib_source):
         try:
-            with open(calibration_path, "r", encoding="utf-8") as f:
+            with open(calib_source, "r", encoding="utf-8") as f:
                 calib = json.load(f)
             temp_baseline = float(calib.get("T", 1.2511))
             t_star = calib.get("T_star_default", calib.get("T_star", 0.8468))
             fixed_thresh = float(t_star.get("0.05", 0.8468)) if isinstance(t_star, dict) else float(t_star)
-            calib_source = calibration_path
-            print(f"[*] Đã nạp cấu hình hiệu chuẩn Task 7.4: T={temp_baseline}, T*={fixed_thresh}")
+            print(f"[*] Đã nạp cấu hình hiệu chuẩn Baseline ({calib_source}): T={temp_baseline:.4f}, T*={fixed_thresh:.4f}")
         except Exception as e:
-            print(f"[!] Cảnh báo nạp calibration: {e}")
+            print(f"[!] Cảnh báo nạp calibration baseline: {e}")
+
+    # Nạp calibration cho Anchored (không hard-code 1.2800)
+    anch_calib_file = calibration_anchored_path
+    if not anch_calib_file and os.path.dirname(calib_source):
+        anch_candidate = os.path.join(os.path.dirname(calib_source), "anchored.json")
+        if os.path.isfile(anch_candidate):
+            anch_calib_file = anch_candidate
+
+    if anch_calib_file and os.path.isfile(anch_calib_file):
+        try:
+            with open(anch_calib_file, "r", encoding="utf-8") as f:
+                calib_a = json.load(f)
+            temp_anchored = float(calib_a.get("T", temp_baseline))
+            print(f"[*] Đã nạp cấu hình hiệu chuẩn Anchored ({anch_calib_file}): T={temp_anchored:.4f}")
+        except Exception as e:
+            print(f"[!] Cảnh báo nạp calibration anchored: {e}")
+            temp_anchored = temp_baseline
+    else:
+        print(f"[*] Hiệu chuẩn Anchored: fallback dùng nhiệt độ T={temp_anchored:.4f}")
 
     models = ["baseline", "anchored", "wise_ft_v2", "ensemble"]
     conditions = ["clean", "q30"]
@@ -294,7 +329,7 @@ def run_rebaseline_evaluation(
 
     results: Dict[str, Dict[str, Any]] = {m: {} for m in models}
 
-    # Bảng kiểm tra checkpoint checks (§5.3)
+    # Bảng kiểm tra checkpoint checks (§5.3) - Trích xuất Provenance thực tế
     ckpt_paths = {
         "baseline": "DATASET/pretrained/fatformer_4class_ckpt.pth",
         "anchored": "DATASET/checkpoints/anchored_recovery_phase_6r/fatformer_anchored_recovery_best.pth",
@@ -306,7 +341,32 @@ def run_rebaseline_evaluation(
     for m in ["baseline", "anchored", "wise_ft_v2"]:
         p = ckpt_paths[m]
         full_p = os.path.join(PROJECT_ROOT, p)
-        sha = compute_sha256(full_p) if os.path.exists(full_p) else "verified_in_task"
+        if not os.path.exists(full_p):
+            if measured_dir:
+                raise FileNotFoundError(f"[PROVENANCE ERROR] Không tìm thấy checkpoint thực tế: {full_p}")
+            sha = "dummy_verified"
+            load_status = "dummy_ok"
+            missing_count = 0
+            unexpected_count = 0
+        else:
+            sha = compute_sha256(full_p)
+            load_status = "ok"
+            missing_count = 0
+            unexpected_count = 0
+            if measured_dir:
+                eval_json = os.path.join(measured_dir, f"eval_v3_{m}_clean.json")
+                if os.path.isfile(eval_json):
+                    try:
+                        with open(eval_json, "r", encoding="utf-8") as f:
+                            rep_data = json.load(f)
+                        ck_entry = rep_data.get("checkpoints", [{}])[0]
+                        lr = ck_entry.get("load_report", {})
+                        load_status = lr.get("status", "ok")
+                        missing_count = lr.get("missing", 0)
+                        unexpected_count = lr.get("unexpected", 0)
+                    except Exception:
+                        pass
+
         n_keys = 1116 if m == "baseline" else 1200
         checks.append({
             "model": m,
@@ -314,9 +374,9 @@ def run_rebaseline_evaluation(
             "sha256": sha,
             "n_keys": n_keys,
             "layout": {"n": 3, "indices": [7, 15, 23], "dropped": [], "partial": False},
-            "missing": 0,
-            "unexpected": 0,
-            "status": "ok"
+            "missing": missing_count,
+            "unexpected": unexpected_count,
+            "status": load_status
         })
     checks.append({
         "model": "ensemble",
@@ -334,10 +394,10 @@ def run_rebaseline_evaluation(
         print(f"\n--- ĐANG ĐO ĐẠC ĐIỀU KIỆN: {cond.upper()} ---")
 
         if measured_dir:
-            print(f"[*] Đang tải mảng logits đo thật từ: {measured_dir}")
-            p_base, y_base, log_base = load_measured_predictions(measured_dir, "baseline", cond, temperature=temp_baseline)
-            p_anch, y_anch, log_anch = load_measured_predictions(measured_dir, "anchored", cond, temperature=temp_anchored)
-            p_wise, y_wise, log_wise = load_measured_predictions(measured_dir, "wise_ft_v2", cond, temperature=temp_baseline)
+            print(f"[*] Đang tải mảng logits đo thật từ: {measured_dir} (use_eval_split={use_eval_split})")
+            p_base, y_base, log_base = load_measured_predictions(measured_dir, "baseline", cond, temperature=temp_baseline, use_eval_split=use_eval_split)
+            p_anch, y_anch, log_anch = load_measured_predictions(measured_dir, "anchored", cond, temperature=temp_anchored, use_eval_split=use_eval_split)
+            p_wise, y_wise, log_wise = load_measured_predictions(measured_dir, "wise_ft_v2", cond, temperature=temp_baseline, use_eval_split=use_eval_split)
         else:
             p_base, y_base, log_base = generate_mock_cfe_predictions("baseline", cond, temperature=temp_baseline, seed=seed)
             p_anch, y_anch, log_anch = generate_mock_cfe_predictions("anchored", cond, temperature=temp_anchored, seed=seed)
@@ -507,10 +567,16 @@ So sánh giữa kết quả cũ (báo cáo ngày 26/10) và kết quả chuẩn 
 
 def main():
     parser = argparse.ArgumentParser(description="FatFormer-XLA: Task 7.6 Re-baseline 4 Configurations on CFE")
-    parser.add_argument("--calibration", type=str, default="DATASET/logs/phase7/calibration/baseline.json",
-                        help="Tệp cấu hình hiệu chuẩn từ Task 7.4")
+    parser.add_argument("--calibration", type=str, default="",
+                        help="Tệp cấu hình hiệu chuẩn Baseline từ Task 7.4 (alias)")
+    parser.add_argument("--calibration_baseline", type=str, default="DATASET/logs/phase7/calibration/baseline.json",
+                        help="Tệp cấu hình hiệu chuẩn Baseline từ Task 7.4")
+    parser.add_argument("--calibration_anchored", type=str, default="DATASET/logs/phase7/calibration/anchored.json",
+                        help="Tệp cấu hình hiệu chuẩn Anchored từ Task 7.4")
     parser.add_argument("--measured_dir", type=str, default="",
                         help="Thư mục chứa các tệp artifact đo thật (NPZ logits)")
+    parser.add_argument("--use_eval_split", action="store_true",
+                        help="Chỉ chấm điểm trên mảng eval_split (loại trừ calibration split)")
     parser.add_argument("--output_json", type=str, default="DATASET/logs/phase7/cfe_v3_baseline_matrix.json",
                         help="Đường dẫn xuất tệp ma trận JSON")
     parser.add_argument("--output_md", type=str, default="DATASET/logs/phase7/cfe_v3_baseline_matrix.md",
@@ -521,6 +587,8 @@ def main():
                         help="Random seed cho bootstrap CI")
     args = parser.parse_args()
 
+    calib_base = args.calibration if args.calibration else args.calibration_baseline
+
     if args.test_dummy and not args.measured_dir:
         if os.path.normpath(args.output_json) == os.path.normpath("DATASET/logs/phase7/cfe_v3_baseline_matrix.json"):
             args.output_json = "DATASET/logs/phase7/dummy/cfe_v3_baseline_matrix.json"
@@ -528,11 +596,13 @@ def main():
             args.output_md = "DATASET/logs/phase7/dummy/cfe_v3_baseline_matrix.md"
 
     run_rebaseline_evaluation(
-        calibration_path=args.calibration,
+        calibration_path=calib_base,
         output_json_path=args.output_json,
         output_md_path=args.output_md,
+        calibration_anchored_path=args.calibration_anchored,
         is_dummy=args.test_dummy,
         measured_dir=args.measured_dir,
+        use_eval_split=args.use_eval_split,
         seed=args.seed
     )
 

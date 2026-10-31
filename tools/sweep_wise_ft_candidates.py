@@ -335,10 +335,15 @@ def main():
         os.makedirs(os.path.dirname(os.path.abspath(args.best_output)), exist_ok=True)
         shutil.copy2(best_candidate["path"], args.best_output)
         src_meta = best_candidate["path"].replace(".pth", "_metadata.json")
-        dst_meta = args.best_output.replace(".pth", "_best_metadata.json")
+        if args.best_output.endswith("_best.pth"):
+            dst_meta = args.best_output.replace(".pth", "_metadata.json")
+        else:
+            dst_meta = args.best_output.replace(".pth", "_best_metadata.json")
         if os.path.exists(src_meta):
             shutil.copy2(src_meta, dst_meta)
         print(f"[✓] Đã lưu checkpoint thắng cuộc tại: {args.best_output}")
+        if os.path.exists(dst_meta):
+            print(f"[✓] Đã lưu metadata checkpoint thắng cuộc tại: {dst_meta}")
 
 
 if __name__ == "__main__":

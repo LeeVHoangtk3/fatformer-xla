@@ -119,7 +119,12 @@ def run_preflight_checks(cfg: Dict[str, Any], allow_cpu: bool = False, allow_dir
             f"Vui lòng tải hoặc mount file ViT-L-14.pt vào thư mục DATASET/pretrained/"
         )
     clip_sha = compute_sha256(clip_path)
-    print(f"  [✓] CLIP Backbone   : {clip_path} (SHA: {clip_sha[:16]}...)")
+    expected_clip_sha = cfg["checkpoints"]["clip_vit_l14"].get("expected_sha256")
+    if expected_clip_sha and clip_sha != expected_clip_sha:
+        raise ValueError(
+            f"[PREFLIGHT FAIL] Sai lệch SHA-256 CLIP ViT-L-14: Nhận {clip_sha}, kỳ vọng {expected_clip_sha}"
+        )
+    print(f"  [✓] CLIP Backbone   : {clip_path} (SHA: {clip_sha[:16]}...) [KHỚP]")
 
     # 4. Kiểm tra Checkpoint Baseline
     base_info = cfg["checkpoints"]["baseline"]
@@ -145,7 +150,7 @@ def run_preflight_checks(cfg: Dict[str, Any], allow_cpu: bool = False, allow_dir
         )
     print(f"  [✓] Anchored Ckpt   : {anch_path} (SHA: {anch_sha[:16]}...) [KHỚP]")
 
-    # 6. Kiểm tra Dataset CFE
+    # 6. Kiểm tra Dataset CFE (Ép buộc đủ 5 subsets, đủ cả 2 nhãn, khớp đúng số ảnh)
     cfe_root = os.path.join(PROJECT_ROOT, cfg["data"]["cfe_root"])
     if not os.path.isdir(cfe_root):
         raise FileNotFoundError(
@@ -153,17 +158,25 @@ def run_preflight_checks(cfg: Dict[str, Any], allow_cpu: bool = False, allow_dir
             f"Vui lòng giải nén hoặc liên kết thư mục test_communityforensics/"
         )
     total_imgs = 0
+    expected_imgs = cfg["data"].get("expected_samples", 2000)
     for sub in cfg["data"]["subsets"]:
         sub_dir = os.path.join(cfe_root, sub)
         if not os.path.isdir(sub_dir):
             raise FileNotFoundError(f"[PREFLIGHT FAIL] Thiếu tập con CFE: {sub_dir}")
         for lbl in ["0_real", "1_fake"]:
             f_dir = os.path.join(sub_dir, lbl)
-            if os.path.isdir(f_dir):
-                total_imgs += len([f for f in os.listdir(f_dir) if f.lower().endswith((".png", ".jpg", ".jpeg", ".webp"))])
-    print(f"  [✓] CFE Dataset     : {cfe_root} ({total_imgs} ảnh quét được)")
-    if total_imgs < 100 and not allow_cpu:
-        raise ValueError(f"[PREFLIGHT FAIL] Số lượng ảnh CFE quá ít ({total_imgs} ảnh), kỳ vọng ~2000 ảnh.")
+            if not os.path.isdir(f_dir):
+                raise FileNotFoundError(f"[PREFLIGHT FAIL] Thiếu thư mục nhãn '{lbl}' trong tập con {sub}: {f_dir}")
+            imgs_in_folder = [f for f in os.listdir(f_dir) if f.lower().endswith((".png", ".jpg", ".jpeg", ".webp"))]
+            if len(imgs_in_folder) == 0:
+                raise ValueError(f"[PREFLIGHT FAIL] Thư mục nhãn rỗng không có ảnh: {f_dir}")
+            total_imgs += len(imgs_in_folder)
+    print(f"  [✓] CFE Dataset     : {cfe_root} ({total_imgs} ảnh quét được, kỳ vọng đúng {expected_imgs})")
+    if total_imgs != expected_imgs and not allow_cpu:
+        raise ValueError(
+            f"[PREFLIGHT FAIL] Tổng số ảnh CFE ({total_imgs}) không khớp expected_samples ({expected_imgs})! "
+            f"Dataset bị thiếu hoặc sai lệch cấu trúc; dừng ngay để bảo vệ tính toàn vẹn đo lường."
+        )
 
     # 7. Kiểm tra tính tương thích nạp Canonical (0 missing, 0 unexpected)
     from src.models.canonical_loader import load_canonical
@@ -197,9 +210,15 @@ def execute_pipeline_step(cmd_args: List[str], desc: str):
     print(f"\n[✓] Hoàn thành trong {elapsed:.1f}s: {desc}\n")
 
 
-def split_calibration_logits(logits_npz: str, calib_ratio: float = 0.20, seed: int = 42) -> str:
+def split_calibration_and_eval_logits(
+    logits_npz: str,
+    calib_ratio: float = 0.20,
+    seed: int = 42
+) -> Tuple[str, str]:
     """
-    Tách tập logits thành phân vùng calibration độc lập (không trùng mẫu với tập đánh giá).
+    Tách tập logits thành 2 phân vùng hoàn toàn độc lập (Zero Data Leakage):
+      - *_calib_split.npz (20% mẫu): Chỉ dùng cho Task 7.4 (fit T và T*).
+      - *_eval_split.npz (80% mẫu): Dùng cho Sweep Task 7.5, Rebaseline Task 7.6 và Cổng G7.1.
     """
     data = np.load(logits_npz, allow_pickle=False)
     logits = data["logits"]
@@ -213,16 +232,29 @@ def split_calibration_logits(logits_npz: str, calib_ratio: float = 0.20, seed: i
     calib_idx = perm[:n_calib]
     eval_idx = perm[n_calib:]
 
+    assert len(set(calib_idx).intersection(set(eval_idx))) == 0, "[DATA LEAKAGE ERROR] Giao giữa calib và eval khác rỗng!"
+
     calib_npz = logits_npz.replace(".npz", "_calib_split.npz")
+    eval_npz = logits_npz.replace(".npz", "_eval_split.npz")
+
     np.savez_compressed(
         calib_npz,
         logits=logits[calib_idx],
         targets=targets[calib_idx],
         source=logits_npz,
-        n_calib=n_calib,
+        split="calibration",
+        n_samples=len(calib_idx),
     )
-    print(f"  [✓] Đã tạo tập calibration tách biệt: {calib_npz} ({n_calib} mẫu, eval giữ {len(eval_idx)} mẫu)")
-    return calib_npz
+    np.savez_compressed(
+        eval_npz,
+        logits=logits[eval_idx],
+        targets=targets[eval_idx],
+        source=logits_npz,
+        split="evaluation",
+        n_samples=len(eval_idx),
+    )
+    print(f"  [✓] Phân vùng độc lập: Calib={calib_npz} ({len(calib_idx)} mẫu) | Eval={eval_npz} ({len(eval_idx)} mẫu)")
+    return calib_npz, eval_npz
 
 
 def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: bool = False):
@@ -272,13 +304,18 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
 
     # -------------------------------------------------------------------------
     # BƯỚC 2: Hiệu chuẩn nhiệt độ & ngưỡng ràng buộc FPR 5% (Task 7.4)
+    # Tách phân vùng calibration 20% và evaluation 80% (Zero Data Leakage)
     # -------------------------------------------------------------------------
+    calib_ratio = cfg["data"].get("calib_split_ratio", 0.20)
     base_clean_npz = os.path.join(out_logs_dir, "logits_baseline_clean.npz")
     anch_clean_npz = os.path.join(out_logs_dir, "logits_anchored_clean.npz")
+    base_q30_npz = os.path.join(out_logs_dir, "logits_baseline_q30.npz")
+    anch_q30_npz = os.path.join(out_logs_dir, "logits_anchored_q30.npz")
 
-    # Tách phân vùng calibration 20%
-    base_calib_npz = split_calibration_logits(base_clean_npz, calib_ratio=cfg["data"].get("calib_split_ratio", 0.20))
-    anch_calib_npz = split_calibration_logits(anch_clean_npz, calib_ratio=cfg["data"].get("calib_split_ratio", 0.20))
+    base_calib_npz, _ = split_calibration_and_eval_logits(base_clean_npz, calib_ratio=calib_ratio)
+    anch_calib_npz, _ = split_calibration_and_eval_logits(anch_clean_npz, calib_ratio=calib_ratio)
+    split_calibration_and_eval_logits(base_q30_npz, calib_ratio=calib_ratio)
+    split_calibration_and_eval_logits(anch_q30_npz, calib_ratio=calib_ratio)
 
     calib_out_dir = cfg["calibration"]["output_dir"]
     os.makedirs(calib_out_dir, exist_ok=True)
@@ -394,8 +431,15 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
             f"Đánh giá WiSE-FT Gen 2 Best trên điều kiện {cond.upper()}"
         )
 
+    # Tách phân vùng calibration / evaluation cho WiSE-FT Gen 2 Best
+    wise_clean_npz = os.path.join(out_logs_dir, "logits_wise_ft_v2_clean.npz")
+    wise_q30_npz = os.path.join(out_logs_dir, "logits_wise_ft_v2_q30.npz")
+    split_calibration_and_eval_logits(wise_clean_npz, calib_ratio=calib_ratio)
+    split_calibration_and_eval_logits(wise_q30_npz, calib_ratio=calib_ratio)
+
     # -------------------------------------------------------------------------
     # BƯỚC 6: Re-baseline Ma Trận 4 Cấu Hình từ Số Đo Thật (Task 7.6)
+    # Khóa chặt chỉ đo đạc trên phân vùng eval_split (1.600 mẫu) để Zero Leakage
     # -------------------------------------------------------------------------
     rebase_json = cfg["rebaseline"]["output_json"]
     rebase_md = cfg["rebaseline"]["output_md"]
@@ -403,16 +447,18 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
     execute_pipeline_step(
         [
             sys.executable, "tools/rebaseline_cfe_matrix.py",
-            "--calibration", base_calib_json,
+            "--calibration_baseline", os.path.join(calib_out_dir, "baseline.json"),
+            "--calibration_anchored", os.path.join(calib_out_dir, "anchored.json"),
             "--measured_dir", out_logs_dir,
+            "--use_eval_split",
             "--output_json", rebase_json,
             "--output_md", rebase_md,
         ],
-        "Tái lập ma trận sàn 4 cấu hình x 2 điều kiện từ số đo thật (evidence_level=measured)"
+        "Tái lập ma trận sàn 4 cấu hình x 2 điều kiện trên tập eval_split (Zero Data Leakage)"
     )
 
     # -------------------------------------------------------------------------
-    # BƯỚC 7: Validator Kiểm Tra Nghiệm Thu Cổng G7.1
+    # BƯỚC 7: Validator Kiểm Tra Nghiệm Thu Cổng G7.1 (Fail-Loud)
     # -------------------------------------------------------------------------
     print("\n" + "=" * 88)
     print("FATFORMER-XLA: TIẾN TRÌNH THẨM ĐỊNH CHẤT LƯỢNG CỔNG G7.1")
@@ -451,7 +497,14 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
     print("=" * 88 + "\n")
 
     if verdict != "PASS":
-        print("[!] Chú ý: Cổng G7.1 chưa đạt tiêu chuẩn Must; cần rà soát lại trước khi sang Phase 7.11.")
+        print("[!] DỪNG KHẨN CẤP: Cổng G7.1 KHÔNG ĐẠT tiêu chuẩn Must!")
+        raise RuntimeError(
+            f"[G7.1 FAIL] Nghiệm thu thất bại! Cổng G7.1 KHÔNG ĐẠT tiêu chuẩn Must:\n"
+            f"  • Fake@Real90 (JPEG Q=30): {far90_q30:.2f}% (Yêu cầu Must: >= {must_req['fake_at_real90_q30']}%)\n"
+            f"  • ROC-AUC (Clean CFE)   : {auc_clean:.2f}% (Yêu cầu Must: >= {must_req['auc_clean']}%)\n"
+            f"  • ROC-AUC (JPEG Q=30)   : {auc_q30:.2f}% (Yêu cầu Must: >= {must_req['auc_q30']}%)\n"
+            f"  Pipeline dừng ngay lập tức với exit code lỗi; không cấp chứng nhận nhầm."
+        )
     else:
         print("[✓] CHÚC MỪNG: Cổng G7.1 chính thức ĐẠT CHUẨN bằng số đo thực tế trên GPU!")
 
