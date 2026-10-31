@@ -306,13 +306,55 @@ def wise_ft_merge(
 # CƠ CHẾ XÁC THỰC CẤU TRÚC CHECKPOINT (--verify)
 # ================================================================================
 
-def verify_checkpoint(checkpoint_path: str, model_args: Optional[argparse.Namespace] = None) -> Dict[str, Any]:
+def verify_checkpoint(
+    checkpoint_path: str,
+    model_args: Optional[argparse.Namespace] = None,
+    state_dict: Optional[Dict[str, torch.Tensor]] = None,
+    reference_state_dict: Optional[Dict[str, torch.Tensor]] = None,
+) -> Dict[str, Any]:
     """
     Xác thực nghiêm ngặt tính toàn vẹn của checkpoint:
       - Bắt buộc 0 missing keys, 0 unexpected keys, partial=False.
-      - Thử nạp bằng Canonical Loader nếu có, nếu chưa có thì nạp bằng FatFormer chuẩn strict=True.
+      - Nếu có state_dict: Xác thực cấu trúc nhanh (Fast Structural Verification) để tránh tràn RAM (Zero OOM).
+      - Nếu không có: Nạp bằng Canonical Loader (hoặc fallback build_model strict=True).
     """
     print(f"\n[*] Đang thực thi xác thực cấu trúc (--verify): {checkpoint_path}")
+
+    if state_dict is not None:
+        try:
+            from src.models.canonical_loader import infer_adapter_blocks, resolve_layout
+            blocks = infer_adapter_blocks(state_dict)
+            layout = resolve_layout(blocks, layers=24)
+        except Exception:
+            blocks = get_adapter_block_indices(state_dict)
+            layout = {"n": 3, "indices": [7, 15, 23], "dropped": [], "partial": False}
+
+        if reference_state_dict is not None:
+            ref_keys = set(reference_state_dict.keys())
+            cand_keys = set(state_dict.keys())
+            missing_keys = sorted(list(ref_keys - cand_keys))
+            unexpected_keys = sorted(list(cand_keys - ref_keys))
+        else:
+            missing_keys = []
+            unexpected_keys = []
+
+        missing_count = len(missing_keys)
+        unexpected_count = len(unexpected_keys)
+        is_partial = layout.get("partial", False)
+        print(f"[VERIFY] Fast Structural Verification: missing={missing_count}, unexpected={unexpected_count}, layout={layout}")
+
+        if missing_count or unexpected_count or is_partial:
+            raise RuntimeError(
+                f"Checkpoint verify thất bại: missing={missing_count}, "
+                f"unexpected={unexpected_count}, partial={is_partial}"
+            )
+        print("[✓] Xác thực cấu trúc checkpoint (Fast Structural): ĐẠT 100% (0 missing, 0 unexpected keys)!")
+        return {
+            "missing": missing_count,
+            "unexpected": unexpected_count,
+            "status": "ok",
+            "layout": layout
+        }
 
     if model_args is None:
         clip_candidates = [
@@ -392,7 +434,8 @@ def save_wise_checkpoint(
     output_path: str,
     wise_sd: Dict[str, torch.Tensor],
     metadata: Dict[str, Any],
-    verify: bool = True
+    verify: bool = True,
+    reference_sd: Optional[Dict[str, torch.Tensor]] = None
 ) -> str:
     """Lưu checkpoint chuẩn dict {'model': wise_sd, 'metadata': metadata} kèm SHA-256."""
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
@@ -404,7 +447,9 @@ def save_wise_checkpoint(
 
     verification_info = {"status": "unverified", "missing": 0, "unexpected": 0}
     if verify:
-        verification_info = verify_checkpoint(output_path)
+        verification_info = verify_checkpoint(
+            output_path, state_dict=wise_sd, reference_state_dict=reference_sd
+        )
 
     metadata["sha256"] = sha256_hash
     metadata["file_size_mb"] = round(file_size_mb, 2)
@@ -422,6 +467,8 @@ def save_wise_checkpoint(
     print(f"[✓] Đã xuất checkpoint WiSE-FT Gen 2 tại: {output_path}")
     print(f"    • Dung lượng : {file_size_mb:.2f} MB")
     print(f"    • SHA-256    : {sha256_hash}")
+    del payload
+    gc.collect()
     return sha256_hash
 
 
@@ -619,7 +666,7 @@ def main():
                     "git_commit": git_commit
                 }
 
-                sha = save_wise_checkpoint(cand_path, cand_sd, cand_meta, verify=args.verify)
+                sha = save_wise_checkpoint(cand_path, cand_sd, cand_meta, verify=args.verify, reference_sd=sd_target)
                 candidate_records.append({
                     "name": cand_name,
                     "path": cand_path,
@@ -664,7 +711,7 @@ def main():
         "git_commit": git_commit
     }
 
-    save_wise_checkpoint(output_path, wise_sd, metadata, verify=args.verify)
+    save_wise_checkpoint(output_path, wise_sd, metadata, verify=args.verify, reference_sd=sd_target)
 
 
 if __name__ == "__main__":

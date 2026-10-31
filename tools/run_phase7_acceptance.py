@@ -197,6 +197,10 @@ def run_preflight_checks(cfg: Dict[str, Any], allow_cpu: bool = False, allow_dir
     print("=" * 88)
     print("🏆 TOÀN BỘ TIỀN ĐIỀU KIỆN PREFLIGHT ĐÃ ĐẠT CHUẨN 100%! BẮT ĐẦU QUY TRÌNH!")
     print("=" * 88 + "\n")
+    import gc
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
 
 def execute_pipeline_step(cmd_args: List[str], desc: str):
@@ -352,7 +356,7 @@ def write_candidate_eval_sidecar_from_splits(
     print(f"  [✓] Sidecar evaluation-only: {sidecar_path} ({sidecar['n_samples']} mẫu)")
 
 
-def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: bool = False):
+def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: bool = False, resume: bool = True):
     """
     Hàm thực thi toàn bộ 7 bước nghiệm thu GPU.
     """
@@ -381,6 +385,12 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
         ("anchored", "anchored", anch_ckpt),
     ]:
         for cond in ["clean", "q30"]:
+            npz_check = os.path.join(out_logs_dir, f"logits_{m_name}_{cond}.npz")
+            json_check = os.path.join(out_logs_dir, f"eval_v3_{m_name}_{cond}.json")
+            if resume and os.path.isfile(npz_check) and os.path.isfile(json_check):
+                print(f"[RESUME] Bỏ qua Eval {m_name.upper()} ({cond.upper()}): Đã có kết quả đo lường tại {npz_check}")
+                continue
+
             execute_pipeline_step(
                 [
                     sys.executable, "tools/eval_communityforensics.py",
@@ -410,37 +420,52 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
     base_q30_npz = os.path.join(out_logs_dir, "logits_baseline_q30.npz")
     anch_q30_npz = os.path.join(out_logs_dir, "logits_anchored_q30.npz")
 
-    base_calib_npz, base_clean_eval_npz = split_calibration_and_eval_logits(base_clean_npz, calib_ratio=calib_ratio, seed=seed)
-    anch_calib_npz, _ = split_calibration_and_eval_logits(anch_clean_npz, calib_ratio=calib_ratio, seed=seed)
-    split_calibration_and_eval_logits(base_q30_npz, calib_ratio=calib_ratio, seed=seed)
-    split_calibration_and_eval_logits(anch_q30_npz, calib_ratio=calib_ratio, seed=seed)
+    base_calib_npz = base_clean_npz.replace(".npz", "_calib_split.npz")
+    base_clean_eval_npz = base_clean_npz.replace(".npz", "_eval_split.npz")
+    anch_calib_npz = anch_clean_npz.replace(".npz", "_calib_split.npz")
+
+    if not (resume and os.path.isfile(base_calib_npz) and os.path.isfile(base_clean_eval_npz)):
+        base_calib_npz, base_clean_eval_npz = split_calibration_and_eval_logits(base_clean_npz, calib_ratio=calib_ratio, seed=seed)
+        anch_calib_npz, _ = split_calibration_and_eval_logits(anch_clean_npz, calib_ratio=calib_ratio, seed=seed)
+        split_calibration_and_eval_logits(base_q30_npz, calib_ratio=calib_ratio, seed=seed)
+        split_calibration_and_eval_logits(anch_q30_npz, calib_ratio=calib_ratio, seed=seed)
+    else:
+        print("[RESUME] Bỏ qua tách phân vùng (đã có sẵn *_calib_split.npz và *_eval_split.npz).")
 
     calib_out_dir = cfg["calibration"]["output_dir"]
     os.makedirs(calib_out_dir, exist_ok=True)
 
-    execute_pipeline_step(
-        [
-            sys.executable, "tools/calibrate_and_select.py",
-            "--logits_npz", base_calib_npz,
-            "--model_name", "baseline",
-            "--checkpoint", base_ckpt,
-            "--output_dir", calib_out_dir,
-            "--fpr_target", str(cfg["calibration"].get("target_fpr", 0.05)),
-        ],
-        "Hiệu chuẩn nhiệt độ & ngưỡng FPR 5% cho Baseline (Task 7.4)"
-    )
+    base_calib_json = os.path.join(calib_out_dir, "baseline.json")
+    if not (resume and os.path.isfile(base_calib_json)):
+        execute_pipeline_step(
+            [
+                sys.executable, "tools/calibrate_and_select.py",
+                "--logits_npz", base_calib_npz,
+                "--model_name", "baseline",
+                "--checkpoint", base_ckpt,
+                "--output_dir", calib_out_dir,
+                "--fpr_target", str(cfg["calibration"].get("target_fpr", 0.05)),
+            ],
+            "Hiệu chuẩn nhiệt độ & ngưỡng FPR 5% cho Baseline (Task 7.4)"
+        )
+    else:
+        print(f"[RESUME] Bỏ qua Calibration Baseline: Đã tồn tại {base_calib_json}")
 
-    execute_pipeline_step(
-        [
-            sys.executable, "tools/calibrate_and_select.py",
-            "--logits_npz", anch_calib_npz,
-            "--model_name", "anchored",
-            "--checkpoint", anch_ckpt,
-            "--output_dir", calib_out_dir,
-            "--fpr_target", str(cfg["calibration"].get("target_fpr", 0.05)),
-        ],
-        "Hiệu chuẩn nhiệt độ & ngưỡng FPR 5% cho Anchored (Task 7.4)"
-    )
+    anch_calib_json = os.path.join(calib_out_dir, "anchored.json")
+    if not (resume and os.path.isfile(anch_calib_json)):
+        execute_pipeline_step(
+            [
+                sys.executable, "tools/calibrate_and_select.py",
+                "--logits_npz", anch_calib_npz,
+                "--model_name", "anchored",
+                "--checkpoint", anch_ckpt,
+                "--output_dir", calib_out_dir,
+                "--fpr_target", str(cfg["calibration"].get("target_fpr", 0.05)),
+            ],
+            "Hiệu chuẩn nhiệt độ & ngưỡng FPR 5% cho Anchored (Task 7.4)"
+        )
+    else:
+        print(f"[RESUME] Bỏ qua Calibration Anchored: Đã tồn tại {anch_calib_json}")
 
     # -------------------------------------------------------------------------
     # BƯỚC 3: Sinh lưới 12 ứng viên WiSE-FT Gen 2 (Task 7.5)
@@ -480,6 +505,13 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
     for cand_f in sorted(cand_files):
         c_path = os.path.join(cands_dir, cand_f)
         cand_name = cand_f.replace(".pth", "")
+        cand_eval_json = c_path.replace(".pth", "_eval.json")
+        cand_clean_npz = os.path.join(out_logs_dir, f"logits_{cand_name}_clean.npz")
+        cand_q30_npz = os.path.join(out_logs_dir, f"logits_{cand_name}_q30.npz")
+        if resume and os.path.isfile(cand_eval_json) and os.path.isfile(cand_clean_npz) and os.path.isfile(cand_q30_npz):
+            print(f"[RESUME] Bỏ qua Đo đạc Candidate {cand_name}: Đã có kết quả tại {cand_eval_json}")
+            continue
+
         execute_pipeline_step(
             [
                 sys.executable, "tools/eval_communityforensics.py",
@@ -534,6 +566,12 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
     # BƯỚC 5: Đánh giá mô hình chiến thắng WiSE-FT Gen 2 Best (Task 7.3)
     # -------------------------------------------------------------------------
     for cond in ["clean", "q30"]:
+        npz_check = os.path.join(out_logs_dir, f"logits_wise_ft_v2_{cond}.npz")
+        json_check = os.path.join(out_logs_dir, f"eval_v3_wise_ft_v2_{cond}.json")
+        if resume and os.path.isfile(npz_check) and os.path.isfile(json_check):
+            print(f"[RESUME] Bỏ qua Eval WiSE-FT Gen 2 Best ({cond.upper()}): Đã có kết quả tại {npz_check}")
+            continue
+
         execute_pipeline_step(
             [
                 sys.executable, "tools/eval_communityforensics.py",
@@ -645,6 +683,9 @@ def main():
                         help="Cho phép chạy debug trên CPU (chỉ dùng test luồng logic)")
     parser.add_argument("--allow_dirty", action="store_true",
                         help="Cho phép chạy khi Git working tree dirty")
+    parser.add_argument("--no_resume", dest="resume", action="store_false",
+                        help="Bắt buộc chạy lại toàn bộ từ đầu, không tái sử dụng kết quả đã đo")
+    parser.set_defaults(resume=True)
     args = parser.parse_args()
 
     cfg_file = os.path.join(PROJECT_ROOT, args.config) if not os.path.isabs(args.config) else args.config
@@ -653,7 +694,7 @@ def main():
         sys.exit(1)
 
     try:
-        run_phase7_acceptance(cfg_file, allow_cpu=args.allow_cpu, allow_dirty=args.allow_dirty)
+        run_phase7_acceptance(cfg_file, allow_cpu=args.allow_cpu, allow_dirty=args.allow_dirty, resume=args.resume)
     except Exception as e:
         print(f"\n[!] DỪNG KHẨN CẤP DO LỖI: {e}")
         import traceback
