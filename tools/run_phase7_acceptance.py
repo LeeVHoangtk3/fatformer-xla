@@ -216,6 +216,187 @@ def execute_pipeline_step(cmd_args: List[str], desc: str):
     print(f"\n[✓] Hoàn thành trong {elapsed:.1f}s: {desc}\n")
 
 
+def validate_measured_calibration_artifact(
+    calibration_json: str,
+    *,
+    expected_model: str,
+    calibration_npz: str,
+    expected_checkpoint_sha256: Optional[str] = None,
+    expected_fpr_target: float = 0.05,
+) -> Tuple[bool, str]:
+    """Kiểm tra nội dung calibration trước khi cho phép ``--resume`` tái sử dụng."""
+    if not os.path.isfile(calibration_json):
+        return False, "không tồn tại"
+    if not os.path.isfile(calibration_npz):
+        return False, f"thiếu calibration split {calibration_npz}"
+    try:
+        with open(calibration_json, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+        if payload.get("schema") != "calibration/v1":
+            return False, f"schema={payload.get('schema')!r}, yêu cầu 'calibration/v1'"
+        if payload.get("evidence_level") != "measured":
+            return False, f"evidence_level={payload.get('evidence_level')!r}, yêu cầu 'measured'"
+        if payload.get("model") != expected_model:
+            return False, f"model={payload.get('model')!r}, yêu cầu {expected_model!r}"
+
+        temperature = float(payload["T"])
+        if not np.isfinite(temperature) or temperature <= 0.0:
+            return False, f"T không hợp lệ: {temperature}"
+        raw_threshold = payload.get("T_star_default", payload.get("T_star"))
+        threshold = float(raw_threshold.get("0.05")) if isinstance(raw_threshold, dict) else float(raw_threshold)
+        if not np.isfinite(threshold) or not 0.0 <= threshold <= 1.0:
+            return False, f"T* không hợp lệ: {threshold}"
+        if abs(float(payload.get("fpr_target")) - float(expected_fpr_target)) > 1e-12:
+            return False, f"fpr_target={payload.get('fpr_target')}, yêu cầu {expected_fpr_target}"
+
+        source_sha = compute_sha256(calibration_npz)
+        if payload.get("calibration_source_sha256") != source_sha:
+            return False, "SHA-256 calibration split không khớp"
+        with np.load(calibration_npz, allow_pickle=False) as split_payload:
+            if "split" not in split_payload or str(split_payload["split"]) != "calibration":
+                return False, "NPZ nguồn không mang split=calibration"
+            n_calib = int(len(split_payload["targets"]))
+        if int(payload.get("n_calib", -1)) != n_calib:
+            return False, f"n_calib={payload.get('n_calib')}, yêu cầu {n_calib}"
+
+        checkpoint_info = payload.get("checkpoint", {})
+        if expected_checkpoint_sha256 and checkpoint_info.get("sha256") != expected_checkpoint_sha256:
+            return False, "SHA-256 checkpoint trong calibration không khớp config"
+    except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+        return False, f"không đọc/kiểm tra được: {exc}"
+    return True, "measured artifact hợp lệ"
+
+
+def validate_candidate_eval_artifact(
+    sidecar_json: str,
+    *,
+    checkpoint_path: str,
+    calibration_json: str,
+    expected_n_samples: int,
+) -> Tuple[bool, str]:
+    """Chỉ cho resume sidecar evaluation-only v2 gắn với calibration hiện hành."""
+    if not os.path.isfile(sidecar_json):
+        return False, "không tồn tại"
+    try:
+        with open(sidecar_json, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+        if payload.get("schema") != "candidate_eval/v2":
+            return False, f"schema={payload.get('schema')!r}, yêu cầu 'candidate_eval/v2'"
+        if payload.get("evidence_level") != "measured" or payload.get("split") != "evaluation":
+            return False, "sidecar không phải measured evaluation split"
+        if int(payload.get("n_samples", -1)) != int(expected_n_samples):
+            return False, f"n_samples={payload.get('n_samples')}, yêu cầu {expected_n_samples}"
+        if os.path.basename(str(payload.get("checkpoint", ""))) != os.path.basename(checkpoint_path):
+            return False, "checkpoint trong sidecar không khớp candidate"
+        expected_calibration_sha = compute_sha256(calibration_json)
+        if payload.get("calibration_sha256") != expected_calibration_sha:
+            return False, "sidecar không gắn với calibration measured hiện hành"
+        required_metrics = {
+            "real_acc_clean", "fake_at_real90_clean", "auc_clean",
+            "real_acc_q30", "fake_at_real90_q30", "auc_q30",
+        }
+        metrics = payload.get("metrics", {})
+        if set(metrics) != required_metrics or not all(np.isfinite(float(metrics[key])) for key in required_metrics):
+            return False, "metrics thiếu hoặc không hữu hạn"
+    except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+        return False, f"không đọc/kiểm tra được: {exc}"
+    return True, "candidate evaluation artifact hợp lệ"
+
+
+def validate_wise_candidate_artifact(
+    checkpoint_path: str,
+    *,
+    alpha: float,
+    beta: float,
+    baseline_sha256: str,
+    anchored_sha256: str,
+) -> Tuple[bool, str]:
+    """Xác nhận checkpoint WiSE-FT đã hoàn tất ghi và verify 0/0 keys."""
+    metadata_path = checkpoint_path.replace(".pth", "_metadata.json")
+    if not os.path.isfile(checkpoint_path) or not os.path.isfile(metadata_path):
+        return False, "thiếu checkpoint hoặc metadata"
+    try:
+        with open(metadata_path, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+        if abs(float(payload.get("alpha")) - float(alpha)) > 1e-12:
+            return False, "alpha không khớp"
+        if abs(float(payload.get("beta_srm")) - float(beta)) > 1e-12:
+            return False, "beta_srm không khớp"
+        verification = payload.get("verification", {})
+        if verification.get("status") != "ok" or int(verification.get("missing", -1)) != 0 or int(verification.get("unexpected", -1)) != 0:
+            return False, "verification không đạt 0/0 keys"
+        sources = payload.get("sources", {})
+        if sources.get("baseline", {}).get("sha256") != baseline_sha256:
+            return False, "baseline source SHA-256 không khớp"
+        if sources.get("anchored", {}).get("sha256") != anchored_sha256:
+            return False, "anchored source SHA-256 không khớp"
+        expected_size = float(payload.get("file_size_mb", 0.0))
+        actual_size = os.path.getsize(checkpoint_path) / (1024 * 1024)
+        if expected_size <= 0.0 or abs(actual_size - expected_size) > 0.02:
+            return False, "kích thước checkpoint không khớp metadata"
+        expected_sha = payload.get("sha256")
+        if not expected_sha or compute_sha256(checkpoint_path) != expected_sha:
+            return False, "SHA-256 checkpoint candidate không khớp metadata"
+    except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+        return False, f"không đọc/kiểm tra được: {exc}"
+    return True, "checkpoint candidate hợp lệ"
+
+
+def validate_logits_split_pair(
+    source_npz: str,
+    calibration_npz: str,
+    evaluation_npz: str,
+    *,
+    calib_ratio: float,
+) -> Tuple[bool, str]:
+    """Xác nhận hai split là một partition nguyên vẹn của logits nguồn."""
+    if not all(os.path.isfile(path) for path in (source_npz, calibration_npz, evaluation_npz)):
+        return False, "thiếu source/calibration/evaluation NPZ"
+    try:
+        with np.load(source_npz, allow_pickle=False) as source:
+            source_logits = source["logits"]
+            source_targets = source["targets"]
+            source_ids = source["sample_ids"]
+            n_source = len(source_targets)
+            expected_calib_per_label = {
+                label: max(1, min(int(np.sum(source_targets == label)) - 1, int(round(np.sum(source_targets == label) * calib_ratio))))
+                for label in np.unique(source_targets)
+            }
+
+            split_indices: Dict[str, np.ndarray] = {}
+            for expected_split, split_path in (
+                ("calibration", calibration_npz),
+                ("evaluation", evaluation_npz),
+            ):
+                with np.load(split_path, allow_pickle=False) as split_payload:
+                    if "split" not in split_payload or str(split_payload["split"]) != expected_split:
+                        return False, f"{split_path} không mang split={expected_split}"
+                    indices = split_payload["source_indices"].astype(np.int64, copy=False)
+                    if np.any(indices < 0) or np.any(indices >= n_source) or len(np.unique(indices)) != len(indices):
+                        return False, f"source_indices không hợp lệ trong {split_path}"
+                    if not np.array_equal(split_payload["logits"], source_logits[indices]):
+                        return False, f"logits split không khớp nguồn trong {split_path}"
+                    if not np.array_equal(split_payload["targets"], source_targets[indices]):
+                        return False, f"targets split không khớp nguồn trong {split_path}"
+                    if not np.array_equal(split_payload["sample_ids"], source_ids[indices]):
+                        return False, f"sample_ids split không khớp nguồn trong {split_path}"
+                    split_indices[expected_split] = indices
+
+        calib_indices = split_indices["calibration"]
+        eval_indices = split_indices["evaluation"]
+        combined = np.concatenate([calib_indices, eval_indices])
+        if len(combined) != n_source or not np.array_equal(np.sort(combined), np.arange(n_source)):
+            return False, "calibration/evaluation không tạo thành partition đầy đủ"
+        calibration_targets = source_targets[calib_indices]
+        for label, expected_count in expected_calib_per_label.items():
+            actual_count = int(np.sum(calibration_targets == label))
+            if actual_count != expected_count:
+                return False, f"calibration label {label} có {actual_count} mẫu, yêu cầu {expected_count}"
+    except (OSError, ValueError, TypeError, KeyError) as exc:
+        return False, f"không đọc/kiểm tra được split: {exc}"
+    return True, "partition calibration/evaluation hợp lệ"
+
+
 def split_calibration_and_eval_logits(
     logits_npz: str,
     calib_ratio: float = 0.20,
@@ -341,6 +522,7 @@ def write_candidate_eval_sidecar_from_splits(
         "candidate": os.path.basename(checkpoint_path),
         "checkpoint": checkpoint_path,
         "calibration": calibration_json,
+        "calibration_sha256": compute_sha256(calibration_json),
         "metrics": {
             "real_acc_clean": float(clean_m["real_acc"]),
             "fake_at_real90_clean": float(clean_m["fake_at_real90"]),
@@ -420,23 +602,43 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
     base_q30_npz = os.path.join(out_logs_dir, "logits_baseline_q30.npz")
     anch_q30_npz = os.path.join(out_logs_dir, "logits_anchored_q30.npz")
 
-    base_calib_npz = base_clean_npz.replace(".npz", "_calib_split.npz")
-    base_clean_eval_npz = base_clean_npz.replace(".npz", "_eval_split.npz")
-    anch_calib_npz = anch_clean_npz.replace(".npz", "_calib_split.npz")
+    split_paths: Dict[str, Tuple[str, str]] = {}
+    for source_npz in (base_clean_npz, anch_clean_npz, base_q30_npz, anch_q30_npz):
+        calibration_npz = source_npz.replace(".npz", "_calib_split.npz")
+        evaluation_npz = source_npz.replace(".npz", "_eval_split.npz")
+        split_valid, split_reason = validate_logits_split_pair(
+            source_npz,
+            calibration_npz,
+            evaluation_npz,
+            calib_ratio=calib_ratio,
+        )
+        if resume and split_valid:
+            print(f"[RESUME] Bỏ qua tách {os.path.basename(source_npz)}: {split_reason}.")
+        else:
+            if resume and (os.path.isfile(calibration_npz) or os.path.isfile(evaluation_npz)):
+                print(f"[RESUME] Loại split cũ của {os.path.basename(source_npz)}: {split_reason}.")
+            calibration_npz, evaluation_npz = split_calibration_and_eval_logits(
+                source_npz, calib_ratio=calib_ratio, seed=seed
+            )
+        split_paths[source_npz] = (calibration_npz, evaluation_npz)
 
-    if not (resume and os.path.isfile(base_calib_npz) and os.path.isfile(base_clean_eval_npz)):
-        base_calib_npz, base_clean_eval_npz = split_calibration_and_eval_logits(base_clean_npz, calib_ratio=calib_ratio, seed=seed)
-        anch_calib_npz, _ = split_calibration_and_eval_logits(anch_clean_npz, calib_ratio=calib_ratio, seed=seed)
-        split_calibration_and_eval_logits(base_q30_npz, calib_ratio=calib_ratio, seed=seed)
-        split_calibration_and_eval_logits(anch_q30_npz, calib_ratio=calib_ratio, seed=seed)
-    else:
-        print("[RESUME] Bỏ qua tách phân vùng (đã có sẵn *_calib_split.npz và *_eval_split.npz).")
+    base_calib_npz, base_clean_eval_npz = split_paths[base_clean_npz]
+    anch_calib_npz, _ = split_paths[anch_clean_npz]
 
     calib_out_dir = cfg["calibration"]["output_dir"]
     os.makedirs(calib_out_dir, exist_ok=True)
 
     base_calib_json = os.path.join(calib_out_dir, "baseline.json")
-    if not (resume and os.path.isfile(base_calib_json)):
+    base_calib_valid, base_calib_reason = validate_measured_calibration_artifact(
+        base_calib_json,
+        expected_model="baseline",
+        calibration_npz=base_calib_npz,
+        expected_checkpoint_sha256=cfg["checkpoints"]["baseline"].get("expected_sha256"),
+        expected_fpr_target=float(cfg["calibration"].get("target_fpr", 0.05)),
+    )
+    if not (resume and base_calib_valid):
+        if resume and os.path.isfile(base_calib_json):
+            print(f"[RESUME] Loại Calibration Baseline cũ: {base_calib_reason}. Sẽ fit lại từ measured split.")
         execute_pipeline_step(
             [
                 sys.executable, "tools/calibrate_and_select.py",
@@ -449,10 +651,19 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
             "Hiệu chuẩn nhiệt độ & ngưỡng FPR 5% cho Baseline (Task 7.4)"
         )
     else:
-        print(f"[RESUME] Bỏ qua Calibration Baseline: Đã tồn tại {base_calib_json}")
+        print(f"[RESUME] Bỏ qua Calibration Baseline: {base_calib_reason} tại {base_calib_json}")
 
     anch_calib_json = os.path.join(calib_out_dir, "anchored.json")
-    if not (resume and os.path.isfile(anch_calib_json)):
+    anch_calib_valid, anch_calib_reason = validate_measured_calibration_artifact(
+        anch_calib_json,
+        expected_model="anchored",
+        calibration_npz=anch_calib_npz,
+        expected_checkpoint_sha256=cfg["checkpoints"]["anchored"].get("expected_sha256"),
+        expected_fpr_target=float(cfg["calibration"].get("target_fpr", 0.05)),
+    )
+    if not (resume and anch_calib_valid):
+        if resume and os.path.isfile(anch_calib_json):
+            print(f"[RESUME] Loại Calibration Anchored cũ: {anch_calib_reason}. Sẽ fit lại từ measured split.")
         execute_pipeline_step(
             [
                 sys.executable, "tools/calibrate_and_select.py",
@@ -465,7 +676,7 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
             "Hiệu chuẩn nhiệt độ & ngưỡng FPR 5% cho Anchored (Task 7.4)"
         )
     else:
-        print(f"[RESUME] Bỏ qua Calibration Anchored: Đã tồn tại {anch_calib_json}")
+        print(f"[RESUME] Bỏ qua Calibration Anchored: {anch_calib_reason} tại {anch_calib_json}")
 
     # -------------------------------------------------------------------------
     # BƯỚC 3: Sinh lưới 12 ứng viên WiSE-FT Gen 2 (Task 7.5)
@@ -474,19 +685,37 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
     alpha_str = ",".join(str(a) for a in cfg["wise_ft_gen2"]["alpha_grid"])
     beta_str = ",".join(str(b) for b in cfg["wise_ft_gen2"]["beta_grid"])
 
-    execute_pipeline_step(
-        [
-            sys.executable, "tools/wise_ft_merge.py",
-            "--orig_checkpoint", base_ckpt,
-            "--target_checkpoint", anch_ckpt,
-            "--grid_search",
-            "--alpha_grid", alpha_str,
-            "--beta_grid", beta_str,
-            "--output_dir", cands_dir,
-            "--verify",
-        ],
-        "Sinh lưới 12 ứng viên WiSE-FT Gen 2 kèm kiểm tra nghiêm ngặt verify 0/0 keys"
-    )
+    expected_candidates = [
+        (alpha, beta, os.path.join(cands_dir, f"wise_ft_v2_a{int(alpha * 100):02d}_b{int(beta * 100):02d}.pth"))
+        for alpha in cfg["wise_ft_gen2"]["alpha_grid"]
+        for beta in cfg["wise_ft_gen2"]["beta_grid"]
+    ]
+    candidate_checks = [
+        validate_wise_candidate_artifact(
+            path,
+            alpha=alpha,
+            beta=beta,
+            baseline_sha256=cfg["checkpoints"]["baseline"]["expected_sha256"],
+            anchored_sha256=cfg["checkpoints"]["anchored"]["expected_sha256"],
+        )
+        for alpha, beta, path in expected_candidates
+    ]
+    if resume and all(valid for valid, _ in candidate_checks):
+        print(f"[RESUME] Bỏ qua sinh lưới: cả {len(expected_candidates)} candidate đã verify 0/0 keys và khớp nguồn.")
+    else:
+        execute_pipeline_step(
+            [
+                sys.executable, "tools/wise_ft_merge.py",
+                "--orig_checkpoint", base_ckpt,
+                "--target_checkpoint", anch_ckpt,
+                "--grid_search",
+                "--alpha_grid", alpha_str,
+                "--beta_grid", beta_str,
+                "--output_dir", cands_dir,
+                "--verify",
+            ],
+            "Sinh lưới 12 ứng viên WiSE-FT Gen 2 kèm kiểm tra nghiêm ngặt verify 0/0 keys"
+        )
 
     # -------------------------------------------------------------------------
     # BƯỚC 4: Đo đạc 12 ứng viên trên CFE & Tuyển chọn Pareto Best (Task 7.5)
@@ -502,15 +731,24 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
     print(f"\n[*] Bắt đầu đo đạc đánh giá {len(cand_files)} ứng viên trên CFE Clean & Q30...")
 
     base_calib_json = cfg["calibration"]["baseline_json"]
+    expected_eval_samples = int(round(cfg["data"]["expected_samples"] * (1.0 - calib_ratio)))
     for cand_f in sorted(cand_files):
         c_path = os.path.join(cands_dir, cand_f)
         cand_name = cand_f.replace(".pth", "")
         cand_eval_json = c_path.replace(".pth", "_eval.json")
         cand_clean_npz = os.path.join(out_logs_dir, f"logits_{cand_name}_clean.npz")
         cand_q30_npz = os.path.join(out_logs_dir, f"logits_{cand_name}_q30.npz")
-        if resume and os.path.isfile(cand_eval_json) and os.path.isfile(cand_clean_npz) and os.path.isfile(cand_q30_npz):
-            print(f"[RESUME] Bỏ qua Đo đạc Candidate {cand_name}: Đã có kết quả tại {cand_eval_json}")
+        candidate_valid, candidate_reason = validate_candidate_eval_artifact(
+            cand_eval_json,
+            checkpoint_path=c_path,
+            calibration_json=base_calib_json,
+            expected_n_samples=expected_eval_samples,
+        )
+        if resume and candidate_valid and os.path.isfile(cand_clean_npz) and os.path.isfile(cand_q30_npz):
+            print(f"[RESUME] Bỏ qua Đo đạc Candidate {cand_name}: {candidate_reason} tại {cand_eval_json}")
             continue
+        if resume and os.path.isfile(cand_eval_json):
+            print(f"[RESUME] Không tái sử dụng Candidate {cand_name}: {candidate_reason}. Sẽ đo lại.")
 
         execute_pipeline_step(
             [

@@ -230,15 +230,26 @@ def main():
     # Nạp calibration
     temp_val = 1.2511
     fixed_thresh = 0.8468
+    if not args.test_dummy and not os.path.isfile(args.calibration):
+        raise FileNotFoundError(f"Thiếu calibration measured bắt buộc: {args.calibration}")
     if os.path.exists(args.calibration):
         try:
             with open(args.calibration, "r", encoding="utf-8") as f:
                 calib = json.load(f)
+            if not args.test_dummy and (
+                calib.get("schema") != "calibration/v1"
+                or calib.get("evidence_level") != "measured"
+            ):
+                raise ValueError(
+                    "Tuyển chọn thật chỉ nhận calibration/v1 với evidence_level=measured"
+                )
             temp_val = float(calib.get("T", 1.2511))
             t_star = calib.get("T_star_default", calib.get("T_star", 0.8468))
             fixed_thresh = float(t_star.get("0.05", 0.8468)) if isinstance(t_star, dict) else float(t_star)
             print(f"[*] Đã nạp thông số hiệu chuẩn: T={temp_val}, T*={fixed_thresh}")
         except Exception as e:
+            if not args.test_dummy:
+                raise RuntimeError(f"Calibration không hợp lệ; từ chối tuyển chọn thật: {e}") from e
             print(f"[!] Cảnh báo nạp calibration: {e}")
 
     # Tìm các file ứng viên

@@ -725,10 +725,22 @@ def main():
     temp_val = 1.0
     thresh_source = "default (0.50)"
 
+    if args.calibration and not os.path.exists(args.calibration):
+        raise FileNotFoundError(f"Không tìm thấy calibration được chỉ định: {args.calibration}")
     if args.calibration and os.path.exists(args.calibration):
         try:
             with open(args.calibration, "r", encoding="utf-8") as f:
                 calib_data = json.load(f)
+            if not args.test_dummy and calib_data.get("evidence_level") != "measured":
+                raise ValueError(
+                    f"Evaluation thật chỉ nhận calibration evidence_level=measured; "
+                    f"nhận {calib_data.get('evidence_level')!r} từ {args.calibration}"
+                )
+            if not args.test_dummy and calib_data.get("schema") != "calibration/v1":
+                raise ValueError(
+                    f"Evaluation thật chỉ nhận schema calibration/v1; "
+                    f"nhận {calib_data.get('schema')!r} từ {args.calibration}"
+                )
             temp_val = float(calib_data.get("T", 1.0))
             raw_t_star = calib_data.get("T_star_default", calib_data.get("T_star", 0.50))
             if isinstance(raw_t_star, dict):
@@ -738,6 +750,8 @@ def main():
             thresh_source = f"calibration.json ({args.calibration})"
             print(f"[*] Đã nạp cấu hình hiệu chuẩn: T={temp_val}, T*={fixed_thresh}")
         except Exception as e:
+            if not args.test_dummy:
+                raise RuntimeError(f"Calibration không hợp lệ; từ chối evaluation thật: {e}") from e
             print(f"[!] Cảnh báo nạp calibration thất bại: {e}")
 
     if args.threshold is not None:
@@ -887,6 +901,9 @@ def main():
             }],
             "calibration": {
                 "source": thresh_source,
+                "artifact": args.calibration,
+                "evidence_level": calib_data.get("evidence_level") if calib_data else None,
+                "schema": calib_data.get("schema") if calib_data else None,
                 "T": temp_val,
                 "T_star": fixed_thresh,
                 "fpr_target": calib_data.get("fpr_target", 0.05)
