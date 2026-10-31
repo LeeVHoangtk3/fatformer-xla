@@ -456,17 +456,20 @@ def run_measured_calibration(
     model_name: str,
     checkpoint: str = "",
     cv_folds: int = 0,
+    fpr_target: float = 0.05,
 ) -> Dict[str, Any]:
     """Fit calibration from measured logits stored as ``logits`` and ``targets``.
 
     The NPZ must come from a held-out calibration split. Synthetic inputs are
     intentionally accepted only through the separate ``--test_dummy`` path.
     """
-    payload = np.load(logits_npz, allow_pickle=False)
-    if "logits" not in payload or "targets" not in payload:
-        raise ValueError("NPZ phải có đúng hai mảng bắt buộc: logits và targets.")
-    logits = torch.as_tensor(payload["logits"], dtype=torch.float32)
-    targets = torch.as_tensor(payload["targets"], dtype=torch.long)
+    with np.load(logits_npz, allow_pickle=False) as payload:
+        if "logits" not in payload or "targets" not in payload:
+            raise ValueError("NPZ phải có đúng hai mảng bắt buộc: logits và targets.")
+        if "split" not in payload or str(payload["split"]) != "calibration":
+            raise ValueError("Nghiệm thu measured chỉ nhận NPZ mang split=calibration.")
+        logits = torch.as_tensor(payload["logits"].copy(), dtype=torch.float32)
+        targets = torch.as_tensor(payload["targets"].copy(), dtype=torch.long)
     if logits.ndim != 2 or logits.shape[1] != 2:
         raise ValueError(f"logits phải có shape [N,2], nhận {tuple(logits.shape)}")
     if targets.ndim != 1 or targets.shape[0] != logits.shape[0]:
@@ -479,10 +482,13 @@ def run_measured_calibration(
     probs_before = F.softmax(logits, dim=-1)[:, 1].detach().numpy()
     probs_after = F.softmax(logits / opt_t, dim=-1)[:, 1].detach().numpy()
     targets_np = targets.numpy()
+    if not 0.0 < fpr_target < 1.0:
+        raise ValueError(f"fpr_target phải nằm trong (0,1), nhận {fpr_target}")
+    requested_fprs = sorted({0.01, 0.05, 0.10, float(fpr_target)})
     t_stars, measured = fit_thresholds_by_fpr(
-        probs_after, targets_np, fpr_targets=[0.01, 0.05, 0.10]
+        probs_after, targets_np, fpr_targets=requested_fprs
     )
-    threshold = t_stars["0.05"]
+    threshold = t_stars[f"{fpr_target:.2f}"]
     preds = (probs_after >= threshold).astype(int)
     real_mask, fake_mask = targets_np == 0, targets_np == 1
 
@@ -507,7 +513,7 @@ def run_measured_calibration(
         "T_raw": round(raw_t, 4),
         "T_star": t_stars,
         "T_star_default": threshold,
-        "fpr_target": 0.05,
+        "fpr_target": fpr_target,
         "fpr_measured": measured,
         "real_acc": round(float((preds[real_mask] == 0).mean() * 100.0), 2),
         "fake_acc": round(float((preds[fake_mask] == 1).mean() * 100.0), 2),
@@ -515,7 +521,7 @@ def run_measured_calibration(
         "ece_after": round(compute_ece(probs_after, targets_np), 2),
         "nll_before": round(compute_nll(probs_before, targets_np), 4),
         "nll_after": round(compute_nll(probs_after, targets_np), 4),
-        "cv": run_5fold_cross_validation(logits, targets, fpr_target=0.05)
+        "cv": run_5fold_cross_validation(logits, targets, fpr_target=fpr_target)
         if cv_folds == 5 else None,
     }
     output_json = os.path.join(output_dir, f"{model_name}.json")
@@ -548,6 +554,7 @@ def main():
         run_measured_calibration(
             args.logits_npz, args.output_dir, args.model_name,
             checkpoint=args.checkpoint, cv_folds=args.cv_folds,
+            fpr_target=args.fpr_target,
         )
     else:
         parser.error("Nghiệm thu thật yêu cầu --logits_npz; dummy phải bật rõ --test_dummy.")

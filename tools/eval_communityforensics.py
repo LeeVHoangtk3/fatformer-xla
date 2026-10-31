@@ -66,13 +66,20 @@ SUBSET_DESCRIPTIONS = {
 # ================================================================================
 
 def get_git_info() -> Tuple[str, bool]:
-    """Lấy mã commit git hiện tại và kiểm tra xem working tree có sạch không."""
+    """Lấy commit và trạng thái source tree, bỏ qua artifact sinh bởi pipeline."""
     try:
         commit = subprocess.check_output(
-            ["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL
+            ["git", "rev-parse", "HEAD"], cwd=PROJECT_ROOT, stderr=subprocess.DEVNULL
         ).decode("utf-8").strip()
         status = subprocess.check_output(
-            ["git", "status", "--porcelain"], stderr=subprocess.DEVNULL
+            [
+                "git", "status", "--porcelain", "--", ".",
+                ":(exclude)DATASET/logs/**",
+                ":(exclude)DATASET/checkpoints/**",
+                ":(exclude)DATASET/pretrained/**",
+            ],
+            cwd=PROJECT_ROOT,
+            stderr=subprocess.DEVNULL,
         ).decode("utf-8").strip()
         return commit, len(status) > 0
     except Exception:
@@ -792,6 +799,7 @@ def main():
         pooled_probs_list = []
         pooled_targets_list = []
         pooled_logits_list = []
+        pooled_sample_ids: List[str] = []
 
         for sub in CFE_SUBSETS:
             recs = records_by_subset.get(sub, [])
@@ -811,6 +819,9 @@ def main():
                 pooled_probs_list.append(sub_probs)
                 pooled_targets_list.append(sub_targets)
                 pooled_logits_list.append(sub_logits)
+                pooled_sample_ids.extend(
+                    f"{rec['subset']}/{rec['label']}/{rec['fname']}" for rec in recs
+                )
 
             tpr1 = m_sub.get("tpr_at_fpr", {}).get("0.01", "—")
             tpr5 = m_sub.get("tpr_at_fpr", {}).get("0.05", "—")
@@ -821,6 +832,7 @@ def main():
             all_probs_cat = torch.cat(pooled_probs_list, dim=0)
             all_targets_cat = torch.cat(pooled_targets_list, dim=0)
             all_logits_cat = torch.cat(pooled_logits_list, dim=0)
+            all_sample_ids = np.asarray(pooled_sample_ids, dtype=str)
 
             overall_m = calculate_metrics_v3(all_probs_cat[:, 1].numpy(), all_targets_cat.numpy(), threshold=fixed_thresh)
             ci95 = compute_bootstrap_ci(all_probs_cat[:, 1].numpy(), all_targets_cat.numpy(), n_boot=1000, seed=args.seed)
@@ -828,6 +840,7 @@ def main():
         else:
             all_logits_cat = torch.empty((0, 2))
             all_targets_cat = torch.empty((0,), dtype=torch.long)
+            all_sample_ids = np.asarray([], dtype=str)
             overall_m = calculate_metrics_v3(np.array([]), np.array([]), threshold=fixed_thresh)
 
         print(f"\n  🏆 OVERALL POOLED ({cond}): ACC={overall_m['macro_acc']:.2f}% | Real={str(overall_m['real_acc'])}% | Fake={str(overall_m['fake_acc'])}% | Fake@Real90={str(overall_m.get('fake_at_real90'))}% | AUC={str(overall_m['auc'])}% | ECE={overall_m['ece']:.2f}%")
@@ -849,6 +862,7 @@ def main():
                 npz_path,
                 logits=all_logits_cat.numpy(),
                 targets=all_targets_cat.numpy(),
+                sample_ids=all_sample_ids,
                 model=model_name,
                 condition=cond,
                 temperature=temp_val,
@@ -860,7 +874,7 @@ def main():
         schema_v3_output = {
             "report_schema": "v3-dummy" if args.test_dummy else "v3",
             "evidence_level": "synthetic" if args.test_dummy else "measured",
-            "gate_eligible": not args.test_dummy,
+            "gate_eligible": not args.test_dummy and not is_dirty,
             "git_commit": git_commit,
             "git_dirty": is_dirty,
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),

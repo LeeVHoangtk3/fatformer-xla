@@ -235,34 +235,39 @@ def load_measured_predictions(
     condition: str,
     temperature: float,
     use_eval_split: bool = False
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Tải mảng logits và targets đo thật từ file NPZ do eval_communityforensics.py sinh ra."""
     if use_eval_split:
         npz_name = f"logits_{model_name}_{condition}_eval_split.npz"
         npz_path = os.path.join(measured_dir, npz_name)
         if not os.path.isfile(npz_path):
-            # Fallback nếu chưa split (chỉ khi có cảnh báo rõ ràng)
-            fallback_npz = os.path.join(measured_dir, f"logits_{model_name}_{condition}.npz")
-            if os.path.isfile(fallback_npz):
-                print(f"  [!] CẢNH BÁO: Không tìm thấy {npz_name}, dùng tạm tập gộp {fallback_npz}")
-                npz_path = fallback_npz
-            else:
-                raise FileNotFoundError(f"[DATA LEAKAGE PREVENTION] Không tìm thấy mảng eval_split: {npz_path}")
+            raise FileNotFoundError(f"[DATA LEAKAGE PREVENTION] Không tìm thấy mảng eval_split: {npz_path}")
     else:
         npz_name = f"logits_{model_name}_{condition}.npz"
         npz_path = os.path.join(measured_dir, npz_name)
         if not os.path.isfile(npz_path):
             raise FileNotFoundError(f"Không tìm thấy file logits đo thật: {npz_path}")
 
-    data = np.load(npz_path, allow_pickle=False)
-    logits = data["logits"]
-    targets = data["targets"]
+    with np.load(npz_path, allow_pickle=False) as data:
+        logits = data["logits"].copy()
+        targets = data["targets"].copy()
+        sample_ids = data["sample_ids"].copy() if "sample_ids" in data else np.asarray(
+            [f"row:{idx}" for idx in range(len(targets))]
+        )
+        if use_eval_split:
+            split_name = str(data["split"]) if "split" in data else ""
+            if split_name != "evaluation":
+                raise ValueError(f"[DATA LEAKAGE PREVENTION] NPZ không mang split=evaluation: {npz_path}")
+    if logits.ndim != 2 or logits.shape[1] != 2 or len(logits) != len(targets):
+        raise ValueError(f"Logits/targets không hợp lệ: {npz_path}")
+    if len(sample_ids) != len(targets) or set(np.unique(targets)) != {0, 1}:
+        raise ValueError(f"sample_ids hoặc class coverage không hợp lệ: {npz_path}")
 
     scaled_logits = logits / max(temperature, 1e-4)
     exp_z = np.exp(scaled_logits - np.max(scaled_logits, axis=-1, keepdims=True))
     probs = exp_z / np.sum(exp_z, axis=-1, keepdims=True)
     fake_probs = probs[:, 1]
-    return fake_probs, targets, logits
+    return fake_probs, targets, logits, sample_ids
 
 
 def run_rebaseline_evaluation(
@@ -273,13 +278,21 @@ def run_rebaseline_evaluation(
     is_dummy: bool = False,
     measured_dir: str = "",
     use_eval_split: bool = False,
-    seed: int = 42
+    seed: int = 42,
+    must_fake_at_real90_q30: float = 55.0,
+    must_auc_clean: float = 80.0,
+    must_auc_q30: float = 55.0,
+    stretch_fake_at_real90_q30: float = 70.0,
 ) -> Dict[str, Any]:
     """Thực thi kiểm chuẩn đối đầu 4 cấu hình x 2 điều kiện và xuất ma trận kết quả."""
     if not is_dummy and not measured_dir:
         raise RuntimeError(
             "Re-baseline chính thức phải chạy với --measured_dir chỉ định thư mục chứa artifact đo thật "
             "từ tools/eval_communityforensics.py. Dùng --test_dummy chỉ để chạy kiểm thử toán học mô phỏng."
+        )
+    if measured_dir and not use_eval_split:
+        raise RuntimeError(
+            "Nghiệm thu measured bắt buộc bật --use_eval_split; từ chối chấm trên tập gộp có calibration rows."
         )
     print("\n" + "=" * 88)
     print("FATFORMER-XLA: TIẾN TRÌNH TÁI LẬP MỐC SÀN 4 CẤU HÌNH TRÊN CFE (TASK 7.6)")
@@ -292,17 +305,25 @@ def run_rebaseline_evaluation(
     temp_anchored = 1.2511
     fixed_thresh = 0.8468
     calib_source = calibration_path or "DATASET/logs/phase7/calibration/baseline.json"
+    calibration_checkpoint_shas: Dict[str, Optional[str]] = {"baseline": None, "anchored": None}
 
     if os.path.exists(calib_source):
         try:
             with open(calib_source, "r", encoding="utf-8") as f:
                 calib = json.load(f)
+            if measured_dir and (calib.get("evidence_level") != "measured" or calib.get("model") != "baseline"):
+                raise ValueError("Calibration baseline không phải measured evidence đúng model")
+            calibration_checkpoint_shas["baseline"] = calib.get("checkpoint", {}).get("sha256")
             temp_baseline = float(calib.get("T", 1.2511))
             t_star = calib.get("T_star_default", calib.get("T_star", 0.8468))
             fixed_thresh = float(t_star.get("0.05", 0.8468)) if isinstance(t_star, dict) else float(t_star)
             print(f"[*] Đã nạp cấu hình hiệu chuẩn Baseline ({calib_source}): T={temp_baseline:.4f}, T*={fixed_thresh:.4f}")
         except Exception as e:
+            if measured_dir:
+                raise RuntimeError(f"Calibration baseline không hợp lệ: {e}") from e
             print(f"[!] Cảnh báo nạp calibration baseline: {e}")
+    elif measured_dir:
+        raise FileNotFoundError(f"Thiếu calibration baseline đo thật: {calib_source}")
 
     # Nạp calibration cho Anchored (không hard-code 1.2800)
     anch_calib_file = calibration_anchored_path
@@ -315,12 +336,19 @@ def run_rebaseline_evaluation(
         try:
             with open(anch_calib_file, "r", encoding="utf-8") as f:
                 calib_a = json.load(f)
+            if measured_dir and (calib_a.get("evidence_level") != "measured" or calib_a.get("model") != "anchored"):
+                raise ValueError("Calibration anchored không phải measured evidence đúng model")
+            calibration_checkpoint_shas["anchored"] = calib_a.get("checkpoint", {}).get("sha256")
             temp_anchored = float(calib_a.get("T", temp_baseline))
             print(f"[*] Đã nạp cấu hình hiệu chuẩn Anchored ({anch_calib_file}): T={temp_anchored:.4f}")
         except Exception as e:
+            if measured_dir:
+                raise RuntimeError(f"Calibration anchored không hợp lệ: {e}") from e
             print(f"[!] Cảnh báo nạp calibration anchored: {e}")
             temp_anchored = temp_baseline
     else:
+        if measured_dir:
+            raise FileNotFoundError(f"Thiếu calibration anchored đo thật: {anch_calib_file}")
         print(f"[*] Hiệu chuẩn Anchored: fallback dùng nhiệt độ T={temp_anchored:.4f}")
 
     models = ["baseline", "anchored", "wise_ft_v2", "ensemble"]
@@ -341,6 +369,8 @@ def run_rebaseline_evaluation(
     for m in ["baseline", "anchored", "wise_ft_v2"]:
         p = ckpt_paths[m]
         full_p = os.path.join(PROJECT_ROOT, p)
+        n_keys = 1116 if m == "baseline" else 1200
+        layout_info = {"n": 3, "indices": [7, 15, 23], "dropped": [], "partial": False}
         if not os.path.exists(full_p):
             if measured_dir:
                 raise FileNotFoundError(f"[PROVENANCE ERROR] Không tìm thấy checkpoint thực tế: {full_p}")
@@ -350,6 +380,12 @@ def run_rebaseline_evaluation(
             unexpected_count = 0
         else:
             sha = compute_sha256(full_p)
+            expected_calib_sha = calibration_checkpoint_shas.get(m)
+            if measured_dir and m in calibration_checkpoint_shas:
+                if not expected_calib_sha or expected_calib_sha.lower() != sha.lower():
+                    raise ValueError(
+                        f"Calibration/checkpoint SHA mismatch cho {m}: calibration={expected_calib_sha}, current={sha}"
+                    )
             load_status = "ok"
             missing_count = 0
             unexpected_count = 0
@@ -364,16 +400,27 @@ def run_rebaseline_evaluation(
                         load_status = lr.get("status", "ok")
                         missing_count = lr.get("missing", 0)
                         unexpected_count = lr.get("unexpected", 0)
-                    except Exception:
-                        pass
+                        n_keys = int(lr.get("n_keys", n_keys))
+                        layout_info = lr.get("layout", layout_info)
+                        if rep_data.get("evidence_level") != "measured" or rep_data.get("git_dirty"):
+                            raise ValueError(f"Eval provenance không hợp lệ: {eval_json}")
+                    except Exception as exc:
+                        raise RuntimeError(f"Không đọc được provenance eval: {eval_json}: {exc}") from exc
+                else:
+                    raise FileNotFoundError(f"Thiếu báo cáo eval provenance: {eval_json}")
 
-        n_keys = 1116 if m == "baseline" else 1200
+            if measured_dir and (load_status != "ok" or missing_count != 0 or unexpected_count != 0):
+                raise RuntimeError(
+                    f"Checkpoint {m} không đạt canonical 0/0: status={load_status}, "
+                    f"missing={missing_count}, unexpected={unexpected_count}"
+                )
+
         checks.append({
             "model": m,
             "path": p,
             "sha256": sha,
             "n_keys": n_keys,
-            "layout": {"n": 3, "indices": [7, 15, 23], "dropped": [], "partial": False},
+            "layout": layout_info,
             "missing": missing_count,
             "unexpected": unexpected_count,
             "status": load_status
@@ -395,9 +442,16 @@ def run_rebaseline_evaluation(
 
         if measured_dir:
             print(f"[*] Đang tải mảng logits đo thật từ: {measured_dir} (use_eval_split={use_eval_split})")
-            p_base, y_base, log_base = load_measured_predictions(measured_dir, "baseline", cond, temperature=temp_baseline, use_eval_split=use_eval_split)
-            p_anch, y_anch, log_anch = load_measured_predictions(measured_dir, "anchored", cond, temperature=temp_anchored, use_eval_split=use_eval_split)
-            p_wise, y_wise, log_wise = load_measured_predictions(measured_dir, "wise_ft_v2", cond, temperature=temp_baseline, use_eval_split=use_eval_split)
+            p_base, y_base, log_base, ids_base = load_measured_predictions(measured_dir, "baseline", cond, temperature=temp_baseline, use_eval_split=use_eval_split)
+            p_anch, y_anch, log_anch, ids_anch = load_measured_predictions(measured_dir, "anchored", cond, temperature=temp_anchored, use_eval_split=use_eval_split)
+            p_wise, y_wise, log_wise, ids_wise = load_measured_predictions(measured_dir, "wise_ft_v2", cond, temperature=temp_baseline, use_eval_split=use_eval_split)
+            if not (
+                np.array_equal(ids_base, ids_anch)
+                and np.array_equal(ids_base, ids_wise)
+                and np.array_equal(y_base, y_anch)
+                and np.array_equal(y_base, y_wise)
+            ):
+                raise ValueError(f"[ALIGNMENT ERROR] Logits giữa các mô hình không cùng sample_ids/targets ({cond})")
         else:
             p_base, y_base, log_base = generate_mock_cfe_predictions("baseline", cond, temperature=temp_baseline, seed=seed)
             p_anch, y_anch, log_anch = generate_mock_cfe_predictions("anchored", cond, temperature=temp_anchored, seed=seed)
@@ -437,8 +491,12 @@ def run_rebaseline_evaluation(
     auc_q30 = results[best_model]["q30"]["auc"]
 
     if measured_dir:
-        pass_must = (far90_q30 >= 55.0 and auc_clean >= 80.0 and auc_q30 >= 55.0)
-        pass_stretch = (pass_must and far90_q30 >= 70.0)
+        pass_must = (
+            far90_q30 >= must_fake_at_real90_q30
+            and auc_clean >= must_auc_clean
+            and auc_q30 >= must_auc_q30
+        )
+        pass_stretch = pass_must and far90_q30 >= stretch_fake_at_real90_q30
         gate_verdict = "PASS" if pass_must else "FAIL"
         evidence_level = "measured"
         report_schema = "v3"
@@ -459,6 +517,14 @@ def run_rebaseline_evaluation(
         "gate_verdict": gate_verdict,
         "pass_must": pass_must,
         "pass_stretch": pass_stretch,
+        "gate_thresholds": {
+            "must": {
+                "fake_at_real90_q30": must_fake_at_real90_q30,
+                "auc_clean": must_auc_clean,
+                "auc_q30": must_auc_q30,
+            },
+            "stretch": {"fake_at_real90_q30": stretch_fake_at_real90_q30},
+        },
         "git_commit": git_commit,
         "harness": "eval_communityforensics.py",
         "degrade_order": "post_resize",
@@ -548,9 +614,9 @@ So sánh giữa kết quả cũ (báo cáo ngày 26/10) và kết quả chuẩn 
 ## 3. Phán Quyết Cổng Chất Lượng G7.1 (§5.4)
 
 - **Cấu hình xuất sắc nhất**: **`{best_model}`**
-- **Fake@Real90 (JPEG Q=30)**: **{far90_q30:.2f}%** (Yêu cầu Must: $\\ge 55\\%$, Stretch: $\\ge 70\\%$)
-- **AUC (Clean)**: **{auc_clean:.2f}%** (Yêu cầu Must: $\\ge 80\\%$)
-- **AUC (JPEG Q=30)**: **{auc_q30:.2f}%** (Yêu cầu Must: $\\ge 55\\%$)
+- **Fake@Real90 (JPEG Q=30)**: **{far90_q30:.2f}%** (Yêu cầu Must: $\\ge {must_fake_at_real90_q30:g}\\%$, Stretch: $\\ge {stretch_fake_at_real90_q30:g}\\%$)
+- **AUC (Clean)**: **{auc_clean:.2f}%** (Yêu cầu Must: $\\ge {must_auc_clean:g}\\%$)
+- **AUC (JPEG Q=30)**: **{auc_q30:.2f}%** (Yêu cầu Must: $\\ge {must_auc_q30:g}\\%$)
 
 ### KẾT LUẬN:
 {verdict_display}
@@ -585,6 +651,10 @@ def main():
                         help="Chạy chế độ kiểm thử độc lập trên CPU")
     parser.add_argument("--seed", type=int, default=42,
                         help="Random seed cho bootstrap CI")
+    parser.add_argument("--must_fake_at_real90_q30", type=float, default=55.0)
+    parser.add_argument("--must_auc_clean", type=float, default=80.0)
+    parser.add_argument("--must_auc_q30", type=float, default=55.0)
+    parser.add_argument("--stretch_fake_at_real90_q30", type=float, default=70.0)
     args = parser.parse_args()
 
     calib_base = args.calibration if args.calibration else args.calibration_baseline
@@ -603,7 +673,11 @@ def main():
         is_dummy=args.test_dummy,
         measured_dir=args.measured_dir,
         use_eval_split=args.use_eval_split,
-        seed=args.seed
+        seed=args.seed,
+        must_fake_at_real90_q30=args.must_fake_at_real90_q30,
+        must_auc_clean=args.must_auc_clean,
+        must_auc_q30=args.must_auc_q30,
+        stretch_fake_at_real90_q30=args.stretch_fake_at_real90_q30,
     )
 
 

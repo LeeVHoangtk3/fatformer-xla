@@ -87,7 +87,8 @@ def run_preflight_checks(cfg: Dict[str, Any], allow_cpu: bool = False, allow_dir
     print("=" * 88)
 
     # 1. Kiểm tra phần cứng CUDA
-    if not allow_cpu:
+    require_cuda = bool(cfg.get("environment", {}).get("require_cuda", True))
+    if require_cuda and not allow_cpu:
         if not torch.cuda.is_available():
             raise RuntimeError(
                 "[PREFLIGHT FAIL] Không tìm thấy GPU CUDA! Pipeline đo lường thật bắt buộc chạy trên GPU "
@@ -106,7 +107,8 @@ def run_preflight_checks(cfg: Dict[str, Any], allow_cpu: bool = False, allow_dir
     print(f"  [✓] Git Commit      : {commit[:16]}...")
     if branch != expected_branch and expected_branch != "any":
         raise RuntimeError(f"[PREFLIGHT FAIL] Đang ở nhánh '{branch}', yêu cầu phải ở nhánh '{expected_branch}'.")
-    if is_dirty and not allow_dirty:
+    require_clean_git = bool(cfg.get("environment", {}).get("require_clean_git", True))
+    if require_clean_git and is_dirty and not allow_dirty:
         raise RuntimeError(
             "[PREFLIGHT FAIL] Git working tree bị dirty! Vui lòng commit hoặc stash trước khi chạy nghiệm thu."
         )
@@ -172,7 +174,7 @@ def run_preflight_checks(cfg: Dict[str, Any], allow_cpu: bool = False, allow_dir
                 raise ValueError(f"[PREFLIGHT FAIL] Thư mục nhãn rỗng không có ảnh: {f_dir}")
             total_imgs += len(imgs_in_folder)
     print(f"  [✓] CFE Dataset     : {cfe_root} ({total_imgs} ảnh quét được, kỳ vọng đúng {expected_imgs})")
-    if total_imgs != expected_imgs and not allow_cpu:
+    if total_imgs != expected_imgs:
         raise ValueError(
             f"[PREFLIGHT FAIL] Tổng số ảnh CFE ({total_imgs}) không khớp expected_samples ({expected_imgs})! "
             f"Dataset bị thiếu hoặc sai lệch cấu trúc; dừng ngay để bảo vệ tính toàn vẹn đo lường."
@@ -220,19 +222,39 @@ def split_calibration_and_eval_logits(
       - *_calib_split.npz (20% mẫu): Chỉ dùng cho Task 7.4 (fit T và T*).
       - *_eval_split.npz (80% mẫu): Dùng cho Sweep Task 7.5, Rebaseline Task 7.6 và Cổng G7.1.
     """
-    data = np.load(logits_npz, allow_pickle=False)
-    logits = data["logits"]
-    targets = data["targets"]
+    if not 0.0 < calib_ratio < 1.0:
+        raise ValueError(f"calib_ratio phải nằm trong (0, 1), nhận {calib_ratio}")
 
-    np.random.seed(seed)
-    n = len(targets)
-    perm = np.random.permutation(n)
-    n_calib = int(n * calib_ratio)
+    with np.load(logits_npz, allow_pickle=False) as data:
+        if "logits" not in data or "targets" not in data:
+            raise ValueError(f"NPZ thiếu logits/targets bắt buộc: {logits_npz}")
+        logits = data["logits"].copy()
+        targets = data["targets"].copy()
+        sample_ids = data["sample_ids"].copy() if "sample_ids" in data else np.asarray(
+            [f"row:{idx}" for idx in range(len(targets))]
+        )
+    if logits.ndim != 2 or logits.shape[1] != 2 or len(logits) != len(targets):
+        raise ValueError(f"Shape logits/targets không hợp lệ trong {logits_npz}")
+    if len(sample_ids) != len(targets):
+        raise ValueError(f"sample_ids không cùng số hàng với targets trong {logits_npz}")
 
-    calib_idx = perm[:n_calib]
-    eval_idx = perm[n_calib:]
+    # Tách phân tầng theo nhãn để cả calibration và evaluation luôn có đủ hai lớp.
+    rng = np.random.default_rng(seed)
+    calib_parts: List[np.ndarray] = []
+    eval_parts: List[np.ndarray] = []
+    for label in np.unique(targets):
+        label_idx = np.flatnonzero(targets == label)
+        if len(label_idx) < 2:
+            raise ValueError(f"Nhãn {label} có quá ít mẫu để tách độc lập: {len(label_idx)}")
+        label_idx = rng.permutation(label_idx)
+        n_label_calib = max(1, min(len(label_idx) - 1, int(round(len(label_idx) * calib_ratio))))
+        calib_parts.append(label_idx[:n_label_calib])
+        eval_parts.append(label_idx[n_label_calib:])
 
-    assert len(set(calib_idx).intersection(set(eval_idx))) == 0, "[DATA LEAKAGE ERROR] Giao giữa calib và eval khác rỗng!"
+    calib_idx = np.sort(np.concatenate(calib_parts))
+    eval_idx = np.sort(np.concatenate(eval_parts))
+    if np.intersect1d(calib_idx, eval_idx).size != 0 or len(calib_idx) + len(eval_idx) != len(targets):
+        raise RuntimeError("[DATA LEAKAGE ERROR] Phân vùng calibration/evaluation không tạo thành partition hợp lệ")
 
     calib_npz = logits_npz.replace(".npz", "_calib_split.npz")
     eval_npz = logits_npz.replace(".npz", "_eval_split.npz")
@@ -241,6 +263,8 @@ def split_calibration_and_eval_logits(
         calib_npz,
         logits=logits[calib_idx],
         targets=targets[calib_idx],
+        sample_ids=sample_ids[calib_idx],
+        source_indices=calib_idx,
         source=logits_npz,
         split="calibration",
         n_samples=len(calib_idx),
@@ -249,12 +273,83 @@ def split_calibration_and_eval_logits(
         eval_npz,
         logits=logits[eval_idx],
         targets=targets[eval_idx],
+        sample_ids=sample_ids[eval_idx],
+        source_indices=eval_idx,
         source=logits_npz,
         split="evaluation",
         n_samples=len(eval_idx),
     )
     print(f"  [✓] Phân vùng độc lập: Calib={calib_npz} ({len(calib_idx)} mẫu) | Eval={eval_npz} ({len(eval_idx)} mẫu)")
     return calib_npz, eval_npz
+
+
+def write_candidate_eval_sidecar_from_splits(
+    clean_eval_npz: str,
+    q30_eval_npz: str,
+    calibration_json: str,
+    sidecar_path: str,
+    checkpoint_path: str,
+    reference_eval_npz: Optional[str] = None,
+) -> None:
+    """Ghi sidecar tuyển chọn chỉ từ evaluation split, không dùng calibration rows."""
+    from tools.eval_communityforensics import calculate_metrics_v3
+
+    with open(calibration_json, "r", encoding="utf-8") as handle:
+        calibration = json.load(handle)
+    if calibration.get("evidence_level") != "measured":
+        raise ValueError(f"Calibration không phải measured evidence: {calibration_json}")
+    temperature = float(calibration["T"])
+    raw_threshold = calibration.get("T_star_default", calibration.get("T_star"))
+    threshold = float(raw_threshold.get("0.05")) if isinstance(raw_threshold, dict) else float(raw_threshold)
+
+    metrics_by_condition: Dict[str, Dict[str, Any]] = {}
+    reference_ids: Optional[np.ndarray] = None
+    for condition, npz_path in (("clean", clean_eval_npz), ("q30", q30_eval_npz)):
+        with np.load(npz_path, allow_pickle=False) as payload:
+            split_name = str(payload["split"]) if "split" in payload else ""
+            if split_name != "evaluation":
+                raise ValueError(f"Candidate split không được đánh dấu evaluation: {npz_path}")
+            logits = payload["logits"].copy()
+            targets = payload["targets"].copy()
+            sample_ids = payload["sample_ids"].copy()
+        if reference_ids is None:
+            reference_ids = sample_ids
+        elif not np.array_equal(reference_ids, sample_ids):
+            raise ValueError("Clean/Q30 candidate splits không cùng sample_ids")
+        scaled = logits / max(temperature, 1e-4)
+        exp_logits = np.exp(scaled - np.max(scaled, axis=-1, keepdims=True))
+        fake_probs = (exp_logits / np.sum(exp_logits, axis=-1, keepdims=True))[:, 1]
+        metrics_by_condition[condition] = calculate_metrics_v3(fake_probs, targets, threshold=threshold)
+
+    clean_m = metrics_by_condition["clean"]
+    q30_m = metrics_by_condition["q30"]
+    candidate_ids = reference_ids
+    if reference_eval_npz:
+        with np.load(reference_eval_npz, allow_pickle=False) as reference:
+            baseline_ids = reference["sample_ids"]
+            if not np.array_equal(baseline_ids, candidate_ids):
+                raise ValueError("Candidate evaluation split không khớp baseline reference split")
+    sidecar = {
+        "schema": "candidate_eval/v2",
+        "evidence_level": "measured",
+        "split": "evaluation",
+        "n_samples": int(len(reference_ids)),
+        "candidate": os.path.basename(checkpoint_path),
+        "checkpoint": checkpoint_path,
+        "calibration": calibration_json,
+        "metrics": {
+            "real_acc_clean": float(clean_m["real_acc"]),
+            "fake_at_real90_clean": float(clean_m["fake_at_real90"]),
+            "auc_clean": float(clean_m["auc"]),
+            "real_acc_q30": float(q30_m["real_acc"]),
+            "fake_at_real90_q30": float(q30_m["fake_at_real90"]),
+            "auc_q30": float(q30_m["auc"]),
+        },
+    }
+    os.makedirs(os.path.dirname(os.path.abspath(sidecar_path)), exist_ok=True)
+    with open(sidecar_path, "w", encoding="utf-8") as handle:
+        json.dump(sidecar, handle, indent=2, ensure_ascii=False)
+    print(f"  [✓] Sidecar evaluation-only: {sidecar_path} ({sidecar['n_samples']} mẫu)")
 
 
 def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: bool = False):
@@ -273,6 +368,7 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
     anch_ckpt = cfg["checkpoints"]["anchored"]["path"]
     batch_size = str(cfg["runtime"].get("batch_size", 32))
     num_workers = str(cfg["runtime"].get("num_workers", 2))
+    seed = int(cfg.get("seed", 42))
     device = "cpu" if allow_cpu else "cuda"
     out_logs_dir = cfg["rebaseline"]["measured_artifacts_dir"]
     os.makedirs(out_logs_dir, exist_ok=True)
@@ -297,6 +393,7 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
                     "--batch_size", batch_size,
                     "--num_workers", num_workers,
                     "--device", device,
+                    "--seed", str(seed),
                     "--output_dir", out_logs_dir,
                 ],
                 f"Eval 7.3 cho mô hình {m_name.upper()} trên điều kiện {cond.upper()}"
@@ -312,10 +409,10 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
     base_q30_npz = os.path.join(out_logs_dir, "logits_baseline_q30.npz")
     anch_q30_npz = os.path.join(out_logs_dir, "logits_anchored_q30.npz")
 
-    base_calib_npz, _ = split_calibration_and_eval_logits(base_clean_npz, calib_ratio=calib_ratio)
-    anch_calib_npz, _ = split_calibration_and_eval_logits(anch_clean_npz, calib_ratio=calib_ratio)
-    split_calibration_and_eval_logits(base_q30_npz, calib_ratio=calib_ratio)
-    split_calibration_and_eval_logits(anch_q30_npz, calib_ratio=calib_ratio)
+    base_calib_npz, base_clean_eval_npz = split_calibration_and_eval_logits(base_clean_npz, calib_ratio=calib_ratio, seed=seed)
+    anch_calib_npz, _ = split_calibration_and_eval_logits(anch_clean_npz, calib_ratio=calib_ratio, seed=seed)
+    split_calibration_and_eval_logits(base_q30_npz, calib_ratio=calib_ratio, seed=seed)
+    split_calibration_and_eval_logits(anch_q30_npz, calib_ratio=calib_ratio, seed=seed)
 
     calib_out_dir = cfg["calibration"]["output_dir"]
     os.makedirs(calib_out_dir, exist_ok=True)
@@ -368,7 +465,14 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
     # -------------------------------------------------------------------------
     # BƯỚC 4: Đo đạc 12 ứng viên trên CFE & Tuyển chọn Pareto Best (Task 7.5)
     # -------------------------------------------------------------------------
-    cand_files = [f for f in os.listdir(cands_dir) if f.startswith("wise_ft_v2_") and f.endswith(".pth") and not f.endswith("_best.pth")]
+    cand_files = [
+        f"wise_ft_v2_a{int(alpha * 100):02d}_b{int(beta * 100):02d}.pth"
+        for alpha in cfg["wise_ft_gen2"]["alpha_grid"]
+        for beta in cfg["wise_ft_gen2"]["beta_grid"]
+    ]
+    missing_candidates = [name for name in cand_files if not os.path.isfile(os.path.join(cands_dir, name))]
+    if missing_candidates:
+        raise FileNotFoundError(f"Thiếu candidate vừa sinh: {missing_candidates}")
     print(f"\n[*] Bắt đầu đo đạc đánh giá {len(cand_files)} ứng viên trên CFE Clean & Q30...")
 
     base_calib_json = cfg["calibration"]["baseline_json"]
@@ -388,10 +492,23 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
                 "--batch_size", batch_size,
                 "--num_workers", num_workers,
                 "--device", device,
+                "--seed", str(seed),
                 "--output_dir", out_logs_dir,
                 "--export_candidate_eval", c_path.replace(".pth", "_eval.json"),
             ],
             f"Đo đạc ứng viên WiSE-FT: {cand_name} (Clean & Q30)"
+        )
+        cand_clean_npz = os.path.join(out_logs_dir, f"logits_{cand_name}_clean.npz")
+        cand_q30_npz = os.path.join(out_logs_dir, f"logits_{cand_name}_q30.npz")
+        _, cand_clean_eval = split_calibration_and_eval_logits(cand_clean_npz, calib_ratio=calib_ratio, seed=seed)
+        _, cand_q30_eval = split_calibration_and_eval_logits(cand_q30_npz, calib_ratio=calib_ratio, seed=seed)
+        write_candidate_eval_sidecar_from_splits(
+            cand_clean_eval,
+            cand_q30_eval,
+            base_calib_json,
+            c_path.replace(".pth", "_eval.json"),
+            c_path,
+            base_clean_eval_npz,
         )
 
     # Chạy tuyển chọn Pareto
@@ -403,6 +520,8 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
             sys.executable, "tools/sweep_wise_ft_candidates.py",
             "--candidates_dir", cands_dir,
             "--calibration", base_calib_json,
+            "--alpha_grid", alpha_str,
+            "--beta_grid", beta_str,
             "--output_csv", sweep_csv,
             "--best_output", best_ckpt_path,
         ],
@@ -426,6 +545,7 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
                 "--batch_size", batch_size,
                 "--num_workers", num_workers,
                 "--device", device,
+                "--seed", str(seed),
                 "--output_dir", out_logs_dir,
             ],
             f"Đánh giá WiSE-FT Gen 2 Best trên điều kiện {cond.upper()}"
@@ -434,8 +554,8 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
     # Tách phân vùng calibration / evaluation cho WiSE-FT Gen 2 Best
     wise_clean_npz = os.path.join(out_logs_dir, "logits_wise_ft_v2_clean.npz")
     wise_q30_npz = os.path.join(out_logs_dir, "logits_wise_ft_v2_q30.npz")
-    split_calibration_and_eval_logits(wise_clean_npz, calib_ratio=calib_ratio)
-    split_calibration_and_eval_logits(wise_q30_npz, calib_ratio=calib_ratio)
+    split_calibration_and_eval_logits(wise_clean_npz, calib_ratio=calib_ratio, seed=seed)
+    split_calibration_and_eval_logits(wise_q30_npz, calib_ratio=calib_ratio, seed=seed)
 
     # -------------------------------------------------------------------------
     # BƯỚC 6: Re-baseline Ma Trận 4 Cấu Hình từ Số Đo Thật (Task 7.6)
@@ -451,6 +571,11 @@ def run_phase7_acceptance(cfg_path: str, allow_cpu: bool = False, allow_dirty: b
             "--calibration_anchored", os.path.join(calib_out_dir, "anchored.json"),
             "--measured_dir", out_logs_dir,
             "--use_eval_split",
+            "--must_fake_at_real90_q30", str(cfg["gate_g7_1"]["must"]["fake_at_real90_q30"]),
+            "--must_auc_clean", str(cfg["gate_g7_1"]["must"]["auc_clean"]),
+            "--must_auc_q30", str(cfg["gate_g7_1"]["must"]["auc_q30"]),
+            "--stretch_fake_at_real90_q30", str(cfg["gate_g7_1"]["stretch"]["fake_at_real90_q30"]),
+            "--seed", str(seed),
             "--output_json", rebase_json,
             "--output_md", rebase_md,
         ],

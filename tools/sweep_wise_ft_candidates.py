@@ -165,6 +165,10 @@ def evaluate_mock_or_real_candidate(
         measured = json.load(handle)
     if measured.get("evidence_level") != "measured":
         raise ValueError(f"{eval_path} không được đánh dấu evidence_level=measured")
+    if measured.get("split") != "evaluation" or int(measured.get("n_samples", 0)) <= 0:
+        raise ValueError(
+            f"{eval_path} không phải evaluation-only sidecar; từ chối tuyển chọn trên tập gộp/calibration"
+        )
     metrics = measured.get("metrics", measured)
     required = {
         "real_acc_clean", "fake_at_real90_clean", "auc_clean",
@@ -208,6 +212,10 @@ def main():
                         help="Đường dẫn xuất tệp CSV bảng kết quả sweep")
     parser.add_argument("--best_output", type=str, default="DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth",
                         help="Đường dẫn lưu checkpoint chiến thắng")
+    parser.add_argument("--alpha_grid", type=str, default="",
+                        help="Nếu đặt, chỉ nhận đúng các alpha được khai báo (phân cách bằng dấu phẩy)")
+    parser.add_argument("--beta_grid", type=str, default="",
+                        help="Nếu đặt, chỉ nhận đúng các beta_srm được khai báo (phân cách bằng dấu phẩy)")
     parser.add_argument("--test_dummy", action="store_true",
                         help="Chạy chế độ mô phỏng đánh giá trên CPU")
     args = parser.parse_args()
@@ -234,8 +242,20 @@ def main():
             print(f"[!] Cảnh báo nạp calibration: {e}")
 
     # Tìm các file ứng viên
-    cand_pattern = os.path.join(args.candidates_dir, "wise_ft_v2_*.pth")
-    cand_files = sorted(glob.glob(cand_pattern))
+    if args.alpha_grid and args.beta_grid:
+        alphas = [float(value.strip()) for value in args.alpha_grid.split(",") if value.strip()]
+        betas = [float(value.strip()) for value in args.beta_grid.split(",") if value.strip()]
+        cand_files = [
+            os.path.join(args.candidates_dir, f"wise_ft_v2_a{int(alpha * 100):02d}_b{int(beta * 100):02d}.pth")
+            for alpha in alphas
+            for beta in betas
+        ]
+        missing = [path for path in cand_files if not os.path.isfile(path)]
+        if missing and not args.test_dummy:
+            raise FileNotFoundError(f"Thiếu candidate trong lưới khai báo: {missing}")
+    else:
+        cand_pattern = os.path.join(args.candidates_dir, "wise_ft_v2_*.pth")
+        cand_files = sorted(glob.glob(cand_pattern))
 
     # Nếu chưa có file thật trên đĩa và đang chạy test_dummy, tạo danh sách ảo 12 ứng viên
     if not cand_files and args.test_dummy:

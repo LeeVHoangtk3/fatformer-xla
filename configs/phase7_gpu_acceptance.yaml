@@ -28,7 +28,7 @@ checkpoints:
   clip_vit_l14:
     path: "DATASET/pretrained/ViT-L-14.pt"
     # SHA-256 của trọng số CLIP ViT-L/14 chuẩn OpenAI
-    expected_sha256: "b8cca3fd8d72c9937d9c6deaf4e4937769d2d400c4180582ec2475e556f7522f"
+    expected_sha256: "b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836"
   
   baseline:
     path: "DATASET/pretrained/fatformer_4class_ckpt.pth"
