@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: ☁️ **T4 ~45 phút**
 - **Độ ưu tiên**: 🟠 Cao — **chốt G7.1**
 - **Cổng liên quan**: **G7.1** (cuối D4)
-- **Trạng thái**: `[ ] CHƯA NGHIỆM THU — KẾT QUẢ CŨ LÀ SYNTHETIC; CẦN RUN CFE THẬT` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.6_rebaseline.md))
+- **Trạng thái**: `[~] ĐÃ ĐO THẬT — G7.1 FAIL; CHỜ ĐỒNG BỘ ARTIFACT COLAB` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.6_rebaseline.md))
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.6
 
 ---
