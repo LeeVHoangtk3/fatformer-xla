@@ -24,6 +24,7 @@ import hashlib
 import argparse
 import re
 import subprocess
+import gc
 from typing import Dict, Tuple, List, Optional, Any, Set
 
 import torch
@@ -313,61 +314,71 @@ def verify_checkpoint(checkpoint_path: str, model_args: Optional[argparse.Namesp
     """
     print(f"\n[*] Đang thực thi xác thực cấu trúc (--verify): {checkpoint_path}")
 
+    if model_args is None:
+        clip_candidates = [
+            os.path.join(PROJECT_ROOT, "DATASET", "pretrained", "ViT-L-14.pt"),
+            os.path.join(PROJECT_ROOT, "pretrained", "ViT-L-14.pt"),
+            os.path.join(PROJECT_ROOT, "ViT-L-14.pt")
+        ]
+        clip_path = find_first_existing(clip_candidates) or ""
+        model_args = argparse.Namespace(
+            backbone="CLIP:ViT-L/14",
+            clip_path=clip_path,
+            num_classes=2,
+            num_vit_adapter=3,
+            num_context_embedding=8,
+            init_context_embedding="",
+            hidden_dim=768,
+            clip_vision_width=1024,
+            frequency_encoder_layer=2,
+            decoder_layer=4,
+            num_heads=12,
+            use_srm=True,
+            use_gating=True
+        )
+
     # Ưu tiên Canonical Loader từ Task 7.2 nếu đã sẵn sàng
     try:
         from src.models.canonical_loader import load_canonical
         model, rep = load_canonical(checkpoint_path, model_args)
-        missing = rep.get("missing", [])
-        unexpected = rep.get("unexpected", [])
+        missing_keys = list(rep.get("missing_keys", []))
+        unexpected_keys = list(rep.get("unexpected_keys", []))
+        missing_count = int(rep.get("missing", len(missing_keys)))
+        unexpected_count = int(rep.get("unexpected", len(unexpected_keys)))
         layout = rep.get("layout", {})
         is_partial = layout.get("partial", False)
-        print(f"[VERIFY] Canonical Loader: missing={len(missing)}, unexpected={len(unexpected)}, layout={layout}")
+        print(f"[VERIFY] Canonical Loader: missing={missing_count}, unexpected={unexpected_count}, layout={layout}")
     except ImportError:
         # Fallback xác thực trực tiếp qua build_model + strict=True
         from src.models import build_model
-        if model_args is None:
-            clip_candidates = [
-                os.path.join(PROJECT_ROOT, "DATASET", "pretrained", "ViT-L-14.pt"),
-                os.path.join(PROJECT_ROOT, "pretrained", "ViT-L-14.pt"),
-                os.path.join(PROJECT_ROOT, "ViT-L-14.pt")
-            ]
-            clip_path = find_first_existing(clip_candidates) or ""
-            model_args = argparse.Namespace(
-                backbone="CLIP:ViT-L/14",
-                clip_path=clip_path,
-                num_classes=2,
-                num_vit_adapter=3,
-                num_context_embedding=8,
-                init_context_embedding="",
-                hidden_dim=768,
-                clip_vision_width=1024,
-                frequency_encoder_layer=2,
-                decoder_layer=4,
-                num_heads=12,
-                use_srm=True,
-                use_gating=True
-            )
-
         model = build_model(model_args)
         raw_sd = safe_load_state_dict(checkpoint_path, device="cpu")
         load_res = model.load_state_dict(raw_sd, strict=True)
-        missing = load_res.missing_keys
-        unexpected = load_res.unexpected_keys
+        missing_keys = list(load_res.missing_keys)
+        unexpected_keys = list(load_res.unexpected_keys)
+        missing_count = len(missing_keys)
+        unexpected_count = len(unexpected_keys)
         is_partial = False
         layout = {"n": 3, "indices": [7, 15, 23], "dropped": [], "partial": False}
-        print(f"[VERIFY] Strict Load: missing={len(missing)}, unexpected={len(unexpected)}, layout={layout}")
+        print(f"[VERIFY] Strict Load: missing={missing_count}, unexpected={unexpected_count}, layout={layout}")
 
-    if missing or unexpected or is_partial:
+    if missing_count or unexpected_count or is_partial:
         print(f"[!] XÁC THỰC THẤT BẠI: Checkpoint không tương thích kiến trúc!")
-        print(f"    • Missing keys    : {len(missing)} {missing[:5]}")
-        print(f"    • Unexpected keys : {len(unexpected)} {unexpected[:5]}")
+        print(f"    • Missing keys    : {missing_count} {missing_keys[:5]}")
+        print(f"    • Unexpected keys : {unexpected_count} {unexpected_keys[:5]}")
         print(f"    • Layout partial  : {is_partial}")
-        sys.exit(1)
+        raise RuntimeError(
+            f"Checkpoint verify thất bại: missing={missing_count}, "
+            f"unexpected={unexpected_count}, partial={is_partial}"
+        )
 
     print("[✓] Xác thực cấu trúc checkpoint: ĐẠT 100% (0 missing, 0 unexpected keys)!")
+    if "model" in locals():
+        del model
+    gc.collect()
     return {
-        "missing": len(missing),
-        "unexpected": len(unexpected),
+        "missing": missing_count,
+        "unexpected": unexpected_count,
         "status": "ok",
         "layout": layout
     }
@@ -617,6 +628,8 @@ def main():
                     "sha256": sha,
                     "n_keys": len(cand_sd)
                 })
+                del cand_sd
+                gc.collect()
 
         print("\n" + "=" * 84)
         print(f"[✓] HOÀN TẤT SINH LƯỚI 12 ỨNG VIÊN WiSE-FT GEN 2!")
