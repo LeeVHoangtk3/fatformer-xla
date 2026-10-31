@@ -662,7 +662,7 @@ def parse_args():
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--num_workers", type=int, default=2)
     parser.add_argument("--device", type=str, default="auto", choices=["auto", "cuda", "cpu"])
-    parser.add_argument("--output_dir", type=str, default="logs/phase7")
+    parser.add_argument("--output_dir", type=str, default="DATASET/logs/phase7")
     parser.add_argument("--threshold", "-t", type=float, default=None, help="Ngưỡng cố định T* (mặc định đọc từ calibration hoặc 0.50)")
     parser.add_argument("--calibration", type=str, default=None, help="Đường dẫn file calibration.json (Task 7.4)")
     parser.add_argument("--degrade_order", type=str, default="post_resize", choices=["post_resize", "pre_resize"],
@@ -719,6 +719,8 @@ def main():
 
     # Dữ liệu
     if args.test_dummy:
+        if os.path.normpath(args.output_dir) == os.path.normpath("DATASET/logs/phase7"):
+            args.output_dir = "DATASET/logs/phase7/dummy"
         import tempfile
         dummy_dir = tempfile.mkdtemp(prefix="cfe_dummy_")
         create_dummy_cfe_data(dummy_dir)
@@ -792,7 +794,9 @@ def main():
     # Xuất file schema v3
     os.makedirs(args.output_dir, exist_ok=True)
     schema_v3_output = {
-        "report_schema": "v3",
+        "report_schema": "v3-dummy" if args.test_dummy else "v3",
+        "evidence_level": "synthetic" if args.test_dummy else "measured",
+        "gate_eligible": not args.test_dummy,
         "git_commit": git_commit,
         "git_dirty": is_dirty,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),

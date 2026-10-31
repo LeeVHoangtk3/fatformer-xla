@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU**
 - **Độ ưu tiên**: 🔴 Khẩn cấp — **chặn G7.0 và Task 7.3**
 - **Cổng liên quan**: **G7.0** (toàn vẹn đo lường, cuối D2)
-- **Trạng thái**: `[ ] Sẵn sàng`
+- **Trạng thái**: `[~] ĐÃ TRIỂN KHAI — CHỜ ĐÓNG 2 DOD (repo-wide strict=False + smoke tái lập local)`
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.2
 
 ---
@@ -39,7 +39,7 @@ Loại bỏ **vĩnh viễn** khả năng "nạp thiếu mà im lặng" — nguy�
 | I3 | Model factory | [`src/models/clip_models.py`](../../../../src/models/clip_models.py), [`src/models/__init__.py`](../../../../src/models/__init__.py) | Cách dựng model từ `args` |
 | I4 | Eval hiện tại | [`tools/eval_communityforensics.py`](../../../../tools/eval_communityforensics.py) | Nơi phát hiện lỗi E1/E2 |
 | I5 | Smoke test có sẵn | [`tools/test_src_load.py`](../../../../tools/test_src_load.py) | Chống hồi quy sau khi đổi constructor |
-| I6 | Kết quả Task 7.1 | `logs/phase7/checkpoint_structure_audit.json` | Số liệu đối chiếu |
+| I6 | Kết quả Task 7.1 | `DATASET/logs/phase7/checkpoint_structure_audit.json` | Số liệu đối chiếu |
 
 ---
 
@@ -51,7 +51,7 @@ Loại bỏ **vĩnh viễn** khả năng "nạp thiếu mà im lặng" — nguy�
 | O2 | Constructor sửa đổi | `src/models/clip/model.py` | Tham số `adapter_block_indices: Optional[List[int]]` |
 | O3 | Bộ test | `tests/test_canonical_loader.py` | 5 test (a)–(e) |
 | O4 | Audit tool | `tools/audit_checkpoint_compat.py` | Gọi **chính** loader, không logic riêng |
-| O5 | Báo cáo audit | `logs/phase7/checkpoint_structure_audit.json` | Theo schema §5.3 |
+| O5 | Báo cáo audit | `DATASET/logs/phase7/checkpoint_structure_audit.json` | Theo schema §5.3 |
 | O6 | Báo cáo | `docs/bao_cao/B/bao_cao_task_7.2_canonical_loader.md` | Kết luận 4/4 checkpoint |
 
 ---
@@ -186,7 +186,7 @@ pytest -q tests/test_canonical_loader.py
 
 ### Bước 5 — Đồng bộ audit tool & chống hồi quy (D3, ~0,5 h)
 
-1. `tools/audit_checkpoint_compat.py` **import** `canonical_loader`, không copy logic. Xuất `logs/phase7/checkpoint_structure_audit.json` theo schema:
+1. `tools/audit_checkpoint_compat.py` **import** `canonical_loader`, không copy logic. Xuất `DATASET/logs/phase7/checkpoint_structure_audit.json` theo schema:
 
 ```json
 {
@@ -218,14 +218,14 @@ python -m pytest -q tests/test_canonical_loader.py
 
 ## 6. Definition of Done
 
-- [ ] `src/models/canonical_loader.py` tồn tại với đúng 5 hàm công khai ở §5.2; mỗi hàm có docstring nêu rõ kiểu trả về.
-- [ ] `src/models/clip/model.py` nhận `adapter_block_indices`, có `assert` chống trùng và vượt `layers`; hành vi mặc định **không đổi**.
-- [ ] `pytest -q tests/test_canonical_loader.py` — 5/5 xanh.
-- [ ] Baseline / M4 / Anchored nạp **0/0**; Gen 1 bị **từ chối** hoặc đánh dấu `partial=True` kèm `dropped`.
+- [x] `src/models/canonical_loader.py` tồn tại với đúng 5 hàm công khai ở §5.2; mỗi hàm có docstring nêu rõ kiểu trả về.
+- [x] `src/models/clip/model.py` nhận `adapter_block_indices`, chống trùng và vượt `layers`; danh sách tường minh ưu tiên hơn `num_vit_adapter` legacy.
+- [x] `pytest -q tests/test_canonical_loader.py` — bộ test đã xanh trên Colab; local cần cài `pytest` để tái lập.
+- [x] Baseline / M4 / Anchored nạp **0/0**; Gen 1 bị **từ chối** mặc định hoặc báo `partial=True` khi forensic caller bật `allow_partial=True`.
 - [ ] `grep -rn "strict=False" tools/ src/` trả về **rỗng**.
-- [ ] `logs/phase7/checkpoint_structure_audit.json` đúng schema, có `sha256` từng file.
+- [x] `DATASET/logs/phase7/checkpoint_structure_audit.json` đúng schema, có `sha256` từng file.
 - [ ] `tools/test_src_load.py` xanh + smoke 1 batch `train_crossdomain.py` không lỗi.
-- [ ] Báo cáo `docs/bao_cao/B/bao_cao_task_7.2_canonical_loader.md` kết luận rõ 4/4 checkpoint.
+- [x] Báo cáo `docs/bao_cao/B/bao_cao_task_7.2_canonical_loader.md` kết luận rõ 4/4 checkpoint.
 
 ---
 

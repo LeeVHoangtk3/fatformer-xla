@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: ☁️ **T4 ~45 phút**
 - **Độ ưu tiên**: 🟠 Cao — **chốt G7.1**
 - **Cổng liên quan**: **G7.1** (cuối D4)
-- **Trạng thái**: `[ ] Sẵn sàng`
+- **Trạng thái**: `[ ] CHƯA NGHIỆM THU — KẾT QUẢ CŨ LÀ SYNTHETIC; CẦN RUN CFE THẬT` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.6_rebaseline.md))
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.6
 
 ---
@@ -38,7 +38,7 @@ Tạo **một bảng duy nhất** so sánh 4 cấu hình trên **cùng harness v
 | :---: | :--- | :--- | :--- |
 | I1 | 3 checkpoint | Baseline, Anchored, `fatformer_wise_ft_v2_best.pth` | 3 cấu hình đầu |
 | I2 | Eval v3 | [`tools/eval_communityforensics.py`](../../../../tools/eval_communityforensics.py) (Task 7.3) | Harness **duy nhất** |
-| I3 | Calibration | `logs/phase7/calibration/*.json` (Task 7.4) | `T`, `T*` |
+| I3 | Calibration | `DATASET/logs/phase7/calibration/*.json` (Task 7.4) | `T`, `T*` |
 | I4 | CFE | `DATASET/test_communityforensics` (2.000 ảnh, 5 subset) | Tập đo |
 | I5 | Bảng cũ 26/10 | `docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md` | Đối chiếu |
 
@@ -48,8 +48,8 @@ Tạo **một bảng duy nhất** so sánh 4 cấu hình trên **cùng harness v
 
 | # | Artifact | Đường dẫn | Nội dung |
 | :---: | :--- | :--- | :--- |
-| O1 | Ma trận JSON | `logs/phase7/cfe_v3_baseline_matrix.json` | 4 × 2 × 6 + metadata |
-| O2 | Ma trận Markdown | `logs/phase7/cfe_v3_baseline_matrix.md` | Bảng đọc được + phán quyết G7.1 |
+| O1 | Ma trận JSON | `DATASET/logs/phase7/cfe_v3_baseline_matrix.json` | 4 × 2 × 6 + metadata |
+| O2 | Ma trận Markdown | `DATASET/logs/phase7/cfe_v3_baseline_matrix.md` | Bảng đọc được + phán quyết G7.1 |
 | O3 | Bảng đối chiếu | cùng file `.md`, mục "So với 26/10" | Chênh lệch + nguyên nhân |
 | O4 | Báo cáo | `docs/bao_cao/C/bao_cao_task_7.6_rebaseline.md` | Kết luận có số |
 
@@ -76,8 +76,8 @@ for M in baseline anchored wise_ft_v2; do
     python tools/eval_communityforensics.py \
       --checkpoint <ckpt_$M> --data_root DATASET/test_communityforensics \
       --condition $C --degrade_order post_resize \
-      --calibration logs/phase7/calibration/$M.json \
-      --seed 42 --output logs/phase7/eval_v3_${M}_${C}.json
+      --calibration DATASET/logs/phase7/calibration/$M.json \
+      --seed 42 --output DATASET/logs/phase7/eval_v3_${M}_${C}.json
   done
 done
 ```
@@ -168,12 +168,12 @@ Ghi vào Markdown:
 
 ## 6. Definition of Done
 
-- [ ] `logs/phase7/cfe_v3_baseline_matrix.json` đủ **4 cấu hình × 2 điều kiện × 6 chỉ số**, mỗi chỉ số chính có `ci95`.
-- [ ] `checks` có đủ 4 mục, tất cả `status = ok`, `missing = 0`, `unexpected = 0`.
-- [ ] `logs/phase7/cfe_v3_baseline_matrix.md` có bảng đọc được + mục **"So với 26/10"**.
+- [ ] `DATASET/logs/phase7/cfe_v3_baseline_matrix.json` đủ **4 cấu hình × 2 điều kiện × 6 chỉ số đo thật**, mỗi chỉ số chính có `ci95`.
+- [ ] `checks` được sinh bởi canonical loader cho đủ 4 cấu hình, tất cả `status = ok`, `missing = 0`, `unexpected = 0`.
+- [ ] `DATASET/logs/phase7/cfe_v3_baseline_matrix.md` có bảng đọc được + mục **"So với 26/10"**.
 - [ ] Mọi chênh lệch > 2 pp đều được gán nhóm nguyên nhân; không còn ô "chưa giải thích".
-- [ ] Phán quyết G7.1 ghi rõ PASS/FAIL **kèm số** cho từng ngưỡng.
-- [ ] Ensemble dùng trung bình **logit đã hiệu chuẩn**, có test đối chiếu.
+- [ ] Phán quyết G7.1 ghi rõ PASS/FAIL **kèm số đo thật** cho từng ngưỡng.
+- [ ] Ensemble dùng trung bình **logit đã hiệu chuẩn đo thật**, có test đối chiếu.
 - [ ] Báo cáo nêu rõ cấu hình nào nên dùng làm mốc cho G7.2.
 
 ---

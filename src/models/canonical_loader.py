@@ -145,7 +145,8 @@ def resolve_layout(blocks: Set[int], layers: int = 24) -> dict:
     does not make a checkpoint compatible. Among exact matches, the smallest
     ``n`` is selected. If none matches, the candidate with the smallest
     symmetric difference is reported (ties use the smaller ``n``); callers
-    must reject that partial layout before building/loading the model.
+    official callers must reject that partial layout; forensic callers may
+    inspect it only through ``load_canonical(..., allow_partial=True)``.
     """
     if layers <= 0:
         raise ValueError("layers phải lớn hơn 0.")
@@ -267,11 +268,11 @@ def load_canonical(
     """Build and strictly load a model using its explicit checkpoint layout.
 
     ``model_args`` is the ``SimpleNamespace`` used by the evaluator. Its
-    original object is never mutated. ``allow_partial=True`` only permits
-    state_dict key gaps after a valid architecture layout has been resolved;
-    it never permits an unrepresentable adapter layout such as legacy Gen 1.
-    The default path uses ``load_state_dict(strict=True)`` and raises with full
-    missing/unexpected key lists on any mismatch.
+    original object is never mutated. By default an unrepresentable layout is
+    rejected. ``allow_partial=True`` is an explicit forensic escape hatch: it
+    builds the nearest supported layout, loads compatible tensors with
+    ``strict=False`` and returns the complete dropped/missing/unexpected report.
+    This mode must never be used for an official benchmark.
     """
     state_dict = extract_state_dict(ckpt_path)
     layers = int(getattr(model_args, "layers", 24))
@@ -291,7 +292,7 @@ def load_canonical(
             )
     layout = resolve_layout(blocks, layers=layers)
     adapter_index = _adapter_index(state_dict, blocks)
-    if layout["partial"]:
+    if layout["partial"] and not allow_partial:
         raise IncompleteLayoutError(
             "Checkpoint adapter layout không biểu diễn được chính xác: "
             f"blocks={sorted(blocks)}, nearest_n={layout['n']}, "

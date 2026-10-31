@@ -261,7 +261,7 @@ def main():
     parser.add_argument("--threshold", type=float, default=0.50)
     parser.add_argument("--max_samples", type=int, default=2000)
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
-    parser.add_argument("--output", type=str, default="logs/phase7/wise_ft_legacy_reinterpretation.json")
+    parser.add_argument("--output", type=str, default="DATASET/logs/phase7/wise_ft_legacy_reinterpretation.json")
     parser.add_argument("--dummy", action="store_true", help="Chạy chế độ giả lập để kiểm tra cú pháp khi không có GPU/data")
     args = parser.parse_args()
 
@@ -374,12 +374,19 @@ def main():
     if delta_fake >= 10.0:
         verdict = "artifact_loader"
         explanation = "n=8 hơn n=3 >= 10 pp Fake ACC: Nguyên nhân sụp đổ chính là do loader cũ ép n=3 và vứt 7 khối adapter."
+    elif delta_fake <= -10.0:
+        verdict = "inconclusive"
+        explanation = (
+            "n=8 thấp hơn n=3 >= 10 pp. Luật chỉ cho phép kết luận "
+            "artifact_loader khi n=8 tốt hơn; kết quả đảo chiều này không đủ "
+            "để gán different_basin nếu chưa có CI, nên giữ invalid_layout."
+        )
     elif abs(delta_fake) < 3.0:
         verdict = "different_basin"
         explanation = "n=8 và n=3 chênh < 3 pp và đều thấp: Bản thân trọng số WiSE-FT đã trượt vào basin nghiệm kém, không phải do loader."
     else:
         verdict = "inconclusive"
-        explanation = "Chênh lệch từ 3 đến 10 pp: Không đủ bằng chứng kết luận loader là nguyên nhân duy nhất; giữ nhãn invalid_layout."
+        explanation = "Độ lớn chênh lệch từ 3 đến 10 pp: Không đủ bằng chứng kết luận loader là nguyên nhân duy nhất; giữ nhãn invalid_layout."
 
     output_doc = {
         "schema": "gen1_reinterpretation/v1",

@@ -12,11 +12,11 @@
 
 | Mã | Tệp đặc tả | Tên nhiệm vụ | Ngày | Ước lượng | Cổng | Trạng thái |
 | :---: | :--- | :--- | :---: | ---: | :---: | :---: |
-| **7.1** | [`task_7.1_audit_checkpoint_gen1.md`](task_7.1_audit_checkpoint_gen1.md) | Audit cấu trúc & đo lại Gen 1 (`n=3` vs `n=8`) | D1–D2 | 4 h | **G7.0** | `[x] Đã hoàn thành (PASS G7.0)` |
-| **7.3** | [`task_7.3_eval_v3_measurement_contract.md`](task_7.3_eval_v3_measurement_contract.md) | Evaluation v3: khế ước đo lường, bỏ `strict=False`, bỏ ngưỡng batch | D2–D3 | 6 h | **G7.0** | `[x] Đã hoàn thành (Giai đoạn 1 PASS 100%)` |
-| **7.4** | [`task_7.4_calibration_threshold_fpr.md`](task_7.4_calibration_threshold_fpr.md) | Hiệu chuẩn nhiệt độ & ngưỡng ràng buộc FPR + ECE | D3 | 4 h | **G7.0** | `[x] Đã hoàn thành (PASS 100%)` |
-| **7.5** | [`task_7.5_wise_ft_gen2.md`](task_7.5_wise_ft_gen2.md) | WiSE-FT **Gen 2** + lưới `α×β_srm` + verify | D3–D4 | 5 h | **G7.1** | `[x] Đã hoàn thành (PASS 100%)` |
-| **7.6** | [`task_7.6_rebaseline_cfe_v3.md`](task_7.6_rebaseline_cfe_v3.md) | Re-baseline 4 cấu hình trên CFE bằng harness v3 | D4 | 3 h | **G7.1** | `[ ] Sẵn sàng` |
+| **7.1** | [`task_7.1_audit_checkpoint_gen1.md`](task_7.1_audit_checkpoint_gen1.md) | Audit cấu trúc & đo lại Gen 1 (`n=3` vs `n=8`) | D1–D2 | 4 h | **G7.0** | `[~] Audit xong; chờ CI` |
+| **7.3** | [`task_7.3_eval_v3_measurement_contract.md`](task_7.3_eval_v3_measurement_contract.md) | Evaluation v3: khế ước đo lường, bỏ `strict=False`, bỏ ngưỡng batch | D2–D3 | 6 h | **G7.0** | `[~] Core pass; chờ run thật` |
+| **7.4** | [`task_7.4_calibration_threshold_fpr.md`](task_7.4_calibration_threshold_fpr.md) | Hiệu chuẩn nhiệt độ & ngưỡng ràng buộc FPR + ECE | D3 | 4 h | **G7.0** | `[~] Engine pass; chờ logits thật` |
+| **7.5** | [`task_7.5_wise_ft_gen2.md`](task_7.5_wise_ft_gen2.md) | WiSE-FT **Gen 2** + lưới `α×β_srm` + verify | D3–D4 | 5 h | **G7.1** | `[~] Merge pass; chờ sweep thật` |
+| **7.6** | [`task_7.6_rebaseline_cfe_v3.md`](task_7.6_rebaseline_cfe_v3.md) | Re-baseline 4 cấu hình trên CFE bằng harness v3 | D4 | 3 h | **G7.1** | `[ ] Chưa nghiệm thu` |
 | **7.11** | [`task_7.11_train_anchored_v2.md`](task_7.11_train_anchored_v2.md) | Huấn luyện Anchored Recovery v2 | D6–D7 | 5 h + GPU | **G7.2** | `[ ] Sẵn sàng` |
 | **7.12** | [`task_7.12_ablation_mini_v2.md`](task_7.12_ablation_mini_v2.md) | Ablation mini 4 cấu hình (cùng seed 42) | D7–D8 | 4 h + GPU | **G7.2** | `[ ] Sẵn sàng` |
 | **7.14** | [`task_7.14_locked_benchmark_phase7.md`](task_7.14_locked_benchmark_phase7.md) | Locked Benchmark Phase 7 (in-dist 82k + CFE + 6 biến thể) | D9–D10 | 5 h | **G7.3** | `[ ] Sẵn sàng` |
@@ -64,10 +64,10 @@ flowchart TD
 
 | Ngày | Việc phải xong | Bằng chứng |
 | :---: | :--- | :--- |
-| D1 | 7.1 audit JSON cho 4 checkpoint | `logs/phase7/checkpoint_structure_audit.json` |
+| D1 | 7.1 audit JSON cho 4 checkpoint | `DATASET/logs/phase7/checkpoint_structure_audit.json` |
 | D2 | 7.1 kết luận + 7.3 khung eval v3 | `bao_cao_task_7.1_checkpoint_audit.md`; **G7.0** |
-| D3 | 7.3 hoàn tất + 7.4 calibration + 7.5 khung | `report_schema v3` JSON; `calibration/*.json` |
-| D4 | 7.5 sweep 12 ứng viên + 7.6 re-baseline | `wise_ft_v2_sweep.csv`; `cfe_v3_baseline_matrix.md`; **G7.1** |
+| D3 | 7.3 core + 7.4 calibration + 7.5 khung | `report_schema v3` JSON đo thật; `DATASET/logs/phase7/calibration/*.json` |
+| D4 | 7.5 sweep 12 ứng viên + 7.6 re-baseline | `DATASET/logs/phase7/wise_ft_v2_sweep.csv`; `DATASET/logs/phase7/cfe_v3_baseline_matrix.md`; **G7.1** |
 | D5 | 7.5 kết luận + chuẩn bị 7.11 | checkpoint Gen 2 `verify 0/0` |
 | D6 | 7.11 benchmark 100 step + bắt đầu train | log thời gian/epoch |
 | D7 | 7.11 hoàn tất + 7.12 bắt đầu | `train_history.csv` |

@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local** + ☁️ **T4**
 - **Độ ưu tiên**: 🔴 Khẩn cấp — **chặn mọi số liệu Phase 7**
 - **Cổng liên quan**: **G7.0** (cuối D2)
-- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH (GIAI ĐOẠN 1: CORE METRICS & HARNESS v3 PASS 100%)` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.3_eval_v3.md))
+- **Trạng thái**: `[~] CORE METRICS/HARNESS PASS — CHỜ RUN CHECKPOINT + CFE THẬT` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.3_eval_v3.md))
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.3
 - **Khế ước bắt buộc**: [`ke_hoach_test_communityforensics_eval.md`](../../../plan/ke_hoach_test_communityforensics_eval.md) — **Phụ lục A**
 
@@ -38,7 +38,7 @@ Viết lại đường đo của [`tools/eval_communityforensics.py`](../../../.
 | I1 | Eval hiện tại | [`tools/eval_communityforensics.py`](../../../../tools/eval_communityforensics.py) | Đối tượng sửa (đang có thay đổi chưa commit của người dùng — **đọc kỹ trước khi sửa**) |
 | I2 | `canonical_loader` | `src/models/canonical_loader.py` (Task 7.2 — tạo mới) | Đường nạp **duy nhất** |
 | I3 | Tập test | `DATASET/test_communityforensics` (2.000 ảnh, 5 subset: 600/600/400/200/200) | Đo |
-| I4 | `calibration.json` | `logs/phase7/calibration/<model>.json` (Task 7.4) | `T`, `T*`, ngưỡng |
+| I4 | `calibration.json` | `DATASET/logs/phase7/calibration/<model>.json` (Task 7.4) | `T`, `T*`, ngưỡng |
 | I5 | Khế ước | Phụ lục A — §A.1, §A.2, §A.5, §A.7 | Định nghĩa metric & schema |
 
 ---
@@ -48,8 +48,8 @@ Viết lại đường đo của [`tools/eval_communityforensics.py`](../../../.
 | # | Artifact | Đường dẫn | Nội dung |
 | :---: | :--- | :--- | :--- |
 | O1 | Eval v3 | `tools/eval_communityforensics.py` | Không còn `strict=False`, không còn `adaptive_thresh` |
-| O2 | Schema output | `logs/phase7/eval_v3_<model>_<cond>.json` | `report_schema: "v3"`, đúng Phụ lục A.7 |
-| O3 | Báo cáo Markdown | `logs/phase7/eval_v3_<model>_<cond>.md` | Có cột `TPR@FPR=1/5/10`, dòng "Trạng thái nạp" |
+| O2 | Schema output | `DATASET/logs/phase7/eval_v3_<model>_<cond>.json` | `report_schema: "v3"`, đúng Phụ lục A.7 |
+| O3 | Báo cáo Markdown | `DATASET/logs/phase7/eval_v3_<model>_<cond>.md` | Có cột `TPR@FPR=1/5/10`, dòng "Trạng thái nạp" |
 | O4 | Test dummy | `--test_dummy` chạy được | Không cần dữ liệu thật |
 | O5 | Báo cáo | `docs/bao_cao/C/bao_cao_task_7.3_eval_v3.md` | Diff hành vi cũ/mới trên Baseline |
 
@@ -183,7 +183,7 @@ parser.add_argument("--degrade_order", choices=["post_resize", "pre_resize"],
 python tools/eval_communityforensics.py --test_dummy
 python tools/eval_communityforensics.py --checkpoint <Baseline> \
   --data_root DATASET/test_communityforensics --condition clean \
-  --calibration logs/phase7/calibration/baseline.json --seed 42
+  --calibration DATASET/logs/phase7/calibration/baseline.json --seed 42
 ```
 
 4. Kiểm tra: không còn dòng `Filtered out-of-graph` khi nạp 3 checkpoint hợp lệ; `missing=0, unexpected=0`.
@@ -202,7 +202,7 @@ python tools/eval_communityforensics.py --checkpoint <Baseline> \
 - [x] Bảng Markdown có cột `TPR@FPR=10%` + dòng "Trạng thái nạp".
 - [x] Đã thiết lập cổng chờ `load_canonical` từ chối nạp strict=False đối với checkpoint thật khi chưa có Task 7.2.
 - [x] Test mảng giả: 3 case ở §5.4 xanh 100%.
-- [x] Báo cáo nghiệm thu hoàn chỉnh: [`docs/bao_cao/C/bao_cao_task_7.3_eval_v3.md`](../../../bao_cao/C/bao_cao_task_7.3_eval_v3.md).
+- [ ] Báo cáo nghiệm thu hoàn chỉnh sau khi có run checkpoint + CFE thật; báo cáo hiện tại chỉ nghiệm thu core/schema.
 
 ---
 

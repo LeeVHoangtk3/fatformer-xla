@@ -89,17 +89,17 @@ def test_constructor_uses_explicit_adapter_indices(monkeypatch):
     assert [i for i, enabled in enumerate(captured["mask"]) if enabled] == indices
 
 
-def test_constructor_rejects_conflicting_explicit_indices_and_count(monkeypatch):
+def test_constructor_explicit_indices_override_legacy_count(monkeypatch):
     class CaptureTransformer(nn.Module):
         def __init__(self, *args, **kwargs):
             super().__init__()
 
     monkeypatch.setattr(clip_model_module, "Transformer", CaptureTransformer)
-    with pytest.raises(ValueError, match="mâu thuẫn"):
-        clip_model_module.VisionTransformer(
-            224, 14, 16, 24, 4, 8,
-            args=SimpleNamespace(num_vit_adapter=3, adapter_block_indices=[2, 5, 8, 11, 14, 17, 20, 23]),
-        )
+    model = clip_model_module.VisionTransformer(
+        224, 14, 16, 24, 4, 8,
+        args=SimpleNamespace(num_vit_adapter=3, adapter_block_indices=[2, 5, 8, 11, 14, 17, 20, 23]),
+    )
+    assert model.adapter_block_indices == (2, 5, 8, 11, 14, 17, 20, 23)
 
 
 @pytest.mark.parametrize("mutation,expected_key", [("missing", "head.weight"), ("unexpected", "extra.weight")])
@@ -135,6 +135,21 @@ def test_gen1_layout_is_rejected_without_remapping(monkeypatch):
     assert exc.value.report["layout"]["dropped"] == [7, 15]
     # An incompatible layout must be rejected before constructing a model.
     assert calls == []
+
+
+def test_gen1_layout_can_be_inspected_only_with_allow_partial(monkeypatch):
+    _install_toy_builder(monkeypatch)
+    indices = [2, 5, 7, 8, 11, 14, 15, 17, 20, 23]
+    source = _ToyModel(indices).state_dict()
+
+    model, report = canonical_loader.load_canonical(
+        source, SimpleNamespace(), allow_partial=True
+    )
+
+    assert model.adapter_block_indices == (2, 5, 8, 11, 14, 17, 20, 23)
+    assert report["layout"]["partial"] is True
+    assert report["layout"]["dropped"] == [7, 15]
+    assert report["unexpected"] > 0
 
 
 def test_original_namespace_is_not_mutated(monkeypatch):

@@ -1,4 +1,7 @@
-# BẢNG TỔNG HỢP HIỆU CHUẨN NHIỆT ĐỘ & NGƯỠNG (TASK 7.4)
+# BẢNG DUMMY — KHÔNG DÙNG NGHIỆM THU TASK 7.4
+> **CẢNH BÁO**: Nguồn fit là logits synthetic; `evidence_level=synthetic`, `gate_eligible=false`.
+
+## BẢNG TỔNG HỢP HIỆU CHUẨN NHIỆT ĐỘ & NGƯỠNG
 > **Thời gian xuất**: 2026-10-28 16:11:50 | **Quy chuẩn**: Phụ lục A.2
 
 | Model | Nguồn Fit | n_calib | Nhiệt Độ T | T* (FPR=5%) | T* (FPR=1%) | ECE Trước | ECE Sau | Real ACC | Fake ACC |

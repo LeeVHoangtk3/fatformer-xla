@@ -5,12 +5,14 @@
 > **Người thực hiện**: **Thành viên C** *(Training & Evaluation Lead)*  
 > **Người phối hợp**: **Thành viên B** *(Architecture Lead — tiêu thụ ngưỡng trong Router Task 7.13)*  
 > **Cổng kiểm soát chất lượng**: **Cổng G7.0 (Toàn vẹn đo lường)**  
-> **Trạng thái**: `[x] ĐÃ HOÀN THÀNH — PASS 100% (CPU VERIFIED)`  
+> **Trạng thái**: `[~] ENGINE/DUMMY PASS — CHƯA HIỆU CHUẨN CHECKPOINT THẬT`
+>
+> **CẢNH BÁO NGHIỆM THU**: Các số `T=1.2511`, `T*=0.8468` bên dưới được sinh từ 540 logits giả lập. Không được dùng cho 7.5, 7.6 hoặc phán quyết cổng. Tool hiện yêu cầu `--logits_npz` đo thật để phát hành calibration chính thức.
 > **Hiện vật bàn giao**:
 > - Công cụ hiệu chuẩn & tuyển chọn: [`tools/calibrate_and_select.py`](../../../tools/calibrate_and_select.py)
-> - Cấu hình hiệu chuẩn chuẩn hóa `calibration/v1`: [`logs/phase7/calibration/baseline.json`](../../../logs/phase7/calibration/baseline.json)
-> - Biểu đồ độ tin cậy trực quan: [`logs/phase7/calibration/baseline_reliability.png`](../../../logs/phase7/calibration/baseline_reliability.png)
-> - Bảng tổng hợp các mô hình: [`logs/phase7/calibration/summary.md`](../../../logs/phase7/calibration/summary.md)
+> - Cấu hình dummy: [`DATASET/logs/phase7/calibration/baseline.json`](../../../DATASET/logs/phase7/calibration/baseline.json)
+> - Biểu đồ dummy: [`DATASET/logs/phase7/calibration/baseline_reliability.png`](../../../DATASET/logs/phase7/calibration/baseline_reliability.png)
+> - Bảng tổng hợp dummy: [`DATASET/logs/phase7/calibration/summary.md`](../../../DATASET/logs/phase7/calibration/summary.md)
 
 ---
 
@@ -76,7 +78,9 @@ Thực nghiệm chấm cùng 1 ảnh trong 3 ngữ cảnh lô khác nhau:
 
 ---
 
-## 5. Bảng Kiểm Tra Tiêu Chí Hoàn Thành (Definition of Done)
+## 5. Checklist dummy lịch sử — không phải Definition of Done
+
+> Các dấu `[x]` dưới đây chỉ xác nhận engine trên dữ liệu synthetic. DoD đo thật nằm trong task spec và hiện chưa đóng.
 
 - [x] Xuất tệp `logs/phase7/calibration/baseline.json` đúng 100% schema `calibration/v1` (§5.5).
 - [x] Ngưỡng $T^*$ có đủ 3 mức FPR ($0.01 / 0.05 / 0.10$) và $FPR_{\text{measured}} \approx FPR_{\text{target}}$ (sai số $\le 0.5$ pp).
@@ -86,4 +90,3 @@ Thực nghiệm chấm cùng 1 ảnh trong 3 ngữ cảnh lô khác nhau:
 - [x] Đã chạy 5-Fold Cross Validation và báo cáo đầy đủ cả 5 fold kèm mean ± std.
 - [x] Xuất bảng tổng hợp `logs/phase7/calibration/summary.md`.
 - [x] Báo cáo nghiệm thu hoàn chỉnh trình bày chi tiết mọi tham số.
-

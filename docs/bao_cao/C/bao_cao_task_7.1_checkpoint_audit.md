@@ -5,7 +5,7 @@
 > **Người thực hiện**: **Thành viên C** *(Training & Evaluation Lead)*  
 > **Người phối hợp**: **Thành viên B** *(Architecture Lead)*  
 > **Cổng kiểm soát chất lượng**: **Cổng G7.0 (Toàn vẹn đo lường)**  
-> **Trạng thái**: `[x] ĐÃ HOÀN THÀNH — NGHIỆM THU PASS G7.0`  
+> **Trạng thái**: `[~] ĐẠT AUDIT CẤU TRÚC — CHƯA NGHIỆM THU PHÁN QUYẾT (THIẾU CI)`
 > **Hiện vật bàn giao**:
 > - Công cụ audit tương thích: [`tools/audit_checkpoint_compat.py`](../../../tools/audit_checkpoint_compat.py)
 > - Dữ liệu audit 4 checkpoint: [`logs/phase7/checkpoint_structure_audit.json`](../../../logs/phase7/checkpoint_structure_audit.json)
@@ -50,9 +50,9 @@ Thực nghiệm đo đạc độc lập trên cùng 2.000 ảnh Clean của Comm
 $\rightarrow$ **Trả lời:** **KHÔNG**. Layout $n=8$ không những không cao hơn mà còn **suy giảm nghiêm trọng** Fake ACC (-31.40 pp), đẩy mô hình vào trạng thái tê liệt hoàn toàn năng lực phát hiện ảnh giả (đoán Real 100%, Fake chỉ 4.10%). Ngược lại, layout $n=3$ có Fake ACC đạt 35.50% chỉ vì nó đã loại bỏ 7 khối pha trộn và khôi phục lại gần như nguyên vẹn trạng thái của mô hình Baseline gốc (Fake ACC Baseline = 35.30%).
 
 ### Câu hỏi 3: Phán quyết nguyên nhân — `artifact_loader`, `different_basin` hay `inconclusive`?
-* **Phán quyết:** **`different_basin` kết hợp `invalid_layout`**.
+* **Phán quyết:** **`inconclusive` kết hợp `invalid_layout`**.
 * **Giải thích cơ chế:**  
-  Giả thuyết `artifact_loader` (cho rằng loader cũ ép $n=3$ làm hỏng Gen 1) đã bị **bác bỏ hoàn toàn**. Thực tế chứng minh chính cấu hình $n=8$ mới là thủ phạm tạo ra kết quả sụp đổ 4.10% ở Phase 6-R. Nguyên nhân gốc rễ là việc nội suy trọng số WiSE-FT giữa hai không gian tham số không tương thích về mặt cấu trúc (Baseline $n=3$ và M4 $n=8$) đã phá vỡ không gian đặc trưng của bộ mã hóa thị giác, khiến mô hình trượt vào một hố cực tiểu suy biến (**degenerate basin**).
+  Kết quả điểm cho thấy cấu hình $n=8$ thấp hơn $n=3$, nên không ủng hộ giả thuyết “loader cũ ép $n=3$ làm hỏng Gen 1”. Tuy nhiên artifact chưa có bootstrap CI như yêu cầu §5.4; do đó chưa đủ bằng chứng để khẳng định `different_basin` hay quy nguyên nhân duy nhất. Kết luận chắc chắn duy nhất là Gen 1 có `invalid_layout` và không được dùng làm kết quả chính thức.
 
 ### Câu hỏi 4: Hệ quả học thuật — Gen 1 có được dùng không và số liệu nào bị vô hiệu?
 1. **Cô lập vĩnh viễn:** Checkpoint `fatformer_wise_ft_best.pth` bị gắn nhãn bất biến **`invalid_layout`**, tuyệt đối **CẤM** đưa vào bất kỳ báo cáo kết quả hay sản phẩm triển khai nào.
@@ -67,5 +67,5 @@ $\rightarrow$ **Trả lời:** **KHÔNG**. Layout $n=8$ không những không ca
 
 ## 3. Kết Luận Nghiệm Thu
 
-Task 7.1 đã hoàn thành trọn vẹn 100% mục tiêu, làm sáng tỏ bí ẩn kỹ thuật lớn nhất của Phase 6-R bằng số liệu đo đạc thực chứng khách quan. Cổng **G7.0 (Toàn vẹn đo lường)** chính thức được xác nhận **PASS**.
+Task 7.1 đã hoàn thành audit cấu trúc checkpoint. Phần diễn giải `n=3`/`n=8` còn thiếu CI nên **chưa được dùng một mình để xác nhận G7.0 PASS**.
 

@@ -1,5 +1,7 @@
 {
-  "schema": "calibration/v1",
+  "schema": "calibration/v1-dummy",
+  "evidence_level": "synthetic",
+  "gate_eligible": false,
   "model": "baseline",
   "checkpoint": {
     "path": "DATASET/pretrained/fatformer_4class_ckpt.pth",

@@ -153,8 +153,27 @@ def evaluate_mock_or_real_candidate(
             "auc_q30": auc_q30
         }
 
-    # Chế độ thực thi suy luận thực tế (khi có dataset)
-    raise NotImplementedError("Suy luận thực tế yêu cầu pipeline DataLoader trên val_select.")
+    # Chế độ thật tiêu thụ sidecar do eval v3 sinh ra. Không bao giờ tự thay
+    # bằng số mô phỏng khi thiếu bằng chứng đo.
+    eval_path = cand_path.replace(".pth", "_eval.json")
+    if not os.path.isfile(eval_path):
+        raise FileNotFoundError(
+            f"Thiếu kết quả đo thật {eval_path}. Chạy eval v3 trên clean và Q30 "
+            "trước khi tuyển chọn, hoặc dùng --test_dummy chỉ để test thuật toán."
+        )
+    with open(eval_path, "r", encoding="utf-8") as handle:
+        measured = json.load(handle)
+    if measured.get("evidence_level") != "measured":
+        raise ValueError(f"{eval_path} không được đánh dấu evidence_level=measured")
+    metrics = measured.get("metrics", measured)
+    required = {
+        "real_acc_clean", "fake_at_real90_clean", "auc_clean",
+        "real_acc_q30", "fake_at_real90_q30", "auc_q30",
+    }
+    missing = sorted(required - set(metrics))
+    if missing:
+        raise ValueError(f"{eval_path} thiếu metric: {missing}")
+    return {key: float(metrics[key]) for key in required}
 
 
 def select_best_candidate(candidates: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -183,15 +202,18 @@ def main():
     parser = argparse.ArgumentParser(description="FatFormer-XLA: Quét và Tuyển Chọn 12 Ứng Viên WiSE-FT Gen 2")
     parser.add_argument("--candidates_dir", type=str, default="DATASET/checkpoints/phase7/candidates",
                         help="Thư mục chứa 12 checkpoint ứng viên")
-    parser.add_argument("--calibration", type=str, default="logs/phase7/calibration/baseline.json",
+    parser.add_argument("--calibration", type=str, default="DATASET/logs/phase7/calibration/baseline.json",
                         help="Tệp cấu hình hiệu chuẩn từ Task 7.4")
-    parser.add_argument("--output_csv", type=str, default="logs/phase7/wise_ft_v2_sweep.csv",
+    parser.add_argument("--output_csv", type=str, default="DATASET/logs/phase7/wise_ft_v2_sweep.csv",
                         help="Đường dẫn xuất tệp CSV bảng kết quả sweep")
     parser.add_argument("--best_output", type=str, default="DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth",
                         help="Đường dẫn lưu checkpoint chiến thắng")
     parser.add_argument("--test_dummy", action="store_true",
                         help="Chạy chế độ mô phỏng đánh giá trên CPU")
     args = parser.parse_args()
+
+    if args.test_dummy and os.path.normpath(args.output_csv) == os.path.normpath("DATASET/logs/phase7/wise_ft_v2_sweep.csv"):
+        args.output_csv = "DATASET/logs/phase7/dummy/wise_ft_v2_sweep.csv"
 
     print("\n" + "=" * 84)
     print("FATFORMER-XLA: ĐÁNH GIÁ & TUYỂN CHỌN LƯỚI 12 ỨNG VIÊN WiSE-FT GEN 2 (TASK 7.5)")
@@ -245,20 +267,34 @@ def main():
             is_dummy=args.test_dummy
         )
 
+        verification = {}
+        meta_path = cand.replace(".pth", "_metadata.json")
+        if os.path.isfile(meta_path):
+            with open(meta_path, "r", encoding="utf-8") as handle:
+                verification = json.load(handle).get("verification", {})
+        verify_status = verification.get("status", "unverified")
+        if not args.test_dummy and (
+            verify_status != "ok"
+            or verification.get("missing", 1) != 0
+            or verification.get("unexpected", 1) != 0
+        ):
+            raise RuntimeError(f"Ứng viên chưa verify 0/0: {cand}")
+
         record = {
             "candidate": base_name,
             "path": cand,
             "alpha": alpha,
             "beta_srm": beta_srm,
             "n_keys": 1200,
-            "verify": "ok",
+            "verify": "dummy" if args.test_dummy else "ok",
             "real_acc_clean": metrics["real_acc_clean"],
             "fake_at_real90_clean": metrics["fake_at_real90_clean"],
             "auc_clean": metrics["auc_clean"],
             "real_acc_q30": metrics["real_acc_q30"],
             "fake_at_real90_q30": metrics["fake_at_real90_q30"],
             "auc_q30": metrics["auc_q30"],
-            "selected": False
+            "selected": False,
+            "evidence_level": "synthetic" if args.test_dummy else "measured",
         }
         evaluated_records.append(record)
 
@@ -281,7 +317,8 @@ def main():
     fieldnames = [
         "alpha", "beta_srm", "n_keys", "verify",
         "real_acc_clean", "fake_at_real90_clean", "auc_clean",
-        "real_acc_q30", "fake_at_real90_q30", "auc_q30", "selected"
+        "real_acc_q30", "fake_at_real90_q30", "auc_q30", "selected",
+        "evidence_level",
     ]
 
     with open(args.output_csv, "w", newline="", encoding="utf-8") as f:
@@ -306,4 +343,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

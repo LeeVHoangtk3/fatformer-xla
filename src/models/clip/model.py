@@ -418,18 +418,9 @@ class VisionTransformer(nn.Module):
                 raise ValueError(f"adapter_block_indices phải nằm trong [0, {layers}).")
             idx_set = set(idx)
 
-            if configured_n is not None:
-                if configured_n < 0 or (configured_n > 0 and layers % configured_n != 0):
-                    raise ValueError(f"num_vit_adapter={configured_n} không hợp lệ với layers={layers}.")
-                expected = set()
-                if configured_n > 0:
-                    stride = layers // configured_n
-                    expected = {(i + 1) * stride - 1 for i in range(configured_n)}
-                if idx_set != expected:
-                    raise ValueError(
-                        "adapter_block_indices mâu thuẫn với num_vit_adapter: "
-                        f"indices={sorted(idx)}, expected={sorted(expected)} for n={configured_n}."
-                    )
+            # Explicit indices are the single source of truth.  A legacy
+            # num_vit_adapter value may still be present in an old config and
+            # must not override (or conflict with) the checkpoint layout.
             self.adapter_block_indices = tuple(idx)
             add_adapter = [i in idx_set for i in range(layers)]
         else:

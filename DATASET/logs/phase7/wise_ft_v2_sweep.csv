@@ -1,0 +1,13 @@
+alpha,beta_srm,n_keys,verify,real_acc_clean,fake_at_real90_clean,auc_clean,real_acc_q30,fake_at_real90_q30,auc_q30,selected,evidence_level
+0.35,0.25,1200,dummy,100.0,91.0,97.08,99.5,45.5,78.54,False,synthetic
+0.35,0.35,1200,dummy,100.0,90.0,96.73,100.0,52.0,81.7,False,synthetic
+0.35,0.5,1200,dummy,100.0,92.5,98.08,100.0,59.0,85.76,False,synthetic
+0.45,0.25,1200,dummy,100.0,94.0,97.11,100.0,50.0,80.41,False,synthetic
+0.45,0.35,1200,dummy,100.0,95.5,97.43,100.0,48.5,78.56,False,synthetic
+0.45,0.5,1200,dummy,100.0,96.0,98.36,100.0,53.0,85.1,False,synthetic
+0.55,0.25,1200,dummy,100.0,92.5,97.45,100.0,37.5,77.69,False,synthetic
+0.55,0.35,1200,dummy,100.0,95.0,98.03,99.0,58.5,83.45,False,synthetic
+0.55,0.5,1200,dummy,100.0,94.0,97.78,100.0,55.5,85.06,False,synthetic
+0.65,0.25,1200,dummy,100.0,95.5,98.52,99.5,51.0,82.48,False,synthetic
+0.65,0.35,1200,dummy,100.0,97.5,98.09,99.5,60.5,87.37,False,synthetic
+0.65,0.5,1200,dummy,100.0,98.0,99.17,99.5,68.5,87.89,False,synthetic

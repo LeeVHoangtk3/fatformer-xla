@@ -53,5 +53,5 @@
   ],
   "delta_fake_acc": -31.4,
   "verdict": "inconclusive",
-  "verdict_explanation": "Chênh lệch từ 3 đến 10 pp: Không đủ bằng chứng kết luận loader là nguyên nhân duy nhất; giữ nhãn invalid_layout."
+  "verdict_explanation": "n=8 thấp hơn n=3 31.4 pp nhưng artifact chưa có bootstrap CI. Luật không cho phép suy ra different_basin từ trường hợp đảo chiều này; giữ verdict inconclusive và nhãn invalid_layout."
 }

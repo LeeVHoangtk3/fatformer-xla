@@ -1,5 +1,6 @@
 {
   "schema": "wise_ft_v2/v1",
+  "selection_status": "unselected_candidate_pending_measured_sweep",
   "alpha": 0.5,
   "beta_srm": 0.35,
   "sources": {

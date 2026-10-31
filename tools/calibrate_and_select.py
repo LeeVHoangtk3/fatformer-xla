@@ -319,7 +319,7 @@ def run_5fold_cross_validation(
 # KIỂM THỬ DUMMY TRÊN CPU (--test_dummy)
 # ================================================================================
 
-def run_dummy_verification_v3(output_dir: str = "logs/phase7/calibration"):
+def run_dummy_verification_v3(output_dir: str = "DATASET/logs/phase7/dummy/calibration"):
     """
     Chạy kiểm thử toàn chu trình hiệu chuẩn v3 trên dữ liệu logit giả lập 540 mẫu (CPU).
     """
@@ -389,7 +389,9 @@ def run_dummy_verification_v3(output_dir: str = "logs/phase7/calibration"):
     fake_acc = float((preds_default[targets_np == 1] == 1).mean() * 100.0)
 
     calib_json_data = {
-        "schema": "calibration/v1",
+        "schema": "calibration/v1-dummy",
+        "evidence_level": "synthetic",
+        "gate_eligible": False,
         "model": "baseline",
         "checkpoint": {
             "path": "DATASET/pretrained/fatformer_4class_ckpt.pth",
@@ -421,6 +423,7 @@ def run_dummy_verification_v3(output_dir: str = "logs/phase7/calibration"):
     # 9. Xuất bảng tổng hợp summary.md
     summary_path = os.path.join(output_dir, "summary.md")
     summary_md = [
+        "> **DUMMY ONLY** — evidence_level=synthetic; không dùng nghiệm thu Task 7.4.",
         "# BẢNG TỔNG HỢP HIỆU CHUẨN NHIỆT ĐỘ & NGƯỠNG (TASK 7.4)",
         f"> **Thời gian xuất**: {time.strftime('%Y-%m-%d %H:%M:%S')} | **Quy chuẩn**: Phụ lục A.2",
         "",
@@ -439,6 +442,89 @@ def run_dummy_verification_v3(output_dir: str = "logs/phase7/calibration"):
     print("=" * 88)
 
 
+def _sha256_file(path: str) -> str:
+    digest = hashlib.sha256()
+    with open(path, "rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def run_measured_calibration(
+    logits_npz: str,
+    output_dir: str,
+    model_name: str,
+    checkpoint: str = "",
+    cv_folds: int = 0,
+) -> Dict[str, Any]:
+    """Fit calibration from measured logits stored as ``logits`` and ``targets``.
+
+    The NPZ must come from a held-out calibration split. Synthetic inputs are
+    intentionally accepted only through the separate ``--test_dummy`` path.
+    """
+    payload = np.load(logits_npz, allow_pickle=False)
+    if "logits" not in payload or "targets" not in payload:
+        raise ValueError("NPZ phải có đúng hai mảng bắt buộc: logits và targets.")
+    logits = torch.as_tensor(payload["logits"], dtype=torch.float32)
+    targets = torch.as_tensor(payload["targets"], dtype=torch.long)
+    if logits.ndim != 2 or logits.shape[1] != 2:
+        raise ValueError(f"logits phải có shape [N,2], nhận {tuple(logits.shape)}")
+    if targets.ndim != 1 or targets.shape[0] != logits.shape[0]:
+        raise ValueError("targets phải có shape [N] và cùng số mẫu với logits.")
+    if logits.shape[0] < 20 or set(targets.tolist()) != {0, 1}:
+        raise ValueError("Tập calibration phải có >=20 mẫu và đủ hai lớp 0/1.")
+
+    calibrator = ModelWithTemperature(init_temp=1.0)
+    opt_t, raw_t = calibrator.fit(logits, targets)
+    probs_before = F.softmax(logits, dim=-1)[:, 1].detach().numpy()
+    probs_after = F.softmax(logits / opt_t, dim=-1)[:, 1].detach().numpy()
+    targets_np = targets.numpy()
+    t_stars, measured = fit_thresholds_by_fpr(
+        probs_after, targets_np, fpr_targets=[0.01, 0.05, 0.10]
+    )
+    threshold = t_stars["0.05"]
+    preds = (probs_after >= threshold).astype(int)
+    real_mask, fake_mask = targets_np == 0, targets_np == 1
+
+    os.makedirs(output_dir, exist_ok=True)
+    reliability_path = os.path.join(output_dir, f"{model_name}_reliability.png")
+    plot_reliability_diagram(
+        probs_before, probs_after, targets_np, reliability_path, model_name=model_name
+    )
+    result: Dict[str, Any] = {
+        "schema": "calibration/v1",
+        "evidence_level": "measured",
+        "model": model_name,
+        "checkpoint": {
+            "path": checkpoint or None,
+            "sha256": _sha256_file(checkpoint) if checkpoint and os.path.isfile(checkpoint) else None,
+        },
+        "calibration_source": os.path.abspath(logits_npz),
+        "calibration_source_sha256": _sha256_file(logits_npz),
+        "n_calib": int(logits.shape[0]),
+        "class_balance": {"real": int(real_mask.sum()), "fake": int(fake_mask.sum())},
+        "T": round(opt_t, 4),
+        "T_raw": round(raw_t, 4),
+        "T_star": t_stars,
+        "T_star_default": threshold,
+        "fpr_target": 0.05,
+        "fpr_measured": measured,
+        "real_acc": round(float((preds[real_mask] == 0).mean() * 100.0), 2),
+        "fake_acc": round(float((preds[fake_mask] == 1).mean() * 100.0), 2),
+        "ece_before": round(compute_ece(probs_before, targets_np), 2),
+        "ece_after": round(compute_ece(probs_after, targets_np), 2),
+        "nll_before": round(compute_nll(probs_before, targets_np), 4),
+        "nll_after": round(compute_nll(probs_after, targets_np), 4),
+        "cv": run_5fold_cross_validation(logits, targets, fpr_target=0.05)
+        if cv_folds == 5 else None,
+    }
+    output_json = os.path.join(output_dir, f"{model_name}.json")
+    with open(output_json, "w", encoding="utf-8") as handle:
+        json.dump(result, handle, indent=2, ensure_ascii=False)
+    print(f"[✓] Calibration đo thật đã lưu: {output_json}")
+    return result
+
+
 # ================================================================================
 # HÀM MAIN ĐIỀU PHỐI CHÍNH
 # ================================================================================
@@ -447,17 +533,24 @@ def main():
     parser = argparse.ArgumentParser(description="FatFormer-XLA Calibration & Threshold Engine (Task 7.4)")
     parser.add_argument("--test_dummy", action="store_true", help="Chạy kiểm thử toàn chu trình thuật toán trên CPU giả lập")
     parser.add_argument("--checkpoint", type=str, default="", help="Đường dẫn file checkpoint")
+    parser.add_argument("--logits_npz", type=str, default="", help="NPZ đo thật chứa logits[N,2] và targets[N]")
     parser.add_argument("--model_name", type=str, default="baseline", help="Tên mô hình (baseline, anchored, wise_ft_v2)")
-    parser.add_argument("--output_dir", type=str, default="logs/phase7/calibration", help="Thư mục xuất file JSON và biểu đồ")
+    parser.add_argument("--output_dir", type=str, default="DATASET/logs/phase7/calibration", help="Thư mục xuất file JSON và biểu đồ")
     parser.add_argument("--fpr_target", type=float, default=0.05, help="Mức khống chế báo oan FPR mục tiêu (mặc định 0.05)")
     parser.add_argument("--cv_folds", type=int, default=0, help="Số fold Cross-Validation nếu không có val_calib tách rời")
     args = parser.parse_args()
 
-    if args.test_dummy or not args.checkpoint:
+    if args.test_dummy:
+        if os.path.normpath(args.output_dir) == os.path.normpath("DATASET/logs/phase7/calibration"):
+            args.output_dir = "DATASET/logs/phase7/dummy/calibration"
         run_dummy_verification_v3(output_dir=args.output_dir)
+    elif args.logits_npz:
+        run_measured_calibration(
+            args.logits_npz, args.output_dir, args.model_name,
+            checkpoint=args.checkpoint, cv_folds=args.cv_folds,
+        )
     else:
-        print(f"[*] Đang thực thi hiệu chuẩn cho checkpoint: {args.checkpoint}")
-        # Chế độ thực thi với checkpoint thật
+        parser.error("Nghiệm thu thật yêu cầu --logits_npz; dummy phải bật rõ --test_dummy.")
 
 
 if __name__ == "__main__":

@@ -153,7 +153,7 @@ def main():
     parser = argparse.ArgumentParser(description="Audit Checkpoint Compatibility (Task 7.2)")
     parser.add_argument("--checkpoints", nargs="+", required=True, help="Danh sách các tệp checkpoint .pth cần audit")
     parser.add_argument("--layers", type=int, default=24, help="Số layer transformer (mặc định 24 cho ViT-L/14)")
-    parser.add_argument("--output", type=str, default="logs/phase7/checkpoint_structure_audit.json", help="Đường dẫn file JSON đầu ra")
+    parser.add_argument("--output", type=str, default="DATASET/logs/phase7/checkpoint_structure_audit.json", help="Đường dẫn file JSON đầu ra")
     args = parser.parse_args()
 
     print("=" * 80)

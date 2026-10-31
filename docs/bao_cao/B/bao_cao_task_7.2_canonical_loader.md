@@ -4,15 +4,15 @@
 > **Mã nhiệm vụ**: `Task 7.2` *(Phase 7 — D1–D3)*  
 > **Người thực hiện**: **Thành viên B** *(Architecture & Loss Lead)*  
 > **Người phối hợp**: **Thành viên C** *(Training Lead)*  
-> **Cổng kiểm soát chất lượng**: **Cổng G7.1 (Tương thích kiến trúc)**  
-> **Trạng thái**: `[x] ĐÃ HOÀN THÀNH — DoD #4 ✅ DoD #7 ✅ (Colab CPU, 2026-10-31)`  
+> **Cổng kiểm soát chất lượng**: **Cổng G7.0 (Toàn vẹn đo lường)**
+> **Trạng thái**: `[~] ĐÃ TRIỂN KHAI — CHỜ ĐÓNG repo-wide strict=False VÀ TÁI LẬP SMOKE LOCAL`
 > **Môi trường xác minh**: Google Colab CPU (Python 3.13, torch 2.x+cpu) — chạy thực tế 4 checkpoint + smoke test forward pass  
 > **Hiện vật bàn giao**:
 > - Module loader chính: [`src/models/canonical_loader.py`](../../../src/models/canonical_loader.py)
 > - Constructor sửa đổi: [`src/models/clip/model.py`](../../../src/models/clip/model.py) — `VisionTransformer.__init__`
 > - Bộ test: [`tests/test_canonical_loader.py`](../../../tests/test_canonical_loader.py)
 > - Audit tool (refactored): [`tools/audit_checkpoint_compat.py`](../../../tools/audit_checkpoint_compat.py)
-> - Dữ liệu audit v1: [`logs/phase7/checkpoint_structure_audit.json`](../../../logs/phase7/checkpoint_structure_audit.json)
+> - Dữ liệu audit v1: [`DATASET/logs/phase7/checkpoint_structure_audit.json`](../../../DATASET/logs/phase7/checkpoint_structure_audit.json)
 > - Báo cáo này: `docs/bao_cao/B/bao_cao_task_7.2_canonical_loader.md`
 
 ---
@@ -61,7 +61,7 @@ model.load_state_dict(clean_sd, strict=...)  ← strict=True (mặc định); st
 Tham số `adapter_block_indices: Optional[List[int]]` được thêm vào constructor. Logic:
 
 - Nếu `adapter_block_indices` truyền vào: dùng danh sách tường minh, **bỏ qua** `num_vit_adapter` (tránh 2 nguồn sự thật).
-- Nếu cả `args.adapter_block_indices` và `adapter_block_indices` đều có và mâu thuẫn: `raise ValueError`.
+- Nếu có danh sách tường minh thì danh sách đó là nguồn sự thật; `num_vit_adapter` legacy bị bỏ qua theo đúng contract.
 - Hành vi mặc định (`adapter_block_indices=None`, `args.adapter_block_indices=None`): giữ nguyên quy tắc `(i+1)·n-1`.
 
 ---
@@ -91,7 +91,7 @@ Thuật toán chọn `n=8` (dropped nhỏ nhất: 2 block). Gen 1 bị **từ ch
 
 ## 4. Kết Quả Kiểm Tra Chức Năng (pytest)
 
-Bộ test `tests/test_canonical_loader.py` gồm **12 test cases**, chạy thực tế trên Colab CPU (2026-10-31): **12 passed in 4.41s**.
+Bộ test gốc gồm **12 test cases**, đã chạy trên Colab CPU (2026-10-31): **12 passed in 4.41s**. Sau review bổ sung test thứ 13 cho `allow_partial=True`; test mới đã qua compile nhưng local hiện thiếu `pytest`, nên cần tái chạy trọn bộ trước khi đóng DoD.
 
 | Test | Nội dung | Kỳ vọng |
 | :--- | :--- | :---: |
@@ -99,7 +99,8 @@ Bộ test `tests/test_canonical_loader.py` gồm **12 test cases**, chạy thự
 | `test_loads_exact_explicit_layout[2,5,8,11,14,17,20,23]` | M4 layout | `missing=0, unexpected=0` |
 | `test_constructor_falls_back_to_legacy_adapter_count` | `num_vit_adapter=3` fallback | `{7,15,23}` |
 | `test_constructor_uses_explicit_adapter_indices` | Explicit `[2,5,8,...]` | M4 indices |
-| `test_constructor_rejects_conflicting_explicit_indices_and_count` | Mâu thuẫn n vs indices | `ValueError` |
+| `test_constructor_explicit_indices_override_legacy_count` | Explicit indices và `num_vit_adapter` legacy cùng tồn tại | Explicit indices thắng |
+| `test_gen1_layout_can_be_inspected_only_with_allow_partial` | Forensic partial load | `partial=True`, có `dropped/unexpected` |
 | `test_strict_loading_reports_key_mismatch[missing]` | Key bị thiếu | `CheckpointCompatibilityError` |
 | `test_strict_loading_reports_key_mismatch[unexpected]` | Key thừa | `CheckpointCompatibilityError` |
 | `test_gen1_layout_is_rejected_without_remapping` | Gen 1 chimeric | `IncompleteLayoutError` |
@@ -132,9 +133,9 @@ pytest -q tests/test_canonical_loader.py
 | :--- | :---: | :--- |
 | `src/models/canonical_loader.py` tồn tại với 5 hàm công khai | ✅ | `extract_state_dict`, `infer_adapter_blocks`, `resolve_layout`, `canonicalize`, `load_canonical` |
 | `src/models/clip/model.py` nhận `adapter_block_indices` | ✅ | Dòng 393, đầy đủ assert |
-| `pytest -q tests/test_canonical_loader.py` — 12 test cases | ✅ | **12 passed in 4.41s** (Colab CPU, 2026-10-31) |
-| Baseline/M4/Anchored nạp `0/0`; Gen 1 bị từ chối | ✅ | **Xác nhận thực tế** — xem [`task_7.2_canonical_load_verification.json`](../../../logs/phase7/task_7.2_canonical_load_verification.json) |
-| `grep -rn "strict=False" tools/ src/` không xuất hiện trong canonical_loader | ✅ | `canonical_loader.py` chỉ dùng `strict=not allow_partial`; `strict=False` vẫn còn ở `CheckpointManager` và `train_crossdomain.py` (nằm ngoài phạm vi Task 7.2) |
+| `pytest -q tests/test_canonical_loader.py` — 13 test cases hiện tại | ⏳ | 12 test cũ đã pass Colab; test mới compile pass, chờ môi trường có `pytest` |
+| Baseline/M4/Anchored nạp `0/0`; Gen 1 bị từ chối | ✅ | **Xác nhận thực tế** — xem [`task_7.2_canonical_load_verification.json`](../../../DATASET/logs/phase7/task_7.2_canonical_load_verification.json) |
+| `grep -rn "strict=False" tools/ src/` trả về rỗng | ❌ | Vẫn còn nhiều đường nạp legacy; canonical eval v3 đã strict nhưng DoD repo-wide chưa đạt |
 | `logs/phase7/checkpoint_structure_audit.json` đúng schema, có `sha256` | ✅ | Đã tồn tại từ Task 7.1 |
 | `tools/audit_checkpoint_compat.py` import canonical_loader | ✅ | Refactored Task 7.2 |
 | `tools/test_src_load.py` xanh + smoke forward pass | ✅ | **TEST 1** (strict=True, use_srm=False): output `[1,2]` ✅ **TEST 2** (strict=False, SRM+Gating): output `[1,2]` ✅ (Colab CPU, 2026-10-31) |
@@ -155,11 +156,11 @@ pytest -q tests/test_canonical_loader.py
 
 ## 8. Kết Luận Nghiệm Thu
 
-Task 7.2 đã hoàn thành đầy đủ **100%** các artifact theo DoD. Cổng **G7.1 (Tương thích kiến trúc)** chính thức được xác nhận **PASS**.
+Task 7.2 đã hoàn thành loader lõi và kiểm chứng 4 checkpoint. Tuy nhiên chưa được tuyên bố hoàn thành 100% vì tiêu chí repo-wide `strict=False` và smoke tái lập trên môi trường local chưa đóng. Đây là đầu vào cần thiết cho **G7.0**, không phải phán quyết G7.1.
 
 | Hạng mục | Kết quả thực tế |
 | :--- | :--- |
-| pytest | **12/12 passed** (4.41s, Colab CPU) |
+| pytest | **12 test cũ passed**; bộ 13 test hiện tại chờ tái chạy |
 | Baseline load | LOADED, missing=0, unexpected=0, sha256=`3b904401...` |
 | Anchored load | LOADED, missing=0, unexpected=0, sha256=`f70a11df...` |
 | M4 load | LOADED, missing=0, unexpected=0, sha256=`b5ad8396...` |
@@ -172,4 +173,4 @@ Task 7.2 đã hoàn thành đầy đủ **100%** các artifact theo DoD. Cổng 
 Bàn giao cho Thành viên C:
 - `load_canonical()` sẵn sàng được dùng trong `eval_communityforensics.py` (Task 7.3).
 - Gen 1 bị từ chối đúng, Baseline/Anchored/M4 nạp đúng kiến trúc theo `adapter_block_indices` tường minh.
-- Kết quả xác minh lưu tại [`logs/phase7/task_7.2_canonical_load_verification.json`](../../../logs/phase7/task_7.2_canonical_load_verification.json).
+- Kết quả xác minh lưu tại [`DATASET/logs/phase7/task_7.2_canonical_load_verification.json`](../../../DATASET/logs/phase7/task_7.2_canonical_load_verification.json).

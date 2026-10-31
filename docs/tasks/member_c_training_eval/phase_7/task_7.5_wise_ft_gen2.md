@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU** (merge) + ☁️ **T4 ~25 phút** (chấm 12 ứng viên)
 - **Độ ưu tiên**: 🟠 Cao — quyết định **G7.1**
 - **Cổng liên quan**: **G7.1** (cuối D4)
-- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH — PASS 100% (STRICT VERIFY VERIFIED)` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.5_wise_ft_gen2.md))
+- **Trạng thái**: `[~] MERGE/STRICT VERIFY PASS — CHỜ SWEEP ĐO THẬT VÀ CHỌN BEST` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.5_wise_ft_gen2.md))
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.5
 
 ---
@@ -53,7 +53,7 @@ Lưới: `α ∈ {0,35; 0,45; 0,55; 0,65}` × `β_srm ∈ {0,25; 0,35; 0,50}` = 
 | :---: | :--- | :--- | :--- |
 | O1 | Script vá | `tools/wise_ft_merge.py` | 5 vá §5.1, có `--verify` |
 | O2 | 12 checkpoint ứng viên | `DATASET/checkpoints/phase7/candidates/wise_ft_v2_a<a>_b<b>.pth` | Không ghi đè tên cũ |
-| O3 | Bảng sweep | `logs/phase7/wise_ft_v2_sweep.csv` | 12 dòng × đầy đủ chỉ số |
+| O3 | Bảng sweep | `DATASET/logs/phase7/wise_ft_v2_sweep.csv` | 12 dòng × đầy đủ chỉ số đo thật |
 | O4 | Checkpoint thắng | `DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth` | `verify 0/0` |
 | O5 | Metadata | `..._best_metadata.json` | `alpha, beta_srm, sha256, layout, n_keys` |
 | O6 | Báo cáo | `docs/bao_cao/C/bao_cao_task_7.5_wise_ft_gen2.md` | Bảng 12 dòng + phán quyết G7.1 |
@@ -194,7 +194,7 @@ Với mỗi ứng viên, chấm trên **`val_select`** (không phải CFE):
 
 > `Fake@Real90` = **Fake ACC khi ngưỡng được đặt sao cho Real ACC = 90%** (tức `FPR = 10%`). Đây là chỉ số của G7.1, không phải `Fake ACC @ 0,5`.
 
-Ghi `logs/phase7/wise_ft_v2_sweep.csv`:
+Ghi `DATASET/logs/phase7/wise_ft_v2_sweep.csv`:
 
 ```csv
 alpha,beta_srm,n_keys,verify,real_acc_clean,fake_at_real90_clean,auc_clean,
@@ -225,11 +225,11 @@ Bảng 12 dòng + 4 cột chỉ số; nêu rõ **ứng viên thắng và biên �
 - [x] `--verify` tồn tại, `sys.exit(1)` khi `missing/unexpected/partial` khác 0.
 - [x] Lưới đủ **12** ứng viên (`α` 4 × `β` 3), có `--alpha_grid`/`--beta_grid`.
 - [x] Metadata đủ `alpha, beta_srm, sha256 (2 nguồn), layout, n_keys, git_commit`.
-- [x] `logs/phase7/wise_ft_v2_sweep.csv` có **12 dòng** + cột `selected`.
-- [x] Best checkpoint `verify 0/0`, `layout.partial = false`.
+- [ ] `DATASET/logs/phase7/wise_ft_v2_sweep.csv` có **12 dòng đo thật** + cột `selected`.
+- [ ] Best checkpoint khớp ứng viên `selected`, `verify 0/0`, `layout.partial = false`.
 - [x] **Không** ghi đè `fatformer_wise_ft_best.pth` cũ.
 - [x] `sweep_threshold_constrained` đã bị xoá (grep rỗng).
-- [x] Báo cáo nêu rõ phán quyết G7.1 pass/fail **có số**.
+- [ ] Báo cáo nêu rõ phán quyết G7.1 pass/fail **bằng số đo thật**.
 
 ---
 

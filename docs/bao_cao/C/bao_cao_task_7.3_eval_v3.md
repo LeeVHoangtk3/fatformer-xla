@@ -5,7 +5,9 @@
 > **Người thực hiện**: **Thành viên C** *(Training & Evaluation Lead)*  
 > **Người phối hợp**: **Thành viên B** *(Architecture Lead — cung cấp `canonical_loader` từ Task 7.2)*  
 > **Cổng kiểm soát chất lượng**: **Cổng G7.0 (Toàn vẹn đo lường)**  
-> **Trạng thái**: `[x] ĐÃ HOÀN THÀNH (GIAI ĐOẠN 1: CORE METRICS & HARNESS v3 PASS 100%)`  
+> **Trạng thái**: `[~] CORE METRICS/HARNESS PASS — CHƯA CÓ RUN CHECKPOINT + CFE THẬT`
+
+> **Giới hạn bằng chứng**: artifact `eval_v3_baseline_clean.json` hiện là dummy 40 ảnh. Nó chỉ xác nhận schema và phép tính, không phải benchmark Baseline.
 > **Hiện vật bàn giao**:
 > - Kịch bản đánh giá chuẩn hóa v3: [`tools/eval_communityforensics.py`](../../../tools/eval_communityforensics.py)
 > - Dữ liệu schema v3: [`logs/phase7/eval_v3_baseline_clean.json`](../../../logs/phase7/eval_v3_baseline_clean.json)
@@ -63,7 +65,7 @@ python tools/eval_communityforensics.py --test_dummy
     - $\text{TPR@5\% CI}_{95\%} = [100.0, 100.0]$
 - **Đầu ra Artifacts**:
   - Tệp JSON chuẩn `report_schema: "v3"`: [`logs/phase7/eval_v3_baseline_clean.json`](../../../logs/phase7/eval_v3_baseline_clean.json) (đầy đủ `git_commit`, `degrade_order: post_resize`, metadata checkpoint và calibration).
-  - Tệp Markdown chuẩn v3: [`logs/phase7/eval_v3_baseline_clean.md`](../../../logs/phase7/eval_v3_baseline_clean.md) (bổ sung cột `TPR@10%` và dòng `Trạng thái nạp`).
+- Tệp Markdown dummy chuẩn schema: [`DATASET/logs/phase7/eval_v3_baseline_clean.md`](../../../DATASET/logs/phase7/eval_v3_baseline_clean.md) (chỉ kiểm thử schema, không phải benchmark).
 
 ---
 
@@ -84,4 +86,3 @@ python tools/eval_communityforensics.py --test_dummy
 ## 5. Kết Luận & Cổng Chờ Kế Tiếp
 - **Giai đoạn 1 của Task 7.3 đã hoàn tất xuất sắc**. Toàn bộ hệ thống đo lường và định dạng báo cáo đã được khóa chặt theo đúng tiêu chuẩn khoa học cao nhất.
 - **Cổng chờ Task 7.2**: Khi Thành viên B bàn giao `src/models/canonical_loader.py`, kịch bản sẽ tự động liên kết để thực thi đánh giá chính thức trên các checkpoint thật mà không cần sửa đổi thêm logic đo lường.
-

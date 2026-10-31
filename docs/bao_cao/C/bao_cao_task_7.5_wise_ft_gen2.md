@@ -5,13 +5,15 @@
 > **Người thực hiện**: **Thành viên C** *(Training & Evaluation Lead)*  
 > **Người phối hợp**: **Thành viên B** *(Architecture Lead — review công thức trộn & xác nhận cấu trúc 0/0 keys)*  
 > **Cổng kiểm soát chất lượng**: **Cổng G7.1 (Đột phá Pareto In-Domain & Cross-Domain)**  
-> **Trạng thái**: `[x] ĐÃ HOÀN THÀNH — PASS 100% (STRICT VERIFY VERIFIED)`  
+> **Trạng thái**: `[~] MERGE/STRICT VERIFY PASS — SWEEP CŨ LÀ SYNTHETIC, CHƯA CHỌN BEST THẬT`
+>
+> **CẢNH BÁO NGHIỆM THU**: Bảng 12 ứng viên bên dưới được tạo bởi chế độ dummy và không phải kết quả inference. Metadata checkpoint hiện là `alpha=0.50, beta_srm=0.35`, trong khi CSV dummy chọn `0.65/0.50`; vì vậy chưa có checkpoint “best” chính thức.
 > **Hiện vật bàn giao**:
 > - Công cụ hợp nhất trọng số: [`tools/wise_ft_merge.py`](../../../tools/wise_ft_merge.py) (Vá toàn diện 5 lỗi thiết kế cũ)
 > - Công cụ đánh giá & tuyển chọn ứng viên: [`tools/sweep_wise_ft_candidates.py`](../../../tools/sweep_wise_ft_candidates.py)
-> - Checkpoint vô địch WiSE-FT Gen 2: [`DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth) (SHA-256: `b6d9e2a4c1e0941a...`)
+> - Checkpoint ứng viên đã strict-verify (chưa được chọn bằng sweep thật): `DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth` (SHA-256: `b6d9e2a4c1e0941a...`)
 > - Tệp siêu dữ liệu kiểm định đi kèm: [`DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best_metadata.json`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best_metadata.json)
-> - Bảng dữ liệu quét 12 ứng viên: [`logs/phase7/wise_ft_v2_sweep.csv`](../../../logs/phase7/wise_ft_v2_sweep.csv)
+> - Bảng dummy 12 ứng viên (không nghiệm thu): [`DATASET/logs/phase7/wise_ft_v2_sweep.csv`](../../../DATASET/logs/phase7/wise_ft_v2_sweep.csv)
 
 ---
 
@@ -66,15 +68,15 @@ WiSE-FT Gen 2 thực hiện nội suy trực tiếp trong không gian tham số 
 | 9 | $0.55$ | $0.50$ | 1.200 | `ok (0/0)` | 100.0% | 94.00% | 97.78% | 100.0% | 55.50% | 85.06% | — |
 | 10 | $0.65$ | $0.25$ | 1.200 | `ok (0/0)` | 100.0% | 95.50% | 98.52% | 99.50% | 51.00% | 82.48% | — |
 | 11 | $0.65$ | $0.35$ | 1.200 | `ok (0/0)` | 100.0% | 97.50% | 98.09% | 99.50% | 60.50% | 87.37% | — |
-| 12 | **$0.65$** | **$0.50$** | **1.200** | **`ok (0/0)`** | **100.0%** | **98.00%** | **99.17%** | **99.50%** | **68.50%** | **87.89%** | 🏆 **CHIẾN THẮNG (SELECTED)** |
+| 12 | $0.65$ | $0.50$ | 1.200 | `dummy` | 100.0% | 98.00% | 99.17% | 99.50% | 68.50% | 87.89% | **Không tuyển chọn — synthetic** |
 
 > Dữ liệu chi tiết 12 dòng được lưu trữ vĩnh viễn tại: [`logs/phase7/wise_ft_v2_sweep.csv`](../../../logs/phase7/wise_ft_v2_sweep.csv).
 
 ---
 
-## 4. Hồ Sơ Checkpoint Chiến Thắng WiSE-FT Gen 2 Best
+## 4. Hồ Sơ Checkpoint Ứng Viên WiSE-FT Gen 2
 
-Checkpoint vô địch đã được tạo lập và lưu trữ chính thức:
+Checkpoint dưới đây đã qua strict verification nhưng **chưa phải checkpoint thắng cuộc**, vì sweep đo thật chưa chạy:
 - **Đường dẫn**: `DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth`
 - **Mã băm SHA-256**: `b6d9e2a4c1e0941a1ef90505e8b4b8376492b7707231cd77d83227c8dac45f7a`
 - **Dung lượng**: `2208.28 MB` (~2.2 GB)
@@ -88,7 +90,9 @@ Checkpoint vô địch đã được tạo lập và lưu trữ chính thức:
 
 ---
 
-## 5. Bảng Kiểm Tra Tiêu Chí Hoàn Thành (Definition of Done)
+## 5. Checklist triển khai — DoD sweep đo thật chưa đóng
+
+> Các mục merge/strict verify giữ nguyên; mọi mục liên quan sweep, `selected` và “checkpoint chiến thắng” chỉ là lịch sử dummy và không được tính hoàn thành.
 
 - [x] `is_fixed_buffer` khớp chính xác bằng regex, 4/4 unit tests đặc tả §5.1(b) đều xanh.
 - [x] Output loại bỏ hoàn toàn các khóa `srm.*` và `gating.*` top-level; ghi nhận `dropped_top_level_keys: 0`.
@@ -100,4 +104,3 @@ Checkpoint vô địch đã được tạo lập và lưu trữ chính thức:
 - [x] Tuyệt đối không ghi đè vào tệp `fatformer_wise_ft_best.pth` cũ (Gen 1).
 - [x] Hàm chết `sweep_threshold_constrained` đã bị xóa hoàn toàn khỏi mã nguồn (`git grep` rỗng).
 - [x] Báo cáo nghiệm thu trình bày đầy đủ bảng 12 dòng, cơ sở toán học và thông số kỹ thuật.
-

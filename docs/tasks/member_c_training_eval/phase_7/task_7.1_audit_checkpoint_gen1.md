@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU** + ☁️ **T4 ~10 phút**
 - **Độ ưu tiên**: 🔴 Khẩn cấp — **mở khoá toàn bộ Phase 7**
 - **Cổng liên quan**: **G7.0** (toàn vẹn đo lường, cuối D2)
-- **Trạng thái**: `[x] Đã hoàn thành (PASS G7.0)`
+- **Trạng thái**: `[~] Audit cấu trúc hoàn thành; phán quyết n=3/n=8 chờ bootstrap CI`
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.1
 
 ---
@@ -54,10 +54,10 @@ Vì `n` chỉ sinh được `{(i+1)·24/n − 1}` với `n ∈ {3,4,6,8,12,24}`,
 | # | Artifact | Đường dẫn | Nội dung |
 | :---: | :--- | :--- | :--- |
 | O1 | Script audit | `tools/audit_checkpoint_compat.py` | Xuất JSON theo schema §5.1 |
-| O2 | Audit 4 checkpoint | `logs/phase7/checkpoint_structure_audit.json` | §5.1 |
-| O3 | Đo lại Gen 1 | `logs/phase7/wise_ft_legacy_reinterpretation.json` | 2 lần chấm: `n=3`, `n=8` |
+| O2 | Audit 4 checkpoint | `DATASET/logs/phase7/checkpoint_structure_audit.json` | §5.1 |
+| O3 | Đo lại Gen 1 | `DATASET/logs/phase7/wise_ft_legacy_reinterpretation.json` | 2 lần chấm: `n=3`, `n=8` |
 | O4 | Kết luận | `docs/bao_cao/C/bao_cao_task_7.1_checkpoint_audit.md` | **1 trang**, có bảng + phán quyết |
-| O5 | Hình | `logs/phase7/gen1_n3_vs_n8.png` | So sánh 3 chỉ số giữa 2 layout |
+| O5 | Hình | `DATASET/logs/phase7/gen1_n3_vs_n8.png` | So sánh 3 chỉ số giữa 2 layout |
 
 ---
 
@@ -85,7 +85,7 @@ CLI:
 python tools/audit_checkpoint_compat.py \
   --checkpoints DATASET/checkpoints/*.pth \
   --layers 24 \
-  --output logs/phase7/checkpoint_structure_audit.json
+  --output DATASET/logs/phase7/checkpoint_structure_audit.json
 ```
 
 **Schema JSON bắt buộc**
@@ -140,7 +140,7 @@ python tools/audit_checkpoint_compat.py \
 
 ```bash
 python tools/audit_checkpoint_compat.py --checkpoints <4 file> \
-  --output logs/phase7/checkpoint_structure_audit.json
+  --output DATASET/logs/phase7/checkpoint_structure_audit.json
 ```
 
 Kiểm tra bằng mắt: `n_keys` khớp bảng §1; `alias_equality` ≈ 1,0; `dead_keys` rỗng.
@@ -193,10 +193,10 @@ Trong **mọi** trường hợp, Gen 1 bị gắn `invalid_layout` và **không*
 ## 6. Definition of Done
 
 - [x] `tools/audit_checkpoint_compat.py` chạy được trên 4 checkpoint, không crash.
-- [x] `logs/phase7/checkpoint_structure_audit.json` có **đủ 4** checkpoint và **đủ** các trường ở §5.1 (không trường nào `null` ngoài `layout.n` của Gen 1).
+- [x] `DATASET/logs/phase7/checkpoint_structure_audit.json` có **đủ 4** checkpoint và **đủ** các trường ở §5.1 (không trường nào `null` ngoài `layout.n` của Gen 1).
 - [x] `n_keys` khớp bảng §1: 1.116 / 1.684 / 1.816 / 1.200.
-- [x] `logs/phase7/wise_ft_legacy_reinterpretation.json` có 2 run `n3`/`n8` + `verdict`.
-- [x] `logs/phase7/gen1_n3_vs_n8.png` tồn tại, có nhãn trục rõ ràng.
+- [x] `DATASET/logs/phase7/wise_ft_legacy_reinterpretation.json` có 2 run `n3`/`n8` + `verdict`.
+- [x] `DATASET/logs/phase7/gen1_n3_vs_n8.png` tồn tại, có nhãn trục rõ ràng.
 - [x] Báo cáo 1 trang trả lời đủ 4 câu ở §5.4 ([`docs/bao_cao/C/bao_cao_task_7.1_checkpoint_audit.md`](../../../../docs/bao_cao/C/bao_cao_task_7.1_checkpoint_audit.md)).
 - [x] **Không** số nào của Gen 1 xuất hiện như kết quả chính thức ở bất kỳ tài liệu nào (grep `Gen 1` + số trong `docs/`).
 - [x] Ghi rõ Gen 1 = `invalid_layout` trong báo cáo và trong `README_C.md`.
