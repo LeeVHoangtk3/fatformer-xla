@@ -244,6 +244,51 @@ class PairedConsistencyLoss(nn.Module):
         return self.beta_cons * 0.5 * mse
 
 
+# ============================================================
+# PHASE 7 — Task 7.9 (Thành viên B)
+# RealGuardLoss + FeatureConsistencyLoss
+# ============================================================
+
+class RealGuardLoss(nn.Module):
+    """Chỉ phạt khi student vượt teacher trên logit Fake của mẫu Real.
+
+    Dùng ReLU để chỉ tạo gradient khi z_s > z_t — không kéo logit xuống vô hạn.
+    Nếu batch không có mẫu Real: trả 0 kèm guard_active=False, tuyệt đối không NaN.
+    """
+    def __init__(self, fake_index: int = 1):
+        super().__init__()
+        self.fake_index = fake_index
+
+    def forward(self, logits_student_deg, logits_teacher_clean, is_real):
+        if is_real.sum() == 0:
+            return logits_student_deg.sum() * 0.0, {"guard_active": False, "n_real": 0}
+        z_s = logits_student_deg[is_real, self.fake_index]
+        z_t = logits_teacher_clean[is_real, self.fake_index].detach()
+        excess = torch.relu(z_s - z_t)
+        loss = (excess ** 2).mean()
+        return loss, {"guard_active": True, "n_real": int(is_real.sum()),
+                      "guard_excess_mean": excess.mean().detach()}
+
+
+class FeatureConsistencyLoss(nn.Module):
+    """Đồng nhất biểu diễn clean↔degraded bằng cosine + KL divergence.
+
+    stop-gradient trên nhánh clean để nhánh deg học theo clean, không kéo ngược.
+    Nhân T² theo chuẩn Hinton để bù KL khi T > 1.
+    """
+    def __init__(self, temperature: float = 2.0):
+        super().__init__()
+        self.T = temperature
+
+    def forward(self, f_deg, f_clean, logits_deg, logits_clean):
+        cos = F.cosine_similarity(f_deg, f_clean.detach(), dim=-1, eps=1e-8)
+        loss_cos = (1.0 - cos).mean()
+        p_clean  = F.softmax(logits_clean.detach() / self.T, dim=-1)
+        log_p_deg = F.log_softmax(logits_deg / self.T, dim=-1)
+        loss_kl  = F.kl_div(log_p_deg, p_clean, reduction="batchmean") * (self.T ** 2)
+        return loss_cos + loss_kl, {"feat_cos": cos.mean().detach(), "feat_kl": loss_kl.detach()}
+
+
 class CrossDomainTotalLoss(nn.Module):
     """
     Hàm mất mát đa mục tiêu neo chặt Teacher (Anchored Recovery Loss) — Task 6.3-B & Task 6.3-R.
@@ -265,27 +310,41 @@ class CrossDomainTotalLoss(nn.Module):
         temperature: float = 2.0,
         alpha_kd: float = 0.3,
         beta_cons: float = 0.2,
+        fake_index: int = 1,
     ):
         super().__init__()
         self.weight_ce = weight_ce
         self.ce_loss   = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
         self.kd_loss   = CrossDomainDistillationLoss(temperature=temperature, alpha_kd=alpha_kd)
         self.cons_loss = PairedConsistencyLoss(beta_cons=beta_cons)
+        # Task 7.9: mặc định weight=0 → không ảnh hưởng run cũ
+        self.feat_loss  = FeatureConsistencyLoss(temperature=temperature)
+        self.guard_loss = RealGuardLoss(fake_index=fake_index)
 
     def forward(
         self,
-        logits: torch.Tensor,
+        logits: torch.Tensor,           # = logits_clean; tên giữ nguyên → train_crossdomain.py dùng keyword
         targets: torch.Tensor,
         teacher_logits: Optional[torch.Tensor] = None,
         logits_degraded: Optional[torch.Tensor] = None,
         clean_mask: Optional[torch.Tensor] = None,
+        features_clean: Optional[torch.Tensor] = None,   # Task 7.9: aug_image_features nhánh clean
+        features_deg: Optional[torch.Tensor] = None,     # Task 7.9: aug_image_features nhánh deg
+        weight_feat: float = 0.0,
+        weight_guard: float = 0.0,
     ) -> dict:
-        if logits_degraded is not None:
-            loss_ce_raw = 0.7 * self.ce_loss(logits, targets) + 0.3 * self.ce_loss(logits_degraded, targets)
-        else:
-            loss_ce_raw = self.ce_loss(logits, targets)
+        # lean: legacy_mode giữ công thức cũ → allclose test (a) pass
+        legacy_mode = (weight_feat == 0.0 and weight_guard == 0.0)
 
-        loss_ce   = self.weight_ce * loss_ce_raw
+        ce_clean = self.ce_loss(logits, targets)
+        ce_deg   = self.ce_loss(logits_degraded, targets) if logits_degraded is not None else None
+
+        if legacy_mode:
+            ce_raw = (0.7 * ce_clean + 0.3 * ce_deg) if ce_deg is not None else ce_clean
+            loss_ce = self.weight_ce * ce_raw
+        else:
+            loss_ce = 0.3 * ce_clean + (0.3 * ce_deg if ce_deg is not None else 0.0)
+
         loss_kd   = logits.sum() * 0.0
         loss_cons = logits.sum() * 0.0
 
@@ -295,11 +354,31 @@ class CrossDomainTotalLoss(nn.Module):
         if logits_degraded is not None and self.cons_loss.beta_cons > 0.0:
             loss_cons = self.cons_loss(logits, logits_degraded)
 
-        loss_total = loss_ce + loss_kd + loss_cons
+        loss_feat  = logits.sum() * 0.0
+        loss_guard = logits.sum() * 0.0
+        guard_active = False
+
+        if weight_feat > 0.0 and features_clean is not None and features_deg is not None:
+            lf_input = logits_degraded if logits_degraded is not None else logits
+            loss_feat, _ = self.feat_loss(features_deg, features_clean, lf_input, logits)
+
+        if weight_guard > 0.0 and teacher_logits is not None and logits_degraded is not None:
+            loss_guard, g_info = self.guard_loss(logits_degraded, teacher_logits, is_real=(targets == 0))
+            guard_active = g_info.get("guard_active", False)
+
+        if legacy_mode:
+            loss_total = loss_ce + loss_kd + loss_cons
+        else:
+            loss_total = (loss_ce + 0.7 * loss_kd + 0.2 * loss_cons
+                          + weight_feat * loss_feat + weight_guard * loss_guard)
+
         return {
-            "loss_total": loss_total,
-            "loss_ce":    loss_ce,
-            "loss_kd":    loss_kd,
-            "loss_cons":  loss_cons,
+            "loss_total":  loss_total,
+            "loss_ce":     loss_ce,
+            "loss_kd":     loss_kd,
+            "loss_cons":   loss_cons,
+            "loss_feat":   loss_feat,
+            "loss_guard":  loss_guard,
+            "guard_active": guard_active,
         }
 

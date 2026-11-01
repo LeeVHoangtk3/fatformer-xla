@@ -13,7 +13,7 @@
 | Mã | Tệp đặc tả | Tên nhiệm vụ | Ngày | Ước lượng | Cổng | Trạng thái |
 | :---: | :--- | :--- | :---: | ---: | :---: | :---: |
 | **7.2** | [`task_7.2_canonical_loader.md`](task_7.2_canonical_loader.md) | `canonical_loader` + adapter-index tường minh + test | D1–D3 | 8 h | **G7.0** | `[ ] Sẵn sàng` |
-| **7.9** | [`task_7.9_loss_v2_realguard.md`](task_7.9_loss_v2_realguard.md) | Loss v2: `RealGuardLoss` + `FeatureConsistencyLoss` | D4–D5 | 7 h | — (nạp cho G7.2) | `[ ] Sẵn sàng` |
+| **7.9** | [`task_7.9_loss_v2_realguard.md`](task_7.9_loss_v2_realguard.md) | Loss v2: `RealGuardLoss` + `FeatureConsistencyLoss` | D4–D5 | 7 h | — (nạp cho G7.2) | `[x] Đã hoàn thành` |
 | **7.10** | [`task_7.10_selection_metric_v2.md`](task_7.10_selection_metric_v2.md) | Selection metric v2: worst-group + ràng buộc Real ACC | D5–D6 | 4 h | — (nạp cho G7.2) | `[ ] Sẵn sàng` |
 | **7.13** | [`task_7.13_degradation_router.md`](task_7.13_degradation_router.md) | `DegradationRouter` + fusion xác suất đã hiệu chuẩn | D6–D9 | 8 h | — (nạp cho G7.3) | `[ ] Sẵn sàng` |
 
