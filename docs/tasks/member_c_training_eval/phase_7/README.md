@@ -13,10 +13,10 @@
 | Mã | Tệp đặc tả | Tên nhiệm vụ | Ngày | Ước lượng | Cổng | Trạng thái |
 | :---: | :--- | :--- | :---: | ---: | :---: | :---: |
 | **7.1** | [`task_7.1_audit_checkpoint_gen1.md`](task_7.1_audit_checkpoint_gen1.md) | Audit cấu trúc & đo lại Gen 1 (`n=3` vs `n=8`) | D1–D2 | 4 h | **G7.0** | `[~] Audit xong; chờ CI` |
-| **7.3** | [`task_7.3_eval_v3_measurement_contract.md`](task_7.3_eval_v3_measurement_contract.md) | Evaluation v3: khế ước đo lường, bỏ `strict=False`, bỏ ngưỡng batch | D2–D3 | 6 h | **G7.0** | `[~] Core pass; chờ run thật` |
-| **7.4** | [`task_7.4_calibration_threshold_fpr.md`](task_7.4_calibration_threshold_fpr.md) | Hiệu chuẩn nhiệt độ & ngưỡng ràng buộc FPR + ECE | D3 | 4 h | **G7.0** | `[~] Engine pass; chờ logits thật` |
-| **7.5** | [`task_7.5_wise_ft_gen2.md`](task_7.5_wise_ft_gen2.md) | WiSE-FT **Gen 2** + lưới `α×β_srm` + verify | D3–D4 | 5 h | **G7.1** | `[~] Merge pass; chờ sweep thật` |
-| **7.6** | [`task_7.6_rebaseline_cfe_v3.md`](task_7.6_rebaseline_cfe_v3.md) | Re-baseline 4 cấu hình trên CFE bằng harness v3 | D4 | 3 h | **G7.1** | `[ ] Chưa nghiệm thu` |
+| **7.3** | [`task_7.3_eval_v3_measurement_contract.md`](task_7.3_eval_v3_measurement_contract.md) | Evaluation v3: khế ước đo lường, bỏ `strict=False`, bỏ ngưỡng batch | D2–D3 | 6 h | **G7.0** | `[x] Nghiệm thu đo thật` |
+| **7.4** | [`task_7.4_calibration_threshold_fpr.md`](task_7.4_calibration_threshold_fpr.md) | Hiệu chuẩn nhiệt độ & ngưỡng ràng buộc FPR + ECE | D3 | 4 h | **G7.0** | `[x] Nghiệm thu đo thật; zero leakage` |
+| **7.5** | [`task_7.5_wise_ft_gen2.md`](task_7.5_wise_ft_gen2.md) | WiSE-FT **Gen 2** + lưới `α×β_srm` + verify | D3–D4 | 5 h | **G7.1** | `[x] Sweep 12/12; winner a55_b35` |
+| **7.6** | [`task_7.6_rebaseline_cfe_v3.md`](task_7.6_rebaseline_cfe_v3.md) | Re-baseline 4 cấu hình trên CFE bằng harness v3 | D4 | 3 h | **G7.1** | `[x] Nghiệm thu số đo; G7.1 FAIL` |
 | **7.11** | [`task_7.11_train_anchored_v2.md`](task_7.11_train_anchored_v2.md) | Huấn luyện Anchored Recovery v2 | D6–D7 | 5 h + GPU | **G7.2** | `[ ] Sẵn sàng` |
 | **7.12** | [`task_7.12_ablation_mini_v2.md`](task_7.12_ablation_mini_v2.md) | Ablation mini 4 cấu hình (cùng seed 42) | D7–D8 | 4 h + GPU | **G7.2** | `[ ] Sẵn sàng` |
 | **7.14** | [`task_7.14_locked_benchmark_phase7.md`](task_7.14_locked_benchmark_phase7.md) | Locked Benchmark Phase 7 (in-dist 82k + CFE + 6 biến thể) | D9–D10 | 5 h | **G7.3** | `[ ] Sẵn sàng` |

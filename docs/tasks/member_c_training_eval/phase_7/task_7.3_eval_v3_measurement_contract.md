@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local** + ☁️ **T4**
 - **Độ ưu tiên**: 🔴 Khẩn cấp — **chặn mọi số liệu Phase 7**
 - **Cổng liên quan**: **G7.0** (cuối D2)
-- **Trạng thái**: `[~] CORE METRICS/HARNESS PASS — CHỜ RUN CHECKPOINT + CFE THẬT` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.3_eval_v3.md))
+- **Trạng thái**: `[x] ĐÃ NGHIỆM THU ĐO THẬT — 2.000 ẢNH CFE` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.3_eval_v3.md))
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.3
 - **Khế ước bắt buộc**: [`ke_hoach_test_communityforensics_eval.md`](../../../plan/ke_hoach_test_communityforensics_eval.md) — **Phụ lục A**
 
@@ -202,7 +202,7 @@ python tools/eval_communityforensics.py --checkpoint <Baseline> \
 - [x] Bảng Markdown có cột `TPR@FPR=10%` + dòng "Trạng thái nạp".
 - [x] Đã thiết lập cổng chờ `load_canonical` từ chối nạp strict=False đối với checkpoint thật khi chưa có Task 7.2.
 - [x] Test mảng giả: 3 case ở §5.4 xanh 100%.
-- [ ] Báo cáo nghiệm thu hoàn chỉnh sau khi có run checkpoint + CFE thật; báo cáo hiện tại chỉ nghiệm thu core/schema.
+- [x] Báo cáo nghiệm thu hoàn chỉnh từ run checkpoint + 2.000 ảnh CFE thật, `evidence_level=measured`.
 
 ---
 

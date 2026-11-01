@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU** (merge) + ☁️ **T4 ~25 phút** (chấm 12 ứng viên)
 - **Độ ưu tiên**: 🟠 Cao — quyết định **G7.1**
 - **Cổng liên quan**: **G7.1** (cuối D4)
-- **Trạng thái**: `[~] MERGE/STRICT VERIFY PASS — CHỜ SWEEP ĐO THẬT VÀ CHỌN BEST` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.5_wise_ft_gen2.md))
+- **Trạng thái**: `[x] ĐÃ NGHIỆM THU ĐO THẬT — SWEEP 12/12, WINNER A55_B35` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.5_wise_ft_gen2.md))
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.5
 
 ---
@@ -225,11 +225,11 @@ Bảng 12 dòng + 4 cột chỉ số; nêu rõ **ứng viên thắng và biên �
 - [x] `--verify` tồn tại, `sys.exit(1)` khi `missing/unexpected/partial` khác 0.
 - [x] Lưới đủ **12** ứng viên (`α` 4 × `β` 3), có `--alpha_grid`/`--beta_grid`.
 - [x] Metadata đủ `alpha, beta_srm, sha256 (2 nguồn), layout, n_keys, git_commit`.
-- [ ] `DATASET/logs/phase7/wise_ft_v2_sweep.csv` có **12 dòng đo thật** + cột `selected`.
-- [ ] Best checkpoint khớp ứng viên `selected`, `verify 0/0`, `layout.partial = false`.
+- [x] `DATASET/logs/phase7/wise_ft_v2_sweep.csv` có **12 dòng đo thật** + cột `selected`.
+- [x] Best checkpoint khớp ứng viên `selected`, `verify 0/0`, `layout.partial = false`.
 - [x] **Không** ghi đè `fatformer_wise_ft_best.pth` cũ.
 - [x] `sweep_threshold_constrained` đã bị xoá (grep rỗng).
-- [ ] Báo cáo nêu rõ phán quyết G7.1 pass/fail **bằng số đo thật**.
+- [x] Báo cáo và Task 7.6 nêu rõ phán quyết **G7.1 FAIL** bằng số đo thật.
 
 ---
 

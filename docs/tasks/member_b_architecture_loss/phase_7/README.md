@@ -12,12 +12,12 @@
 
 | Mã | Tệp đặc tả | Tên nhiệm vụ | Ngày | Ước lượng | Cổng | Trạng thái |
 | :---: | :--- | :--- | :---: | ---: | :---: | :---: |
-| **7.2** | [`task_7.2_canonical_loader.md`](task_7.2_canonical_loader.md) | `canonical_loader` + adapter-index tường minh + test | D1–D3 | 8 h | **G7.0** | `[ ] Sẵn sàng` |
+| **7.2** | [`task_7.2_canonical_loader.md`](task_7.2_canonical_loader.md) | `canonical_loader` + adapter-index tường minh + test | D1–D3 | 8 h | **G7.0** | `[~] Core + đo thật pass; chờ 2 DoD` |
 | **7.9** | [`task_7.9_loss_v2_realguard.md`](task_7.9_loss_v2_realguard.md) | Loss v2: `RealGuardLoss` + `FeatureConsistencyLoss` | D4–D5 | 7 h | — (nạp cho G7.2) | `[ ] Sẵn sàng` |
 | **7.10** | [`task_7.10_selection_metric_v2.md`](task_7.10_selection_metric_v2.md) | Selection metric v2: worst-group + ràng buộc Real ACC | D5–D6 | 4 h | — (nạp cho G7.2) | `[ ] Sẵn sàng` |
 | **7.13** | [`task_7.13_degradation_router.md`](task_7.13_degradation_router.md) | `DegradationRouter` + fusion xác suất đã hiệu chuẩn | D6–D9 | 8 h | — (nạp cho G7.3) | `[ ] Sẵn sàng` |
 
-**Tổng**: 27 giờ công. `7.2` là **chốt chặn cứng**: C không được merge `eval v3` (7.3) trước khi `7.2` xanh.
+**Tổng**: 27 giờ công. Phần chốt chặn cứng của `7.2` đã đạt trên các run đo thật: Baseline, M4 và Anchored đều nạp `0/0`, còn Gen 1 bị từ chối đúng thiết kế. Task vẫn chưa đóng hành chính vì còn hai DoD repo-wide/smoke ở đặc tả.
 
 ---
 
@@ -36,7 +36,7 @@ flowchart LR
     B713 --> C714["7.14 Locked Benchmark<br/>(D9-D10)"]
 ```
 
-**Chốt chặn**: nếu `7.2` chưa đạt `0/0` cho 3 checkpoint hợp lệ thì **G7.0 trượt** và toàn bộ số liệu Phase 7 mất giá trị.
+**Chốt chặn**: yêu cầu `0/0` cho ba checkpoint hợp lệ đã đạt trong artifact đo thật. Hai DoD còn mở (`strict=False` repo-wide và smoke local) phải được xử lý trước khi đánh dấu Task 7.2 hoàn thành 100%, nhưng không thay đổi provenance của các run canonical đã nghiệm thu.
 
 ---
 

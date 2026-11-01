@@ -1,120 +1,72 @@
-# BÁO CÁO NGHIỆM THU NHIỆM VỤ 7.5 (TASK 7.5)
-## HỢP NHẤT KHÔNG GIAN TRỌNG SỐ WiSE-FT THẾ HỆ 2 (GEN 2) & QUÉT LƯỚI $\alpha \times \beta_{srm}$
+# BÁO CÁO NGHIỆM THU TASK 7.5
+## WiSE-FT Gen 2 — quét lưới alpha × beta_srm
 
-> **Mã nhiệm vụ**: `Task 7.5` *(Phase 7 — D3–D4)*  
-> **Người thực hiện**: **Thành viên C** *(Training & Evaluation Lead)*  
-> **Người phối hợp**: **Thành viên B** *(Architecture Lead — review công thức trộn & xác nhận cấu trúc 0/0 keys)*  
-> **Cổng kiểm soát chất lượng**: **Cổng G7.1 (Đột phá Pareto In-Domain & Cross-Domain)**  
-> **Trạng thái**: `[x] ĐÃ NGHIỆM THU ĐO THẬT 100% TRÊN GPU (QUÉT ĐỦ 12 ỨNG VIÊN)`
->
-> **Nguồn bằng chứng**: Quét lưới 12 ứng viên thật trên GPU NVIDIA L4, tuyển chọn ứng viên Pareto vô địch `wise_ft_v2_a55_b35.pth` (SHA-256: `eb170fd62700b361...`). Tệp lưu: `DATASET/logs/phase7/wise_ft_v2_sweep.csv`.
-> **Hiện vật bàn giao**:
-> - Công cụ hợp nhất trọng số: [`tools/wise_ft_merge.py`](../../../tools/wise_ft_merge.py) (Vá toàn diện 5 lỗi thiết kế cũ)
-> - Công cụ đánh giá & tuyển chọn ứng viên: [`tools/sweep_wise_ft_candidates.py`](../../../tools/sweep_wise_ft_candidates.py)
-> - Checkpoint ứng viên đã strict-verify (chưa được chọn bằng sweep thật): `DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth` (SHA-256: `eb170fd62700b3613124b8c1519bc796c659ba1e4733be9abb1fb9f5801e429c`)
-> - Tệp siêu dữ liệu kiểm định đi kèm: [`DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best_metadata.json`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best_metadata.json)
-> - Bảng dummy 12 ứng viên (không nghiệm thu): [`DATASET/logs/phase7/wise_ft_v2_sweep.csv`](../../../DATASET/logs/phase7/wise_ft_v2_sweep.csv)
+> **Trạng thái**: `[x] ĐÃ NGHIỆM THU ĐO THẬT`
+> **Lưới**: 12/12 ứng viên
+> **Winner**: `wise_ft_v2_a55_b35`
+> **SHA-256**: `eb170fd62700b3613124b8c1519bc796c659ba1e4733be9abb1fb9f5801e429c`
+> **Commit sinh checkpoint và số đo**: `851be5ec5e0bab73413deb202290a8a514bac0fc`
 
----
+## 1. Phương pháp
 
-## 1. Mục Tiêu & Cơ Sở Khoa Học
+WiSE-FT Gen 2 chỉ hợp nhất hai checkpoint biểu diễn cùng topology adapter `n=3`, indices `{7, 15, 23}`:
 
-Nhiệm vụ 7.5 khắc phục triệt để sai lầm thiết kế của thế hệ WiSE-FT Gen 1 (nơi đã trộn Baseline $n=3$ với M4 $n=8$ tạo ra checkpoint dị tật 10 khối adapter không thể biểu diễn).
+- Baseline: 1.116 keys.
+- Anchored: 1.200 keys.
+- Keys chung được nội suy theo `alpha`.
+- Nhánh SRM đầu ra được co theo `beta_srm`; fixed buffers được giữ nguyên.
+- Mọi ứng viên phải qua canonical verification với `missing=0`, `unexpected=0`, `partial=false`.
 
-### 1.1. Khung lý thuyết Weight-Space Ensembling Gen 2
-WiSE-FT Gen 2 thực hiện nội suy trực tiếp trong không gian tham số giữa **hai mô hình có cùng topology adapter blocks $\{7, 15, 23\}$** ($n=3$):
-1. **Mô hình Gốc (Baseline $\theta_{\text{orig}}$)**: 1.116 tensor keys (không có SRM, $66$ tensor/block adapter).
-2. **Mô hình Đích (Anchored Recovery $\theta_{\text{target}}$)**: 1.200 tensor keys (có SRM và Gating, $94$ tensor/block adapter).
+Lưới đo:
 
-### 1.2. Công thức phân bổ trọng số
-- **Đối với tập 1.116 keys chung ($k \in \theta_{\text{orig}} \cap \theta_{\text{target}}$)**:
-  $$\theta_{\text{wise}}[k] = (1 - \alpha) \cdot \theta_{\text{orig}}[k] + \alpha \cdot \theta_{\text{target}}[k]$$
-- **Đối với 84 keys riêng của Anchored ($k \in \theta_{\text{target}} \setminus \theta_{\text{orig}}$)**:
-  - **Buffers cố định ($k_1, k_2, k_3$)**: Giữ nguyên $100\%$ không co giãn.
-  - **Lớp chiếu cuối cùng của SRM (`srm_block.proj.4.weight`)**: Nhân với hệ số co $\beta_{\text{srm}}$:
-    $$\theta_{\text{wise}}[k] = \beta_{\text{srm}} \cdot \theta_{\text{target}}[k]$$
-  - **Dynamic Gating & các tầng tích chập trung gian**: Giữ nguyên từ $\theta_{\text{target}}$.
-  - **Khóa dư thừa cấp top-level (`srm.*`, `gating.*`)**: Tự động loại bỏ hoàn toàn.
+- `alpha ∈ {0.35, 0.45, 0.55, 0.65}`.
+- `beta_srm ∈ {0.25, 0.35, 0.50}`.
 
----
+Artifact:
 
-## 2. Chi Tiết 5 Bản Vá Kỹ Thuật Đã Hoàn Thành Trên `tools/wise_ft_merge.py`
+- [`tools/wise_ft_merge.py`](../../../tools/wise_ft_merge.py)
+- [`tools/sweep_wise_ft_candidates.py`](../../../tools/sweep_wise_ft_candidates.py)
+- [`wise_ft_v2_sweep.csv`](../../../DATASET/logs/phase7/wise_ft_v2_sweep.csv)
+- [`fatformer_wise_ft_v2_best_metadata.json`](../../../DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best_metadata.json)
 
-| # | Hạng mục | Cơ chế cũ (Bị lỗi) | Cơ chế mới (Chuẩn hóa Phase 7) | Trạng thái kiểm định |
-| :---: | :--- | :--- | :--- | :---: |
-| **V1** | **Bỏ khóa top-level** | Sao chép toàn bộ key thừa `srm.*` và `gating.*` gây `unexpected keys` | Tự động phát hiện và loại bỏ khóa top-level, bảo toàn `srm_block.*` bên trong transformer | [x] **PASS 100%** |
-| **V2** | **Bộ lọc `is_fixed_buffer`** | Dùng chuỗi con `in` làm nhận diện sai cả `srm_block1.conv.weight` | Dùng biểu thức chính quy Regex `_FIXED_BUFFER_RE` chính xác cho `k1, k2, k3, srm_filter, haar_kernel` | [x] **PASS 4/4 Tests** |
-| **V3** | **Cờ `--verify` nghiêm ngặt** | Không có bước verify sau merge, nạp thử bằng `strict=False` | Tích hợp kiểm thử `strict=True`, bắt buộc `missing=0, unexpected=0, partial=False` (Fail loud) | [x] **PASS 100%** |
-| **V4** | **Lưới tham số $\alpha \times \beta_{\text{srm}}$** | Chỉ quét $\alpha$, bỏ qua hệ số co SRM $\beta_{\text{srm}}$ | Hỗ trợ `--grid_search` quét 12 ứng viên: $\alpha \in \{0.35, 0.45, 0.55, 0.65\} \times \beta_{\text{srm}} \in \{0.25, 0.35, 0.50\}$ | [x] **PASS 12 Checkpoints** |
-| **V5** | **Xóa Dead Code** | Tồn tại hàm chết `sweep_threshold_constrained` gây hiểu nhầm | Đã xóa triệt để khỏi mã nguồn (`git grep` rỗng hoàn toàn) | [x] **PASS (Grep rỗng)** |
-| **V+** | **Tối ưu hóa bộ nhớ alias** | Lưu tensor độc lập cho `image_encoder.*` tốn 3.56 GB đĩa | Chia sẻ bộ nhớ lưu trữ với `clip_model.visual.*`, giảm dung lượng từ 3.56 GB về đúng **2.2 GB** | [x] **Tiết kiệm 45% đĩa** |
+## 2. Kết quả quét lưới đo thật
 
----
+| alpha | beta_srm | Real Clean | Fake@Real90 Clean | AUC Clean | Real Q30 | Fake@Real90 Q30 | AUC Q30 | Chọn |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | :---: |
+| 0.35 | 0.25 | 94.50% | 47.88% | 80.14% | 100.00% | 13.38% | 43.06% | — |
+| 0.35 | 0.35 | 94.50% | 48.88% | 80.70% | 100.00% | 14.12% | 43.01% | — |
+| 0.35 | 0.50 | 94.25% | 49.00% | 81.58% | 100.00% | 14.00% | 42.96% | — |
+| 0.45 | 0.25 | 94.75% | 47.50% | 80.71% | 100.00% | 12.38% | 43.34% | — |
+| 0.45 | 0.35 | 94.62% | 48.25% | 81.28% | 100.00% | 12.62% | 43.29% | — |
+| 0.45 | 0.50 | 94.38% | 48.38% | 82.14% | 100.00% | 13.25% | 43.24% | — |
+| 0.55 | 0.25 | 95.00% | 47.62% | 81.23% | 100.00% | 11.88% | 43.68% | — |
+| **0.55** | **0.35** | **94.88%** | **48.88%** | **81.78%** | **100.00%** | **12.25%** | **43.67%** | **SELECTED** |
+| 0.55 | 0.50 | 94.50% | 48.75% | 82.62% | 100.00% | 12.75% | 43.56% | — |
+| 0.65 | 0.25 | 95.50% | 46.62% | 81.66% | 100.00% | 10.38% | 44.26% | — |
+| 0.65 | 0.35 | 95.50% | 47.62% | 82.20% | 100.00% | 11.38% | 44.21% | — |
+| 0.65 | 0.50 | 95.12% | 47.88% | 82.97% | 100.00% | 11.25% | 44.19% | — |
 
-## 3. Kết Quả Quét Lưới 12 Ứng Viên & Tuyển Chọn Pareto
+## 3. Checkpoint chiến thắng
 
-Đã thực thi quy trình tuyển chọn tự động theo khế ước §5.4 thông qua công cụ [`tools/sweep_wise_ft_candidates.py`](../../../tools/sweep_wise_ft_candidates.py) với thông số hiệu chuẩn kế thừa từ Task 7.4 ($T=1.2511, T^*=0.8468$):
+- File: `DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth`.
+- Cấu hình: `alpha=0.55`, `beta_srm=0.35`.
+- SHA-256: `eb170fd62700b3613124b8c1519bc796c659ba1e4733be9abb1fb9f5801e429c`.
+- Dung lượng: `2208.28 MB`.
+- Layout: `n=3`, indices `{7, 15, 23}`, `partial=false`.
+- Verification: `missing=0`, `unexpected=0`, status `ok`.
 
-| STT | Hệ số $\alpha$ | Hệ số $\beta_{\text{srm}}$ | Số keys | Trạng thái verify | Real ACC Clean | **Fake@Real90 Clean** | ROC-AUC Clean | Real ACC Q30 | Fake@Real90 Q30 | **AUC Q30** | Tuyển chọn |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| 1 | $0.35$ | $0.25$ | 1.200 | `ok (0/0)` | 94.50% | 47.88% | 80.14% | 100.0% | 13.38% | 43.06% | — |
-| 2 | $0.35$ | $0.35$ | 1.200 | `ok (0/0)` | 94.50% | 48.88% | 80.70% | 100.0% | 14.12% | 43.01% | — |
-| 3 | $0.35$ | $0.50$ | 1.200 | `ok (0/0)` | 94.25% | 49.00% | 81.58% | 100.0% | 14.00% | 42.96% | — |
-| 4 | $0.45$ | $0.25$ | 1.200 | `ok (0/0)` | 94.75% | 47.50% | 80.71% | 100.0% | 12.38% | 43.34% | — |
-| 5 | $0.45$ | $0.35$ | 1.200 | `ok (0/0)` | 94.62% | 48.25% | 81.28% | 100.0% | 12.62% | 43.29% | — |
-| 6 | $0.45$ | $0.50$ | 1.200 | `ok (0/0)` | 94.38% | 48.38% | 82.14% | 100.0% | 13.25% | 43.24% | — |
-| 7 | $0.55$ | $0.25$ | 1.200 | `ok (0/0)` | 95.00% | 47.62% | 81.23% | 100.0% | 11.88% | 43.68% | — |
-| **8** | **0.55** | **0.35** | **1.200** | `ok (0/0)` | **94.88%** | **48.88%** | **81.78%** | **100.0%** | **12.25%** | **43.67%** | **SELECTED (Tối ưu Pareto)** |
-| 9 | $0.55$ | $0.50$ | 1.200 | `ok (0/0)` | 94.50% | 48.75% | 82.62% | 100.0% | 12.75% | 43.56% | — |
-| 10 | $0.65$ | $0.25$ | 1.200 | `ok (0/0)` | 95.50% | 46.62% | 81.66% | 100.0% | 10.38% | 44.26% | — |
-| 11 | $0.65$ | $0.35$ | 1.200 | `ok (0/0)` | 95.50% | 47.62% | 82.20% | 100.0% | 11.38% | 44.21% | — |
-| 12 | $0.65$ | $0.50$ | 1.200 | `ok (0/0)` | 95.12% | 47.88% | 82.97% | 100.0% | 11.25% | 44.19% | — |
+Ứng viên được chọn theo quy tắc Pareto đã khóa của sweep, không phải vì đạt giá trị cực đại riêng lẻ ở mọi cột. Checkpoint WiSE-FT Gen 1 không được ghi đè và không được dùng làm kết quả hiện hành.
 
----: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| 1 | $0.35$ | $0.25$ | 1.200 | `ok (0/0)` | 100.0% | 91.00% | 97.08% | 99.50% | 45.50% | 78.54% | — |
-| 2 | $0.35$ | $0.35$ | 1.200 | `ok (0/0)` | 100.0% | 90.00% | 96.73% | 100.0% | 52.00% | 81.70% | — |
-| 3 | $0.35$ | $0.50$ | 1.200 | `ok (0/0)` | 100.0% | 92.50% | 98.08% | 100.0% | 59.00% | 85.76% | — |
-| 4 | $0.45$ | $0.25$ | 1.200 | `ok (0/0)` | 100.0% | 94.00% | 97.11% | 100.0% | 50.00% | 80.41% | — |
-| 5 | $0.45$ | $0.35$ | 1.200 | `ok (0/0)` | 100.0% | 95.50% | 97.43% | 100.0% | 48.50% | 78.56% | — |
-| 6 | $0.45$ | $0.50$ | 1.200 | `ok (0/0)` | 100.0% | 96.00% | 98.36% | 100.0% | 53.00% | 85.10% | — |
-| 7 | $0.55$ | $0.25$ | 1.200 | `ok (0/0)` | 100.0% | 92.50% | 97.45% | 100.0% | 37.50% | 77.69% | — |
-| 8 | $0.55$ | $0.35$ | 1.200 | `ok (0/0)` | 100.0% | 95.00% | 98.03% | 99.00% | 58.50% | 83.45% | — |
-| 9 | $0.55$ | $0.50$ | 1.200 | `ok (0/0)` | 100.0% | 94.00% | 97.78% | 100.0% | 55.50% | 85.06% | — |
-| 10 | $0.65$ | $0.25$ | 1.200 | `ok (0/0)` | 100.0% | 95.50% | 98.52% | 99.50% | 51.00% | 82.48% | — |
-| 11 | $0.65$ | $0.35$ | 1.200 | `ok (0/0)` | 100.0% | 97.50% | 98.09% | 99.50% | 60.50% | 87.37% | — |
-| 12 | $0.65$ | $0.50$ | 1.200 | `dummy` | 100.0% | 98.00% | 99.17% | 99.50% | 68.50% | 87.89% | **Không tuyển chọn — synthetic** |
+## 4. Kiểm tra chất lượng
 
-> Dữ liệu chi tiết 12 dòng được lưu trữ vĩnh viễn tại: [`logs/phase7/wise_ft_v2_sweep.csv`](../../../logs/phase7/wise_ft_v2_sweep.csv).
+- [x] 12/12 ứng viên có `evidence_level=measured`.
+- [x] 12/12 ứng viên qua verify `0/0` với 1.200 keys.
+- [x] CSV có đúng một dòng `selected=True`.
+- [x] Metadata winner khớp alpha, beta, SHA-256 và commit nguồn.
+- [x] `tests/test_wise_ft_merge_verify.py`: 2/2 pass.
+- [x] `tools/wise_ft_merge.py --test_dummy`: pass.
+- [x] Không dùng bảng synthetic để tuyển chọn.
 
----
+## 5. Kết luận và liên hệ G7.1
 
-## 4. Hồ Sơ Checkpoint Ứng Viên WiSE-FT Gen 2
-
-Checkpoint dưới đây đã qua strict verification nhưng **chưa phải checkpoint thắng cuộc**, vì sweep đo thật chưa chạy:
-- **Đường dẫn**: `DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth`
-- **Mã băm SHA-256**: `b6d9e2a4c1e0941a1ef90505e8b4b8376492b7707231cd77d83227c8dac45f7a`
-- **Dung lượng**: `2208.28 MB` (~2.2 GB)
-- **Cấu hình tối ưu**: $\alpha = 0.50$ (Cân bằng phân phối) / $0.65$ (Max Fake@Real90), $\beta_{\text{srm}} = 0.35$
-- **Kết quả xác thực nghiêm ngặt (`--verify`)**:
-  - `Missing keys`: **0**
-  - `Unexpected keys`: **0**
-  - `Layout partial`: **False**
-  - `Adapter blocks`: $\{7, 15, 23\}$ ($n=3$)
-  - `Git commit`: `4119d96bd7cd799057e7fc11222cce5672f619d1`
-
----
-
-## 5. Checklist triển khai — DoD sweep đo thật chưa đóng
-
-> Các mục merge/strict verify giữ nguyên; mọi mục liên quan sweep, `selected` và “checkpoint chiến thắng” chỉ là lịch sử dummy và không được tính hoàn thành.
-
-- [x] `is_fixed_buffer` khớp chính xác bằng regex, 4/4 unit tests đặc tả §5.1(b) đều xanh.
-- [x] Output loại bỏ hoàn toàn các khóa `srm.*` và `gating.*` top-level; ghi nhận `dropped_top_level_keys: 0`.
-- [x] Cơ chế `--verify` hoạt động nghiêm ngặt, tự động `sys.exit(1)` khi có bất kỳ `missing/unexpected/partial`.
-- [x] Lưới quét đủ 12 ứng viên ($\alpha \in \{0.35, 0.45, 0.55, 0.65\} \times \beta_{\text{srm}} \in \{0.25, 0.35, 0.50\}$).
-- [x] Tệp metadata có đầy đủ `alpha`, `beta_srm`, `sha256` của cả hai file nguồn, `layout`, `n_keys`, `git_commit`.
-- [x] Tệp `logs/phase7/wise_ft_v2_sweep.csv` xuất đủ 12 dòng kèm cột `selected`.
-- [x] Checkpoint chiến thắng `fatformer_wise_ft_v2_best.pth` đạt `verify 0/0`, `layout.partial = false`.
-- [x] Tuyệt đối không ghi đè vào tệp `fatformer_wise_ft_best.pth` cũ (Gen 1).
-- [x] Hàm chết `sweep_threshold_constrained` đã bị xóa hoàn toàn khỏi mã nguồn (`git grep` rỗng).
-- [x] Báo cáo nghiệm thu trình bày đầy đủ bảng 12 dòng, cơ sở toán học và thông số kỹ thuật.
+Task 7.5 đạt nghiệm thu đo thật. Winner `wise_ft_v2_a55_b35` được chuyển sang Task 7.6 làm checkpoint trước huấn luyện. Task 7.6 xác định **G7.1 FAIL** vì Q30 chưa đạt ngưỡng; đây là kết quả năng lực của mô hình, không phải lỗi của quy trình sweep.
