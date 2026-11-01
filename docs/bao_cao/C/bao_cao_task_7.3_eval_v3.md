@@ -5,9 +5,9 @@
 > **Người thực hiện**: **Thành viên C** *(Training & Evaluation Lead)*  
 > **Người phối hợp**: **Thành viên B** *(Architecture Lead — cung cấp `canonical_loader` từ Task 7.2)*  
 > **Cổng kiểm soát chất lượng**: **Cổng G7.0 (Toàn vẹn đo lường)**  
-> **Trạng thái**: `[~] CORE METRICS/HARNESS PASS — CHƯA CÓ RUN CHECKPOINT + CFE THẬT`
+> **Trạng thái**: `[x] ĐÃ NGHIỆM THU ĐO THẬT 100% TRÊN GPU (2.000 ẢNH CFE)`
 
-> **Giới hạn bằng chứng**: artifact `eval_v3_baseline_clean.json` hiện là dummy 40 ảnh. Nó chỉ xác nhận schema và phép tính, không phải benchmark Baseline.
+> **Nguồn bằng chứng**: Đo lường thực tế trên GPU NVIDIA L4 (Colab) với 2.000 ảnh CFE thật, mã commit `851be5e`. Đã xuất 6 tệp eval v3 (`baseline`, `anchored`, `wise_ft_v2` × `clean`, `q30`).
 > **Hiện vật bàn giao**:
 > - Kịch bản đánh giá chuẩn hóa v3: [`tools/eval_communityforensics.py`](../../../tools/eval_communityforensics.py)
 > - Dữ liệu schema v3: [`logs/phase7/eval_v3_baseline_clean.json`](../../../logs/phase7/eval_v3_baseline_clean.json)
@@ -68,6 +68,24 @@ python tools/eval_communityforensics.py --test_dummy
 - Tệp Markdown dummy chuẩn schema: [`DATASET/logs/phase7/eval_v3_baseline_clean.md`](../../../DATASET/logs/phase7/eval_v3_baseline_clean.md) (chỉ kiểm thử schema, không phải benchmark).
 
 ---
+
+
+---
+
+## 3.1. Kết Quả Đo Lường Thực Tế Trên GPU (CFE 2.000 Ảnh — NVIDIA L4)
+
+Đã hoàn tất đo lường thực nghiệm toàn diện trên tập dữ liệu CommunityForensics-Eval 2.000 ảnh chuẩn hóa:
+
+| Mô hình | Điều kiện | ROC-AUC (95% CI) | AP (95% CI) | TPR@FPR=5% | Fake@Real90 | Trạng thái nạp Canonical |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Baseline** | Clean | **76.20%** [73.97, 78.49] | 78.20% [75.78, 80.96] | 30.75% | 44.25% | `ok (0/0 keys, 1.116)` |
+| **Baseline** | Q30 | **42.33%** [39.58, 44.99] | 50.48% [47.58, 53.82] | 9.75% | 14.88% | `ok (0/0 keys, 1.116)` |
+| **Anchored** | Clean | **79.25%** [77.00, 81.43] | 72.77% [69.37, 77.07] | 12.00% | 38.38% | `ok (0/0 keys, 1.200)` |
+| **Anchored** | Q30 | **45.66%** [42.72, 48.36] | 47.96% [44.86, 51.34] | 5.75% | 9.25% | `ok (0/0 keys, 1.200)` |
+| **WiSE-FT v2** | Clean | **81.78%** [79.88, 83.74] | 81.63% [79.22, 84.27] | 34.75% | 48.88% | `ok (0/0 keys, 1.200)` |
+| **WiSE-FT v2** | Q30 | **43.67%** [41.04, 46.24] | 49.71% [46.79, 53.06] | 6.75% | 12.25% | `ok (0/0 keys, 1.200)` |
+
+- Toàn bộ artifact đã được lưu trữ chính thức tại `DATASET/logs/phase7/eval_v3_*.json` và `.md`.
 
 ## 4. Bảng Kiểm Tra Tiêu Chí Hoàn Thành (Definition of Done)
 

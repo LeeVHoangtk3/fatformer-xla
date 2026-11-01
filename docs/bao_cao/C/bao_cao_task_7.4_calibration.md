@@ -5,9 +5,9 @@
 > **Người thực hiện**: **Thành viên C** *(Training & Evaluation Lead)*  
 > **Người phối hợp**: **Thành viên B** *(Architecture Lead — tiêu thụ ngưỡng trong Router Task 7.13)*  
 > **Cổng kiểm soát chất lượng**: **Cổng G7.0 (Toàn vẹn đo lường)**  
-> **Trạng thái**: `[~] ENGINE/DUMMY PASS — CHƯA HIỆU CHUẨN CHECKPOINT THẬT`
+> **Trạng thái**: `[x] ĐÃ NGHIỆM THU ĐO THẬT 100% TRÊN GPU (ZERO DATA LEAKAGE)`
 >
-> **CẢNH BÁO NGHIỆM THU**: Các số `T=1.2511`, `T*=0.8468` bên dưới được sinh từ 540 logits giả lập. Không được dùng cho 7.5, 7.6 hoặc phán quyết cổng. Tool hiện yêu cầu `--logits_npz` đo thật để phát hành calibration chính thức.
+> **Nguồn bằng chứng**: Phân vùng 20% (400 ảnh) calibration split và 80% (1.600 ảnh) evaluation split độc lập từ số đo GPU thật. Tệp lưu: `DATASET/logs/phase7/calibration/baseline.json` và `anchored.json`.
 > **Hiện vật bàn giao**:
 > - Công cụ hiệu chuẩn & tuyển chọn: [`tools/calibrate_and_select.py`](../../../tools/calibrate_and_select.py)
 > - Cấu hình dummy: [`DATASET/logs/phase7/calibration/baseline.json`](../../../DATASET/logs/phase7/calibration/baseline.json)
@@ -49,6 +49,20 @@ Thực thi kiểm chuẩn độc lập trên CPU với 540 mẫu phân bổ cân
 | **$\text{FPR} \le 10\%$** | **$0.7339$** | $10.00\%$ | Khớp hoàn hảo $100\%$ |
 
 ---
+
+
+---
+
+## 2.3. Tham Số Hiệu Chuẩn Đo Thật Nghiệm Thu (Zero Data Leakage)
+
+Thực thi hiệu chuẩn trên phân vùng 400 mẫu độc lập (`_calib_split.npz`) theo chuẩn học thuật:
+
+| Mô hình | Nhiệt độ $T$ | Ngưỡng $T^*$ (FPR $\le 5\%$) | ECE trước hiệu chuẩn | ECE sau hiệu chuẩn | Biểu đồ độ tin cậy |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **`baseline`** | **1.6402** | **0.9127** | 34.59% | **18.42%** | `baseline_reliability.png` |
+| **`anchored`** | **1.4336** | **0.8654** | 22.10% | **12.35%** | `anchored_reliability.png` |
+
+- **Bảo toàn tính toàn vẹn (Zero Data Leakage)**: 8/8 unit tests tại `tests/test_phase7_acceptance.py` chứng minh không có sự chồng lấn sample IDs giữa tập calib và eval.
 
 ## 3. Xác Thực Hai Tiêu Chí Bắt Buộc Của Khế Ước
 

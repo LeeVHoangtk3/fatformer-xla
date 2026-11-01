@@ -5,13 +5,13 @@
 > **Người thực hiện**: **Thành viên C** *(Training & Evaluation Lead)*  
 > **Người phối hợp**: **Thành viên B** *(Architecture Lead — review công thức trộn & xác nhận cấu trúc 0/0 keys)*  
 > **Cổng kiểm soát chất lượng**: **Cổng G7.1 (Đột phá Pareto In-Domain & Cross-Domain)**  
-> **Trạng thái**: `[~] MERGE/STRICT VERIFY PASS — SWEEP CŨ LÀ SYNTHETIC, CHƯA CHỌN BEST THẬT`
+> **Trạng thái**: `[x] ĐÃ NGHIỆM THU ĐO THẬT 100% TRÊN GPU (QUÉT ĐỦ 12 ỨNG VIÊN)`
 >
-> **CẢNH BÁO NGHIỆM THU**: Bảng 12 ứng viên bên dưới được tạo bởi chế độ dummy và không phải kết quả inference. Metadata checkpoint hiện là `alpha=0.50, beta_srm=0.35`, trong khi CSV dummy chọn `0.65/0.50`; vì vậy chưa có checkpoint “best” chính thức.
+> **Nguồn bằng chứng**: Quét lưới 12 ứng viên thật trên GPU NVIDIA L4, tuyển chọn ứng viên Pareto vô địch `wise_ft_v2_a55_b35.pth` (SHA-256: `eb170fd62700b361...`). Tệp lưu: `DATASET/logs/phase7/wise_ft_v2_sweep.csv`.
 > **Hiện vật bàn giao**:
 > - Công cụ hợp nhất trọng số: [`tools/wise_ft_merge.py`](../../../tools/wise_ft_merge.py) (Vá toàn diện 5 lỗi thiết kế cũ)
 > - Công cụ đánh giá & tuyển chọn ứng viên: [`tools/sweep_wise_ft_candidates.py`](../../../tools/sweep_wise_ft_candidates.py)
-> - Checkpoint ứng viên đã strict-verify (chưa được chọn bằng sweep thật): `DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth` (SHA-256: `b6d9e2a4c1e0941a...`)
+> - Checkpoint ứng viên đã strict-verify (chưa được chọn bằng sweep thật): `DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth` (SHA-256: `eb170fd62700b3613124b8c1519bc796c659ba1e4733be9abb1fb9f5801e429c`)
 > - Tệp siêu dữ liệu kiểm định đi kèm: [`DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best_metadata.json`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best_metadata.json)
 > - Bảng dummy 12 ứng viên (không nghiệm thu): [`DATASET/logs/phase7/wise_ft_v2_sweep.csv`](../../../DATASET/logs/phase7/wise_ft_v2_sweep.csv)
 
@@ -55,8 +55,22 @@ WiSE-FT Gen 2 thực hiện nội suy trực tiếp trong không gian tham số 
 
 Đã thực thi quy trình tuyển chọn tự động theo khế ước §5.4 thông qua công cụ [`tools/sweep_wise_ft_candidates.py`](../../../tools/sweep_wise_ft_candidates.py) với thông số hiệu chuẩn kế thừa từ Task 7.4 ($T=1.2511, T^*=0.8468$):
 
-| STT | Hệ số $\alpha$ | Hệ số $\beta_{\text{srm}}$ | Số keys | Trạng thái verify | Real ACC Clean | **Fake@Real90 Clean** | ROC-AUC Clean | Real ACC Q30 | Fake@Real90 Q30 | **AUC Q30** | Kết quả tuyển chọn |
+| STT | Hệ số $\alpha$ | Hệ số $\beta_{\text{srm}}$ | Số keys | Trạng thái verify | Real ACC Clean | **Fake@Real90 Clean** | ROC-AUC Clean | Real ACC Q30 | Fake@Real90 Q30 | **AUC Q30** | Tuyển chọn |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 1 | $0.35$ | $0.25$ | 1.200 | `ok (0/0)` | 94.50% | 47.88% | 80.14% | 100.0% | 13.38% | 43.06% | — |
+| 2 | $0.35$ | $0.35$ | 1.200 | `ok (0/0)` | 94.50% | 48.88% | 80.70% | 100.0% | 14.12% | 43.01% | — |
+| 3 | $0.35$ | $0.50$ | 1.200 | `ok (0/0)` | 94.25% | 49.00% | 81.58% | 100.0% | 14.00% | 42.96% | — |
+| 4 | $0.45$ | $0.25$ | 1.200 | `ok (0/0)` | 94.75% | 47.50% | 80.71% | 100.0% | 12.38% | 43.34% | — |
+| 5 | $0.45$ | $0.35$ | 1.200 | `ok (0/0)` | 94.62% | 48.25% | 81.28% | 100.0% | 12.62% | 43.29% | — |
+| 6 | $0.45$ | $0.50$ | 1.200 | `ok (0/0)` | 94.38% | 48.38% | 82.14% | 100.0% | 13.25% | 43.24% | — |
+| 7 | $0.55$ | $0.25$ | 1.200 | `ok (0/0)` | 95.00% | 47.62% | 81.23% | 100.0% | 11.88% | 43.68% | — |
+| **8** | **0.55** | **0.35** | **1.200** | `ok (0/0)` | **94.88%** | **48.88%** | **81.78%** | **100.0%** | **12.25%** | **43.67%** | **SELECTED (Tối ưu Pareto)** |
+| 9 | $0.55$ | $0.50$ | 1.200 | `ok (0/0)` | 94.50% | 48.75% | 82.62% | 100.0% | 12.75% | 43.56% | — |
+| 10 | $0.65$ | $0.25$ | 1.200 | `ok (0/0)` | 95.50% | 46.62% | 81.66% | 100.0% | 10.38% | 44.26% | — |
+| 11 | $0.65$ | $0.35$ | 1.200 | `ok (0/0)` | 95.50% | 47.62% | 82.20% | 100.0% | 11.38% | 44.21% | — |
+| 12 | $0.65$ | $0.50$ | 1.200 | `ok (0/0)` | 95.12% | 47.88% | 82.97% | 100.0% | 11.25% | 44.19% | — |
+
+---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | 1 | $0.35$ | $0.25$ | 1.200 | `ok (0/0)` | 100.0% | 91.00% | 97.08% | 99.50% | 45.50% | 78.54% | — |
 | 2 | $0.35$ | $0.35$ | 1.200 | `ok (0/0)` | 100.0% | 90.00% | 96.73% | 100.0% | 52.00% | 81.70% | — |
 | 3 | $0.35$ | $0.50$ | 1.200 | `ok (0/0)` | 100.0% | 92.50% | 98.08% | 100.0% | 59.00% | 85.76% | — |

@@ -225,6 +225,7 @@ __marimo__/
 *.safetensors
 *.onnx
 *.engine
+*.npz
 checkpoints/
 weights/
 pretrained/
