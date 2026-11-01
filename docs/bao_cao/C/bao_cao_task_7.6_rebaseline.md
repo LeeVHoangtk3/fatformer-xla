@@ -1,9 +1,9 @@
 # BÁO CÁO NGHIỆM THU TASK 7.6 — RE-BASELINE CFE v3
 
-> **Trạng thái**: `[~] ĐÃ ĐO THẬT — G7.1 FAIL; CHỜ ĐỒNG BỘ ARTIFACT TỪ COLAB`
+> **Trạng thái**: `[x] ĐÃ NGHIỆM THU SỐ ĐO — G7.1 FAIL`
 > **Ngày chạy**: 01/11/2026
-> **Nguồn bằng chứng**: transcript GPU Acceptance Runner do người thực hiện cung cấp
-> **Git commit**: `bfc338114c6503d1459b61ed0c9e35c399dd0d5d` (working tree sạch)
+> **Nguồn bằng chứng**: artifact GPU Acceptance Runner đã tải về và kiểm định local
+> **Git commit thực nghiệm**: `851be5ec5e0bab73413deb202290a8a514bac0fc` (working tree sạch)
 > **Thiết bị**: NVIDIA L4, 22 GB VRAM
 > **Dữ liệu**: CommunityForensics-Eval, 2.000 ảnh; seed `42`; `degrade_order=post_resize`
 
@@ -37,6 +37,8 @@ Pipeline đã hoàn tất đo lường thật cho Tasks 7.3–7.6, tạo ma tr�
 | **`wise_ft_v2`** | **81.78%** | **81.63%** | **48.88%** | 94.88% |
 | `ensemble` | 80.71% | 76.97% | 42.75% | **95.00%** |
 
+CI 95% của `wise_ft_v2`: AUC `[79.88%, 83.74%]`, Fake@Real90 `[42.49%, 55.20%]`. CI 95% của Ensemble: AUC `[78.51%, 82.76%]`, Fake@Real90 `[38.24%, 51.62%]`.
+
 ### JPEG Q=30 — eval split
 
 | Cấu hình | ROC-AUC | AP | Fake@Real90 | Real ACC tại T* |
@@ -45,6 +47,8 @@ Pipeline đã hoàn tất đo lường thật cho Tasks 7.3–7.6, tạo ma tr�
 | `anchored` | 45.66% | 47.96% | 9.25% | 99.38% |
 | `wise_ft_v2` | 43.67% | 49.71% | 12.25% | **100.00%** |
 | **`ensemble`** | **46.10%** | 49.10% | 10.00% | **100.00%** |
+
+CI 95% của `wise_ft_v2`: AUC `[41.04%, 46.24%]`, Fake@Real90 `[8.32%, 15.60%]`. CI 95% của Ensemble: AUC `[43.14%, 48.88%]`, Fake@Real90 `[7.50%, 12.46%]`.
 
 Ứng viên WiSE-FT được chọn là `wise_ft_v2_a55_b35.pth`, với `alpha=0.55`, `beta_srm=0.35`. Quét đủ 12 ứng viên không tìm thấy cấu hình gần ngưỡng Must Q30; vì vậy thất bại không phải do chọn nhầm một điểm lưới đơn lẻ.
 
@@ -65,7 +69,7 @@ Mức Stretch `Fake@Real90 Q30 ≥70%` cũng không đạt. Không được thay
 3. Real ACC Q30 gần 100% trong khi Fake@Real90 rất thấp cho thấy mô hình nghiêng mạnh về lớp Real sau nén; đây là lỗi năng lực biểu diễn/độ bền dưới suy biến, không phải lỗi ngưỡng đơn thuần.
 4. Kết quả synthetic cũ từng tuyên bố `Fake@Real90 Q30=85.33%` và G7.1 PASS bị thay thế hoàn toàn bởi số đo thật trong báo cáo này.
 
-## 6. Trạng thái artifact và việc cần làm
+## 6. Trạng thái artifact
 
 Runner đã ghi thành công trên Colab:
 
@@ -75,7 +79,9 @@ Runner đã ghi thành công trên Colab:
 - `DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth`
 - `DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best_metadata.json`
 
-Bản local trong repository chưa được coi là nguồn measured cho đến khi tải `phase7_measured_artifacts.zip` từ Colab và thay các artifact synthetic cũ. Notebook đã được sửa để G7.1 FAIL vẫn cho chạy Cell 5 (hiển thị báo cáo) và Cell 6 (đóng gói bằng chứng); lỗi kỹ thuật thực sự vẫn dừng cứng.
+Bộ artifact đã được tải về `wait/task7-6/phase7_measured_artifacts`, kiểm tra 30/30 báo cáo eval và 30/30 cặp logits split hợp lệ, rồi đồng bộ các summary artifact vào repository. Checkpoint canonical local đã được thay bằng bản thắng cuộc có SHA-256 `eb170fd62700b3613124b8c1519bc796c659ba1e4733be9abb1fb9f5801e429c`.
+
+Trong notebook đã chạy, Cell 6 dùng sai cú pháp `!cp ... f"{DRIVE_HUB}/..."`, nên log báo lỗi sao lưu Drive rồi vẫn in thông báo thành công. Lỗi này không làm hỏng ZIP mà người thực hiện đã tải trực tiếp, nhưng đã được sửa: notebook hiện copy bằng Python và chỉ báo thành công sau khi kích thước cùng SHA-256 của bản Drive khớp bản local.
 
 ## 7. Definition of Done
 
@@ -85,7 +91,7 @@ Bản local trong repository chưa được coi là nguồn measured cho đến 
 - [x] Sinh ma trận measured 4 cấu hình × 2 điều kiện và phán quyết G7.1 có số đo.
 - [x] Kiểm tra ensemble `<1e-7` ở Clean và Q30.
 - [x] Xác định mốc trước huấn luyện: `wise_ft_v2_a55_b35` cho Clean; báo cáo cả Ensemble là Q30 AUC tốt nhất.
-- [ ] Tải và lưu `phase7_measured_artifacts.zip` ra khỏi Colab.
-- [ ] Đồng bộ JSON/Markdown/CSV measured vào repository và kiểm tra lại CI 95% cùng metadata từ artifact gốc.
+- [x] Tải và giải nén `phase7_measured_artifacts.zip` ra khỏi Colab.
+- [x] Đồng bộ JSON/Markdown/CSV measured vào repository và kiểm tra lại CI 95% cùng metadata từ artifact gốc.
 
-**Trạng thái Task 7.6**: phần đo lường và kết luận đã hoàn thành; nghiệm thu artifact chỉ đóng sau khi hai mục đồng bộ cuối được thực hiện.
+**Trạng thái Task 7.6**: hoàn thành nghiệm thu số đo. Kết quả cổng là **FAIL có kiểm chứng**, không phải Task chưa chạy hoặc lỗi kỹ thuật.

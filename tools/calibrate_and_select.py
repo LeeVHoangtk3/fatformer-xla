@@ -450,6 +450,56 @@ def _sha256_file(path: str) -> str:
     return digest.hexdigest()
 
 
+def write_measured_calibration_summary(output_dir: str) -> str:
+    """Rebuild ``summary.md`` only from measured calibration/v1 artifacts."""
+    rows = []
+    for name in sorted(os.listdir(output_dir)):
+        if not name.endswith(".json"):
+            continue
+        path = os.path.join(output_dir, name)
+        try:
+            with open(path, "r", encoding="utf-8") as handle:
+                payload = json.load(handle)
+        except (OSError, json.JSONDecodeError):
+            continue
+        if payload.get("schema") != "calibration/v1" or payload.get("evidence_level") != "measured":
+            continue
+        t_stars = payload.get("T_star", {})
+        rows.append(
+            "| `{model}` | `{source}` | {n_calib} | {temp:.4f} | {t5:.4f} | "
+            "{t1:.4f} | {ece_before:.2f}% | {ece_after:.2f}% | "
+            "{real_acc:.2f}% | {fake_acc:.2f}% |".format(
+                model=payload.get("model", os.path.splitext(name)[0]),
+                source=os.path.basename(str(payload.get("calibration_source", ""))),
+                n_calib=int(payload.get("n_calib", 0)),
+                temp=float(payload.get("T", 0.0)),
+                t5=float(t_stars.get("0.05", payload.get("T_star_default", 0.0))),
+                t1=float(t_stars.get("0.01", 0.0)),
+                ece_before=float(payload.get("ece_before", 0.0)),
+                ece_after=float(payload.get("ece_after", 0.0)),
+                real_acc=float(payload.get("real_acc", 0.0)),
+                fake_acc=float(payload.get("fake_acc", 0.0)),
+            )
+        )
+    if not rows:
+        raise ValueError("Không có calibration/v1 measured hợp lệ để tạo summary.md")
+
+    summary_path = os.path.join(output_dir, "summary.md")
+    lines = [
+        "# BẢNG TỔNG HỢP HIỆU CHUẨN ĐO THẬT — TASK 7.4",
+        "> **Evidence level**: `measured` | Nguồn: held-out calibration split",
+        "",
+        "| Model | Nguồn fit | n_calib | T | T* (FPR=5%) | T* (FPR=1%) | ECE trước | ECE sau | Real ACC | Fake ACC |",
+        "| :--- | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        *rows,
+        "",
+        "> `T*` được fit trên calibration split độc lập; không dùng evaluation split để chọn ngưỡng.",
+    ]
+    with open(summary_path, "w", encoding="utf-8") as handle:
+        handle.write("\n".join(lines) + "\n")
+    return summary_path
+
+
 def run_measured_calibration(
     logits_npz: str,
     output_dir: str,
@@ -528,6 +578,8 @@ def run_measured_calibration(
     with open(output_json, "w", encoding="utf-8") as handle:
         json.dump(result, handle, indent=2, ensure_ascii=False)
     print(f"[✓] Calibration đo thật đã lưu: {output_json}")
+    summary_path = write_measured_calibration_summary(output_dir)
+    print(f"[✓] Tổng hợp calibration measured đã cập nhật: {summary_path}")
     return result
 
 

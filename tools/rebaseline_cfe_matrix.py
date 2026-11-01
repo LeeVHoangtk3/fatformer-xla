@@ -561,9 +561,9 @@ def run_rebaseline_evaluation(
     md_content = f"""{title_banner}
 
 ## MA TRẬN TÁI LẬP MỐC SÀN 4 CẤU HÌNH TRÊN COMMUNITYFORENSICS-EVAL
-> **Dự án**: FatFormer-XLA | **Nhiệm vụ**: Task 7.6 (Phase 7 — D4)  
-> **Git Commit**: `{git_commit}` | **Khung đo lường**: `eval_communityforensics.py` (v3.0)  
-> **Thứ tự suy thoái**: `post_resize` | **Cấu hình hiệu chuẩn**: $T={temp_baseline}, T^*={fixed_thresh}$  
+> **Dự án**: FatFormer-XLA | **Nhiệm vụ**: Task 7.6 (Phase 7 — D4)
+> **Git Commit**: `{git_commit}` | **Khung đo lường**: `eval_communityforensics.py` (v3.0)
+> **Thứ tự suy thoái**: `post_resize` | **Cấu hình hiệu chuẩn**: $T={temp_baseline}, T^*={fixed_thresh}$
 
 ---
 
@@ -578,9 +578,9 @@ def run_rebaseline_evaluation(
 | **`wise_ft_v2` (Gen 2)** | `ok (0/0)` | **{results['wise_ft_v2']['clean']['auc']:.2f}%** | **{results['wise_ft_v2']['clean']['ap']:.2f}%** | **{results['wise_ft_v2']['clean']['tpr@fpr1']:.2f}%** | **{results['wise_ft_v2']['clean']['tpr@fpr5']:.2f}%** | **{results['wise_ft_v2']['clean']['fake_at_real90']:.2f}%** | **{results['wise_ft_v2']['clean']['real_acc']:.2f}%** |
 | **`ensemble` (1+2)** | `ok (2 models)` | {results['ensemble']['clean']['auc']:.2f}% | {results['ensemble']['clean']['ap']:.2f}% | {results['ensemble']['clean']['tpr@fpr1']:.2f}% | {results['ensemble']['clean']['tpr@fpr5']:.2f}% | **{results['ensemble']['clean']['fake_at_real90']:.2f}%** | {results['ensemble']['clean']['real_acc']:.2f}% |
 
-> **Khoảng tin cậy 95% CI (Clean)**:  
-> - `wise_ft_v2`: AUC `[{results['wise_ft_v2']['clean']['ci95']['auc'][0]}%, {results['wise_ft_v2']['clean']['ci95']['auc'][1]}%]`, Fake@Real90 `[{results['wise_ft_v2']['clean']['ci95']['fake_at_real90'][0]}%, {results['wise_ft_v2']['clean']['ci95']['fake_at_real90'][1]}%]`  
-> - `ensemble`: AUC `[{results['ensemble']['clean']['ci95']['auc'][0]}%, {results['ensemble']['clean']['ci95']['auc'][1]}%]`, Fake@Real90 `[{results['ensemble']['clean']['ci95']['fake_at_real90'][0]}%, {results['ensemble']['clean']['ci95']['fake_at_real90'][1]}%]`  
+> **Khoảng tin cậy 95% CI (Clean)**:
+> - `wise_ft_v2`: AUC `[{results['wise_ft_v2']['clean']['ci95']['auc'][0]}%, {results['wise_ft_v2']['clean']['ci95']['auc'][1]}%]`, Fake@Real90 `[{results['wise_ft_v2']['clean']['ci95']['fake_at_real90'][0]}%, {results['wise_ft_v2']['clean']['ci95']['fake_at_real90'][1]}%]`
+> - `ensemble`: AUC `[{results['ensemble']['clean']['ci95']['auc'][0]}%, {results['ensemble']['clean']['ci95']['auc'][1]}%]`, Fake@Real90 `[{results['ensemble']['clean']['ci95']['fake_at_real90'][0]}%, {results['ensemble']['clean']['ci95']['fake_at_real90'][1]}%]`
 
 ### 1.2. Điều kiện Nén Sâu Mạng Xã Hội (JPEG Q=30 CFE)
 
@@ -591,23 +591,31 @@ def run_rebaseline_evaluation(
 | **`wise_ft_v2` (Gen 2)** | `ok (0/0)` | **{results['wise_ft_v2']['q30']['auc']:.2f}%** | **{results['wise_ft_v2']['q30']['ap']:.2f}%** | **{results['wise_ft_v2']['q30']['tpr@fpr1']:.2f}%** | **{results['wise_ft_v2']['q30']['tpr@fpr5']:.2f}%** | **{results['wise_ft_v2']['q30']['fake_at_real90']:.2f}%** | **{results['wise_ft_v2']['q30']['real_acc']:.2f}%** |
 | **`ensemble` (1+2)** | `ok (2 models)` | {results['ensemble']['q30']['auc']:.2f}% | {results['ensemble']['q30']['ap']:.2f}% | {results['ensemble']['q30']['tpr@fpr1']:.2f}% | {results['ensemble']['q30']['tpr@fpr5']:.2f}% | **{results['ensemble']['q30']['fake_at_real90']:.2f}%** | {results['ensemble']['q30']['real_acc']:.2f}% |
 
-> **Khoảng tin cậy 95% CI (Q30)**:  
-> - `wise_ft_v2`: AUC `[{results['wise_ft_v2']['q30']['ci95']['auc'][0]}%, {results['wise_ft_v2']['q30']['ci95']['auc'][1]}%]`, Fake@Real90 `[{results['wise_ft_v2']['q30']['ci95']['fake_at_real90'][0]}%, {results['wise_ft_v2']['q30']['ci95']['fake_at_real90'][1]}%]`  
-> - `ensemble`: AUC `[{results['ensemble']['q30']['ci95']['auc'][0]}%, {results['ensemble']['q30']['ci95']['auc'][1]}%]`, Fake@Real90 `[{results['ensemble']['q30']['ci95']['fake_at_real90'][0]}%, {results['ensemble']['q30']['ci95']['fake_at_real90'][1]}%]`  
+> **Khoảng tin cậy 95% CI (Q30)**:
+> - `wise_ft_v2`: AUC `[{results['wise_ft_v2']['q30']['ci95']['auc'][0]}%, {results['wise_ft_v2']['q30']['ci95']['auc'][1]}%]`, Fake@Real90 `[{results['wise_ft_v2']['q30']['ci95']['fake_at_real90'][0]}%, {results['wise_ft_v2']['q30']['ci95']['fake_at_real90'][1]}%]`
+> - `ensemble`: AUC `[{results['ensemble']['q30']['ci95']['auc'][0]}%, {results['ensemble']['q30']['ci95']['auc'][1]}%]`, Fake@Real90 `[{results['ensemble']['q30']['ci95']['fake_at_real90'][0]}%, {results['ensemble']['q30']['ci95']['fake_at_real90'][1]}%]`
 
 ---
 
 ## 2. Bảng Đối Chiếu Với Báo Cáo Ngày 26/10 & Phân Tích Nguyên Nhân (§5.3)
 
-So sánh giữa kết quả cũ (báo cáo ngày 26/10) và kết quả chuẩn hóa Harness v3:
+Chỉ tính chênh lệch trực tiếp khi hai phía dùng cùng metric. `Fake ACC` tại một
+ngưỡng cố định và `Fake@Real90` là hai đại lượng khác nhau, nên không được trừ
+cho nhau hoặc diễn giải thành mức cải thiện.
 
-| Cấu hình | Điều kiện | Số liệu 26/10 (Cũ) | Số liệu v3 (Hiện tại) | Chênh lệch (Δ) | Nhóm nguyên nhân | Phân tích cơ chế kỹ thuật |
-| :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **`baseline`** | Clean | Fake ACC: 35.30% | Fake ACC ($T^*$): {results['baseline']['clean']['fake_at_real90']:.2f}% | Δ > 2 pp | **Ngưỡng & Calibration** | Báo cáo cũ dùng ngưỡng tùy ý 0.50; harness v3 dùng ngưỡng hiệu chuẩn T*=0.8468 khống chế chặt chẽ FPR <= 5%. |
-| **`anchored`** | Clean | Real ACC: 48.10% | Real ACC ($T^*$): {results['anchored']['clean']['real_acc']:.2f}% | Δ > 2 pp | **Ngưỡng** | Ngưỡng cũ hạ xuống 0.40 làm Real ACC rớt thảm hại; ngưỡng hiệu chuẩn T* phục hồi kiểm soát báo oan ảnh thật. |
-| **`wise_ft`** | Clean | Fake ACC: 4.10% | Fake@Real90: {results['wise_ft_v2']['clean']['fake_at_real90']:.2f}% | **+90 pp (Khôi phục)** | **Loader & Layout** | Số cũ bị sụp đổ do Gen 1 nạp thiếu 7/10 khối adapter (invalid_layout); Gen 2 nạp chuẩn n=3, [7, 15, 23] đạt 0/0 keys. |
-| **`anchored`** | Q30 | Fake ACC: 40.80% | Fake@Real90: {results['anchored']['q30']['fake_at_real90']:.2f}% | Tương đồng | **Hợp lệ** | Năng lực chống nén của khối SRM được bảo toàn nguyên vẹn. |
-| **`wise_ft`** | Q30 | Fake ACC: 0.20% | Fake@Real90: {results['wise_ft_v2']['q30']['fake_at_real90']:.2f}% | **+60 pp (Vượt trội)** | **Loader & beta_srm** | Gen 2 thừa hưởng lớp chiếu SRM qua hệ số beta_srm=0.35, không còn bị tê liệt dưới nén sâu. |
+| Cấu hình | Điều kiện | Metric cùng định nghĩa | Số 26/10 | Harness v3 | Chênh lệch | Giải thích |
+| :--- | :---: | :--- | :---: | :---: | :---: | :--- |
+| **`baseline`** | Clean | ROC-AUC | 76.21% | {results['baseline']['clean']['auc']:.2f}% | {results['baseline']['clean']['auc'] - 76.21:+.2f} pp | Gần như tái lập; sai khác trong nhiễu bootstrap/làm tròn. |
+| **`anchored`** | Clean | ROC-AUC | 79.28% | {results['anchored']['clean']['auc']:.2f}% | {results['anchored']['clean']['auc'] - 79.28:+.2f} pp | Gần như tái lập; loader và tập dữ liệu nhất quán. |
+| **`baseline`** | Q30 | ROC-AUC | 50.00% | {results['baseline']['q30']['auc']:.2f}% | {results['baseline']['q30']['auc'] - 50.00:+.2f} pp | Harness v3 cố định `post_resize`, seed và eval split; số mới cho thấy thứ hạng dưới nén thấp hơn mức ngẫu nhiên. |
+| **`anchored`** | Q30 | ROC-AUC | 50.07% | {results['anchored']['q30']['auc']:.2f}% | {results['anchored']['q30']['auc'] - 50.07:+.2f} pp | Khác protocol/ngưỡng không giải thích AUC; kết quả v3 xác nhận không có năng lực phân hạng bền vững dưới Q30. |
+| **`anchored`** | Clean | Real ACC | 48.10% | {results['anchored']['clean']['real_acc']:.2f}% | {results['anchored']['clean']['real_acc'] - 48.10:+.2f} pp | Calibration held-out thay ngưỡng tay `0.40`, giảm mạnh false positive trên ảnh Real. |
+| **`anchored`** | Q30 | Real ACC | 58.40% | {results['anchored']['q30']['real_acc']:.2f}% | {results['anchored']['q30']['real_acc'] - 58.40:+.2f} pp | Cùng tác động thay ngưỡng; Real ACC tăng không đồng nghĩa AUC/Fake@Real90 tăng. |
+| **`wise_ft` Gen 1 → Gen 2** | Clean/Q30 | — | `invalid_layout` | `0/0 keys` | Không so trực tiếp | Gen 1 nạp thiếu adapter nên bị rút tư cách làm baseline; Gen 2 là checkpoint khác và phải báo số độc lập. |
+
+Các số `Fake ACC` ngày 26/10 chỉ dùng để truy vết lịch sử. Mốc v3 chính thức
+dùng ROC-AUC, TPR@FPR và Fake@Real90 trên eval split để tránh kết luận sai do
+dịch ngưỡng.
 
 ---
 

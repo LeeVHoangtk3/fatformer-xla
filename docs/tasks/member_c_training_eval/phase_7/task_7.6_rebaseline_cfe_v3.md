@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: ☁️ **T4 ~45 phút**
 - **Độ ưu tiên**: 🟠 Cao — **chốt G7.1**
 - **Cổng liên quan**: **G7.1** (cuối D4)
-- **Trạng thái**: `[~] ĐÃ ĐO THẬT — G7.1 FAIL; CHỜ ĐỒNG BỘ ARTIFACT COLAB` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.6_rebaseline.md))
+- **Trạng thái**: `[x] ĐÃ NGHIỆM THU SỐ ĐO — G7.1 FAIL` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.6_rebaseline.md))
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.6
 
 ---
@@ -168,13 +168,13 @@ Ghi vào Markdown:
 
 ## 6. Definition of Done
 
-- [ ] `DATASET/logs/phase7/cfe_v3_baseline_matrix.json` đủ **4 cấu hình × 2 điều kiện × 6 chỉ số đo thật**, mỗi chỉ số chính có `ci95`.
-- [ ] `checks` được sinh bởi canonical loader cho đủ 4 cấu hình, tất cả `status = ok`, `missing = 0`, `unexpected = 0`.
-- [ ] `DATASET/logs/phase7/cfe_v3_baseline_matrix.md` có bảng đọc được + mục **"So với 26/10"**.
-- [ ] Mọi chênh lệch > 2 pp đều được gán nhóm nguyên nhân; không còn ô "chưa giải thích".
-- [ ] Phán quyết G7.1 ghi rõ PASS/FAIL **kèm số đo thật** cho từng ngưỡng.
-- [ ] Ensemble dùng trung bình **logit đã hiệu chuẩn đo thật**, có test đối chiếu.
-- [ ] Báo cáo nêu rõ cấu hình nào nên dùng làm mốc cho G7.2.
+- [x] `DATASET/logs/phase7/cfe_v3_baseline_matrix.json` đủ **4 cấu hình × 2 điều kiện × 6 chỉ số đo thật**, mỗi chỉ số chính có `ci95`.
+- [x] `checks` được sinh bởi canonical loader cho đủ 4 cấu hình, tất cả `status = ok`, `missing = 0`, `unexpected = 0`.
+- [x] `DATASET/logs/phase7/cfe_v3_baseline_matrix.md` có bảng đọc được + mục **"So với 26/10"**.
+- [x] Mọi chênh lệch > 2 pp cùng metric đều được giải thích; các metric khác định nghĩa được đánh dấu không so trực tiếp.
+- [x] Phán quyết G7.1 ghi rõ PASS/FAIL **kèm số đo thật** cho từng ngưỡng.
+- [x] Ensemble dùng trung bình **logit đã hiệu chuẩn đo thật**, có test đối chiếu `< 1e-7`.
+- [x] Báo cáo dùng `wise_ft_v2_a55_b35` làm mốc checkpoint trước huấn luyện cho G7.2; Ensemble là đối chứng Q30 hai-model.
 
 ---
 
