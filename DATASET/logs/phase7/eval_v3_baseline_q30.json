@@ -1,0 +1,184 @@
+{
+  "report_schema": "v3",
+  "evidence_level": "measured",
+  "gate_eligible": true,
+  "git_commit": "851be5ec5e0bab73413deb202290a8a514bac0fc",
+  "git_dirty": false,
+  "timestamp_utc": "2026-11-01T05:15:26.232604+00:00",
+  "degrade_order": "post_resize",
+  "dataset": {
+    "name": "communityforensics_eval",
+    "n": 2000,
+    "condition": "q30"
+  },
+  "checkpoints": [
+    {
+      "path": "DATASET/pretrained/fatformer_4class_ckpt.pth",
+      "load_report": {
+        "missing_keys": [],
+        "unexpected_keys": [],
+        "shape_mismatch": [],
+        "dropped_alias_keys": [],
+        "dropped_top_level_keys": [],
+        "missing": 0,
+        "unexpected": 0,
+        "adapter_blocks": [
+          7,
+          15,
+          23
+        ],
+        "adapter_index": {
+          "block_7": [
+            "clip_model.visual.transformer.resblocks.7.",
+            "image_encoder.transformer.resblocks.7."
+          ],
+          "block_15": [
+            "clip_model.visual.transformer.resblocks.15.",
+            "image_encoder.transformer.resblocks.15."
+          ],
+          "block_23": [
+            "clip_model.visual.transformer.resblocks.23.",
+            "image_encoder.transformer.resblocks.23."
+          ]
+        },
+        "layout": {
+          "n": 3,
+          "indices": [
+            7,
+            15,
+            23
+          ],
+          "dropped": [],
+          "missing": [],
+          "partial": false,
+          "expressible": true
+        },
+        "n_keys": 1116,
+        "path": "DATASET/pretrained/fatformer_4class_ckpt.pth",
+        "sha256": "3b904401ad4ce7d0bc33661e83742ec4b659850c076b73cd544e87e26d8cb3db"
+      },
+      "status": "ok"
+    }
+  ],
+  "calibration": {
+    "source": "default (0.50)",
+    "artifact": null,
+    "evidence_level": null,
+    "schema": null,
+    "T": 1.0,
+    "T_star": 0.5,
+    "fpr_target": 0.05
+  },
+  "metrics": {
+    "macro_acc": 50.35,
+    "real_acc": 100.0,
+    "fake_acc": 0.7,
+    "fake_at_real90": 13.7,
+    "auc": 42.62,
+    "ap": 50.26,
+    "tpr_at_fpr": {
+      "0.01": 4.4,
+      "0.05": 9.8,
+      "0.10": 13.7
+    },
+    "ece": 49.59,
+    "nll": 6.2978,
+    "total_samples": 2000,
+    "ci95": {
+      "auc": [
+        40.09,
+        45.4
+      ],
+      "ap": [
+        47.25,
+        53.49
+      ],
+      "tpr_at_fpr_0.05": [
+        7.26,
+        11.9
+      ]
+    }
+  },
+  "per_subset": {
+    "1_commercial": {
+      "macro_acc": 50.0,
+      "real_acc": 100.0,
+      "fake_acc": 0.0,
+      "fake_at_real90": 18.33,
+      "auc": 51.41,
+      "ap": 54.81,
+      "tpr_at_fpr": {
+        "0.01": 2.67,
+        "0.05": 10.0,
+        "0.10": 18.33
+      },
+      "ece": 49.98,
+      "nll": 6.2413,
+      "total_samples": 600
+    },
+    "2_latent_diffusion": {
+      "macro_acc": 50.0,
+      "real_acc": 100.0,
+      "fake_acc": 0.0,
+      "fake_at_real90": 3.33,
+      "auc": 23.29,
+      "ap": 36.3,
+      "tpr_at_fpr": {
+        "0.01": 1.0,
+        "0.05": 2.33,
+        "0.10": 3.33
+      },
+      "ece": 50.0,
+      "nll": 6.8922,
+      "total_samples": 600
+    },
+    "3_pixel_diffusion": {
+      "macro_acc": 50.0,
+      "real_acc": 100.0,
+      "fake_acc": 0.0,
+      "fake_at_real90": 17.0,
+      "auc": 54.83,
+      "ap": 55.9,
+      "tpr_at_fpr": {
+        "0.01": 3.0,
+        "0.05": 10.0,
+        "0.10": 17.0
+      },
+      "ece": 49.94,
+      "nll": 5.9338,
+      "total_samples": 400
+    },
+    "4_modern_gans": {
+      "macro_acc": 53.5,
+      "real_acc": 100.0,
+      "fake_acc": 7.0,
+      "fake_at_real90": 53.0,
+      "auc": 76.04,
+      "ap": 80.93,
+      "tpr_at_fpr": {
+        "0.01": 37.0,
+        "0.05": 46.0,
+        "0.10": 54.0
+      },
+      "ece": 46.11,
+      "nll": 4.4528,
+      "total_samples": 200
+    },
+    "5_other_autoregressive": {
+      "macro_acc": 50.0,
+      "real_acc": 100.0,
+      "fake_acc": 0.0,
+      "fake_at_real90": 0.0,
+      "auc": 19.34,
+      "ap": 34.48,
+      "tpr_at_fpr": {
+        "0.01": 0.0,
+        "0.05": 0.0,
+        "0.10": 0.0
+      },
+      "ece": 49.99,
+      "nll": 7.2566,
+      "total_samples": 200
+    }
+  }
+}

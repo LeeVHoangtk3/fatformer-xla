@@ -112,6 +112,11 @@ class Phase7AcceptanceTests(unittest.TestCase):
                 calibration_npz=calibration_npz,
             )
             self.assertTrue(valid, reason)
+            with open(os.path.join(tmp, "summary.md"), "r", encoding="utf-8") as handle:
+                summary = handle.read()
+            self.assertIn("Evidence level**: `measured`", summary)
+            self.assertIn("`baseline`", summary)
+            self.assertNotIn("DUMMY", summary)
 
     def test_candidate_sidecar_is_evaluation_only(self):
         with tempfile.TemporaryDirectory() as tmp:

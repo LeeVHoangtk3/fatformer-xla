@@ -1,16 +1,28 @@
 {
-  "report_schema": "v3-dummy",
-  "evidence_level": "synthetic",
-  "gate_eligible": false,
-  "gate_verdict": "NOT_EVALUATED",
-  "git_commit": "79847cc6b0996028d50c7f0bcc7ef6485d0f7f1e",
+  "report_schema": "v3",
+  "evidence_level": "measured",
+  "gate_eligible": true,
+  "gate_verdict": "FAIL",
+  "pass_must": false,
+  "pass_stretch": false,
+  "gate_thresholds": {
+    "must": {
+      "fake_at_real90_q30": 55.0,
+      "auc_clean": 80.0,
+      "auc_q30": 55.0
+    },
+    "stretch": {
+      "fake_at_real90_q30": 70.0
+    }
+  },
+  "git_commit": "851be5ec5e0bab73413deb202290a8a514bac0fc",
   "harness": "eval_communityforensics.py",
   "degrade_order": "post_resize",
   "calibration": {
-    "source": "logs/phase7/calibration/baseline.json",
-    "T_baseline": 1.2511,
-    "T_anchored": 1.28,
-    "T_star_default": 0.8468,
+    "source": "DATASET/logs/phase7/calibration/baseline.json",
+    "T_baseline": 1.6402,
+    "T_anchored": 1.4336,
+    "T_star_default": 0.9127,
     "fpr_target": 0.05
   },
   "grid": {
@@ -36,216 +48,216 @@
   "results": {
     "baseline": {
       "clean": {
-        "auc": 94.58,
-        "ap": 95.87,
-        "tpr@fpr1": 71.33,
-        "tpr@fpr5": 81.0,
-        "fake_at_real90": 87.67,
-        "real_acc": 100.0,
+        "auc": 76.2,
+        "ap": 78.2,
+        "tpr@fpr1": 20.25,
+        "tpr@fpr5": 30.75,
+        "fake_at_real90": 44.25,
+        "real_acc": 95.38,
         "ci95": {
           "auc": [
-            92.67,
-            96.23
+            73.97,
+            78.49
           ],
           "ap": [
-            94.28,
-            97.08
+            75.78,
+            80.96
           ],
           "tpr@fpr5": [
-            75.37,
-            85.95
+            26.33,
+            38.11
           ],
           "fake_at_real90": [
-            80.26,
-            92.26
+            39.65,
+            48.93
           ]
         }
       },
       "q30": {
-        "auc": 76.79,
-        "ap": 78.45,
-        "tpr@fpr1": 22.67,
-        "tpr@fpr5": 34.0,
-        "fake_at_real90": 45.67,
+        "auc": 42.33,
+        "ap": 50.48,
+        "tpr@fpr1": 4.38,
+        "tpr@fpr5": 9.75,
+        "fake_at_real90": 14.88,
         "real_acc": 100.0,
         "ci95": {
           "auc": [
-            73.13,
-            80.76
+            39.58,
+            44.99
           ],
           "ap": [
-            73.53,
-            83.11
+            47.58,
+            53.82
           ],
           "tpr@fpr5": [
-            24.67,
-            41.4
+            7.08,
+            11.85
           ],
           "fake_at_real90": [
-            35.86,
-            54.19
+            11.12,
+            18.15
           ]
         }
       }
     },
     "anchored": {
       "clean": {
-        "auc": 98.26,
-        "ap": 98.38,
-        "tpr@fpr1": 76.0,
-        "tpr@fpr5": 90.67,
-        "fake_at_real90": 95.67,
-        "real_acc": 98.67,
+        "auc": 79.25,
+        "ap": 72.77,
+        "tpr@fpr1": 1.5,
+        "tpr@fpr5": 12.0,
+        "fake_at_real90": 38.38,
+        "real_acc": 87.25,
         "ci95": {
           "auc": [
-            97.37,
-            98.88
+            77.0,
+            81.43
           ],
           "ap": [
-            97.51,
-            98.93
+            69.37,
+            77.07
           ],
           "tpr@fpr5": [
-            84.09,
-            94.45
+            8.63,
+            17.7
           ],
           "fake_at_real90": [
-            91.32,
-            97.73
+            21.37,
+            51.22
           ]
         }
       },
       "q30": {
-        "auc": 85.51,
-        "ap": 86.68,
-        "tpr@fpr1": 32.33,
-        "tpr@fpr5": 50.0,
-        "fake_at_real90": 63.0,
-        "real_acc": 99.0,
+        "auc": 45.66,
+        "ap": 47.96,
+        "tpr@fpr1": 0.75,
+        "tpr@fpr5": 5.75,
+        "fake_at_real90": 9.25,
+        "real_acc": 99.38,
         "ci95": {
           "auc": [
-            82.35,
-            88.52
+            42.72,
+            48.36
           ],
           "ap": [
-            83.44,
-            89.93
+            44.86,
+            51.34
           ],
           "tpr@fpr5": [
-            42.3,
-            61.84
+            3.13,
+            7.93
           ],
           "fake_at_real90": [
-            55.04,
-            73.65
+            6.98,
+            11.9
           ]
         }
       }
     },
     "wise_ft_v2": {
       "clean": {
-        "auc": 98.21,
-        "ap": 98.53,
-        "tpr@fpr1": 79.67,
-        "tpr@fpr5": 92.67,
-        "fake_at_real90": 96.0,
-        "real_acc": 100.0,
+        "auc": 81.78,
+        "ap": 81.63,
+        "tpr@fpr1": 18.38,
+        "tpr@fpr5": 34.75,
+        "fake_at_real90": 48.88,
+        "real_acc": 94.88,
         "ci95": {
           "auc": [
-            97.19,
-            99.08
+            79.88,
+            83.74
           ],
           "ap": [
-            97.74,
-            99.19
+            79.22,
+            84.27
           ],
           "tpr@fpr5": [
-            89.29,
-            95.93
+            27.8,
+            41.37
           ],
           "fake_at_real90": [
-            93.28,
-            98.27
+            42.49,
+            55.2
           ]
         }
       },
       "q30": {
-        "auc": 94.87,
-        "ap": 95.47,
-        "tpr@fpr1": 63.33,
-        "tpr@fpr5": 77.33,
-        "fake_at_real90": 85.33,
+        "auc": 43.67,
+        "ap": 49.71,
+        "tpr@fpr1": 3.75,
+        "tpr@fpr5": 6.75,
+        "fake_at_real90": 12.25,
         "real_acc": 100.0,
         "ci95": {
           "auc": [
-            93.2,
-            96.53
+            41.04,
+            46.24
           ],
           "ap": [
-            94.0,
-            97.02
+            46.79,
+            53.06
           ],
           "tpr@fpr5": [
-            68.73,
-            83.96
+            5.05,
+            9.59
           ],
           "fake_at_real90": [
-            78.63,
-            91.67
+            8.32,
+            15.6
           ]
         }
       }
     },
     "ensemble": {
       "clean": {
-        "auc": 99.64,
-        "ap": 99.64,
-        "tpr@fpr1": 89.0,
-        "tpr@fpr5": 99.0,
-        "fake_at_real90": 99.33,
-        "real_acc": 100.0,
+        "auc": 80.71,
+        "ap": 76.97,
+        "tpr@fpr1": 2.5,
+        "tpr@fpr5": 31.37,
+        "fake_at_real90": 42.75,
+        "real_acc": 95.0,
         "ci95": {
           "auc": [
-            99.35,
-            99.85
+            78.51,
+            82.76
           ],
           "ap": [
-            99.33,
-            99.87
+            73.56,
+            81.03
           ],
           "tpr@fpr5": [
-            97.07,
-            100.0
+            21.0,
+            38.19
           ],
           "fake_at_real90": [
-            98.33,
-            100.0
+            38.24,
+            51.62
           ]
         }
       },
       "q30": {
-        "auc": 89.52,
-        "ap": 90.79,
-        "tpr@fpr1": 39.33,
-        "tpr@fpr5": 61.67,
-        "fake_at_real90": 71.0,
+        "auc": 46.1,
+        "ap": 49.1,
+        "tpr@fpr1": 1.5,
+        "tpr@fpr5": 6.62,
+        "fake_at_real90": 10.0,
         "real_acc": 100.0,
         "ci95": {
           "auc": [
-            87.08,
-            92.05
+            43.14,
+            48.88
           ],
           "ap": [
-            88.13,
-            93.27
+            45.83,
+            52.63
           ],
           "tpr@fpr5": [
-            55.44,
-            70.28
+            3.81,
+            8.62
           ],
           "fake_at_real90": [
-            64.26,
-            78.52
+            7.5,
+            12.46
           ]
         }
       }
@@ -265,11 +277,13 @@
           23
         ],
         "dropped": [],
-        "partial": false
+        "missing": [],
+        "partial": false,
+        "expressible": true
       },
       "missing": 0,
       "unexpected": 0,
-      "status": "synthetic_unverified"
+      "status": "ok"
     },
     {
       "model": "anchored",
@@ -284,16 +298,18 @@
           23
         ],
         "dropped": [],
-        "partial": false
+        "missing": [],
+        "partial": false,
+        "expressible": true
       },
       "missing": 0,
       "unexpected": 0,
-      "status": "synthetic_unverified"
+      "status": "ok"
     },
     {
       "model": "wise_ft_v2",
       "path": "DATASET/checkpoints/phase7/fatformer_wise_ft_v2_best.pth",
-      "sha256": "b6d9e2a4c1e0941a1ef90505e8b4b8376492b7707231cd77d83227c8dac45f7a",
+      "sha256": "eb170fd62700b3613124b8c1519bc796c659ba1e4733be9abb1fb9f5801e429c",
       "n_keys": 1200,
       "layout": {
         "n": 3,
@@ -303,11 +319,13 @@
           23
         ],
         "dropped": [],
-        "partial": false
+        "missing": [],
+        "partial": false,
+        "expressible": true
       },
       "missing": 0,
       "unexpected": 0,
-      "status": "synthetic_unverified"
+      "status": "ok"
     },
     {
       "model": "ensemble",
@@ -326,7 +344,7 @@
       },
       "missing": 0,
       "unexpected": 0,
-      "status": "synthetic_unverified"
+      "status": "ok"
     }
   ]
 }

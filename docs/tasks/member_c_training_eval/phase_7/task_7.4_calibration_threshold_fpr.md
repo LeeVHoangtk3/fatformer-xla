@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU**
 - **Độ ưu tiên**: 🔴 Khẩn cấp — **chặn G7.0 và Task 7.5/7.13**
 - **Cổng liên quan**: **G7.0**
-- **Trạng thái**: `[~] ENGINE/DUMMY PASS — CHỜ LOGITS CALIBRATION ĐO THẬT` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.4_calibration.md))
+- **Trạng thái**: `[x] ĐÃ NGHIỆM THU ĐO THẬT — ZERO DATA LEAKAGE` ([Báo cáo](../../../bao_cao/C/bao_cao_task_7.4_calibration.md))
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.4
 - **Khế ước**: [`ke_hoach_test_communityforensics_eval.md`](../../../plan/ke_hoach_test_communityforensics_eval.md) — Phụ lục A.2
 
@@ -165,13 +165,13 @@ Test bắt buộc: lấy `T*` từ JSON, chấm **cùng một ảnh** trong 3 ng
 
 ## 6. Definition of Done
 
-- [ ] Mỗi checkpoint mục tiêu có `DATASET/logs/phase7/calibration/<model>.json` đo thật đúng schema §5.5.
-- [ ] `T*` đo thật có đủ 3 mức FPR (`0.01/0.05/0.10`) và `fpr_measured ≈ fpr_target` (sai số ≤ 0,5 pp).
-- [ ] `ECE` đo thật báo cáo **trước và sau**; có reliability diagram.
-- [ ] `calibration_source` và `n_calib` ghi rõ; nếu CV ⇒ có `fold_id` + cả 5 fold.
-- [ ] Không có đường nào fit trên tập đang chấm (kiểm bằng hash nguồn calibration).
+- [x] Mỗi checkpoint mục tiêu có `DATASET/logs/phase7/calibration/<model>.json` đo thật đúng schema §5.5.
+- [x] `T*` đo thật có đủ 3 mức FPR (`0.01/0.05/0.10`) và `fpr_measured ≈ fpr_target` (sai số ≤ 0,5 pp).
+- [x] `ECE` đo thật báo cáo **trước và sau**; có reliability diagram.
+- [x] `calibration_source` và `n_calib` ghi rõ; không chạy CV (`cv=null`).
+- [x] Không có đường nào fit trên tập đang chấm (kiểm bằng hash nguồn calibration và test split độc lập).
 - [x] Test thuật toán độc lập batch (§5.6) xanh trên dummy.
-- [ ] `summary.md` tổng hợp mọi model đo thật.
+- [x] `summary.md` tổng hợp mọi model đo thật.
 - [x] Báo cáo đã phân biệt rõ bằng chứng dummy và bằng chứng đo thật.
 
 ---

@@ -1,0 +1,37 @@
+{
+  "schema": "calibration/v1",
+  "evidence_level": "measured",
+  "model": "anchored",
+  "checkpoint": {
+    "path": "DATASET/checkpoints/anchored_recovery_phase_6r/fatformer_anchored_recovery_best.pth",
+    "sha256": "f70a11df9d7f45c11c60c4e117f8d1302c4f426b1f1b567cb2e50387b0111def"
+  },
+  "calibration_source": "/content/fatformer-xla/DATASET/logs/phase7/logits_anchored_clean_calib_split.npz",
+  "calibration_source_sha256": "9bd12199586bc0f17e18df7fb77460d1f2e31681f230ce3df5f7f1a5864d9a77",
+  "n_calib": 400,
+  "class_balance": {
+    "real": 200,
+    "fake": 200
+  },
+  "T": 1.4336,
+  "T_raw": 1.4336,
+  "T_star": {
+    "0.01": 0.9844,
+    "0.05": 0.9664,
+    "0.10": 0.9375
+  },
+  "T_star_default": 0.9664,
+  "fpr_target": 0.05,
+  "fpr_measured": {
+    "0.01": 0.01,
+    "0.05": 0.05,
+    "0.10": 0.1
+  },
+  "real_acc": 95.0,
+  "fake_acc": 21.5,
+  "ece_before": 14.39,
+  "ece_after": 11.02,
+  "nll_before": 0.7868,
+  "nll_after": 0.6659,
+  "cv": null
+}

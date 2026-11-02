@@ -1,138 +1,184 @@
 {
-  "report_schema": "v3-dummy",
-  "evidence_level": "synthetic",
-  "gate_eligible": false,
-  "git_commit": "79847cc6b0996028d50c7f0bcc7ef6485d0f7f1e",
-  "git_dirty": true,
-  "timestamp_utc": "2026-10-28T16:43:14.629411+00:00",
+  "report_schema": "v3",
+  "evidence_level": "measured",
+  "gate_eligible": true,
+  "git_commit": "851be5ec5e0bab73413deb202290a8a514bac0fc",
+  "git_dirty": false,
+  "timestamp_utc": "2026-11-01T05:13:12.935589+00:00",
   "degrade_order": "post_resize",
   "dataset": {
     "name": "communityforensics_eval",
-    "n": 40,
+    "n": 2000,
     "condition": "clean"
   },
   "checkpoints": [
     {
-      "path": "dummy",
+      "path": "DATASET/pretrained/fatformer_4class_ckpt.pth",
       "load_report": {
-        "path": "dummy",
-        "status": "dummy_ok",
+        "missing_keys": [],
+        "unexpected_keys": [],
+        "shape_mismatch": [],
+        "dropped_alias_keys": [],
+        "dropped_top_level_keys": [],
         "missing": 0,
-        "unexpected": 0
+        "unexpected": 0,
+        "adapter_blocks": [
+          7,
+          15,
+          23
+        ],
+        "adapter_index": {
+          "block_7": [
+            "clip_model.visual.transformer.resblocks.7.",
+            "image_encoder.transformer.resblocks.7."
+          ],
+          "block_15": [
+            "clip_model.visual.transformer.resblocks.15.",
+            "image_encoder.transformer.resblocks.15."
+          ],
+          "block_23": [
+            "clip_model.visual.transformer.resblocks.23.",
+            "image_encoder.transformer.resblocks.23."
+          ]
+        },
+        "layout": {
+          "n": 3,
+          "indices": [
+            7,
+            15,
+            23
+          ],
+          "dropped": [],
+          "missing": [],
+          "partial": false,
+          "expressible": true
+        },
+        "n_keys": 1116,
+        "path": "DATASET/pretrained/fatformer_4class_ckpt.pth",
+        "sha256": "3b904401ad4ce7d0bc33661e83742ec4b659850c076b73cd544e87e26d8cb3db"
       },
       "status": "ok"
     }
   ],
   "calibration": {
     "source": "default (0.50)",
+    "artifact": null,
+    "evidence_level": null,
+    "schema": null,
     "T": 1.0,
     "T_star": 0.5,
     "fpr_target": 0.05
   },
   "metrics": {
-    "macro_acc": 50.0,
-    "real_acc": 0.0,
-    "fake_acc": 100.0,
-    "auc": 100.0,
-    "ap": 100.0,
+    "macro_acc": 64.65,
+    "real_acc": 94.0,
+    "fake_acc": 35.3,
+    "fake_at_real90": 45.1,
+    "auc": 76.21,
+    "ap": 78.22,
     "tpr_at_fpr": {
-      "0.01": 100.0,
-      "0.05": 100.0,
-      "0.10": 100.0
+      "0.01": 19.3,
+      "0.05": 31.3,
+      "0.10": 45.2
     },
-    "ece": 46.18,
-    "nll": 0.7694,
-    "total_samples": 40,
+    "ece": 34.59,
+    "nll": 3.6138,
+    "total_samples": 2000,
     "ci95": {
       "auc": [
-        100.0,
-        100.0
+        74.15,
+        78.23
       ],
       "ap": [
-        100.0,
-        100.0
+        75.73,
+        80.65
       ],
       "tpr_at_fpr_0.05": [
-        100.0,
-        100.0
+        27.17,
+        37.51
       ]
     }
   },
   "per_subset": {
     "1_commercial": {
-      "macro_acc": 50.0,
-      "real_acc": 0.0,
-      "fake_acc": 100.0,
-      "auc": 100.0,
-      "ap": 100.0,
+      "macro_acc": 56.17,
+      "real_acc": 94.33,
+      "fake_acc": 18.0,
+      "fake_at_real90": 34.67,
+      "auc": 75.52,
+      "ap": 72.51,
       "tpr_at_fpr": {
-        "0.01": 100.0,
-        "0.05": 100.0,
-        "0.10": 100.0
+        "0.01": 5.33,
+        "0.05": 14.33,
+        "0.10": 34.67
       },
-      "ece": 46.18,
-      "nll": 0.7694,
-      "total_samples": 8
+      "ece": 43.02,
+      "nll": 4.3957,
+      "total_samples": 600
     },
     "2_latent_diffusion": {
-      "macro_acc": 50.0,
-      "real_acc": 0.0,
-      "fake_acc": 100.0,
-      "auc": 100.0,
-      "ap": 100.0,
+      "macro_acc": 64.5,
+      "real_acc": 94.67,
+      "fake_acc": 34.33,
+      "fake_at_real90": 45.67,
+      "auc": 73.64,
+      "ap": 75.58,
       "tpr_at_fpr": {
-        "0.01": 100.0,
-        "0.05": 100.0,
-        "0.10": 100.0
+        "0.01": 13.0,
+        "0.05": 32.67,
+        "0.10": 45.67
       },
-      "ece": 46.18,
-      "nll": 0.7694,
-      "total_samples": 8
+      "ece": 35.02,
+      "nll": 3.8742,
+      "total_samples": 600
     },
     "3_pixel_diffusion": {
-      "macro_acc": 50.0,
-      "real_acc": 0.0,
-      "fake_acc": 100.0,
-      "auc": 100.0,
-      "ap": 100.0,
+      "macro_acc": 65.0,
+      "real_acc": 93.5,
+      "fake_acc": 36.5,
+      "fake_at_real90": 39.5,
+      "auc": 74.55,
+      "ap": 76.64,
       "tpr_at_fpr": {
-        "0.01": 100.0,
-        "0.05": 100.0,
-        "0.10": 100.0
+        "0.01": 18.5,
+        "0.05": 34.0,
+        "0.10": 39.5
       },
-      "ece": 46.18,
-      "nll": 0.7694,
-      "total_samples": 8
+      "ece": 34.45,
+      "nll": 3.5768,
+      "total_samples": 400
     },
     "4_modern_gans": {
-      "macro_acc": 50.0,
-      "real_acc": 0.0,
-      "fake_acc": 100.0,
-      "auc": 100.0,
-      "ap": 100.0,
+      "macro_acc": 95.0,
+      "real_acc": 92.0,
+      "fake_acc": 98.0,
+      "fake_at_real90": 98.0,
+      "auc": 99.5,
+      "ap": 99.6,
       "tpr_at_fpr": {
-        "0.01": 100.0,
-        "0.05": 100.0,
-        "0.10": 100.0
+        "0.01": 98.0,
+        "0.05": 98.0,
+        "0.10": 98.0
       },
-      "ece": 46.18,
-      "nll": 0.7694,
-      "total_samples": 8
+      "ece": 4.92,
+      "nll": 0.3658,
+      "total_samples": 200
     },
     "5_other_autoregressive": {
-      "macro_acc": 50.0,
-      "real_acc": 0.0,
-      "fake_acc": 100.0,
-      "auc": 100.0,
-      "ap": 100.0,
+      "macro_acc": 59.5,
+      "real_acc": 94.0,
+      "fake_acc": 25.0,
+      "fake_at_real90": 38.0,
+      "auc": 72.96,
+      "ap": 73.14,
       "tpr_at_fpr": {
-        "0.01": 100.0,
-        "0.05": 100.0,
-        "0.10": 100.0
+        "0.01": 10.0,
+        "0.05": 22.0,
+        "0.10": 40.0
       },
-      "ece": 46.18,
-      "nll": 0.7694,
-      "total_samples": 8
+      "ece": 39.18,
+      "nll": 3.8085,
+      "total_samples": 200
     }
   }
 }
