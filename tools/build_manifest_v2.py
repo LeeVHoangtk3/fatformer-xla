@@ -74,7 +74,7 @@ from hash_utils import (  # noqa: E402
     load_hash_index,
 )
 from build_generator_denylist import DenyMatcher, EXPECTED_TASK51_TESTS  # noqa: E402
-from data_v2_contract import contract_problems
+from data_v2_contract import contract_problems, FAMILIES
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
