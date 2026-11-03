@@ -875,54 +875,60 @@ def _select_rows_for_shard(
     entries: List[Dict],
     per_entry: Dict[str, int],
     excluded=None,
-) -> Tuple[Dict[str, str], Optional[Dict[str, Dict]], Dict[str, int]]:
-    """Chon image_id cho tung entry trong 1 shard. Tra ve (entry_of_name, row_meta, can)."""
+) -> Tuple[Dict[int, str], Optional[Dict[int, Dict]], Dict[str, int]]:
+    """Chon image_id cho tung entry trong 1 shard theo row_idx (tranh trung ten image_name giua cac model)."""
+    import pyarrow.parquet as pq
     nsfw_on = bool(cfg.quality.get("reject_nsfw", True))
     excluded = excluded or set()
     can: Dict[str, int] = {}
+    rows_meta: List[Tuple[int, Dict]] = []
+    r_idx = 0
     if spec.kind == "plain":
         n = _shard_row_count(local)
-        pool = [f"{shard}:{i}" for i in range(n) if f"{shard}:{i}" not in excluded]
-        row_meta = {k: {"model_name": spec.model_name or spec.name, "label": 1,
-                        "nsfw_flag": False, "real_source": None} for k in pool}
+        for i in range(n):
+            rows_meta.append((i, {"image_name": f"{shard}:{i}", "model_name": spec.model_name or spec.name,
+                                  "label": 1, "nsfw_flag": False, "real_source": None}))
     else:
-        row_meta = {}
-        for batch in _iter_local_rows(
-                local, ["image_name", "model_name", "label", "nsfw_flag", "real_source"], 256):
+        schema_cols = set(pq.ParquetFile(local).schema.names)
+        wanted = [c for c in ["image_name", "model_name", "label", "nsfw_flag", "real_source"] if c in schema_cols]
+        for batch in _iter_local_rows(local, wanted, 256):
             for row in batch:
-                row_meta[row["image_name"]] = row
-        pool = None
+                rows_meta.append((r_idx, row))
+                r_idx += 1
 
-    entry_of_name: Dict[str, str] = {}
+    entry_of_name: Dict[int, str] = {}
+    row_meta_by_idx: Dict[int, Dict] = dict(rows_meta)
     for e in entries:
         need = int(e["need"])
         have = int(per_entry.get(e["id"], 0))
         if have >= need:
             continue
         want = need - have
-        if spec.kind == "plain":
-            names = pool
-            # Neu nhu cau < so anh trong shard, uu tien phan bo deu (buoc nhay)
-            if want < len(names):
-                step = len(names) / float(want)
-                names = [names[int(i * step)] for i in range(want)]
-        else:
-            label = 1 if e["kind"] == "fake" else 0
-            names = [n for n, m in row_meta.items()
-                     if n not in excluded and m.get("model_name") == e["model_name"]
-                     and int(m.get("label", 1)) == label
-                     and not (nsfw_on and m.get("nsfw_flag"))]
-            if e["kind"] == "real" and e.get("real_source"):
-                names = [n for n in names
-                         if (row_meta[n].get("real_source") or "") == e["real_source"]]
-            names.sort(key=lambda n: stable_rank(cfg.seed, e["id"], spec.name, shard, n))
-            names = names[:want]
-        for n in names:
-            if n in entry_of_name:
+        label = 1 if e["kind"] == "fake" else 0
+        names = []
+        for idx_i, m in rows_meta:
+            if idx_i in entry_of_name:
                 continue
-            entry_of_name[n] = e["id"]
-        can[e["id"]] = len(names)
-    return entry_of_name, row_meta, can
+            name_str = m.get("image_name") if spec.kind == "cfe" else f"{shard}:{idx_i}"
+            cand_id = f"{e['model_name']}_{name_str}" if spec.kind == "cfe" else name_str
+            if cand_id in excluded or name_str in excluded:
+                continue
+            if m.get("model_name") != e["model_name"]:
+                continue
+            if int(m.get("label", 1)) != label:
+                continue
+            if nsfw_on and m.get("nsfw_flag"):
+                continue
+            if e["kind"] == "real" and e.get("real_source"):
+                if (m.get("real_source") or "") != e["real_source"]:
+                    continue
+            names.append((idx_i, name_str))
+        names.sort(key=lambda t: stable_rank(cfg.seed, e["id"], spec.name, shard, str(t[1]) + str(t[0])))
+        picked = names[:want]
+        for idx_i, _ in picked:
+            entry_of_name[idx_i] = e["id"]
+        can[e["id"]] = len(picked)
+    return entry_of_name, row_meta_by_idx, can
 
 
 def stage_fetch(
@@ -1025,6 +1031,9 @@ def stage_fetch(
                 f"({sum(can.values())} ung vien)")
 
             cols = ["image_name", "image_data"] if spec.kind == "cfe" else ["image"]
+            import pyarrow.parquet as pq
+            schema_cols = set(pq.ParquetFile(local).schema.names)
+            cols = [c for c in cols if c in schema_cols]
             kept = 0
             rejected: Dict[str, int] = {}
             buffer: List[Dict] = []
@@ -1032,10 +1041,15 @@ def stage_fetch(
             for batch in _iter_local_rows(local, cols, batch_size=64):
                 checkpoint_budget()
                 for row in batch:
-                    name = row.get("image_name") if spec.kind == "cfe" else f"{shard}:{idx}"
+                    cur_idx = idx
                     idx += 1
-                    eid = entry_of_name.get(name)
-                    if eid is None or (ds_name, shard, name) in seen:
+                    eid = entry_of_name.get(cur_idx)
+                    if eid is None:
+                        continue
+                    raw_name = row.get("image_name") if spec.kind == "cfe" else f"{shard}:{cur_idx}"
+                    e = entry_by_id[eid]
+                    name = f"{e['model_name']}_{raw_name}" if spec.kind == "cfe" else raw_name
+                    if (ds_name, shard, name) in seen:
                         continue
                     blob = _extract_blob(row, spec.kind)
                     if not blob:
@@ -1045,7 +1059,6 @@ def stage_fetch(
                     if info is None:
                         rejected[why] = rejected.get(why, 0) + 1
                         continue
-                    e = entry_by_id[eid]
                     sha = sha256_bytes(blob)
                     ext = "jpg" if info["format"] in ("jpeg", "jpg") else info["format"]
                     out_dir = os.path.join(raw_root, e["family"], slug(e["model_name"]))
@@ -1392,6 +1405,33 @@ def stage_select(cfg: Config, plan: Dict, refs: Dict[str, Dict], strict: bool) -
             total_missing += missing
         elif realloc.get(fam):
             log(f"  [i] Ho '{fam}': phan bo lai trong ho {realloc[fam]} (tong ho khong doi)")
+
+    # Neu co ho Fake bi thieu anh (vi du DeepFloyd bi loc trung test 19 anh),
+    # uu tien bu sang cac ho Fake con quota (< max_new_per_family) de giu ty le Fake >= 45%
+    if total_missing > 0:
+        fake_fams = [f for f in FAMILIES if f != "replay"]
+        max_new = int(cfg.t.get("max_new_per_family", 1200))
+        spare_fake: Dict[str, int] = {}
+        for fam in fake_fams:
+            cur_new = sum(len(chosen.get(e, [])) for e in families.get(fam, []))
+            fam_spare_cap = max(0, max_new - cur_new)
+            if fam_spare_cap <= 0:
+                continue
+            for e in families.get(fam, []):
+                avail = len(pool.get(e, [])) - len(chosen.get(e, []))
+                if avail > 0:
+                    spare_fake[e] = min(avail, fam_spare_cap)
+        if spare_fake:
+            add_fake = largest_remainder(total_missing, spare_fake)
+            for e, k in add_fake.items():
+                if k <= 0:
+                    continue
+                cur = len(chosen.get(e, []))
+                chosen[e] = pool.get(e, [])[:cur + k]
+                realloc.setdefault("fake_compensate", {})[e] = realloc.get("fake_compensate", {}).get(e, 0) + k
+            filled = sum(add_fake.values())
+            total_missing -= filled
+            log(f"  [i] Da bu {filled} anh Fake thieu sang cac nguon Fake con du {add_fake}")
 
     # Neu co ho bi thieu anh do loc test/trung lap, bu sang cac nguon Real con du de bao toan tong kho 14.400
     if total_missing > 0:
