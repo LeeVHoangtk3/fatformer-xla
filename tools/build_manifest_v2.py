@@ -222,6 +222,15 @@ class DatasetSpec:
         return f"{self.name}:{shard}"
 
 
+def sha256_canonical_file(path: str) -> str:
+    """Tinh SHA-256 chuan hoa line ending (\r\n -> \n) cho file van ban (yaml, json)."""
+    with open(path, "rb") as f:
+        data = f.read()
+    if path.lower().endswith((".yaml", ".yml", ".json")):
+        data = data.replace(b"\r\n", b"\n")
+    return hashlib.sha256(data).hexdigest()
+
+
 class Config:
     def __init__(self, path: str):
         self.path = os.path.abspath(path)
@@ -229,7 +238,7 @@ class Config:
             self.data = yaml.safe_load(f) or {}
         if not isinstance(self.data, dict) or "targets" not in self.data:
             die(f"Config khong hop le: {self.path}")
-        self.sha256 = sha256_file(self.path)
+        self.sha256 = sha256_canonical_file(self.path)
         self.p = self.data["paths"]
         self.t = self.data["targets"]
         self.datasets = {k: DatasetSpec(name=k, **v) for k, v in self.data["datasets"].items()}
@@ -249,12 +258,16 @@ def ensure_state_context(cfg: Config):
     context = {"schema": 2, "config": cfg.sha256}
     for key, path in (("denylist", cfg.path_of("denylist")),
                       ("replay", abspath(cfg.replay_cfg.get("manifest", "")))):
-        context[key] = sha256_file(path) if os.path.isfile(path) else None
+        context[key] = sha256_canonical_file(path) if os.path.isfile(path) else None
     old = read_json(cfg.state("context.json"))
+    has_active_state = any(os.path.exists(cfg.state(n)) for n in ("candidates.jsonl", "replay.jsonl", "selected.jsonl"))
     if old is not None and old != context:
+        if not has_active_state:
+            write_json(cfg.state("context.json"), context)
+            return
         die("Build state context changed (config/denylist/replay). Use a new state/raw directory or --force.")
     if old is None:
-        if any(os.path.exists(cfg.state(n)) for n in ("candidates.jsonl", "replay.jsonl", "selected.jsonl")):
+        if has_active_state:
             die("Legacy state without fingerprints. Use a new state directory or --force.")
         write_json(cfg.state("context.json"), context)
 
