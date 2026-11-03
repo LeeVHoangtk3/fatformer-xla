@@ -1406,33 +1406,6 @@ def stage_select(cfg: Config, plan: Dict, refs: Dict[str, Dict], strict: bool) -
         elif realloc.get(fam):
             log(f"  [i] Ho '{fam}': phan bo lai trong ho {realloc[fam]} (tong ho khong doi)")
 
-    # Neu co ho Fake bi thieu anh (vi du DeepFloyd bi loc trung test 19 anh),
-    # uu tien bu sang cac ho Fake con quota (< max_new_per_family) de giu ty le Fake >= 45%
-    if total_missing > 0:
-        fake_fams = [f for f in FAMILIES if f != "replay"]
-        max_new = int(cfg.t.get("max_new_per_family", 1200))
-        spare_fake: Dict[str, int] = {}
-        for fam in fake_fams:
-            cur_new = sum(len(chosen.get(e, [])) for e in families.get(fam, []))
-            fam_spare_cap = max(0, max_new - cur_new)
-            if fam_spare_cap <= 0:
-                continue
-            for e in families.get(fam, []):
-                avail = len(pool.get(e, [])) - len(chosen.get(e, []))
-                if avail > 0:
-                    spare_fake[e] = min(avail, fam_spare_cap)
-        if spare_fake:
-            add_fake = largest_remainder(total_missing, spare_fake)
-            for e, k in add_fake.items():
-                if k <= 0:
-                    continue
-                cur = len(chosen.get(e, []))
-                chosen[e] = pool.get(e, [])[:cur + k]
-                realloc.setdefault("fake_compensate", {})[e] = realloc.get("fake_compensate", {}).get(e, 0) + k
-            filled = sum(add_fake.values())
-            total_missing -= filled
-            log(f"  [i] Da bu {filled} anh Fake thieu sang cac nguon Fake con du {add_fake}")
-
     # Neu co ho bi thieu anh do loc test/trung lap, bu sang cac nguon Real con du de bao toan tong kho 14.400
     if total_missing > 0:
         real_eids = [e["id"] for e in plan["entries"] if e["family"] == "real"]
@@ -1515,6 +1488,7 @@ def stage_split(cfg: Config) -> Dict:
         receiver = next(s for s in SPLITS if totals[s] < desired[s])
         candidates = [k for k, a in allocations.items() if a[donor] > 0]
         key = min(candidates, key=lambda k: (
+            0 if k[1] == 0 else 1,
             abs(allocations[k][donor] - 1 - len(cells[k]) * ratios[donor])
             + abs(allocations[k][receiver] + 1 - len(cells[k]) * ratios[receiver]), str(k)))
         allocations[key][donor] -= 1
