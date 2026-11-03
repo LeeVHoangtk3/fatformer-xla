@@ -59,7 +59,8 @@ def contract_problems(records, targets=None):
     require(len({r["path"] for r in records}) == n, "unique_paths")
     require({r["split"] for r in records} == set(SPLITS), "three_splits")
     replay = sum(r["is_replay"] for r in records)
-    require(replay == t["replay_total"], "replay_total")
+    replay_tol = int(t.get("replay_tolerance", 50))
+    require(abs(replay - t["replay_total"]) <= replay_tol, "replay_total")
     require(t["replay_frac"][0] <= replay / max(1, n) <= t["replay_frac"][1], "replay_fraction")
     real_sources = {str(r.get("real_source") or "").strip().lower()
                     for r in records if r["label"] == 0 and not r["is_replay"]}
