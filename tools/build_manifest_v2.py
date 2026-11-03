@@ -1254,6 +1254,20 @@ def _filter_against_refs(records: List[Dict], refs: Dict[str, Dict], threshold: 
     return records, stats
 
 
+def filter_reference_generators(records: List[Dict], refs: Dict[str, Dict]):
+    """Enforce generator isolation for every indexed group, including GAN extras."""
+    names = {str(row.get("model_name") or row.get("generator") or "")
+             for ref in refs.values() for row in ref.get("images", []) if row.get("label") == 1}
+    matcher = DenyMatcher(name for name in names if name)
+    kept, blocked = [], []
+    for row in records:
+        if row["label"] == 1 and matcher.classify(row["generator"])["status"] != "allowed":
+            blocked.append(row)
+        else:
+            kept.append(row)
+    return kept, ({"reference_generator_overlap": len(blocked)} if blocked else {})
+
+
 def stage_select(cfg: Config, plan: Dict, refs: Dict[str, Dict], strict: bool) -> Dict:
     ensure_state_context(cfg)
     check_replay_generators(cfg)
@@ -1274,6 +1288,9 @@ def stage_select(cfg: Config, plan: Dict, refs: Dict[str, Dict], strict: bool) -
 
     # Replay uu tien (khong bi dedupe loai) - no la mau bat buoc.
     replay_sorted = sorted(replay, key=lambda r: stable_rank(cfg.seed, "replay", r["sha256"]))
+    replay_sorted, replay_gen_stats = filter_reference_generators(replay_sorted, refs)
+    if replay_gen_stats:
+        die(f"Replay generator overlaps an indexed test group: {replay_gen_stats}")
     external_thr = int(cfg.t.get("phash_external", 8))
     replay, ref_stats_r = _filter_against_refs(replay_sorted, refs, external_thr)
     if ref_stats_r:
@@ -1292,7 +1309,9 @@ def stage_select(cfg: Config, plan: Dict, refs: Dict[str, Dict], strict: bool) -
 
     # Khu trung lap trong noi bo phan moi (replay da giu cho).
     all_new = [r for eid in sorted(by_entry) for r in by_entry[eid]]
+    all_new, generator_stats = filter_reference_generators(all_new, refs)
     all_new, ref_stats_new = _filter_against_refs(all_new, refs, external_thr)
+    ref_stats_new.update(generator_stats)
     if ref_stats_new:
         log(f"SELECT: loai do trung test: {ref_stats_new}")
     deduped, dstats = _dedupe(replay + all_new, int(cfg.t.get("phash_internal", 3)))

@@ -109,6 +109,7 @@ class RefIndex:
             self.generators[gen] = self.generators.get(gen, 0) + 1
         self.meta = payload.get("metadata", {})
         self.test_sets = {str(i.get("test_set")) for i in self.images if i.get("test_set")}
+        self.supplemental_sets = {str(i.get("supplemental_set")) for i in self.images if i.get("supplemental_set")}
 
     def problems(self):
         errors = []
@@ -547,7 +548,9 @@ def main() -> None:
     }
     report["pass"] = bool(report["violations"] == 0 and integrity["failures"] == 0)
     report["coverage"] = {"complete": not coverage_problems, "expected_sets": sorted(expected_sets),
-                          "observed_sets": sorted(observed_sets)}
+                          "observed_sets": sorted(observed_sets),
+                          "supplemental_sets": sorted({s for ref in pair2 for s in ref.supplemental_sets}),
+                          "supplemental_images_checked": sum(1 for ref in pair2 for row in ref.images if row.get("supplemental_set"))}
     report["elapsed_s"] = round(datetime.now(timezone.utc).timestamp() - t0, 1)
 
     out = args.out if os.path.isabs(args.out) else os.path.join(PROJECT_ROOT, args.out)

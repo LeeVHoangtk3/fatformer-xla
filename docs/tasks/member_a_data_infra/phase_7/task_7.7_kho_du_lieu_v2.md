@@ -16,16 +16,35 @@
 Pipeline đã bổ sung chốt chặn; chưa đồng nghĩa kho dữ liệu thật đã được nghiệm thu.
 Runbook: `notebooks/task/task_7.7/task_7.7_build_data_v2_colab.ipynb`.
 
-- Cấu hình mục tiêu là 15.000 ảnh, replay 3.600 (24%), real 7.900 (52,67%).
-  Khi giữ replay 3.600 và trần 16.000, miền tổng hợp lệ là 14.400–16.000.
+- Cấu hình hiện tại là 14.400 ảnh: replay 3.000 (20,83%), fake mới 5.350,
+  real mới 6.050; tổng real 7.850 (54,51%). Split 12.240 / 1.080 / 1.080.
   Cap 1.200 áp cho fake mới; cân bằng họ tính gồm replay và kiểm tra trong từng split.
   Đây là cách giải mâu thuẫn số học của bản spec gốc, cần ghi rõ khi C tiếp nhận.
-- **Đang bị chặn về dữ liệu**: `midjourney_v5` trong replay bị deny-list hiện tại chặn
-  bởi `MidjourneyV5_1`. Phải xác minh danh tính/nguồn gốc hoặc thống nhất kho replay thay thế
-  và tính lại quota. Không miễn trừ replay, đổi tên model hay nới deny-list để vượt chặn.
+- Replay chỉ chọn `real` và `stable_diffusion` từ manifest gốc; loại 600 fake Midjourney.
+  Không miễn trừ replay, đổi tên model hay nới deny-list để vượt chặn.
 - Phải pin dataset revision; cache metadata cũ thiếu fingerprint cần reindex.
 - Reference index bắt buộc có đủ 2.000 CFE và coverage đủ 18 tập, không ảnh lỗi/bỏ qua.
   Dùng `index_test_sets.py --role cfe --manifest ...` hoặc `--role test18`.
+- Bước 4 đọc đúng `rel_path` của manifest CFE, giữ SHA ảnh PNG thực tế và lưu SHA nguồn riêng.
+  Test18 nhận diện nhãn `0_real/1_fake`, `real/fake`, `nature/ai`, `real_images/fake_images`;
+  chuẩn hóa hoa/thường và dấu `_`/`-` trong tên 18 tập, không khớp substring tùy tiện.
+- Trước khi hash, chạy kiểm tra layout bằng `--role test18 --inspect-only` với cả hai tar.
+  `DATASET/logs/phase7/test18_layout.json` ghi số real/fake từng tập, tập thiếu và đường dẫn
+  không nhận diện được. Thiếu nhãn/generator hoặc thiếu một trong 18 tập thì dừng trước khi hash.
+- Phân biệt **18 tập đánh giá** và **toàn bộ ảnh trong hai tar**. Báo cáo kiểm toán Drive
+  (`docs/bao_cao/overall/bao_cao_kiem_toan_toan_bo_datasets_drive_5tb.md`, mục III.5)
+  ghi tar GAN có 13 nhóm: 8 nhóm chính (62.003 ảnh) và 5 nhóm phụ
+  `crn`, `imle`, `san`, `seeingdark`, `whichfaceisreal` (28.326 ảnh).
+  Kết hợp 10 nhóm diffusion, kho raw có 23 nhóm/110.329 ảnh; 18 nhóm chính có 82.003 ảnh.
+  Script giữ và hash tất cả ảnh; không loại 5 nhóm phụ, không gán chúng thành một nhóm chính.
+  Record nhóm chính dùng `test_set`; nhóm phụ dùng `supplemental_set`, có `model_name` thật.
+  Layout/index/report ghi coverage chính và phụ riêng. Builder lọc hash và generator đối với
+  cả hai phần; audit cũng kiểm tra toàn bộ. Coverage bắt buộc của 18 nhóm chính vẫn giữ nguyên.
+- Notebook dùng `phase7_reference_io.run_logged` ngay tại Bước 4; lỗi stdout/stderr gốc
+  được đưa vào exception và lưu ở `DATASET/logs/phase7/commands/*.log`.
+  Không kết luận nguyên nhân chỉ từ `CalledProcessError` hoặc exit code 2.
+- `phase7_reference_io.index_reference` tái sử dụng index hoàn tất khi dấu vết input,
+  phiên bản code và checksum index khớp. Không dùng lại index dở/lỗi hoặc bỏ CFE để tiếp tục test18.
 - Builder lọc cả hai nhóm reference trước split, dừng khi sai constraint và không xuất manifest lỗi.
   Resume xác minh fingerprint config/deny-list/replay, checksum ảnh và phục hồi shard cần xử lý lại.
 - Split ưu tiên generator khi khớp quota; mọi ngoại lệ chia theo ảnh được ghi theo stratum.
