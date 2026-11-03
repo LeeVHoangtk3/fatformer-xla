@@ -614,6 +614,10 @@ class UnitTests(unittest.TestCase):
         out = B.largest_remainder(15000, {"train": 0.85, "val_calib": 0.075, "val_select": 0.075})
         self.assertEqual(out, {"train": 12750, "val_calib": 1125, "val_select": 1125})
 
+    def test_split_14400_is_exact(self):
+        out = B.largest_remainder(14400, {"train": 0.85, "val_calib": 0.075, "val_select": 0.075})
+        self.assertEqual(out, {"train": 12240, "val_calib": 1080, "val_select": 1080})
+
     def test_denylist_instance_semantics(self):
         m = DenyMatcher(["MidjourneyV5_1", "stylegan", "glide_100_10"])
         self.assertEqual(m.classify("MidjourneyV5_1")["status"], "blocked")

@@ -40,16 +40,16 @@ paths:
   source_log: DATASET/logs/phase7/data_v2_sources.json
 
 targets:
-  total: 15000
+  total: 14400
   split_ratios:
     train: 0.85
     val_calib: 0.075
     val_select: 0.075
-  min_total: 14400
-  max_total: 16000
+  min_total: 13000
+  max_total: 15000
   max_family_imbalance: 1.5
   real_frac: [0.45, 0.55]
-  replay_total: 3600
+  replay_total: 3000
   replay_frac: [0.20, 0.25]
   max_new_per_family: 1200
   min_side: 200
@@ -175,7 +175,7 @@ fakes:
     dataset: cfe_small
     family: pixel_diffusion
     model_name: DeepFloyd
-    target: 800
+    target: 1036
   - id: pix_deepfloyd_base
     dataset: cfe_base_manual
     family: pixel_diffusion
@@ -227,7 +227,7 @@ fakes:
     dataset: gpt4o_t2i
     family: commercial
     model_name: GPT-4o
-    target: 1150
+    target: 1200
 
 # ---------------------------------------------------------------------------
 # Anh THAT. Moi nguon la mot `model_name` trong CFE (cot real_source = N/A).
@@ -237,36 +237,37 @@ reals:
   - id: real_ffhq
     dataset: cfe_small
     model_name: FFHQ
-    target: 1525
+    target: 1513
   - id: real_coco
     dataset: cfe_small
     model_name: COCO
-    target: 1525
+    target: 1513
   - id: real_landscapeshq
     dataset: cfe_small
     model_name: LandscapesHQ
-    target: 1525
+    target: 1512
   - id: real_vision
     dataset: cfe_small
     model_name: VISION
-    target: 1525
+    target: 1512
 
 # ---------------------------------------------------------------------------
 # Replay in-dist: 3.600 mau cua kho cu, giu nguyen label/generator.
 # ---------------------------------------------------------------------------
 replay:
   manifest: DATASET/manifests/data_manifest.json
-  total: 3600
+  total: 3000
+  allowed_generators:
+    - stable_diffusion
+    - real
   copy_mode: copy          # copy | hardlink | reference
   # prefix cu trong data_manifest.json -> thu muc goc sau khi giai nen tar
   path_markers: ["diffusion_staging/"]
   family_of_generator:
     stable_diffusion: latent_diffusion
-    midjourney: commercial
     real: real
   generator_display:
     stable_diffusion: stable_diffusion_v1_5
-    midjourney: midjourney_v5
     real: imagenet_replay
   real_source_of_generator:
     real: ImageNet

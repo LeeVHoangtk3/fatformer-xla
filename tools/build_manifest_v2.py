@@ -263,8 +263,12 @@ def check_replay_generators(cfg: Config, matcher=None):
     matcher = matcher or DenyMatcher.from_payload(read_json(cfg.path_of("denylist")))
     payload = read_json(abspath(cfg.replay_cfg.get("manifest", "")), {})
     records = payload.get("records", [])
+    allowed_gens = cfg.replay_cfg.get("allowed_generators")
+    if allowed_gens is not None:
+        allowed_set = set(allowed_gens)
+        records = [r for r in records if r.get("generator") in allowed_set]
     if len(records) != int(cfg.t["replay_total"]):
-        die("Replay manifest count does not match the contract.")
+        die(f"Replay manifest count ({len(records)}) does not match the contract ({cfg.t['replay_total']}).")
     display = cfg.replay_cfg.get("generator_display", {})
     for row in records:
         if int(row.get("label", -1)) != 1:
@@ -398,6 +402,10 @@ def stage_index(cfg: Config, force: bool = False, only: Optional[Sequence[str]] 
 def http_head_size(url: str, token: Optional[str], cache: Dict[str, int]) -> int:
     """Lay Content-Length cua shard (HEAD, fallback GET Range 0-0)."""
     if url in cache:
+        return cache[url]
+    main_url = re.sub(r"/resolve/[0-9a-f]{40}/", "/resolve/main/", url)
+    if main_url in cache:
+        cache[url] = cache[main_url]
         return cache[url]
     if os.path.exists(url):  # duong dan cuc bo (dung cho kiem thu offline)
         cache[url] = os.path.getsize(url)
@@ -585,11 +593,12 @@ def build_plan(
         # 2) neu chua du, uu tien shard du can ma dung luong byte nho nhat (tiet kiem bang thong)
         def _shard_priority(s: int):
             valid_n = usable[s]["n"] - (usable[s]["nsfw"] if nsfw_on else 0)
-            u = spec.url(s)
-            sz = http_head_size(u, token, sizes)
-            if valid_n >= need and sz > 0:
-                return (0, sz, -valid_n, s)
-            return (1, -valid_n, sz, s)
+            if valid_n >= need:
+                u = spec.url(s)
+                sz = http_head_size(u, token, sizes)
+                if sz > 0:
+                    return (0, sz, -valid_n, s)
+            return (1, -valid_n, 0, s)
 
         for shard in sorted(usable, key=_shard_priority):
             if got >= need:
@@ -669,8 +678,12 @@ def replay_composition(cfg: Config) -> Dict:
         return {"n_real": 0, "n_fake": 0, "by_generator": {}}
     by_gen: Dict[str, int] = {}
     n_real = n_fake = 0
+    allowed_gens = cfg.replay_cfg.get("allowed_generators")
+    allowed_set = set(allowed_gens) if allowed_gens is not None else None
     for r in data["records"]:
         gen = str(r.get("generator") or "unknown")
+        if allowed_set is not None and gen not in allowed_set:
+            continue
         by_gen[gen] = by_gen.get(gen, 0) + 1
         if int(r.get("label", 0)) == 0:
             n_real += 1
@@ -1071,9 +1084,13 @@ def stage_replay(cfg: Config, replay_root: str, copy_mode: str = "copy") -> Dict
     if not data or "records" not in data:
         die(f"Khong doc duoc replay manifest: {src_manifest}")
     records = data["records"]
-    want = int(cfg.replay_cfg.get("total") or cfg.t.get("replay_total", 3600))
-    if len(records) < want:
-        die(f"Replay manifest chi co {len(records)} mau < {want}")
+    allowed_gens = cfg.replay_cfg.get("allowed_generators")
+    if allowed_gens is not None:
+        allowed_set = set(allowed_gens)
+        records = [r for r in records if r.get("generator") in allowed_set]
+    want = int(cfg.replay_cfg.get("total") or cfg.t.get("replay_total", 3000))
+    if len(records) != want:
+        die(f"Replay manifest sau khi loc chi co {len(records)} mau != {want}")
 
     fam_map = cfg.replay_cfg.get("family_of_generator", {})
     disp = cfg.replay_cfg.get("generator_display", {})

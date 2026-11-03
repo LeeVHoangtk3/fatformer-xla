@@ -1,6 +1,6 @@
 {
- "created_at": "2026-11-03T08:08:11+00:00",
- "config_sha256": "70478fcf21214adecfec00ebdc5291b5992a2f1bfa0eace589515ec8e296ac0c",
+ "created_at": "2026-11-03T10:49:29+00:00",
+ "config_sha256": "eaf0a2a94d9233791287547dad744f87f2a41b4eea697cf78740a553a71723d4",
  "seed": 42,
  "surplus": 1.15,
  "limit_per_family": null,
@@ -18,7 +18,7 @@
    "shards": [
     {
      "shard": 66,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_66.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_66.parquet",
      "n": 41,
      "size_bytes": 1062922743
     }
@@ -38,7 +38,7 @@
    "shards": [
     {
      "shard": 66,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_66.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_66.parquet",
      "n": 41,
      "size_bytes": 1062922743
     }
@@ -58,7 +58,7 @@
    "shards": [
     {
      "shard": 66,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_66.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_66.parquet",
      "n": 47,
      "size_bytes": 1062922743
     }
@@ -78,7 +78,7 @@
    "shards": [
     {
      "shard": 66,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_66.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_66.parquet",
      "n": 52,
      "size_bytes": 1062922743
     }
@@ -98,7 +98,7 @@
    "shards": [
     {
      "shard": 66,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_66.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_66.parquet",
      "n": 52,
      "size_bytes": 1062922743
     }
@@ -118,7 +118,7 @@
    "shards": [
     {
      "shard": 74,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_74.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_74.parquet",
      "n": 891,
      "size_bytes": 1792578458
     }
@@ -138,7 +138,7 @@
    "shards": [
     {
      "shard": 66,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_66.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_66.parquet",
      "n": 1036,
      "size_bytes": 1062922743
     }
@@ -158,7 +158,7 @@
    "shards": [
     {
      "shard": 67,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_67.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_67.parquet",
      "n": 877,
      "size_bytes": 1930987423
     }
@@ -178,7 +178,7 @@
    "shards": [
     {
      "shard": 76,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_76.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_76.parquet",
      "n": 1036,
      "size_bytes": 1123678640
     }
@@ -198,7 +198,7 @@
    "shards": [
     {
      "shard": 83,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_83.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_83.parquet",
      "n": 1036,
      "size_bytes": 1995186828
     }
@@ -218,7 +218,7 @@
    "shards": [
     {
      "shard": 76,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_76.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_76.parquet",
      "n": 261,
      "size_bytes": 1123678640
     }
@@ -238,7 +238,7 @@
    "shards": [
     {
      "shard": 71,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_71.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_71.parquet",
      "n": 2992,
      "size_bytes": 298638659
     }
@@ -258,7 +258,7 @@
    "shards": [
     {
      "shard": 74,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_74.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_74.parquet",
      "n": 855,
      "size_bytes": 1792578458
     }
@@ -278,7 +278,7 @@
    "shards": [
     {
      "shard": 78,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_78.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_78.parquet",
      "n": 2992,
      "size_bytes": 35031046
     }
@@ -291,14 +291,14 @@
    "kind": "real",
    "family": "real",
    "model_name": "VISION",
-   "target": 1525,
-   "need": 1754,
+   "target": 1512,
+   "need": 1739,
    "available": 6809,
    "denylist_status": "n/a",
    "shards": [
     {
      "shard": 115,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_115.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_115.parquet",
      "n": 2992,
      "size_bytes": 2629339802
     }
@@ -318,7 +318,7 @@
    "shards": [
     {
      "shard": 49,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics/resolve/main/data/manual/HFCF_Manual_49.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics/resolve/f0b06f79d20389706bb76c626391fa870e0bf604/data/manual/HFCF_Manual_49.parquet",
      "n": 2156,
      "size_bytes": 3774280138
     }
@@ -338,7 +338,7 @@
    "shards": [
     {
      "shard": 89,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_89.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_89.parquet",
      "n": 2992,
      "size_bytes": 859466946
     }
@@ -351,14 +351,14 @@
    "kind": "fake",
    "family": "commercial",
    "model_name": "GPT-4o",
-   "target": 1150,
-   "need": 1323,
+   "target": 1200,
+   "need": 1380,
    "available": 45717,
    "denylist_status": "allowed",
    "shards": [
     {
      "shard": 0,
-     "url": "https://huggingface.co/datasets/yufan/GPT4O_Image_T2I/resolve/main/data/train-00000-of-00014.parquet",
+     "url": "https://huggingface.co/datasets/yufan/GPT4O_Image_T2I/resolve/107e1ab5909505ff0f32b45524fc13ccc99ee269/data/train-00000-of-00014.parquet",
      "n": 3266,
      "size_bytes": 475010142
     }
@@ -371,14 +371,14 @@
    "kind": "real",
    "family": "real",
    "model_name": "FFHQ",
-   "target": 1525,
-   "need": 1754,
+   "target": 1513,
+   "need": 1740,
    "available": 63000,
    "denylist_status": "n/a",
    "shards": [
     {
      "shard": 93,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_93.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_93.parquet",
      "n": 2832,
      "size_bytes": 3932350538
     }
@@ -391,14 +391,14 @@
    "kind": "real",
    "family": "real",
    "model_name": "LandscapesHQ",
-   "target": 1525,
-   "need": 1754,
+   "target": 1512,
+   "need": 1739,
    "available": 90000,
    "denylist_status": "n/a",
    "shards": [
     {
      "shard": 163,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_163.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_163.parquet",
      "n": 2992,
      "size_bytes": 1746838361
     }
@@ -411,14 +411,14 @@
    "kind": "real",
    "family": "real",
    "model_name": "COCO",
-   "target": 1525,
-   "need": 1754,
+   "target": 1513,
+   "need": 1740,
    "available": 118287,
    "denylist_status": "n/a",
    "shards": [
     {
      "shard": 121,
-     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_121.parquet",
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_121.parquet",
      "n": 2992,
      "size_bytes": 151717011
     }
@@ -426,13 +426,12 @@
    "predicted_bytes": 151717011
   }
  ],
- "reals_target": 6100,
- "fakes_new_target": 5300,
+ "reals_target": 6050,
+ "fakes_new_target": 5350,
  "replay_composition": {
   "n_real": 1800,
-  "n_fake": 1800,
+  "n_fake": 1200,
   "by_generator": {
-   "midjourney": 600,
    "real": 1800,
    "stable_diffusion": 1200
   }
@@ -444,76 +443,76 @@
   "cfe_small": [
    {
     "shard": 66,
-    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_66.parquet",
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_66.parquet",
     "size_bytes": 1062922743
    },
    {
     "shard": 67,
-    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_67.parquet",
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_67.parquet",
     "size_bytes": 1930987423
    },
    {
     "shard": 71,
-    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_71.parquet",
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_71.parquet",
     "size_bytes": 298638659
    },
    {
     "shard": 74,
-    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_74.parquet",
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_74.parquet",
     "size_bytes": 1792578458
    },
    {
     "shard": 76,
-    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_76.parquet",
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_76.parquet",
     "size_bytes": 1123678640
    },
    {
     "shard": 78,
-    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_78.parquet",
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_78.parquet",
     "size_bytes": 35031046
    },
    {
     "shard": 83,
-    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_83.parquet",
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_83.parquet",
     "size_bytes": 1995186828
    },
    {
     "shard": 89,
-    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_89.parquet",
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_89.parquet",
     "size_bytes": 859466946
    },
    {
     "shard": 93,
-    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_93.parquet",
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_93.parquet",
     "size_bytes": 3932350538
    },
    {
     "shard": 115,
-    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_115.parquet",
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_115.parquet",
     "size_bytes": 2629339802
    },
    {
     "shard": 121,
-    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_121.parquet",
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_121.parquet",
     "size_bytes": 151717011
    },
    {
     "shard": 163,
-    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_163.parquet",
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/6c539a534c07917307c381f5af4053c6091b5278/data/HFCF_small_163.parquet",
     "size_bytes": 1746838361
    }
   ],
   "cfe_base_manual": [
    {
     "shard": 49,
-    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics/resolve/main/data/manual/HFCF_Manual_49.parquet",
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics/resolve/f0b06f79d20389706bb76c626391fa870e0bf604/data/manual/HFCF_Manual_49.parquet",
     "size_bytes": 3774280138
    }
   ],
   "gpt4o_t2i": [
    {
     "shard": 0,
-    "url": "https://huggingface.co/datasets/yufan/GPT4O_Image_T2I/resolve/main/data/train-00000-of-00014.parquet",
+    "url": "https://huggingface.co/datasets/yufan/GPT4O_Image_T2I/resolve/107e1ab5909505ff0f32b45524fc13ccc99ee269/data/train-00000-of-00014.parquet",
     "size_bytes": 475010142
    }
   ]
@@ -547,7 +546,7 @@
    "n_candidates": 45717,
    "n_blocked": 0,
    "n_related": 0,
-   "n_kept": 1150
+   "n_kept": 1200
   }
  }
 }
