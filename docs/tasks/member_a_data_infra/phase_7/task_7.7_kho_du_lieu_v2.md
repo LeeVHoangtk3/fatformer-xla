@@ -11,6 +11,39 @@
 
 ---
 
+## Cập nhật quy trình ngày 03/11/2026
+
+Pipeline đã bổ sung chốt chặn; chưa đồng nghĩa kho dữ liệu thật đã được nghiệm thu.
+Runbook: `notebooks/task/task_7.7/task_7.7_build_data_v2_colab.ipynb`.
+
+- Cấu hình mục tiêu là 15.000 ảnh, replay 3.600 (24%), real 7.900 (52,67%).
+  Khi giữ replay 3.600 và trần 16.000, miền tổng hợp lệ là 14.400–16.000.
+  Cap 1.200 áp cho fake mới; cân bằng họ tính gồm replay và kiểm tra trong từng split.
+  Đây là cách giải mâu thuẫn số học của bản spec gốc, cần ghi rõ khi C tiếp nhận.
+- **Đang bị chặn về dữ liệu**: `midjourney_v5` trong replay bị deny-list hiện tại chặn
+  bởi `MidjourneyV5_1`. Phải xác minh danh tính/nguồn gốc hoặc thống nhất kho replay thay thế
+  và tính lại quota. Không miễn trừ replay, đổi tên model hay nới deny-list để vượt chặn.
+- Phải pin dataset revision; cache metadata cũ thiếu fingerprint cần reindex.
+- Reference index bắt buộc có đủ 2.000 CFE và coverage đủ 18 tập, không ảnh lỗi/bỏ qua.
+  Dùng `index_test_sets.py --role cfe --manifest ...` hoặc `--role test18`.
+- Builder lọc cả hai nhóm reference trước split, dừng khi sai constraint và không xuất manifest lỗi.
+  Resume xác minh fingerprint config/deny-list/replay, checksum ảnh và phục hồi shard cần xử lý lại.
+- Split ưu tiên generator khi khớp quota; mọi ngoại lệ chia theo ảnh được ghi theo stratum.
+  `data_manifest_v2_train_select.json` chỉ chứa train + val_select cho loader hiện tại;
+  `data_manifest_v2_val_calib.json` chỉ dùng calibration. Không đưa manifest đầy đủ vào loader đang gộp validation.
+- Audit phải kiểm tra đủ ba nhóm và ba cặp split nội bộ, tính lại SHA/pHash từ ảnh,
+  kiểm tra hợp đồng dữ liệu và ghi checksum manifest/config/reference. FAIL trả exit code khác 0.
+- Chạm 4 giờ/60 GB: dừng và lưu checkpoint; không tự hạ 8.000 rồi tuyên bố đạt DoD.
+  Phương án 8.000 trong spec gốc xung đột replay 20–25%, cần xử lý riêng trước khi nghiệm thu.
+- Chỉ đóng gói bằng `tools/package_manifest_v2.py` sau audit PASS. Tool xác minh checksum,
+  chỉ đưa ảnh được chọn vào tar, giữ đường dẫn `DATASET/...`, kèm manifest và báo cáo.
+  Chạy `tar -xf train_crossdomain_v2.tar -C <repo>` để khôi phục đúng đường dẫn.
+- Chỉ mở Task 7.11 sau tất cả kiểm tra đạt và C xác nhận; chưa có bằng chứng thì không đánh dấu `[x]`.
+
+Các yêu cầu bên dưới là spec gốc; áp dụng các điều chỉnh được nêu rõ ở mục này khi có mâu thuẫn.
+
+---
+
 ## 1. Mục tiêu
 
 Xây dựng kho dữ liệu huấn luyện **12.000–16.000 ảnh** cho Gen 2, thoả đồng thời 3 điều kiện:
@@ -29,7 +62,7 @@ Xây dựng kho dữ liệu huấn luyện **12.000–16.000 ảnh** cho Gen 2, 
 
 | # | Đầu vào | Đường dẫn / Nguồn | Vai trò | Bắt buộc |
 | :---: | :--- | :--- | :--- | :---: |
-| I1 | `CommunityForensics-Small` (Parquet) | HF `CommunityForensics/CommunityForensics-Small` | Nguồn ảnh giả chính, có trường `generator` | ✅ |
+| I1 | `CommunityForensics-Small` (Parquet) | HF `OwensLab/CommunityForensics-Small` | Nguồn ảnh giả chính, định danh qua `model_name` | ✅ |
 | I2 | Danh sách generator của tập test CFE | `DATASET/test_communityforensics/` + manifest test | Danh sách **cấm** (deny-list) | ✅ |
 | I3 | Danh sách 18 tập test Task 5.1 | [`bao_cao_task_5.1_full_benchmark_18_datasets.md`](../../../bao_cao/C/bao_cao_task_5.1_full_benchmark_18_datasets.md) | Danh sách **cấm** bổ sung | ✅ |
 | I4 | Kho replay in-dist | `DATASET/manifests/data_manifest.json` (3.600 mẫu) | Chống quên miền cũ | ✅ |

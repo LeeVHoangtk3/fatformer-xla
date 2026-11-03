@@ -28,6 +28,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 from PIL import Image
@@ -204,6 +205,7 @@ class DataV2PipelineTest(unittest.TestCase):
         # --- config ------------------------------------------------------
         cfg = {
             "version": 2,
+            "audit": {"cfe_images": 3, "task51_tests": ["progan"]},
             "seed": 42,
             "allow_related_generators": False,
             "paths": {
@@ -303,7 +305,7 @@ class DataV2PipelineTest(unittest.TestCase):
                 Image.open(io.BytesIO(cls.test_imgs[1])) as im_b:
             cls.jpeg_phash_distance = bin(phash_from_pil(im_a) ^ phash_from_pil(im_b)).count("1")
         cls.ref_path = os.path.join(cls.tmp, "hashes_cfe.json")
-        payload = {"metadata": {"n_images": len(cls.test_imgs)}, "images": []}
+        payload = {"metadata": {"n_images": len(cls.test_imgs), "complete": True, "role": "cfe"}, "images": []}
         names = ["TestOnlyGAN_A", "TestOnlyGAN_B", "ProGAN"]
         for i, blob in enumerate(cls.test_imgs):
             with Image.open(io.BytesIO(blob)) as im:
@@ -314,6 +316,15 @@ class DataV2PipelineTest(unittest.TestCase):
                 })
         with open(cls.ref_path, "w", encoding="utf-8") as f:
             json.dump(payload, f)
+        cls.ref18_path = os.path.join(cls.tmp, "hashes_18.json.gz")
+        blob = make_png(70002)
+        with Image.open(io.BytesIO(blob)) as im:
+            ref18 = {"metadata": {"n_images": 1, "complete": True, "role": "test18"},
+                     "images": [{"path": "progan/1_fake/test.png", "sha256": sha256_bytes(blob),
+                                 "phash": phash_from_pil(im), "label": 1, "model_name": "progan",
+                                 "test_set": "progan"}]}
+        from hash_utils import save_hash_index
+        save_hash_index(ref18, cls.ref18_path)
 
     @classmethod
     def tearDownClass(cls):
@@ -350,7 +361,7 @@ class DataV2PipelineTest(unittest.TestCase):
         rep = B.stage_replay(self.cfg, self.replay_root, "copy")
         self.assertEqual(rep["n"], 40)
 
-        refs = B.load_refs([self.ref_path], 0)
+        refs = B.load_refs([self.ref_path, self.ref18_path], 0)
         self.assertEqual(len(refs["hashes_cfe"]["phash"]), len(self.test_imgs),
                          "load_refs phai giu toan bo pHash khi max_phash=0")
         self.assertLessEqual(self.jpeg_phash_distance, 8,
@@ -378,21 +389,16 @@ class DataV2PipelineTest(unittest.TestCase):
                          {"autoregressive": 20, "commercial": 24, "latent_diffusion": 21,
                           "modern_gans": 25, "pixel_diffusion": 20, "real": 98})
 
-        man = json.load(open(self.cfg.path_of("manifest"), encoding="utf-8"))
+        man = B.read_json(self.cfg.path_of("manifest"))
         self.assertEqual(man["metadata"]["n_records"], 208)
         for r in man["records"]:
             for f in REQUIRED_FIELDS:
                 self.assertIn(f, r)
             self.assertEqual(len(r["sha256"]), 64)
         self.assertEqual(sum(1 for r in man["records"] if r["is_replay"]), 40)
-        # moi o (family,label,generator,is_replay) phai co mat o ca 3 split
-        cells = {}
-        for r in man["records"]:
-            cells.setdefault((r["family"], r["label"], r["generator"]), set()).add(r["split"])
-        for key, splits in cells.items():
-            if key[2] in ("CIPS",):  # CIPS chi con 3 anh sau khi loc test
-                continue
-            self.assertEqual(len(splits), 3, f"o {key} khong phu du 3 split")
+        self.assertEqual({s: sum(r["split"] == s for r in man["records"]) for s in B.SPLITS},
+                         B.largest_remainder(208, self.cfg.t["split_ratios"]))
+        self.assertTrue(man["metadata"]["split_policy"]["strata"])
 
         # --- audit doc lap ---
         report = self._run_audit()
@@ -430,6 +436,92 @@ class DataV2PipelineTest(unittest.TestCase):
                                out=os.path.join(self.tmp, "bad4.json"))
         self.assertGreater(rep4["pairs"]["internal_splits"]["pairs"]["sha_in_multiple_splits"]["count"], 0)
         self.assertGreater(rep4["violations"], 0)
+        train_select = B.read_json(os.path.join(os.path.dirname(self.cfg.path_of("manifest")),
+                                               "data_manifest_v2_train_select.json"))
+        self.assertEqual({r["split"] for r in train_select["records"]}, {"train", "val_select"})
+
+    def test_03_resume_repairs_lost_image_and_rejects_changed_context(self):
+        plan = B.build_plan(self.cfg, self.index, self.matcher)
+        before = B.read_jsonl(self.cfg.state("candidates.jsonl"))
+        path = B.abspath(before[0]["path"])
+        os.remove(path)  # generated fixture under TemporaryDirectory only
+        result = B.stage_fetch(self.cfg, plan, self.cache, True, None)
+        self.assertGreaterEqual(result["n_new"], 1)
+        self.assertTrue(os.path.isfile(path))
+        self.assertEqual(len(B.read_jsonl(self.cfg.state("candidates.jsonl"))), len(before))
+        with patch.object(self.cfg, "sha256", "changed"):
+            with self.assertRaises(SystemExit):
+                B.ensure_state_context(self.cfg)
+
+    def test_04_budgets_stop_plan_and_fetch(self):
+        with patch.dict(self.cfg.t, {"byte_budget_gb": 1e-9}):
+            with self.assertRaises(SystemExit):
+                B.build_plan(self.cfg, self.index, self.matcher)
+        plan = B.build_plan(self.cfg, self.index, self.matcher)
+        with patch.dict(self.cfg.t, {"wall_clock_budget_h": 0}):
+            with self.assertRaises(SystemExit):
+                B.stage_fetch(self.cfg, plan, self.cache, True, None)
+
+    def test_05_invalid_finalize_does_not_publish(self):
+        original = B.read_jsonl(self.cfg.state("split.jsonl"))
+        manifest = self.cfg.path_of("manifest")
+        before = B.sha256_file(manifest)
+        try:
+            with open(self.cfg.state("split.jsonl"), "w", encoding="utf-8") as f:
+                f.write(json.dumps(original[0]) + "\n")
+            with self.assertRaises(SystemExit):
+                B.stage_finalize(self.cfg, B.build_plan(self.cfg, self.index, self.matcher), {"strict": True})
+            self.assertEqual(before, B.sha256_file(manifest))
+        finally:
+            with open(self.cfg.state("split.jsonl"), "w", encoding="utf-8") as f:
+                for row in original:
+                    f.write(json.dumps(row) + "\n")
+
+    def test_06_handoff_detects_stale_evidence(self):
+        from package_manifest_v2 import validate_handoff, package
+        import tarfile
+        report = os.path.join(self.tmp, "report.json")
+        validate_handoff(self.cfg.path_of("manifest"), report, self.cfg.path)
+        changed = B.read_json(self.cfg.path_of("manifest"))
+        changed["metadata"]["modified"] = True
+        changed_path = self._dump(changed, "changed_manifest.json")
+        with self.assertRaises(ValueError):
+            validate_handoff(changed_path, report, self.cfg.path)
+        portable = B.read_json(self.cfg.path_of("manifest"))
+        for row in portable["records"]:
+            row["path"] = os.path.relpath(row["path"], self.tmp).replace("\\", "/")
+        portable_path = self._dump(portable, "portable_manifest.json")
+        portable_report = os.path.join(self.tmp, "portable_audit.json")
+        with patch.object(A, "PROJECT_ROOT", self.tmp):
+            self.assertTrue(self._run_audit(portable_path, portable_report)["pass"])
+        out = os.path.join(self.tmp, "release.tar")
+        package(portable_path, portable_report, self.cfg.path, out, root=self.tmp)
+        with tarfile.open(out) as archive:
+            images = {m.name for m in archive if m.name.startswith("raw_v2/")}
+            self.assertEqual(images, {r["path"] for r in portable["records"]})
+            subset = json.load(archive.extractfile("DATASET/manifests/data_manifest_v2_train_select.json"))
+            self.assertNotIn("val_calib", {r["split"] for r in subset["records"]})
+
+    def test_07_audit_rejects_missing_incomplete_and_stale_phash(self):
+        man = B.read_json(self.cfg.path_of("manifest"))
+        man["records"][0]["phash"] ^= 1 << 63
+        report = self._run_audit(self._dump(man, "wrong_phash.json"), os.path.join(self.tmp, "phash_audit.json"))
+        self.assertFalse(report["pass"])
+        self.assertTrue(any(p["check"] == "phash_mismatch_or_decode_error" for p in report["integrity"]["problems"]))
+        with patch.object(self, "ref18_path", os.path.join(self.tmp, "missing_index.json")):
+            report = self._run_audit(out=os.path.join(self.tmp, "missing_ref_audit.json"))
+        self.assertFalse(report["pass"])
+        self.assertFalse(report["coverage"]["complete"])
+        ref = B.read_json(self.ref_path)
+        ref["metadata"]["complete"] = False
+        with patch.object(self, "ref_path", self._dump(ref, "incomplete_index.json")):
+            report = self._run_audit(out=os.path.join(self.tmp, "incomplete_audit.json"))
+        self.assertFalse(report["pass"])
+
+    def test_08_replay_generator_conflict_blocks_preflight(self):
+        blocked = DenyMatcher(["midjourney_v5"])
+        with self.assertRaises(SystemExit):
+            B.check_replay_generators(self.cfg, blocked)
 
     # ------------------------------------------------------------------
     def _dump(self, payload, name):
@@ -441,11 +533,16 @@ class DataV2PipelineTest(unittest.TestCase):
     def _run_audit(self, manifest: str = "", out: str = "") -> dict:
         argv = sys.argv
         sys.argv = ["audit", "--manifest", manifest or self.cfg.path_of("manifest"),
+                    "--config", self.cfg.path,
                     "--ref", f"cfe={self.ref_path}",
+                    "--ref", f"test18={self.ref18_path}",
                     "--denylist", self.cfg.path_of("denylist"),
                     "--out", out or os.path.join(self.tmp, "report.json"), "--quiet"]
         try:
-            A.main()
+            try:
+                A.main()
+            except SystemExit as exc:
+                self.assertEqual(exc.code, 1)
         finally:
             sys.argv = argv
         with open(out or os.path.join(self.tmp, "report.json"), encoding="utf-8") as f:
@@ -454,6 +551,60 @@ class DataV2PipelineTest(unittest.TestCase):
 
 # ---------------------------------------------------------------------------
 class UnitTests(unittest.TestCase):
+    def test_hamming_chunks_match_scalar_and_fallback(self):
+        import hash_utils as H
+        from unittest.mock import patch
+        rng = np.random.default_rng(42)
+        a = rng.integers(0, 2**64 - 1, 17, dtype=np.uint64)
+        b = rng.integers(0, 2**64 - 1, 23, dtype=np.uint64)
+        expected = [min((int(x) ^ int(y)).bit_count() for y in b) for x in a]
+        for fallback in (False, True):
+            with patch.object(H, "_HAS_BITWISE_COUNT", H._HAS_BITWISE_COUNT and not fallback):
+                np.testing.assert_array_equal(H.min_hamming_to_set(a, b, 3, 5), expected)
+
+    def test_group_split_when_feasible(self):
+        rows = [{"generator": g} for g, n in (("a", 85), ("b", 8), ("c", 7)) for _ in range(n)]
+        assignment, reason = B.generator_partition(rows, {"train": 85, "val_calib": 8, "val_select": 7})
+        self.assertIsNone(reason)
+        self.assertEqual(assignment, {"a": "train", "b": "val_calib", "c": "val_select"})
+
+    def test_resume_recovers_only_truncated_jsonl_tail(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "candidates.jsonl")
+            with open(path, "wb") as f:
+                f.write(b'{"id": 1}\n{"id":')
+            self.assertEqual(B.read_jsonl(path, recover_tail=True), [{"id": 1}])
+            self.assertEqual(B.read_jsonl(path), [{"id": 1}])
+
+    def test_reference_manifest_rejects_ambiguous_filename(self):
+        from index_test_sets import attach_manifest_metadata
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "manifest.json")
+            B.write_json(path, {"images": [{"path": "a/x.png", "model_name": "a"},
+                                          {"path": "b/x.png", "model_name": "b"}]})
+            with self.assertRaises(ValueError):
+                attach_manifest_metadata([{"path": "tar::unknown/x.png"}], path)
+
+    def test_real_denylist_is_not_applied_as_fake_generator(self):
+        from types import SimpleNamespace
+        refs = [SimpleNamespace(name="cfe", generators={"COCO": 1})]
+        result = A.check_generators([{"label": 0, "generator": "COCO"}], refs, None)
+        self.assertEqual(result["violations"], 0)
+
+    def test_empty_manifest_and_missing_references_exit_failure(self):
+        from unittest.mock import patch
+        from contextlib import redirect_stdout
+        with tempfile.TemporaryDirectory() as tmp:
+            path, out = os.path.join(tmp, "manifest.json"), os.path.join(tmp, "audit.json")
+            B.write_json(path, {"records": []})
+            with patch.object(sys, "argv", ["audit", "--manifest", path, "--out", out]), redirect_stdout(io.StringIO()):
+                with self.assertRaises(SystemExit) as exc:
+                    A.main()
+            self.assertEqual(exc.exception.code, 1)
+            result = B.read_json(out)
+            self.assertFalse(result["pass"])
+            self.assertFalse(result["coverage"]["complete"])
+
     def test_largest_remainder_exact(self):
         for total in (1, 2, 3, 7, 40, 195, 1500, 15000):
             out = B.largest_remainder(total, {"a": 0.85, "b": 0.075, "c": 0.075})
@@ -475,8 +626,8 @@ class UnitTests(unittest.TestCase):
 
     def test_denylist_from_config_is_all_allowed(self):
         import yaml
-        cfg = yaml.safe_load(open(os.path.join(PROJECT_ROOT, "configs", "phase7_data_v2.yaml"),
-                                  encoding="utf-8"))
+        with open(os.path.join(PROJECT_ROOT, "configs", "phase7_data_v2.yaml"), encoding="utf-8") as f:
+            cfg = yaml.safe_load(f)
         with open(os.path.join(PROJECT_ROOT, "DATASET", "logs", "phase7",
                                "generator_denylist.json"), encoding="utf-8") as f:
             payload = json.load(f)

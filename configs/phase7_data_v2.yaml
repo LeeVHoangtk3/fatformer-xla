@@ -45,7 +45,7 @@ targets:
     train: 0.85
     val_calib: 0.075
     val_select: 0.075
-  min_total: 12000
+  min_total: 14400
   max_total: 16000
   max_family_imbalance: 1.5
   real_frac: [0.45, 0.55]
@@ -59,6 +59,7 @@ targets:
   byte_budget_gb: 60
   wall_clock_budget_h: 4.0
   surplus: 1.15
+  min_real_sources: 3
 
 datasets:
   cfe_small:
@@ -174,7 +175,7 @@ fakes:
     dataset: cfe_small
     family: pixel_diffusion
     model_name: DeepFloyd
-    target: 1036
+    target: 800
   - id: pix_deepfloyd_base
     dataset: cfe_base_manual
     family: pixel_diffusion

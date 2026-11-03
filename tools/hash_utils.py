@@ -96,13 +96,15 @@ def _popcount_axis1(x: np.ndarray) -> np.ndarray:
     # Fallback: tach moi uint64 thanh 8 byte roi unpackbits theo truc moi.
     x = np.ascontiguousarray(x)
     x8 = x.view(np.uint8).reshape(x.shape + (8,))
-    return np.unpackbits(x8, axis=-1).sum(axis=-1, dtype=np.int32)
+    table = np.array([i.bit_count() for i in range(256)], dtype=np.uint8)
+    return table[x8].sum(axis=-1, dtype=np.int32)
 
 
 def min_hamming_to_set(
     hashes: np.ndarray,
     reference: np.ndarray,
     chunk_size: int = 1024,
+    reference_chunk_size: int = 4096,
 ) -> np.ndarray:
     """
     Voi moi hash trong `hashes`, tra ve khoang cach Hamming nho nhat toi `reference`.
@@ -117,11 +119,16 @@ def min_hamming_to_set(
     if len(reference) == 0:
         return np.full(len(hashes), PHASH_BITS, dtype=np.int32)
 
-    out = np.empty(len(hashes), dtype=np.int32)
+    if chunk_size <= 0 or reference_chunk_size <= 0:
+        raise ValueError("chunk sizes must be positive")
+    out = np.full(len(hashes), PHASH_BITS, dtype=np.int32)
     for start in range(0, len(hashes), chunk_size):
         block = hashes[start:start + chunk_size].astype(np.uint64, copy=False)
-        xor = np.bitwise_xor(block[:, None], reference[None, :])
-        out[start:start + chunk_size] = _popcount_axis1(xor).min(axis=1)
+        best = out[start:start + len(block)]
+        for rstart in range(0, len(reference), reference_chunk_size):
+            ref = reference[rstart:rstart + reference_chunk_size].astype(np.uint64, copy=False)
+            xor = np.bitwise_xor(block[:, None], ref[None, :])
+            np.minimum(best, _popcount_axis1(xor).min(axis=1), out=best)
     return out
 
 
@@ -171,5 +178,6 @@ def save_hash_index(payload: dict, path: str) -> None:
 
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     opener = gzip.open if path.endswith(".gz") else open
-    with opener(path, "wt", encoding="utf-8") as f:
+    with opener(path + ".tmp", "wt", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False)
+    os.replace(path + ".tmp", path)

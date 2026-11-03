@@ -70,8 +70,11 @@ from hash_utils import (  # noqa: E402
     phash_from_pil,
     sha256_bytes,
     to_uint64,
+    sha256_file,
+    load_hash_index,
 )
-from build_generator_denylist import DenyMatcher  # noqa: E402
+from build_generator_denylist import DenyMatcher, EXPECTED_TASK51_TESTS  # noqa: E402
+from data_v2_contract import contract_problems
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -140,15 +143,29 @@ def write_json(path: str, payload) -> None:
     os.replace(tmp, path)
 
 
-def read_jsonl(path: str) -> List[Dict]:
+def read_jsonl(path: str, recover_tail: bool = False) -> List[Dict]:
     out: List[Dict] = []
     if not os.path.exists(path):
         return out
-    with open(path, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                out.append(json.loads(line))
+    with open(path, "rb") as f:
+        lines = f.readlines()
+    for i, line in enumerate(lines):
+        if not line.strip():
+            continue
+        try:
+            out.append(json.loads(line))
+        except (ValueError, UnicodeDecodeError):
+            if not recover_tail or i != len(lines) - 1 or line.endswith(b"\n"):
+                raise
+            with open(path + ".tmp", "w", encoding="utf-8") as f:
+                for row in out:
+                    f.write(json.dumps(row, ensure_ascii=False) + "\n")
+            os.replace(path + ".tmp", path)
+    if recover_tail and lines and not lines[-1].endswith(b"\n"):
+        with open(path + ".tmp", "w", encoding="utf-8") as f:
+            for row in out:
+                f.write(json.dumps(row, ensure_ascii=False) + "\n")
+        os.replace(path + ".tmp", path)
     return out
 
 
@@ -212,7 +229,7 @@ class Config:
             self.data = yaml.safe_load(f) or {}
         if not isinstance(self.data, dict) or "targets" not in self.data:
             die(f"Config khong hop le: {self.path}")
-        self.sha256 = sha256_bytes(open(self.path, "rb").read())
+        self.sha256 = sha256_file(self.path)
         self.p = self.data["paths"]
         self.t = self.data["targets"]
         self.datasets = {k: DatasetSpec(name=k, **v) for k, v in self.data["datasets"].items()}
@@ -225,6 +242,39 @@ class Config:
 
     def state(self, name: str) -> str:
         return os.path.join(self.path_of("state_dir"), name)
+
+
+def ensure_state_context(cfg: Config):
+    """Resume only against the same config, denylist and replay manifest."""
+    context = {"schema": 2, "config": cfg.sha256}
+    for key, path in (("denylist", cfg.path_of("denylist")),
+                      ("replay", abspath(cfg.replay_cfg.get("manifest", "")))):
+        context[key] = sha256_file(path) if os.path.isfile(path) else None
+    old = read_json(cfg.state("context.json"))
+    if old is not None and old != context:
+        die("Build state context changed (config/denylist/replay). Use a new state/raw directory or --force.")
+    if old is None:
+        if any(os.path.exists(cfg.state(n)) for n in ("candidates.jsonl", "replay.jsonl", "selected.jsonl")):
+            die("Legacy state without fingerprints. Use a new state directory or --force.")
+        write_json(cfg.state("context.json"), context)
+
+
+def check_replay_generators(cfg: Config, matcher=None):
+    matcher = matcher or DenyMatcher.from_payload(read_json(cfg.path_of("denylist")))
+    payload = read_json(abspath(cfg.replay_cfg.get("manifest", "")), {})
+    records = payload.get("records", [])
+    if len(records) != int(cfg.t["replay_total"]):
+        die("Replay manifest count does not match the contract.")
+    display = cfg.replay_cfg.get("generator_display", {})
+    for row in records:
+        if int(row.get("label", -1)) != 1:
+            continue
+        raw = str(row.get("generator") or "")
+        name = display.get(raw, raw)
+        verdict = matcher.classify(name)
+        if verdict["status"] != "allowed":
+            die(f"Replay generator {name!r} is {verdict['status']} by {verdict.get('matched')!r}. "
+                "Resolve generator identity/replay policy before building; no automatic exemption.")
 
 
 # ---------------------------------------------------------------------------
@@ -265,18 +315,26 @@ def stage_index(cfg: Config, force: bool = False, only: Optional[Sequence[str]] 
     rows: List[Dict] = []
     con = _duckdb()
     for name, spec in cfg.datasets.items():
+        revision = spec.url_template.split("/resolve/", 1)[-1].split("/", 1)[0]
+        if "/resolve/" in spec.url_template and not re.fullmatch(r"[0-9a-f]{40}", revision):
+            die(f"Pin a dataset commit revision before indexing: {name}. See the Colab runbook.")
         if only and name not in only:
             existing = read_json(cfg.state(f"index_{name}.json"))
             if existing:
                 rows.extend(existing)
             continue
         cache = cfg.state(f"index_{name}.json")
+        signature = sha256_text(json.dumps(spec.__dict__, sort_keys=True))
+        signature_path = cfg.state(f"index_{name}_context.json")
         if existing := (None if force else read_json(cache)):
+            if read_json(signature_path) != {"dataset_sha256": signature}:
+                die(f"Stale/unversioned metadata index for {name}. Reindex with --force or use a new state directory.")
             log(f"INDEX {name}: dung cache ({len(existing)} dong)")
             rows.extend(existing)
             continue
         log(f"INDEX {name}: quet {spec.n_shards} shard (metadata only)")
         ds_rows: List[Dict] = []
+        failed_shards = []
         t0 = time.time()
         for i in range(spec.n_shards):
             url = spec.url(i)
@@ -320,11 +378,15 @@ def stage_index(cfg: Config, force: bool = False, only: Optional[Sequence[str]] 
                     })
             except Exception as exc:  # noqa: BLE001
                 log(f"  [!] shard {i} loi: {type(exc).__name__}: {str(exc)[:120]}")
+                failed_shards.append(i)
             if (i + 1) % 20 == 0 or i + 1 == spec.n_shards:
                 log(f"  {name}: {i + 1}/{spec.n_shards} shard ({time.time() - t0:.0f}s)")
+        if failed_shards:
+            die(f"INDEX {name}: incomplete metadata coverage; failed shards {failed_shards}. Retry without publishing this index.")
         if not ds_rows:
             die(f"INDEX {name}: khong doc duoc shard nao. Kiem tra mang / URL template.")
         write_json(cache, ds_rows)
+        write_json(signature_path, {"dataset_sha256": signature})
         log(f"INDEX {name}: {len(ds_rows)} dong -> {rel(cache)}")
         rows.extend(ds_rows)
     return rows
@@ -422,6 +484,7 @@ def build_plan(
     limit_per_family: Optional[int] = None,
     surplus: Optional[float] = None,
 ) -> Dict:
+    check_replay_generators(cfg, matcher)
     surplus = float(surplus if surplus is not None else cfg.t.get("surplus", 1.15))
     nsfw_on = bool(cfg.quality.get("reject_nsfw", True))
     allow_related = bool(cfg.data.get("allow_related_generators", False))
@@ -561,6 +624,8 @@ def build_plan(
             shard_union.setdefault(e["dataset"], {})[s["shard"]] = s
     predicted = sum(s["size_bytes"] for ds in shard_union.values() for s in ds.values())
     budget = float(cfg.t.get("byte_budget_gb", 60)) * 1e9
+    if predicted > budget:
+        die(f"Shard plan exceeds byte budget: {predicted} > {budget}.")
 
     per_family: Dict[str, Dict[str, int]] = {}
     for e in plan_entries:
@@ -655,7 +720,8 @@ def print_plan(plan: Dict, cfg: Config) -> None:
 # ---------------------------------------------------------------------------
 # Tai file (resume duoc) + doc shard
 # ---------------------------------------------------------------------------
-def download_file(url: str, dest: str, token: Optional[str], retries: int = 3) -> Tuple[int, bool]:
+def download_file(url: str, dest: str, token: Optional[str], retries: int = 3,
+                  on_bytes=None, check_deadline=None) -> Tuple[int, bool]:
     """Tai `url` ve `dest` voi Range-resume. Tra ve (bytes_moi, da_tai_lai)."""
     import requests
 
@@ -670,16 +736,21 @@ def download_file(url: str, dest: str, token: Optional[str], retries: int = 3) -
         return 0, False
 
     session = requests.Session()
+    transferred = 0
     for attempt in range(1, retries + 1):
         try:
+            if check_deadline:
+                check_deadline()
             h = dict(headers)
             if have:
                 h["Range"] = f"bytes={have}-"
             with session.get(url, headers=h, stream=True, timeout=(30, 600)) as r:
                 if r.status_code == 416:
-                    if os.path.exists(part):
+                    expected = int(r.headers.get("Content-Range", "0/0").rsplit("/", 1)[-1])
+                    if os.path.exists(part) and expected > 0 and os.path.getsize(part) == expected:
                         os.replace(part, dest)
-                    return 0, False
+                        return transferred, False
+                    raise IOError("Invalid Range response; partial file is not verified complete")
                 if r.status_code == 200 and have:
                     have = 0  # server khong ho tro Range -> tai lai tu dau
                     if os.path.exists(part):
@@ -690,18 +761,21 @@ def download_file(url: str, dest: str, token: Optional[str], retries: int = 3) -
                 with open(part, "ab" if have else "wb") as f:
                     for chunk in r.iter_content(chunk_size=1 << 22):
                         if chunk:
+                            if check_deadline:
+                                check_deadline()
+                            transferred += len(chunk)
+                            if on_bytes:
+                                on_bytes(len(chunk))
                             f.write(chunk)
                             written += len(chunk)
                             if written % (1 << 28) < (1 << 22):
                                 log(f"    ... {os.path.basename(dest)}: "
                                     f"{100.0 * (have + written) / max(1, total):.0f}%")
-                if os.path.exists(dest):
-                    os.remove(dest)
-                os.replace(part, dest)
-                size = os.path.getsize(dest)
+                size = os.path.getsize(part)
                 if total and size < total:
                     raise IOError(f"tai thieu: {size}/{total}")
-                return written, True
+                os.replace(part, dest)
+                return transferred, True
         except Exception as exc:  # noqa: BLE001
             have = os.path.getsize(part) if os.path.exists(part) else 0
             log(f"    [!] tai loi (lan {attempt}/{retries}): {type(exc).__name__}: {str(exc)[:100]}")
@@ -773,13 +847,15 @@ def _select_rows_for_shard(
     local: str,
     entries: List[Dict],
     per_entry: Dict[str, int],
+    excluded=None,
 ) -> Tuple[Dict[str, str], Optional[Dict[str, Dict]], Dict[str, int]]:
     """Chon image_id cho tung entry trong 1 shard. Tra ve (entry_of_name, row_meta, can)."""
     nsfw_on = bool(cfg.quality.get("reject_nsfw", True))
+    excluded = excluded or set()
     can: Dict[str, int] = {}
     if spec.kind == "plain":
         n = _shard_row_count(local)
-        pool = [f"{shard}:{i}" for i in range(n)]
+        pool = [f"{shard}:{i}" for i in range(n) if f"{shard}:{i}" not in excluded]
         row_meta = {k: {"model_name": spec.model_name or spec.name, "label": 1,
                         "nsfw_flag": False, "real_source": None} for k in pool}
     else:
@@ -806,7 +882,7 @@ def _select_rows_for_shard(
         else:
             label = 1 if e["kind"] == "fake" else 0
             names = [n for n, m in row_meta.items()
-                     if m.get("model_name") == e["model_name"]
+                     if n not in excluded and m.get("model_name") == e["model_name"]
                      and int(m.get("label", 1)) == label
                      and not (nsfw_on and m.get("nsfw_flag"))]
             if e["kind"] == "real" and e.get("real_source"):
@@ -829,15 +905,51 @@ def stage_fetch(
     resume: bool,
     token: Optional[str],
 ) -> Dict:
+    ensure_state_context(cfg)
     cand_path = cfg.state("candidates.jsonl")
     done_path = cfg.state("fetch_done.json")
     bytes_path = cfg.state("bytes_downloaded.json")
 
     if not resume and os.path.exists(cand_path):
         os.remove(cand_path)
-    existing = read_jsonl(cand_path) if resume else []
+    existing = read_jsonl(cand_path, recover_tail=True) if resume else []
     done = (read_json(done_path, {}) or {}) if resume else {}
     bytes_dl = read_json(bytes_path, {"bytes": 0}) or {"bytes": 0}
+    # Recover images lost/corrupted after a runtime reset before honoring done markers.
+    valid = []
+    broken_shards = set()
+    for row in existing:
+        path = abspath(row["path"])
+        if os.path.isfile(path) and sha256_file(path) == row["sha256"]:
+            valid.append(row)
+        else:
+            broken_shards.add(cfg.datasets[row["dataset"]].shard_key(row["shard"]))
+    if len(valid) != len(existing):
+        tmp = cand_path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            for row in valid:
+                f.write(json.dumps(row, ensure_ascii=False) + "\n")
+        os.replace(tmp, cand_path)
+        existing = valid
+    for key in broken_shards:
+        done.pop(key, None)
+    if resume and done and not existing:
+        done = {}
+    write_json(done_path, done)
+    started = time.monotonic()
+    prior_seconds = float(bytes_dl.get("fetch_seconds", 0))
+
+    def checkpoint_budget():
+        bytes_dl["fetch_seconds"] = prior_seconds + time.monotonic() - started
+        write_json(bytes_path, bytes_dl)
+        if bytes_dl["fetch_seconds"] >= float(cfg.t.get("wall_clock_budget_h", 4)) * 3600:
+            die("Fetch wall-clock budget reached. Checkpoint saved; stop and review the plan.")
+        if bytes_dl.get("bytes", 0) >= float(cfg.t.get("byte_budget_gb", 60)) * 1e9:
+            die("Download byte budget reached. Checkpoint saved; stop and review the plan.")
+
+    def account_bytes(n):
+        bytes_dl["bytes"] = bytes_dl.get("bytes", 0) + n
+        checkpoint_budget()
     seen = {(r["dataset"], r["shard"], r["image_id"]) for r in existing}
     per_entry: Dict[str, int] = {}
     for r in existing:
@@ -852,19 +964,21 @@ def stage_fetch(
     for ds_name, shards in plan["shards"].items():
         spec = cfg.datasets[ds_name]
         for s in shards:
+            checkpoint_budget()
             shard = s["shard"]
             key = spec.shard_key(shard)
-            if done.get(key):
+            if key in done:
                 log(f"FETCH {key}: da xong ({done[key]} anh), bo qua")
                 continue
             local = os.path.join(cache_dir, ds_name, f"shard_{shard:05d}.parquet")
             if os.path.exists(local) and os.path.getsize(local) > 0:
+                if os.path.getsize(local) != s["size_bytes"]:
+                    die(f"Cached shard size mismatch: {local}. Remove the invalid cache file and resume.")
                 log(f"FETCH {key}: cache co san ({os.path.getsize(local) / 1e6:.0f} MB)")
             else:
                 log(f"FETCH {key}: tai {s['url']}")
-                nbytes, _ = download_file(s["url"], local, token)
-                bytes_dl["bytes"] = bytes_dl.get("bytes", 0) + nbytes
-                write_json(bytes_path, bytes_dl)
+                download_file(s["url"], local, token, on_bytes=account_bytes,
+                              check_deadline=checkpoint_budget)
 
             entries = [entry_by_id[eid] for eid, e in entry_by_id.items()
                        if e["dataset"] == ds_name and any(x["shard"] == shard for x in e["shards"])]
@@ -874,7 +988,8 @@ def stage_fetch(
                 continue
 
             entry_of_name, row_meta, can = _select_rows_for_shard(
-                cfg, spec, shard, local, entries, per_entry)
+                cfg, spec, shard, local, entries, per_entry,
+                {name for ds, sh, name in seen if ds == ds_name and sh == shard})
             if not entry_of_name:
                 done[key] = 0
                 write_json(done_path, done)
@@ -888,6 +1003,7 @@ def stage_fetch(
             buffer: List[Dict] = []
             idx = 0
             for batch in _iter_local_rows(local, cols, batch_size=64):
+                checkpoint_budget()
                 for row in batch:
                     name = row.get("image_name") if spec.kind == "cfe" else f"{shard}:{idx}"
                     idx += 1
@@ -908,9 +1024,10 @@ def stage_fetch(
                     out_dir = os.path.join(raw_root, e["family"], slug(e["model_name"]))
                     os.makedirs(out_dir, exist_ok=True)
                     out_path = os.path.join(out_dir, f"{sha[:20]}.{ext}")
-                    if not os.path.exists(out_path):
-                        with open(out_path, "wb") as f:
+                    if not os.path.exists(out_path) or sha256_file(out_path) != sha:
+                        with open(out_path + ".tmp", "wb") as f:
                             f.write(blob)
+                        os.replace(out_path + ".tmp", out_path)
                     buffer.append({
                         "entry_id": eid, "dataset": ds_name, "shard": shard, "image_id": name,
                         "path": rel(out_path), "sha256": sha, "phash": info["phash"],
@@ -918,7 +1035,7 @@ def stage_fetch(
                         "format": ext, "bytes": len(blob),
                         "label": 1 if e["kind"] == "fake" else 0,
                         "family": e["family"], "generator": e["model_name"],
-                        "source": ds_name,
+                        "source": e["model_name"] if e["kind"] == "real" else ds_name,
                         "real_source": e.get("real_source") or (
                             e["model_name"] if e["kind"] == "real" else None),
                         "is_replay": False,
@@ -937,6 +1054,7 @@ def stage_fetch(
             write_json(done_path, done)
             rej = ", ".join(f"{k}={v}" for k, v in sorted(rejected.items())) or "khong loai"
             log(f"FETCH {key}: +{kept} anh ({rej})")
+    checkpoint_budget()
 
     log(f"FETCH: tong {total_rows} anh moi, da tai {bytes_dl['bytes'] / 1e9:.2f} GB")
     return {"n_new": total_rows, "bytes_downloaded": bytes_dl["bytes"], "done": done}
@@ -946,6 +1064,8 @@ def stage_fetch(
 # REPLAY
 # ---------------------------------------------------------------------------
 def stage_replay(cfg: Config, replay_root: str, copy_mode: str = "copy") -> Dict:
+    ensure_state_context(cfg)
+    check_replay_generators(cfg)
     src_manifest = abspath(cfg.replay_cfg.get("manifest") or "DATASET/manifests/data_manifest.json")
     data = read_json(src_manifest)
     if not data or "records" not in data:
@@ -961,7 +1081,9 @@ def stage_replay(cfg: Config, replay_root: str, copy_mode: str = "copy") -> Dict
     markers = cfg.replay_cfg.get("path_markers", ["diffusion_staging/"])
     raw_root = cfg.path_of("raw_root")
     out_path = cfg.state("replay.jsonl")
-    if os.path.exists(out_path) and len(read_jsonl(out_path)) == want:
+    cached = read_jsonl(out_path)
+    if len(cached) == want and all(os.path.isfile(abspath(r["path"]))
+                                  and sha256_file(abspath(r["path"])) == r["sha256"] for r in cached):
         log("REPLAY: da co du, bo qua")
         return {"n": want, "cached": True}
 
@@ -1006,7 +1128,7 @@ def stage_replay(cfg: Config, replay_root: str, copy_mode: str = "copy") -> Dict
         os.makedirs(out_dir, exist_ok=True)
         dst = os.path.join(out_dir, f"{sha[:20]}.{ext}")
         if os.path.abspath(dst) != os.path.abspath(src):
-            if not os.path.exists(dst):
+            if not os.path.exists(dst) or sha256_file(dst) != sha:
                 if copy_mode == "hardlink":
                     try:
                         os.link(src, dst)
@@ -1029,9 +1151,10 @@ def stage_replay(cfg: Config, replay_root: str, copy_mode: str = "copy") -> Dict
             "Giai nen diffusion_staging.tar truoc, hoac truyen --replay_root dung.")
     if len(rows) != want:
         die(f"REPLAY: chi nap duoc {len(rows)}/{want} mau.")
-    with open(out_path, "w", encoding="utf-8") as f:
+    with open(out_path + ".tmp", "w", encoding="utf-8") as f:
         for r in rows:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    os.replace(out_path + ".tmp", out_path)
     log(f"REPLAY: {len(rows)} mau ({sum(r['label'] == 0 for r in rows)} real)")
     return {"n": len(rows), "cached": False}
 
@@ -1115,6 +1238,19 @@ def _filter_against_refs(records: List[Dict], refs: Dict[str, Dict], threshold: 
 
 
 def stage_select(cfg: Config, plan: Dict, refs: Dict[str, Dict], strict: bool) -> Dict:
+    ensure_state_context(cfg)
+    check_replay_generators(cfg)
+    if not refs:
+        die("Selection requires complete CFE and Task 5.1 reference indexes.")
+    audit_cfg = cfg.data.get("audit", {})
+    groups = {role: [v for v in refs.values() if v.get("metadata", {}).get("role") == role]
+              for role in ("cfe", "test18")}
+    if sum(len(v["images"]) for v in groups["cfe"]) != int(audit_cfg.get("cfe_images", 2000)):
+        die("CFE reference coverage does not match expected image count.")
+    sets = {i.get("test_set") for v in groups["test18"] for i in v["images"] if i.get("test_set")}
+    if sets != set(audit_cfg.get("task51_tests", EXPECTED_TASK51_TESTS)):
+        die("Task 5.1 reference coverage must include all expected test sets.")
+    write_json(cfg.state("references.json"), {v["path"]: v["fingerprint"] for v in refs.values()})
     cands = read_jsonl(cfg.state("candidates.jsonl"))
     replay = read_jsonl(cfg.state("replay.jsonl"))
     log(f"SELECT: {len(cands)} ung vien + {len(replay)} replay")
@@ -1202,9 +1338,10 @@ def stage_select(cfg: Config, plan: Dict, refs: Dict[str, Dict], strict: bool) -
     for eid in sorted(chosen):
         final.extend(chosen[eid])
     final.sort(key=lambda r: (r["family"], r["label"], r["generator"], r["sha256"]))
-    with open(cfg.state("selected.jsonl"), "w", encoding="utf-8") as f:
+    with open(cfg.state("selected.jsonl") + ".tmp", "w", encoding="utf-8") as f:
         for r in final:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    os.replace(cfg.state("selected.jsonl") + ".tmp", cfg.state("selected.jsonl"))
     log(f"SELECT: {len(final)} anh cuoi (ref_stats={ {**ref_stats_r, **ref_stats_new} })")
     summary = {"n": len(final), "dedupe": dstats,
                "ref_stats": {**ref_stats_r, **ref_stats_new},
@@ -1216,46 +1353,86 @@ def stage_select(cfg: Config, plan: Dict, refs: Dict[str, Dict], strict: bool) -
 # ---------------------------------------------------------------------------
 # SPLIT
 # ---------------------------------------------------------------------------
+def generator_partition(rows, counts):
+    """Exact group assignment when generator sizes permit both validation quotas."""
+    groups = {}
+    for r in rows:
+        groups.setdefault(r["generator"], []).append(r)
+    a, b = counts["val_calib"], counts["val_select"]
+    states = {(0, 0): ()}
+    for name in sorted(groups):
+        size = len(groups[name])
+        nxt = {}
+        for (x, y), choices in states.items():
+            nxt.setdefault((x, y), choices + ("train",))
+            if x + size <= a:
+                nxt.setdefault((x + size, y), choices + ("val_calib",))
+            if y + size <= b:
+                nxt.setdefault((x, y + size), choices + ("val_select",))
+        states = nxt
+        if len(states) > 200000:
+            return None, "group_search_limit; manual group allocation required"
+    if (a, b) not in states:
+        return None, "generator_sizes_cannot_match_validation_quotas"
+    assignment = dict(zip(sorted(groups), states[(a, b)]))
+    return assignment, None
+
+
 def stage_split(cfg: Config) -> Dict:
+    ensure_state_context(cfg)
     records = read_jsonl(cfg.state("selected.jsonl"))
     ratios = {k: float(v) for k, v in cfg.t["split_ratios"].items()}
-    if abs(sum(ratios.values()) - 1.0) > 1e-9:
-        die(f"split_ratios khong cong lai bang 1: {ratios}")
-
-    cells: Dict[Tuple, List[Dict]] = {}
+    if set(ratios) != set(SPLITS) or abs(sum(ratios.values()) - 1.0) > 1e-9:
+        die(f"Invalid split_ratios: {ratios}")
+    cells = {}
     for r in records:
-        key = (r["family"], r["label"], r["generator"], bool(r["is_replay"]))
+        key = (r["family"], r["label"], bool(r["is_replay"]),
+               r.get("real_source", "") if r["label"] == 0 else "")
         cells.setdefault(key, []).append(r)
-
+    allocations = {k: largest_remainder(len(v), ratios) for k, v in cells.items()}
+    desired = largest_remainder(len(records), ratios)
+    totals = {s: sum(a[s] for a in allocations.values()) for s in SPLITS}
+    # Correct rounding across strata so total split counts are exact as well.
+    while totals != desired:
+        donor = next(s for s in SPLITS if totals[s] > desired[s])
+        receiver = next(s for s in SPLITS if totals[s] < desired[s])
+        candidates = [k for k, a in allocations.items() if a[donor] > 0]
+        key = min(candidates, key=lambda k: (
+            abs(allocations[k][donor] - 1 - len(cells[k]) * ratios[donor])
+            + abs(allocations[k][receiver] + 1 - len(cells[k]) * ratios[receiver]), str(k)))
+        allocations[key][donor] -= 1
+        allocations[key][receiver] += 1
+        totals[donor] -= 1
+        totals[receiver] += 1
+    policy = []
     for key, rows in cells.items():
         rows.sort(key=lambda r: stable_rank(cfg.seed, "split", r["sha256"]))
-        counts = largest_remainder(len(rows), ratios)
-        # Moi o du lon phai co mat o ca 3 split de val_* phu du ho.
-        if len(rows) >= 3:
+        counts = allocations[key]
+        assignment, reason = (None, "real_source_stratification" if key[1] == 0 else "fixed_replay")
+        if key[1] == 1 and not key[2]:
+            assignment, reason = generator_partition(rows, counts)
+            if reason and reason.startswith("group_search_limit"):
+                die(reason)
+        if assignment is not None:
+            for r in rows:
+                r["split"] = assignment[r["generator"]]
+        else:
+            i = 0
             for sp in SPLITS:
-                while counts[sp] == 0:
-                    donor = max(SPLITS, key=lambda s: counts[s])
-                    if counts[donor] <= 1:
-                        break
-                    counts[donor] -= 1
-                    counts[sp] += 1
-        i = 0
-        for sp in SPLITS:
-            for r in rows[i:i + counts[sp]]:
-                r["split"] = sp
-            i += counts[sp]
-        for r in rows[i:]:  # an toan: khong bo sot
-            r["split"] = SPLITS[-1]
-
-    with open(cfg.state("split.jsonl"), "w", encoding="utf-8") as f:
+                for r in rows[i:i + counts[sp]]:
+                    r["split"] = sp
+                i += counts[sp]
+        policy.append({"family": key[0], "label": key[1], "is_replay": key[2],
+                       "real_source": key[3], "mode": "generator" if assignment else "image",
+                       "reason": reason, "generators": sorted({r["generator"] for r in rows}),
+                       "counts": counts})
+    with open(cfg.state("split.jsonl") + ".tmp", "w", encoding="utf-8") as f:
         for r in records:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
-    cov = {}
-    for r in records:
-        cov.setdefault(r["split"], {}).setdefault(r["family"], 0)
-        cov[r["split"]][r["family"]] += 1
-    log(f"SPLIT: { {k: sum(v.values()) for k, v in cov.items()} }")
-    return {"coverage": cov}
+    os.replace(cfg.state("split.jsonl") + ".tmp", cfg.state("split.jsonl"))
+    write_json(cfg.state("split_policy.json"), policy)
+    log(f"SPLIT: {totals}")
+    return {"counts": totals, "policy": policy}
 
 
 # ---------------------------------------------------------------------------
@@ -1350,6 +1527,8 @@ def evaluate_constraints(cfg: Config, records: Sequence[Dict]) -> Dict:
     check("min_side", all(min(r["width"], r["height"]) >= int(t["min_side"]) for r in records),
           min(min(r["width"], r["height"]) for r in records), f">= {t['min_side']}")
     check("replay_has_flag", all("is_replay" in r for r in records), True, "co truong is_replay")
+    additional = contract_problems(records, cfg.t)
+    check("data_contract", not additional, additional, "full Task 7.7 contract")
 
     all_pass = all(c["pass"] for c in checks.values())
     return {
@@ -1424,12 +1603,24 @@ def _constraints_md(report: Dict, cfg: Config) -> str:
 
 
 def stage_finalize(cfg: Config, plan: Dict, extra: Dict) -> Dict:
+    ensure_state_context(cfg)
+    references = read_json(cfg.state("references.json"), {})
+    if not references or any(not os.path.isfile(p) or sha256_file(p) != digest for p, digest in references.items()):
+        die("Reference indexes missing or changed since selection; rerun select/split/finalize.")
     records = read_jsonl(cfg.state("split.jsonl"))
     if not records:
         die("Khong co ban ghi nao trong split.jsonl")
     records.sort(key=lambda r: (r["split"], r["family"], str(r["label"]), r["generator"], r["sha256"]))
     counts = _counts(records)
     constraints = evaluate_constraints(cfg, records)
+    if not constraints["all_pass"]:
+        write_json(cfg.path_of("constraint_report"), {"constraints": constraints})
+        failed = [k for k, v in constraints["checks"].items() if not v["pass"]]
+        die(f"Refusing to publish invalid manifest: {failed}")
+    missing = [r["path"] for r in records if not os.path.isfile(abspath(r["path"]))
+               or sha256_file(abspath(r["path"])) != r["sha256"]]
+    if missing:
+        die(f"Selected image missing or corrupt before finalize: {missing[:5]}")
 
     body = json.dumps(records, sort_keys=True, ensure_ascii=False)
     records_sha = sha256_bytes(body.encode("utf-8"))
@@ -1468,21 +1659,16 @@ def stage_finalize(cfg: Config, plan: Dict, extra: Dict) -> Dict:
         "constraints_enforced": bool(extra.get("strict", True)),
         "generator_denylist": {
             "path": rel(denylist_path),
-            "sha256": sha256_bytes(open(denylist_path, "rb").read()) if os.path.exists(denylist_path) else None,
+            "sha256": sha256_file(denylist_path) if os.path.exists(denylist_path) else None,
             "n_generators": denylist.get("n_generators"),
             "match_semantics": denylist.get("match_semantics"),
         },
         "split_policy": {
-            "mode": "stratified_image_level",
-            "cells": "family x label x generator x is_replay",
+            "mode": "generator_when_feasible",
+            "cells": "family x label x is_replay x real_source",
             "ratios": cfg.t["split_ratios"],
-            "declaration": (
-                "Chia theo ANH trong tung o (family x label x generator) chu khong chia "
-                "nguyen generator sang mot split: moi ho chi co 1-6 generator instance, "
-                "neu tach nguyen generator thi val_* se thieu ho va mat can bang family "
-                "theo DoD. Tong quat hoa duoc do bang tap test ngoai (21 model CFE-Eval "
-                "va 18 tap Task 5.1), khong phai bang val noi bo. Xem bao cao muc 4.4."
-            ),
+            "declaration": "Group by generator when quota-feasible; image exceptions listed per stratum.",
+            "strata": read_json(cfg.state("split_policy.json"), []),
             "generator_coverage": {
                 sp: sorted({f"{r['family']}/{r['generator']}" for r in records if r["split"] == sp})
                 for sp in SPLITS
@@ -1495,6 +1681,7 @@ def stage_finalize(cfg: Config, plan: Dict, extra: Dict) -> Dict:
             "total": sum(1 for r in records if r["is_replay"]),
         },
         "records_sha256": records_sha,
+        "reference_fingerprints": references,
     }
 
     payload = {"metadata": metadata, "records": records}
@@ -1510,6 +1697,10 @@ def stage_finalize(cfg: Config, plan: Dict, extra: Dict) -> Dict:
         sp_out = os.path.join(manifest_dir, f"data_manifest_v2_{sp}.json")
         write_json(sp_out, {"metadata": sp_meta, "records": sp_records})
         log(f"FINALIZE: [{sp}] {len(sp_records)} ban ghi -> {rel(sp_out)}")
+    train_select = [r for r in records if r["split"] in ("train", "val_select")]
+    write_json(os.path.join(manifest_dir, "data_manifest_v2_train_select.json"), {
+        "metadata": {"parent_records_sha256": records_sha, "purpose": "training_and_checkpoint_selection"},
+        "records": train_select})
     write_json(cfg.path_of("constraint_report"), {"metadata": metadata, "constraints": constraints})
     with open(cfg.path_of("constraint_report_md"), "w", encoding="utf-8") as f:
         f.write(_constraints_md({"counts": counts, "constraints": constraints}, cfg))
@@ -1527,18 +1718,21 @@ def stage_finalize(cfg: Config, plan: Dict, extra: Dict) -> Dict:
 def load_refs(paths: Sequence[str], max_phash: int) -> Dict[str, Dict]:
     refs: Dict[str, Dict] = {}
     for p in paths or []:
-        data = read_json(p)
-        if not data:
-            log(f"[!] bo qua ref index khong doc duoc: {p}")
-            continue
+        data = load_hash_index(p)
+        if not data or not data.get("metadata", {}).get("complete"):
+            die(f"Reference index missing or incomplete: {p}")
         imgs = data.get("images", data.get("records", []))
         name = os.path.basename(p).replace(".json.gz", "").replace(".json", "")
         phash = [int(i["phash"]) for i in imgs if i.get("phash") is not None]
         if max_phash:  # 0 = dung tat ca
-            phash = phash[:max_phash]
+            die("Partial reference indexes are not permitted for data v2")
+        if not imgs or len(phash) != len(imgs) or any(not i.get("sha256") for i in imgs):
+            die(f"Reference hash coverage incomplete: {p}")
         refs[name] = {
             "sha256": [i["sha256"] for i in imgs if i.get("sha256")],
             "phash": phash,
+            "path": os.path.abspath(p), "fingerprint": sha256_file(p),
+            "images": imgs, "metadata": data.get("metadata", {}),
         }
         log(f"REF {name}: {len(refs[name]['sha256'])} sha, {len(refs[name]['phash'])} phash")
     return refs
@@ -1569,13 +1763,16 @@ def main() -> None:
     if not os.path.exists(denylist_path):
         die(f"Chua co deny-list: {denylist_path}. Chay tools/build_generator_denylist.py truoc.")
     matcher = DenyMatcher.from_payload(read_json(denylist_path))
+    cfg.p["denylist"] = denylist_path
     strict = bool(args.strict) or (not args.limit_per_family and args.stage in ("all", "finalize"))
+    check_replay_generators(cfg, matcher)
 
     if args.force:
-        for f in ("candidates.jsonl", "fetch_done.json", "replay.jsonl", "selected.jsonl", "split.jsonl"):
+        for f in ("context.json", "references.json", "split_policy.json", "candidates.jsonl", "fetch_done.json", "replay.jsonl", "selected.jsonl", "split.jsonl"):
             p = cfg.state(f)
             if os.path.exists(p):
                 os.remove(p)
+    ensure_state_context(cfg)
 
     stage = args.stage
     index_rows: List[Dict] = []
@@ -1584,7 +1781,7 @@ def main() -> None:
     plan_path = cfg.state("plan.json")
     plan = None if args.force else read_json(plan_path)
     if plan and stage in ("fetch", "replay", "select", "split", "finalize") and not args.dry_run:
-        if plan.get("config_sha256") != cfg.sha256 and not args.resume:
+        if plan.get("config_sha256") != cfg.sha256:
             die("plan.json duoc tao tu config khac. Them --force hoac chay lai --stage plan.")
     if plan is None or stage in ("all", "index", "plan") or args.dry_run:
         plan = build_plan(cfg, index_rows, matcher, args.limit_per_family or None,

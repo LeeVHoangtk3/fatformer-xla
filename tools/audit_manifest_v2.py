@@ -21,11 +21,11 @@ Dau ra (O2): DATASET/logs/phase7/data_isolation_report.json
     - `violations` = 0 la dieu kien bat buoc de mo Task 7.11.
 
 Vi du:
-    python tools/index_test_sets.py --dirs DATASET/test_communityforensics \\
+    python tools/index_test_sets.py --role cfe --dirs DATASET/test_communityforensics \\
         --manifest DATASET/test_communityforensics/cfe_manifest.json \\
         --out DATASET/logs/phase7/hashes_cfe_test.json
 
-    python tools/index_test_sets.py --tar <18 tar> --workers 8 \\
+    python tools/index_test_sets.py --role test18 --tar <18 tar> --workers 8 \\
         --out DATASET/logs/phase7/hashes_18sets.json.gz
 
     python tools/audit_manifest_v2.py \\
@@ -41,6 +41,7 @@ import argparse
 import json
 import os
 import sys
+import yaml
 from datetime import datetime, timezone
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
@@ -56,9 +57,12 @@ from hash_utils import (  # noqa: E402
     load_hash_index,
     min_hamming_to_set,
     sha256_file,
+    phash_from_file,
     to_uint64,
 )
 from build_generator_denylist import DenyMatcher  # noqa: E402
+from build_generator_denylist import EXPECTED_TASK51_TESTS
+from data_v2_contract import contract_problems, record_errors
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -96,12 +100,33 @@ class RefIndex:
         self.phash = to_uint64([i["phash"] for i in self.images if i.get("phash") is not None])
         self.generators: Dict[str, int] = {}
         for i in self.images:
+            if i.get("label") != 1:
+                continue
             gen = i.get("model_name") or i.get("generator") or infer_generator(str(i.get("path", "")))
             if not gen:
                 continue
             gen = str(gen).strip()
             self.generators[gen] = self.generators.get(gen, 0) + 1
         self.meta = payload.get("metadata", {})
+        self.test_sets = {str(i.get("test_set")) for i in self.images if i.get("test_set")}
+
+    def problems(self):
+        errors = []
+        if not self.images or not self.meta.get("complete"):
+            errors.append("empty_or_incomplete_index")
+        if self.meta.get("n_images") != len(self.images) or self.meta.get("n_skipped_unreadable", 0):
+            errors.append("index_coverage_mismatch")
+        for row in self.images:
+            try:
+                valid = (len(str(row.get("sha256", ""))) == 64
+                         and type(row.get("phash")) is int and 0 <= row["phash"] < 2**64
+                         and row.get("label") in (0, 1))
+            except (ValueError, TypeError):
+                valid = False
+            if not valid or (row.get("label") == 1 and not (row.get("model_name") or row.get("generator"))):
+                errors.append("missing_hash_label_or_generator")
+                break
+        return errors
 
     def __repr__(self) -> str:
         return (f"RefIndex({self.name}: {len(self.images):,} anh, "
@@ -222,6 +247,8 @@ def check_generators(records: List[Dict], refs: Sequence[RefIndex],
     matcher = DenyMatcher(sorted(test_gens))
     train_gens: Dict[str, int] = {}
     for r in records:
+        if r.get("label") != 1:
+            continue
         g = str(r.get("generator") or "")
         train_gens[g] = train_gens.get(g, 0) + 1
 
@@ -231,7 +258,8 @@ def check_generators(records: List[Dict], refs: Sequence[RefIndex],
         v = matcher.classify(g)
         item = {"generator": g, "n": n, "matched_test_generator": v.get("matched"),
                 "refs": test_gens.get(v.get("matched") or "", [])}
-        if v["status"] == "blocked":
+        deny_status = dmatcher.classify(g)["status"] if dmatcher else "allowed"
+        if v["status"] == "blocked" or deny_status != "allowed":
             blocked.append(item)
         elif v["status"] == "related":
             related.append(item)
@@ -251,7 +279,7 @@ def check_generators(records: List[Dict], refs: Sequence[RefIndex],
 
 
 def check_integrity(records: List[Dict], manifest_meta: Dict, verify_files: bool,
-                    phash_internal: int) -> Dict:
+                    phash_internal: int, targets=None) -> Dict:
     """Kiem tra cau truc + tai lap lai cac chi so DoD tu chinh manifest."""
     problems: List[Dict] = []
     missing = [r["path"] for r in records
@@ -263,7 +291,7 @@ def check_integrity(records: List[Dict], manifest_meta: Dict, verify_files: bool
     if len(set(shas)) != len(shas):
         problems.append({"check": "unique_sha256", "n": len(shas) - len(set(shas))})
 
-    bad_files, bad_sha = [], []
+    bad_files, bad_sha, bad_phash = [], [], []
     total_bytes = 0
     if verify_files:
         for r in records:
@@ -276,10 +304,20 @@ def check_integrity(records: List[Dict], manifest_meta: Dict, verify_files: bool
             total_bytes += os.path.getsize(p)
             if sha256_file(p) != r["sha256"]:
                 bad_sha.append(r["path"])
+            try:
+                if phash_from_file(p) != r["phash"]:
+                    bad_phash.append(r["path"])
+            except Exception:
+                bad_phash.append(r["path"])
         if bad_files:
             problems.append({"check": "file_missing", "n": len(bad_files), "examples": bad_files[:5]})
         if bad_sha:
             problems.append({"check": "sha256_mismatch", "n": len(bad_sha), "examples": bad_sha[:5]})
+        if bad_phash:
+            problems.append({"check": "phash_mismatch_or_decode_error", "n": len(bad_phash), "examples": bad_phash[:5]})
+    else:
+        problems.append({"check": "file_verification_skipped"})
+    problems.extend(contract_problems(records, targets))
 
     # Cac chi so DoD, tinh lai doc lap
     n = len(records)
@@ -331,6 +369,7 @@ def check_integrity(records: List[Dict], manifest_meta: Dict, verify_files: bool
 def main() -> None:
     ap = argparse.ArgumentParser(description="Audit isolation for data_manifest_v2.json")
     ap.add_argument("--manifest", default="DATASET/manifests/data_manifest_v2.json")
+    ap.add_argument("--config", default="configs/phase7_data_v2.yaml")
     ap.add_argument("--ref", action="append", default=[], metavar="NAME=PATH",
                     help="Hash index tap test, vd: cfe=DATASET/logs/phase7/hashes_cfe_test.json")
     ap.add_argument("--ref18", nargs="*", default=[],
@@ -346,12 +385,18 @@ def main() -> None:
     ap.add_argument("--out", default="DATASET/logs/phase7/data_isolation_report.json")
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args()
+    with open(args.config, encoding="utf-8") as f:
+        config = yaml.safe_load(f)
 
     manifest_path = args.manifest if os.path.isabs(args.manifest) else os.path.join(PROJECT_ROOT, args.manifest)
     if not os.path.exists(manifest_path):
         raise SystemExit(f"[LOI] khong thay manifest: {manifest_path}")
     t0 = datetime.now(timezone.utc).timestamp()
+    manifest_sha256 = sha256_file(manifest_path)
     meta, records = load_manifest(manifest_path)
+    malformed = [{"index": i, "errors": e} for i, r in enumerate(records) if (e := record_errors(r))]
+    if malformed:
+        raise SystemExit(f"Invalid manifest schema: {malformed[:5]}")
     print("=" * 100)
     print("FATFORMER-XLA - KIEM TOAN CO LAP KHO DU LIEU V2 (TASK 7.7)")
     print("=" * 100)
@@ -361,6 +406,7 @@ def main() -> None:
         print(f"- Split    : { {sp: sum(1 for r in records if r['split'] == sp) for sp in sorted({r['split'] for r in records})} }")
 
     refs: Dict[str, RefIndex] = {}
+    coverage_problems = []
     for spec in args.ref:
         if "=" not in spec:
             raise SystemExit(f"--ref phai co dang NAME=PATH, nhan duoc: {spec}")
@@ -368,23 +414,43 @@ def main() -> None:
         if not os.path.isabs(path):
             path = os.path.join(PROJECT_ROOT, path)
         if not os.path.exists(path):
-            print(f"[!] bo qua ref khong ton tai: {name} -> {path}")
+            coverage_problems.append({"check": "reference_missing", "name": name, "path": path})
             continue
+        if name in refs:
+            raise SystemExit(f"Duplicate reference name: {name}")
         refs[name] = RefIndex(name, path)
         print(f"- Ref      : {refs[name]}")
 
     for path in args.ref18:
         p = path if os.path.isabs(path) else os.path.join(PROJECT_ROOT, path)
         if not os.path.exists(p):
-            print(f"[!] bo qua ref18 khong ton tai: {p}")
+            coverage_problems.append({"check": "reference_missing", "path": p})
             continue
         name = os.path.basename(p).split(".")[0]
         refs[name] = RefIndex(name, p)
         print(f"- Ref18    : {refs[name]}")
 
     pair1 = [refs[n] for n in args.pair1_names if n in refs]
-    pair2 = [refs[n] for n in refs if n not in args.pair1_names and n not in
-             {x for x in args.pair1_names if x in refs}]
+    pair2 = [r for n, r in refs.items() if n in args.pair2_names or r.path in
+             [os.path.abspath(p) for p in args.ref18]]
+    audit_cfg = config.get("audit", {})
+    for name, group in (("cfe", pair1), ("test18", pair2)):
+        if not group:
+            coverage_problems.append({"check": "reference_group_missing", "group": name})
+        for ref in group:
+            coverage_problems.extend({"check": p, "reference": ref.name} for p in ref.problems())
+            if ref.meta.get("role") != name:
+                coverage_problems.append({"check": "reference_role_mismatch", "reference": ref.name})
+    expected_cfe = int(audit_cfg.get("cfe_images", 2000))
+    if sum(len(r.images) for r in pair1) != expected_cfe:
+        coverage_problems.append({"check": "cfe_image_count", "expected": expected_cfe})
+    expected_sets = set(audit_cfg.get("task51_tests", EXPECTED_TASK51_TESTS))
+    observed_sets = set().union(*(r.test_sets for r in pair2)) if pair2 else set()
+    if observed_sets != expected_sets:
+        coverage_problems.append({"check": "task51_set_coverage", "missing": sorted(expected_sets - observed_sets),
+                                  "unexpected": sorted(observed_sets - expected_sets)})
+    if args.threshold_external != 8 or args.threshold_internal not in (3, 8):
+        coverage_problems.append({"check": "invalid_threshold_policy"})
 
     report: Dict = {
         "metadata": {
@@ -392,11 +458,13 @@ def main() -> None:
             "task": "Task 7.7 - audit co lap kho du lieu v2",
             "tool": "tools/audit_manifest_v2.py",
             "manifest": manifest_path,
+            "manifest_sha256": manifest_sha256,
+            "config_sha256": sha256_file(args.config),
             "manifest_version": meta.get("version"),
             "n_records": len(records),
             "thresholds": {"external": args.threshold_external, "internal": args.threshold_internal},
             "hash_algorithms": {"sha256": "byte-exact", "phash": "DCT 8x8 64-bit (tools/hash_utils.py)"},
-            "references": {r.name: {"path": r.path, "n_images": len(r.images),
+            "references": {r.name: {"path": r.path, "sha256": sha256_file(r.path), "n_images": len(r.images),
                                     "n_generators": len(r.generators)} for r in refs.values()},
         },
         "pairs": {},
@@ -454,28 +522,39 @@ def main() -> None:
     if os.path.exists(dl_path):
         with open(dl_path, "r", encoding="utf-8") as f:
             denylist = json.load(f)
+    if not denylist or not denylist.get("generators"):
+        coverage_problems.append({"check": "denylist_missing_or_empty"})
     gen_check = check_generators(records, list(refs.values()), denylist)
     report["generator_check"] = gen_check
 
     # --- Toan ven ---
-    integrity = check_integrity(records, meta, not args.no_verify_files, args.threshold_internal)
+    integrity = check_integrity(records, meta, not args.no_verify_files, args.threshold_internal, config.get("targets"))
+    integrity["problems"].extend(coverage_problems)
+    if sha256_file(manifest_path) != manifest_sha256:
+        integrity["problems"].append({"check": "manifest_changed_during_audit"})
+    integrity["failures"] = len(integrity["problems"])
     report["integrity"] = integrity
 
     hash_violations = sum(p.get("violations", 0) for p in report["pairs"].values())
     gen_violations = int(gen_check.get("violations", 0))
-    report["violations"] = int(hash_violations + gen_violations)
+    # Task 7.11 historically checks only this field: include incomplete audit and
+    # contract/integrity failures as blockers, not just image matches.
+    report["violations"] = int(hash_violations + gen_violations + integrity["failures"])
     report["violations_breakdown"] = {
         "hash_pairs": int(hash_violations),
         "generator_instance": gen_violations,
         "integrity_problems": int(integrity["failures"]),
     }
     report["pass"] = bool(report["violations"] == 0 and integrity["failures"] == 0)
+    report["coverage"] = {"complete": not coverage_problems, "expected_sets": sorted(expected_sets),
+                          "observed_sets": sorted(observed_sets)}
     report["elapsed_s"] = round(datetime.now(timezone.utc).timestamp() - t0, 1)
 
     out = args.out if os.path.isabs(args.out) else os.path.join(PROJECT_ROOT, args.out)
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
-    with open(out, "w", encoding="utf-8") as f:
+    with open(out + ".tmp", "w", encoding="utf-8") as f:
         json.dump(report, f, indent=1, ensure_ascii=False)
+    os.replace(out + ".tmp", out)
 
     print()
     print("-" * 100)
@@ -497,6 +576,8 @@ def main() -> None:
           f"{'PASS (duoc phep mo Task 7.11)' if report['pass'] else 'FAIL (chan Task 7.11)'}")
     print(f"  -> {out}")
     print("=" * 100)
+    if not report["pass"]:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

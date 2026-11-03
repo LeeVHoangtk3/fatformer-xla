@@ -12,11 +12,11 @@ Dac diem:
     - Tu suy ra label tu duong dan (0_real/1_fake, real/fake) neu co.
 
 Vi du:
-    python tools/index_test_sets.py \
+    python tools/index_test_sets.py --role cfe \
         --tar /content/drive/MyDrive/Fatformer/datasets/test_communityforensics.tar \
         --out DATASET/logs/phase7/cfe_test_hashes.json
 
-    python tools/index_test_sets.py \
+    python tools/index_test_sets.py --role test18 \
         --tar /content/drive/MyDrive/Fatformer/datasets/test_benchmark_gans.tar \
               /content/drive/MyDrive/Fatformer/datasets/test_benchmark_diffusion.tar \
         --workers 8 \
@@ -45,6 +45,7 @@ for p in (PROJECT_ROOT, TOOLS_DIR):
         sys.path.insert(0, p)
 
 from hash_utils import phash_from_pil, sha256_bytes  # noqa: E402
+from build_generator_denylist import EXPECTED_TASK51_TESTS
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -52,6 +53,11 @@ if hasattr(sys.stdout, "reconfigure"):
 IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tif", ".tiff")
 REAL_DIRS = {"0_real", "real", "0", "authentic"}
 FAKE_DIRS = {"1_fake", "fake", "1", "synthetic", "generated"}
+
+
+def infer_test_set(path):
+    parts = path.split("::")[-1].replace("\\", "/").lower().split("/")
+    return next((p for p in parts if p in EXPECTED_TASK51_TESTS), None)
 
 
 def infer_label(path: str) -> Optional[int]:
@@ -83,6 +89,7 @@ def _hash_one(payload: Tuple[str, bytes]) -> Optional[Dict]:
         "height": int(height),
         "bytes": len(data),
         "label": infer_label(path),
+        "test_set": infer_test_set(path),
     }
 
 
@@ -103,8 +110,8 @@ def iter_dir_images(root: str) -> Iterator[Tuple[str, bytes]]:
                 try:
                     with open(full, "rb") as f:
                         yield full, f.read()
-                except OSError:
-                    continue
+                except OSError as exc:
+                    raise RuntimeError(f"Cannot read reference image: {full}") from exc
 
 
 def iter_tar_images(tar_path: str) -> Iterator[Tuple[str, bytes]]:
@@ -132,28 +139,41 @@ def _chunks(iterable: Iterable[Tuple[str, bytes]], size: int) -> Iterator[List[T
 
 def attach_manifest_metadata(records: List[Dict], manifest_path: str) -> None:
     """Gan model_name/architecture/real_source tu cfe_manifest.json (neu co)."""
-    if not manifest_path or not os.path.exists(manifest_path):
+    if not manifest_path:
         return
+    if not os.path.isfile(manifest_path):
+        raise ValueError(f"Reference manifest missing: {manifest_path}")
     with open(manifest_path, "r", encoding="utf-8") as f:
         data = json.load(f)
     entries = data.get("records", data.get("images", [])) if isinstance(data, dict) else data
-    by_name: Dict[str, Dict] = {}
+    by_name = {}
     by_rel: Dict[str, Dict] = {}
     for e in entries or []:
-        name = str(e.get("image_name") or e.get("file_name") or e.get("path") or "")
+        name = str(e.get("path") or e.get("file_path") or e.get("file_name") or e.get("image_name") or "")
         if not name:
             continue
-        by_name[os.path.basename(name)] = e
+        by_name.setdefault(os.path.basename(name), []).append(e)
         by_rel[name.replace("\\", "/")] = e
 
     for r in records:
         key = r["path"].split("::")[-1].replace("\\", "/")
-        e = by_rel.get(key) or by_name.get(os.path.basename(key))
+        matches = [e for rel, e in by_rel.items() if key == rel or key.endswith("/" + rel)]
+        if len(matches) > 1:
+            raise ValueError(f"Ambiguous reference manifest path: {key}")
+        e = matches[0] if matches else None
+        if e is None:
+            named = by_name.get(os.path.basename(key), [])
+            if len(named) == 1:
+                e = named[0]
+            elif len(named) > 1:
+                raise ValueError(f"Ambiguous reference filename: {key}")
         if not e:
-            continue
-        for field in ("model_name", "architecture", "real_source", "subset"):
+            raise ValueError(f"Image absent from reference manifest: {key}")
+        for field in ("model_name", "generator", "label", "architecture", "real_source", "subset"):
             if field in e and e[field] is not None:
                 r[field] = e[field]
+        if r.get("label") is not None:
+            r["label"] = int(r["label"])
 
 
 def main() -> None:
@@ -165,6 +185,7 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=min(8, os.cpu_count() or 1))
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--max-images", type=int, default=0, help="Gioi han de test nhanh")
+    parser.add_argument("--role", choices=("cfe", "test18"), required=True)
     args = parser.parse_args()
 
     if not args.dirs and not args.tar:
@@ -176,12 +197,12 @@ def main() -> None:
         if os.path.isdir(d):
             streams.append((d, iter_dir_images(d)))
         else:
-            print(f"[!] Bo qua thu muc khong ton tai: {d}")
+            parser.error(f"Reference directory missing: {d}")
     for t in args.tar:
         if os.path.isfile(t):
             streams.append((t, iter_tar_images(t)))
         else:
-            print(f"[!] Bo qua tar khong ton tai: {t}")
+            parser.error(f"Reference tar missing: {t}")
 
     records: List[Dict] = []
     skipped = 0
@@ -212,8 +233,19 @@ def main() -> None:
         attach_manifest_metadata(records, args.manifest)
 
     for r in records:
-        if r.get("label") is None:
-            r["label"] = 1  # test set CFE: mặc định coi là fake nếu không suy ra được
+        if r.get("label") not in (0, 1):
+            parser.error(f"Unknown reference label; supply --manifest: {r['path']}")
+        if r["label"] == 1 and not r.get("model_name"):
+            if r.get("test_set"):
+                r["model_name"] = r["test_set"]
+            elif not r.get("generator"):
+                parser.error(f"Unknown fake generator; supply --manifest: {r['path']}")
+    sets = sorted({r["test_set"] for r in records if r.get("test_set")})
+    complete = bool(records) and skipped == 0 and not args.max_images
+    if args.role == "test18":
+        complete = complete and set(sets) == set(EXPECTED_TASK51_TESTS)
+    if args.role == "cfe":
+        complete = complete and bool(args.manifest) and len(records) == 2000
 
     payload = {
         "metadata": {
@@ -223,6 +255,8 @@ def main() -> None:
             "sources": [os.path.abspath(s) for s, _ in streams],
             "phash_bits": 64,
             "tool": "tools/index_test_sets.py",
+            "complete": complete, "role": args.role,
+            "test_sets": sets,
         },
         "images": records,
     }
@@ -232,6 +266,8 @@ def main() -> None:
     save_hash_index(payload, args.out)
     elapsed = time.time() - t0
     print("=" * 84)
+    if not payload["metadata"]["complete"]:
+        raise SystemExit("Reference index incomplete; not eligible for production audit")
     print(f"XONG: {len(records):,} anh | bo qua {skipped:,} | {elapsed/60:.1f} phut")
     print(f"-> {args.out}")
     print("=" * 84)
