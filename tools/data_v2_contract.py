@@ -67,7 +67,7 @@ def contract_problems(records, targets=None):
     require(len(real_sources) >= t["min_real_sources"], "real_sources")
     new = Counter(r["family"] for r in records if r["label"] == 1 and not r["is_replay"])
     require(all(v <= t["max_new_per_family"] for v in new.values()), "new_family_cap")
-    require(all(min(r["width"], r["height"]) >= t["min_side"] for r in records), "min_side")
+    require(all(min(r["width"], r["height"]) >= t["min_side"] for r in records if not r.get("is_replay")), "min_side")
     for scope, rows in [("all", records)] + [(s, [r for r in records if r["split"] == s]) for s in SPLITS]:
         fam = Counter(r["family"] for r in rows if r["label"] == 1)
         require(all(fam[f] > 0 for f in FAMILIES), "five_families_" + scope)

@@ -667,8 +667,11 @@ class UnitTests(unittest.TestCase):
         Image.new("RGB", (256, 256), (10, 10, 10)).save(flat, format="PNG")
         self.assertIsNone(B._quality_check(flat.getvalue(), cfg)[0])
         small = io.BytesIO()
-        Image.new("RGB", (64, 64), (1, 2, 3)).save(small, format="PNG")
+        img_small = Image.new("RGB", (64, 64), (0, 0, 0))
+        img_small.putpixel((0, 0), (255, 255, 255))
+        img_small.save(small, format="PNG")
         self.assertEqual(B._quality_check(small.getvalue(), cfg)[1], "too_small")
+        self.assertIsNotNone(B._quality_check(small.getvalue(), cfg, is_replay=True)[0])
         self.assertIsNotNone(B._quality_check(make_png(1), cfg)[0])
 
 

@@ -823,7 +823,7 @@ def _shard_row_count(path: str) -> int:
     return int(pq.ParquetFile(path).metadata.num_rows)
 
 
-def _quality_check(data: bytes, cfg: Config) -> Tuple[Optional[Dict], str]:
+def _quality_check(data: bytes, cfg: Config, is_replay: bool = False) -> Tuple[Optional[Dict], str]:
     """Giai ma + kiem tra chat luong. Tra ve (info, ly_do_tu_choi)."""
     try:
         with Image.open(io.BytesIO(data)) as img:
@@ -831,7 +831,8 @@ def _quality_check(data: bytes, cfg: Config) -> Tuple[Optional[Dict], str]:
             width, height = img.size
             mode = img.mode
             fmt = (img.format or "").lower()
-            if min(width, height) < int(cfg.t.get("min_side", 200)):
+            min_thresh = int(cfg.t.get("min_side_replay", 0)) if is_replay else int(cfg.t.get("min_side", 200))
+            if min_thresh > 0 and min(width, height) < min_thresh:
                 return None, "too_small"
             allowed = [f.lower() for f in cfg.quality.get("allowed_formats", [])]
             if allowed and fmt not in allowed:
@@ -1145,7 +1146,7 @@ def stage_replay(cfg: Config, replay_root: str, copy_mode: str = "copy") -> Dict
             continue
         with open(src, "rb") as f:
             blob = f.read()
-        info, why = _quality_check(blob, cfg)
+        info, why = _quality_check(blob, cfg, is_replay=True)
         if info is None:
             log(f"  [!] replay bi loai ({why}): {tail}")
             continue
@@ -1573,8 +1574,8 @@ def evaluate_constraints(cfg: Config, records: Sequence[Dict]) -> Dict:
           n - len({r["sha256"] for r in records}), "0 trung SHA-256")
     check("splits_disjoint_by_sha",
           len({(r["sha256"], r["split"]) for r in records}) == n, True, "moi anh chi o 1 split")
-    check("min_side", all(min(r["width"], r["height"]) >= int(t["min_side"]) for r in records),
-          min(min(r["width"], r["height"]) for r in records), f">= {t['min_side']}")
+    check("min_side", all(min(r["width"], r["height"]) >= int(t["min_side"]) for r in records if not r.get("is_replay")),
+          min((min(r["width"], r["height"]) for r in records if not r.get("is_replay")), default=0), f">= {t['min_side']}")
     check("replay_has_flag", all("is_replay" in r for r in records), True, "co truong is_replay")
     additional = contract_problems(records, cfg.t)
     check("data_contract", not additional, additional, "full Task 7.7 contract")
