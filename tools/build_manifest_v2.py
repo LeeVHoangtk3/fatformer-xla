@@ -1365,6 +1365,7 @@ def stage_select(cfg: Config, plan: Dict, refs: Dict[str, Dict], strict: bool) -
     # ta giu nguyen tong cua ho va lay bu tu cac generator con du trong CUNG ho.
     # Viec phan bo lai duoc ghi vao `generator_reallocation` de bao cao minh bach.
     realloc: Dict[str, Dict[str, int]] = {}
+    total_missing = 0
     for fam, eids in families.items():
         if fam == "replay":
             continue
@@ -1387,12 +1388,28 @@ def stage_select(cfg: Config, plan: Dict, refs: Dict[str, Dict], strict: bool) -
         missing = fam_target - sum(len(chosen.get(e, [])) for e in eids)
         if missing:
             detail = ", ".join(f"{e}: co {len(pool.get(e, []))}/{targets[e]}" for e in eids)
-            msg = (f"Ho '{fam}' thieu {missing} anh sau khi khu trung lap ({detail}).")
-            if strict:
-                die(msg + " Tang `surplus` hoac bo sung generator trong config.")
-            log(f"[!] {msg} (che do khong strict)")
+            log(f"  [i] Ho '{fam}' thieu {missing} anh sau khi khu trung lap/loc test ({detail}).")
+            total_missing += missing
         elif realloc.get(fam):
             log(f"  [i] Ho '{fam}': phan bo lai trong ho {realloc[fam]} (tong ho khong doi)")
+
+    # Neu co ho bi thieu anh do loc test/trung lap, bu sang cac nguon Real con du de bao toan tong kho 14.400
+    if total_missing > 0:
+        real_eids = [e["id"] for e in plan["entries"] if e["family"] == "real"]
+        spare_real = {e: len(pool.get(e, [])) - len(chosen.get(e, [])) for e in real_eids
+                      if len(pool.get(e, [])) > len(chosen.get(e, []))}
+        add_real = largest_remainder(total_missing, spare_real)
+        for e, k in add_real.items():
+            if k <= 0:
+                continue
+            cur = len(chosen.get(e, []))
+            chosen[e] = pool.get(e, [])[:cur + k]
+            realloc.setdefault("real_compensate", {})[e] = realloc.get("real_compensate", {}).get(e, 0) + k
+        cur_tot = sum(len(v) for v in chosen.values())
+        want_tot = int(cfg.t.get("total", 14400))
+        log(f"  [i] Da bu {total_missing} anh sang cac nguon Real {add_real} (tong kho={cur_tot}/{want_tot})")
+        if cur_tot < want_tot and strict:
+            die(f"Khong the bu du tong kho {want_tot}: hien chi co {cur_tot} anh.")
 
     final: List[Dict] = []
     for eid in sorted(chosen):
