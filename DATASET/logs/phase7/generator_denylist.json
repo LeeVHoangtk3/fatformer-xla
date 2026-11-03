@@ -1,0 +1,1923 @@
+{
+  "source": [
+    null,
+    "cfe_eval_metadata",
+    "task_5.1_18_datasets"
+  ],
+  "created_at": "2026-11-02T20:06:19.573826+00:00",
+  "n_generators": 39,
+  "n_raw_names": 39,
+  "generators": [
+    "MidjourneyV6_1",
+    "MidjourneyV5_1",
+    "Firefly_Image3",
+    "Firefly_Image2",
+    "Imagen3",
+    "FLUX-schnell",
+    "FLUX-dev",
+    "IdeogramV1",
+    "IdeogramV2",
+    "Dalle3",
+    "Dalle2",
+    "DeciDiffusion_V2",
+    "LCM_lora_ssd1b",
+    "LCM_lora_sdv15",
+    "LCM_lora_sdxl",
+    "Kvikontent_midjourney_v6",
+    "GALIP",
+    "kandinsky_2_2",
+    "stable_cascade",
+    "DFGAN",
+    "Hourglass",
+    "progan",
+    "stargan",
+    "stylegan",
+    "stylegan2",
+    "deepfake",
+    "biggan",
+    "cyclegan",
+    "gaugan",
+    "vqdiffusion",
+    "ldm_200_cfg",
+    "ldm_200",
+    "ldm_100",
+    "glide_100_10",
+    "glide_50_27",
+    "glide_100_27",
+    "guided",
+    "pndm",
+    "dalle"
+  ],
+  "entries": [
+    {
+      "raw": "MidjourneyV6_1",
+      "normalized": "midjourney v 6 1",
+      "base": [
+        "midjourney"
+      ],
+      "version": [
+        "v",
+        "6",
+        "1"
+      ],
+      "forms": [
+        [
+          "midjourneyv",
+          "6",
+          "1"
+        ],
+        [
+          "midjourney",
+          "v",
+          "6",
+          "1"
+        ]
+      ],
+      "match_forms": [
+        [
+          "midjourneyv",
+          "6",
+          "1"
+        ],
+        [
+          "midjourney",
+          "v",
+          "6",
+          "1"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "midjourneyv"
+          ],
+          [
+            "6",
+            "1"
+          ]
+        ],
+        [
+          [
+            "midjourney"
+          ],
+          [
+            "v",
+            "6",
+            "1"
+          ]
+        ]
+      ],
+      "architectures": [
+        "Commercial"
+      ]
+    },
+    {
+      "raw": "MidjourneyV5_1",
+      "normalized": "midjourney v 5 1",
+      "base": [
+        "midjourney"
+      ],
+      "version": [
+        "v",
+        "5",
+        "1"
+      ],
+      "forms": [
+        [
+          "midjourneyv",
+          "5",
+          "1"
+        ],
+        [
+          "midjourney",
+          "v",
+          "5",
+          "1"
+        ]
+      ],
+      "match_forms": [
+        [
+          "midjourneyv",
+          "5",
+          "1"
+        ],
+        [
+          "midjourney",
+          "v",
+          "5",
+          "1"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "midjourneyv"
+          ],
+          [
+            "5",
+            "1"
+          ]
+        ],
+        [
+          [
+            "midjourney"
+          ],
+          [
+            "v",
+            "5",
+            "1"
+          ]
+        ]
+      ],
+      "architectures": [
+        "Commercial"
+      ]
+    },
+    {
+      "raw": "Firefly_Image3",
+      "normalized": "firefly image 3",
+      "base": [
+        "firefly",
+        "image"
+      ],
+      "version": [
+        "3"
+      ],
+      "forms": [
+        [
+          "firefly",
+          "image",
+          "3"
+        ]
+      ],
+      "match_forms": [
+        [
+          "firefly",
+          "image",
+          "3"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "firefly",
+            "image"
+          ],
+          [
+            "3"
+          ]
+        ]
+      ],
+      "architectures": [
+        "Commercial"
+      ]
+    },
+    {
+      "raw": "Firefly_Image2",
+      "normalized": "firefly image 2",
+      "base": [
+        "firefly",
+        "image"
+      ],
+      "version": [
+        "2"
+      ],
+      "forms": [
+        [
+          "firefly",
+          "image",
+          "2"
+        ]
+      ],
+      "match_forms": [
+        [
+          "firefly",
+          "image",
+          "2"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "firefly",
+            "image"
+          ],
+          [
+            "2"
+          ]
+        ]
+      ],
+      "architectures": [
+        "Commercial"
+      ]
+    },
+    {
+      "raw": "Imagen3",
+      "normalized": "imagen 3",
+      "base": [
+        "imagen"
+      ],
+      "version": [
+        "3"
+      ],
+      "forms": [
+        [
+          "imagen",
+          "3"
+        ]
+      ],
+      "match_forms": [
+        [
+          "imagen",
+          "3"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "imagen"
+          ],
+          [
+            "3"
+          ]
+        ]
+      ],
+      "architectures": [
+        "Commercial"
+      ]
+    },
+    {
+      "raw": "FLUX-schnell",
+      "normalized": "flux schnell",
+      "base": [
+        "flux",
+        "schnell"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "flux",
+          "schnell"
+        ]
+      ],
+      "match_forms": [
+        [
+          "flux",
+          "schnell"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "flux",
+            "schnell"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "Commercial"
+      ]
+    },
+    {
+      "raw": "FLUX-dev",
+      "normalized": "flux dev",
+      "base": [
+        "flux",
+        "dev"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "flux",
+          "dev"
+        ]
+      ],
+      "match_forms": [
+        [
+          "flux",
+          "dev"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "flux",
+            "dev"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "Commercial"
+      ]
+    },
+    {
+      "raw": "IdeogramV1",
+      "normalized": "ideogram v 1",
+      "base": [
+        "ideogram"
+      ],
+      "version": [
+        "v",
+        "1"
+      ],
+      "forms": [
+        [
+          "ideogramv",
+          "1"
+        ],
+        [
+          "ideogram",
+          "v",
+          "1"
+        ]
+      ],
+      "match_forms": [
+        [
+          "ideogramv",
+          "1"
+        ],
+        [
+          "ideogram",
+          "v",
+          "1"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "ideogramv"
+          ],
+          [
+            "1"
+          ]
+        ],
+        [
+          [
+            "ideogram"
+          ],
+          [
+            "v",
+            "1"
+          ]
+        ]
+      ],
+      "architectures": [
+        "Commercial"
+      ]
+    },
+    {
+      "raw": "IdeogramV2",
+      "normalized": "ideogram v 2",
+      "base": [
+        "ideogram"
+      ],
+      "version": [
+        "v",
+        "2"
+      ],
+      "forms": [
+        [
+          "ideogramv",
+          "2"
+        ],
+        [
+          "ideogram",
+          "v",
+          "2"
+        ]
+      ],
+      "match_forms": [
+        [
+          "ideogramv",
+          "2"
+        ],
+        [
+          "ideogram",
+          "v",
+          "2"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "ideogramv"
+          ],
+          [
+            "2"
+          ]
+        ],
+        [
+          [
+            "ideogram"
+          ],
+          [
+            "v",
+            "2"
+          ]
+        ]
+      ],
+      "architectures": [
+        "Commercial"
+      ]
+    },
+    {
+      "raw": "Dalle3",
+      "normalized": "dall e 3",
+      "base": [
+        "dall",
+        "e"
+      ],
+      "version": [
+        "3"
+      ],
+      "forms": [
+        [
+          "dalle",
+          "3"
+        ],
+        [
+          "dall",
+          "e",
+          "3"
+        ],
+        [
+          "dall-e",
+          "3"
+        ]
+      ],
+      "match_forms": [
+        [
+          "dalle",
+          "3"
+        ],
+        [
+          "dall",
+          "e",
+          "3"
+        ],
+        [
+          "dall-e",
+          "3"
+        ],
+        [
+          "dall",
+          "e",
+          "3"
+        ],
+        [
+          "dall-e",
+          "3"
+        ],
+        [
+          "dalle",
+          "3"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "dalle"
+          ],
+          [
+            "3"
+          ]
+        ],
+        [
+          [
+            "dall",
+            "e"
+          ],
+          [
+            "3"
+          ]
+        ],
+        [
+          [
+            "dall-e"
+          ],
+          [
+            "3"
+          ]
+        ]
+      ],
+      "architectures": [
+        "Commercial"
+      ]
+    },
+    {
+      "raw": "Dalle2",
+      "normalized": "dall e 2",
+      "base": [
+        "dall",
+        "e"
+      ],
+      "version": [
+        "2"
+      ],
+      "forms": [
+        [
+          "dalle",
+          "2"
+        ],
+        [
+          "dall",
+          "e",
+          "2"
+        ],
+        [
+          "dall-e",
+          "2"
+        ]
+      ],
+      "match_forms": [
+        [
+          "dalle",
+          "2"
+        ],
+        [
+          "dall",
+          "e",
+          "2"
+        ],
+        [
+          "dall-e",
+          "2"
+        ],
+        [
+          "dall",
+          "e",
+          "2"
+        ],
+        [
+          "dall-e",
+          "2"
+        ],
+        [
+          "dalle",
+          "2"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "dalle"
+          ],
+          [
+            "2"
+          ]
+        ],
+        [
+          [
+            "dall",
+            "e"
+          ],
+          [
+            "2"
+          ]
+        ],
+        [
+          [
+            "dall-e"
+          ],
+          [
+            "2"
+          ]
+        ]
+      ],
+      "architectures": [
+        "Commercial"
+      ]
+    },
+    {
+      "raw": "DeciDiffusion_V2",
+      "normalized": "deci diffusion v 2",
+      "base": [
+        "deci",
+        "diffusion"
+      ],
+      "version": [
+        "v",
+        "2"
+      ],
+      "forms": [
+        [
+          "decidiffusion",
+          "v",
+          "2"
+        ],
+        [
+          "deci",
+          "diffusion",
+          "v",
+          "2"
+        ]
+      ],
+      "match_forms": [
+        [
+          "decidiffusion",
+          "v",
+          "2"
+        ],
+        [
+          "deci",
+          "diffusion",
+          "v",
+          "2"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "decidiffusion"
+          ],
+          [
+            "v",
+            "2"
+          ]
+        ],
+        [
+          [
+            "deci",
+            "diffusion"
+          ],
+          [
+            "v",
+            "2"
+          ]
+        ]
+      ],
+      "architectures": [
+        "LatentDiffusion"
+      ]
+    },
+    {
+      "raw": "LCM_lora_ssd1b",
+      "normalized": "lcm lora ssd 1 b",
+      "base": [
+        "lcm",
+        "lora",
+        "ssd",
+        "b"
+      ],
+      "version": [
+        "1"
+      ],
+      "forms": [
+        [
+          "lcm",
+          "lora",
+          "ssd",
+          "1",
+          "b"
+        ]
+      ],
+      "match_forms": [
+        [
+          "lcm",
+          "lora",
+          "ssd",
+          "1",
+          "b"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "lcm",
+            "lora",
+            "ssd",
+            "b"
+          ],
+          [
+            "1"
+          ]
+        ]
+      ],
+      "architectures": [
+        "LatentDiffusion"
+      ]
+    },
+    {
+      "raw": "LCM_lora_sdv15",
+      "normalized": "lcm lora sdv 15",
+      "base": [
+        "lcm",
+        "lora",
+        "sdv"
+      ],
+      "version": [
+        "15"
+      ],
+      "forms": [
+        [
+          "lcm",
+          "lora",
+          "sdv",
+          "15"
+        ]
+      ],
+      "match_forms": [
+        [
+          "lcm",
+          "lora",
+          "sdv",
+          "15"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "lcm",
+            "lora",
+            "sdv"
+          ],
+          [
+            "15"
+          ]
+        ]
+      ],
+      "architectures": [
+        "LatentDiffusion"
+      ]
+    },
+    {
+      "raw": "LCM_lora_sdxl",
+      "normalized": "lcm lora sdxl",
+      "base": [
+        "lcm",
+        "lora",
+        "sdxl"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "lcm",
+          "lora",
+          "sdxl"
+        ]
+      ],
+      "match_forms": [
+        [
+          "lcm",
+          "lora",
+          "sdxl"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "lcm",
+            "lora",
+            "sdxl"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "LatentDiffusion"
+      ]
+    },
+    {
+      "raw": "Kvikontent_midjourney_v6",
+      "normalized": "kvikontent midjourney v 6",
+      "base": [
+        "kvikontent",
+        "midjourney"
+      ],
+      "version": [
+        "v",
+        "6"
+      ],
+      "forms": [
+        [
+          "kvikontent",
+          "midjourney",
+          "v",
+          "6"
+        ]
+      ],
+      "match_forms": [
+        [
+          "kvikontent",
+          "midjourney",
+          "v",
+          "6"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "kvikontent",
+            "midjourney"
+          ],
+          [
+            "v",
+            "6"
+          ]
+        ]
+      ],
+      "architectures": [
+        "LatentDiffusion"
+      ]
+    },
+    {
+      "raw": "GALIP",
+      "normalized": "galip",
+      "base": [
+        "galip"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "galip"
+        ]
+      ],
+      "match_forms": [
+        [
+          "galip"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "galip"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "GAN"
+      ]
+    },
+    {
+      "raw": "kandinsky_2_2",
+      "normalized": "kandinsky 2 2",
+      "base": [
+        "kandinsky"
+      ],
+      "version": [
+        "2",
+        "2"
+      ],
+      "forms": [
+        [
+          "kandinsky",
+          "2",
+          "2"
+        ]
+      ],
+      "match_forms": [
+        [
+          "kandinsky",
+          "2",
+          "2"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "kandinsky"
+          ],
+          [
+            "2",
+            "2"
+          ]
+        ]
+      ],
+      "architectures": [
+        "LatentDiffusion"
+      ]
+    },
+    {
+      "raw": "stable_cascade",
+      "normalized": "stable cascade",
+      "base": [
+        "stable",
+        "cascade"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "stable",
+          "cascade"
+        ]
+      ],
+      "match_forms": [
+        [
+          "stable",
+          "cascade"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "stable",
+            "cascade"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "Other"
+      ]
+    },
+    {
+      "raw": "DFGAN",
+      "normalized": "dfgan",
+      "base": [
+        "dfgan"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "dfgan"
+        ]
+      ],
+      "match_forms": [
+        [
+          "dfgan"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "dfgan"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "GAN"
+      ]
+    },
+    {
+      "raw": "Hourglass",
+      "normalized": "hourglass",
+      "base": [
+        "hourglass"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "hourglass"
+        ]
+      ],
+      "match_forms": [
+        [
+          "hourglass"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "hourglass"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "PixelDiffusion"
+      ]
+    },
+    {
+      "raw": "progan",
+      "normalized": "progan",
+      "base": [
+        "progan"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "progan"
+        ]
+      ],
+      "match_forms": [
+        [
+          "progan"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "progan"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "stargan",
+      "normalized": "stargan",
+      "base": [
+        "stargan"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "stargan"
+        ]
+      ],
+      "match_forms": [
+        [
+          "stargan"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "stargan"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "stylegan",
+      "normalized": "stylegan",
+      "base": [
+        "stylegan"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "stylegan"
+        ]
+      ],
+      "match_forms": [
+        [
+          "stylegan"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "stylegan"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "stylegan2",
+      "normalized": "stylegan 2",
+      "base": [
+        "stylegan"
+      ],
+      "version": [
+        "2"
+      ],
+      "forms": [
+        [
+          "stylegan",
+          "2"
+        ]
+      ],
+      "match_forms": [
+        [
+          "stylegan",
+          "2"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "stylegan"
+          ],
+          [
+            "2"
+          ]
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "deepfake",
+      "normalized": "deep fake",
+      "base": [
+        "fake"
+      ],
+      "version": [
+        "deep"
+      ],
+      "forms": [
+        [
+          "deepfake"
+        ],
+        [
+          "deep",
+          "fake"
+        ],
+        [
+          "faceforensics"
+        ],
+        [
+          "face",
+          "forensics"
+        ]
+      ],
+      "match_forms": [
+        [
+          "deepfake"
+        ],
+        [
+          "deep",
+          "fake"
+        ],
+        [
+          "faceforensics"
+        ],
+        [
+          "face",
+          "forensics"
+        ],
+        [
+          "deep",
+          "fake"
+        ],
+        [
+          "faceforensics"
+        ],
+        [
+          "face",
+          "forensics"
+        ],
+        [
+          "deepfake"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "deepfake"
+          ],
+          []
+        ],
+        [
+          [
+            "fake"
+          ],
+          [
+            "deep"
+          ]
+        ],
+        [
+          [
+            "faceforensics"
+          ],
+          []
+        ],
+        [
+          [
+            "face",
+            "forensics"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "biggan",
+      "normalized": "biggan",
+      "base": [
+        "biggan"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "biggan"
+        ]
+      ],
+      "match_forms": [
+        [
+          "biggan"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "biggan"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "cyclegan",
+      "normalized": "cyclegan",
+      "base": [
+        "cyclegan"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "cyclegan"
+        ]
+      ],
+      "match_forms": [
+        [
+          "cyclegan"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "cyclegan"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "gaugan",
+      "normalized": "gau gan",
+      "base": [
+        "gau",
+        "gan"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "gaugan"
+        ],
+        [
+          "gau",
+          "gan"
+        ]
+      ],
+      "match_forms": [
+        [
+          "gaugan"
+        ],
+        [
+          "gau",
+          "gan"
+        ],
+        [
+          "gau",
+          "gan"
+        ],
+        [
+          "gaugan"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "gaugan"
+          ],
+          []
+        ],
+        [
+          [
+            "gau",
+            "gan"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "vqdiffusion",
+      "normalized": "vq diffusion",
+      "base": [
+        "vq",
+        "diffusion"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "vqdiffusion"
+        ],
+        [
+          "vq",
+          "diffusion"
+        ],
+        [
+          "vq-diffusion"
+        ]
+      ],
+      "match_forms": [
+        [
+          "vqdiffusion"
+        ],
+        [
+          "vq",
+          "diffusion"
+        ],
+        [
+          "vq-diffusion"
+        ],
+        [
+          "vq",
+          "diffusion"
+        ],
+        [
+          "vq-diffusion"
+        ],
+        [
+          "vqdiffusion"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "vqdiffusion"
+          ],
+          []
+        ],
+        [
+          [
+            "vq",
+            "diffusion"
+          ],
+          []
+        ],
+        [
+          [
+            "vq-diffusion"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "ldm_200_cfg",
+      "normalized": "ldm 200 cfg",
+      "base": [
+        "ldm"
+      ],
+      "version": [
+        "200",
+        "cfg"
+      ],
+      "forms": [
+        [
+          "ldm",
+          "200",
+          "cfg"
+        ]
+      ],
+      "match_forms": [
+        [
+          "ldm",
+          "200",
+          "cfg"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "ldm"
+          ],
+          [
+            "200",
+            "cfg"
+          ]
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "ldm_200",
+      "normalized": "ldm 200",
+      "base": [
+        "ldm"
+      ],
+      "version": [
+        "200"
+      ],
+      "forms": [
+        [
+          "ldm",
+          "200"
+        ]
+      ],
+      "match_forms": [
+        [
+          "ldm",
+          "200"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "ldm"
+          ],
+          [
+            "200"
+          ]
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "ldm_100",
+      "normalized": "ldm 100",
+      "base": [
+        "ldm"
+      ],
+      "version": [
+        "100"
+      ],
+      "forms": [
+        [
+          "ldm",
+          "100"
+        ]
+      ],
+      "match_forms": [
+        [
+          "ldm",
+          "100"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "ldm"
+          ],
+          [
+            "100"
+          ]
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "glide_100_10",
+      "normalized": "glide 100 10",
+      "base": [
+        "glide"
+      ],
+      "version": [
+        "100",
+        "10"
+      ],
+      "forms": [
+        [
+          "glide",
+          "100",
+          "10"
+        ]
+      ],
+      "match_forms": [
+        [
+          "glide",
+          "100",
+          "10"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "glide"
+          ],
+          [
+            "100",
+            "10"
+          ]
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "glide_50_27",
+      "normalized": "glide 50 27",
+      "base": [
+        "glide"
+      ],
+      "version": [
+        "50",
+        "27"
+      ],
+      "forms": [
+        [
+          "glide",
+          "50",
+          "27"
+        ]
+      ],
+      "match_forms": [
+        [
+          "glide",
+          "50",
+          "27"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "glide"
+          ],
+          [
+            "50",
+            "27"
+          ]
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "glide_100_27",
+      "normalized": "glide 100 27",
+      "base": [
+        "glide"
+      ],
+      "version": [
+        "100",
+        "27"
+      ],
+      "forms": [
+        [
+          "glide",
+          "100",
+          "27"
+        ]
+      ],
+      "match_forms": [
+        [
+          "glide",
+          "100",
+          "27"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "glide"
+          ],
+          [
+            "100",
+            "27"
+          ]
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "guided",
+      "normalized": "guided",
+      "base": [
+        "guided"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "guided"
+        ]
+      ],
+      "match_forms": [
+        [
+          "guided"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "guided"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "pndm",
+      "normalized": "pseudo numerical methods",
+      "base": [
+        "pseudo",
+        "numerical",
+        "methods"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "pndm"
+        ],
+        [
+          "pseudo",
+          "numerical",
+          "methods"
+        ],
+        [
+          "pseudo",
+          "numerical"
+        ]
+      ],
+      "match_forms": [
+        [
+          "pndm"
+        ],
+        [
+          "pseudo",
+          "numerical",
+          "methods"
+        ],
+        [
+          "pseudo",
+          "numerical"
+        ],
+        [
+          "pseudo",
+          "numerical",
+          "methods"
+        ],
+        [
+          "pseudo",
+          "numerical"
+        ],
+        [
+          "pndm"
+        ],
+        [
+          "pndm",
+          "methods"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "pndm"
+          ],
+          []
+        ],
+        [
+          [
+            "pseudo",
+            "numerical",
+            "methods"
+          ],
+          []
+        ],
+        [
+          [
+            "pseudo",
+            "numerical"
+          ],
+          []
+        ],
+        [
+          [
+            "pndm",
+            "methods"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    },
+    {
+      "raw": "dalle",
+      "normalized": "dall e",
+      "base": [
+        "dall",
+        "e"
+      ],
+      "version": [],
+      "forms": [
+        [
+          "dalle"
+        ],
+        [
+          "dall",
+          "e"
+        ],
+        [
+          "dall-e"
+        ]
+      ],
+      "match_forms": [
+        [
+          "dalle"
+        ],
+        [
+          "dall",
+          "e"
+        ],
+        [
+          "dall-e"
+        ],
+        [
+          "dall",
+          "e"
+        ],
+        [
+          "dall-e"
+        ],
+        [
+          "dalle"
+        ]
+      ],
+      "base_version_pairs": [
+        [
+          [
+            "dalle"
+          ],
+          []
+        ],
+        [
+          [
+            "dall",
+            "e"
+          ],
+          []
+        ],
+        [
+          [
+            "dall-e"
+          ],
+          []
+        ]
+      ],
+      "architectures": [
+        "unknown"
+      ]
+    }
+  ],
+  "normalization_rules": [
+    "lowercase",
+    "strip_author_prefix",
+    "strip_weight_extension",
+    "alpha_digit_boundary_split",
+    "camel_case_split_variant",
+    "keep_version_tokens",
+    "alias_table",
+    "base_version_instance_match"
+  ],
+  "match_semantics": {
+    "blocked": "cung base + cung version, hoac thieu version (khong chung minh duoc khac instance)",
+    "related": "cung base nhung version khac nhau da xac dinh",
+    "allowed": "khac base hoac khong lien quan"
+  },
+  "details": {
+    "cfe_manifest": null,
+    "cfe_records": 0,
+    "cfe_models": [],
+    "cfe_models_by_architecture": {},
+    "eval_metadata": "C:\\Users\\admin\\AppData\\Local\\Temp\\opencode\\eval_set_metadata.csv",
+    "eval_models": [
+      "DFGAN",
+      "Dalle2",
+      "Dalle3",
+      "DeciDiffusion_V2",
+      "FLUX-dev",
+      "FLUX-schnell",
+      "Firefly_Image2",
+      "Firefly_Image3",
+      "GALIP",
+      "Hourglass",
+      "IdeogramV1",
+      "IdeogramV2",
+      "Imagen3",
+      "Kvikontent_midjourney_v6",
+      "LCM_lora_sdv15",
+      "LCM_lora_sdxl",
+      "LCM_lora_ssd1b",
+      "MidjourneyV5_1",
+      "MidjourneyV6_1",
+      "kandinsky_2_2",
+      "stable_cascade"
+    ],
+    "eval_models_by_architecture": {
+      "Commercial": [
+        "Dalle2",
+        "Dalle3",
+        "FLUX-dev",
+        "FLUX-schnell",
+        "Firefly_Image2",
+        "Firefly_Image3",
+        "IdeogramV1",
+        "IdeogramV2",
+        "Imagen3",
+        "MidjourneyV5_1",
+        "MidjourneyV6_1"
+      ],
+      "LatentDiffusion": [
+        "DeciDiffusion_V2",
+        "Kvikontent_midjourney_v6",
+        "LCM_lora_sdv15",
+        "LCM_lora_sdxl",
+        "LCM_lora_ssd1b",
+        "kandinsky_2_2"
+      ],
+      "GAN": [
+        "DFGAN",
+        "GALIP"
+      ],
+      "Other": [
+        "stable_cascade"
+      ],
+      "PixelDiffusion": [
+        "Hourglass"
+      ]
+    },
+    "task51_report": "D:\\GIT REPO\\.nam4\\fatformer-xla\\docs\\bao_cao\\C\\bao_cao_task_5.1_full_benchmark_18_datasets.md",
+    "task51_names": [
+      "progan",
+      "stargan",
+      "stylegan",
+      "stylegan2",
+      "deepfake",
+      "biggan",
+      "cyclegan",
+      "gaugan",
+      "vqdiffusion",
+      "ldm_200_cfg",
+      "ldm_200",
+      "ldm_100",
+      "glide_100_10",
+      "glide_50_27",
+      "glide_100_27",
+      "guided",
+      "pndm",
+      "dalle"
+    ],
+    "task51_parsed_from_report": true,
+    "extra": [],
+    "self_block_failures": []
+  }
+}

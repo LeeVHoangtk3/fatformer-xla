@@ -1,0 +1,282 @@
+# ---------------------------------------------------------------------------
+# FatFormer-XLA - Task 7.7: Kho du lieu da bo sinh v2
+# ---------------------------------------------------------------------------
+# File nay la *hop dong du lieu* cua Phase 7. Moi con so o day deu duoc
+# tools/build_manifest_v2.py kiem tra lai va ghi vao constraint report.
+#
+# Vi sao total = 15.000 (khong phai 14.700 hay 16.000):
+#   - 15.000 chia het cho ca 3 split: 12.750 / 1.125 / 1.125 = 85 / 7.5 / 7.5
+#     (khong co phan du => khong phai lam tron, khong lech ty le).
+#   - replay 3.600 / 15.000 = 24.0% nam *ben trong* khoang 20-25% (khong sat
+#     bien nhu 14.400 se cho dung 25.0%).
+#   - Real = 7.900 / 15.000 = 52.67% nam giua 45-55%.
+#   - Chenh lech ho = 1.750 / 1.200 = 1.458x <= 1.5x.
+#
+# Vi sao ho "commercial" va "latent_diffusion" = 1.750 (khong phai 1.200):
+#   Gioi han "<= 1.200 anh/ho" ap cho phan *stream moi* tu CFE (cot `new`).
+#   Replay duoc phan bo vao ho theo dung generator goc (SD1.5 -> latent,
+#   Midjourney v5 -> commercial) nen tong cua ho = new + replay. Neu chi nhin
+#   phan `new` thi chenh lech se la 1.200/550 = 2.18x (vi pham), vi vay phep
+#   kiem dinh chenh lech dung *tong ho* (new + replay) - xem
+#   `constraints.family_imbalance_scope` trong manifest.
+# ---------------------------------------------------------------------------
+
+version: 2
+seed: 42
+
+# `related` = cung ho generator nhung KHAC phien ban da xac dinh (vi du
+# StyleGAN-XL vs StyleGAN2 trong tap test). Mac dinh KHONG dung; chi bat khi
+# da khai bao ro trong bao cao. `blocked` (trung instance) thi luon bi chan.
+allow_related_generators: false
+
+paths:
+  raw_root: DATASET/raw_v2
+  manifest: DATASET/manifests/data_manifest_v2.json
+  state_dir: DATASET/logs/phase7/build_state
+  denylist: DATASET/logs/phase7/generator_denylist.json
+  constraint_report: DATASET/logs/phase7/data_v2_constraints.json
+  constraint_report_md: DATASET/logs/phase7/data_v2_constraints.md
+  distribution_png: DATASET/logs/phase7/data_v2_distribution.png
+  source_log: DATASET/logs/phase7/data_v2_sources.json
+
+targets:
+  total: 15000
+  split_ratios:
+    train: 0.85
+    val_calib: 0.075
+    val_select: 0.075
+  min_total: 12000
+  max_total: 16000
+  max_family_imbalance: 1.5
+  real_frac: [0.45, 0.55]
+  replay_total: 3600
+  replay_frac: [0.20, 0.25]
+  max_new_per_family: 1200
+  min_side: 200
+  min_images_total_after_denylist: 12000
+  phash_internal: 3
+  phash_external: 8
+  byte_budget_gb: 60
+  wall_clock_budget_h: 4.0
+  surplus: 1.15
+
+datasets:
+  cfe_small:
+    kind: cfe
+    family_of_architecture:
+      Commercial: commercial
+      LatDiff: latent_diffusion
+      PixDiff: pixel_diffusion
+      GAN: modern_gans
+      Other: autoregressive
+    url_template: >-
+      https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_{}.parquet
+    n_shards: 186
+    license: CC-BY-NC-SA-4.0
+    citation: "Community Forensics, CVPR 2025 (OwensLab/CommunityForensics-Small)"
+  cfe_base_manual:
+    kind: cfe
+    family_of_architecture:
+      Commercial: commercial
+      LatDiff: latent_diffusion
+      PixDiff: pixel_diffusion
+      GAN: modern_gans
+      Other: autoregressive
+    # Shard cua tap base KHONG co cot `architecture` -> suy ra tu model_name
+    # theo data/metadata/manual_set_metadata.csv cua OwensLab/CommunityForensics.
+    architecture_by_model:
+      BigGAN: GAN
+      CIPS: GAN
+      DeepFloyd: PixelDiff
+      DiT: LatentDiff
+      Gansformer: GAN
+      GigaGAN: GAN
+      Glide: PixelDiff
+      Guided Diffusion: PixelDiff
+      Latent Flow Matching: Other
+      ProGAN: GAN
+      ProjectedGAN: GAN
+      StyleGAN2: GAN
+      StyleGAN2-ADA: GAN
+      StyleGAN3: GAN
+      StyleGAN-XL: GAN
+      StyleSAN: GAN
+      StyleSwin: GAN
+      TamingTransformers: Other
+      VQ Diffusion: LatentDiff
+    url_template: >-
+      https://huggingface.co/datasets/OwensLab/CommunityForensics/resolve/main/data/manual/HFCF_Manual_{}.parquet
+    n_shards: 78
+    license: CC-BY-NC-SA-4.0
+    citation: "Community Forensics, CVPR 2025 (OwensLab/CommunityForensics base, Manual subset)"
+  gpt4o_t2i:
+    kind: plain
+    family: commercial
+    model_name: GPT-4o
+    url_template: >-
+      https://huggingface.co/datasets/yufan/GPT4O_Image_T2I/resolve/main/data/train-{:05d}-of-00014.parquet
+    n_shards: 14
+    license: "Xem dataset card (nghien cuu)"
+    citation: "yufan/GPT4O_Image_T2I - GPT-4o native text-to-image, 2025"
+
+# ---------------------------------------------------------------------------
+# Nguon anh GIA. Moi entry = mot generator *instance* (model_name cu the).
+# `target` la so anh muon lay; planner se tu chon shard va lay du 1.15x.
+# ---------------------------------------------------------------------------
+fakes:
+  # --- autoregressive -----------------------------------------------------
+  # tamingTransformers = VQGAN + transformer decoder (sinh token tu hoi quy).
+  # Day cung la dinh nghia ma chinh tap test noi bo dang dung: nhom
+  # `5_other_autoregressive` = architecture `Other`.
+  - id: ar_taming_imagenet
+    dataset: cfe_small
+    family: autoregressive
+    model_name: tamingTransformers
+    real_source: imagenet
+    target: 1200
+
+  # --- modern GAN ---------------------------------------------------------
+  - id: gan_gigagan
+    dataset: cfe_small
+    family: modern_gans
+    model_name: GigaGAN
+    target: 200
+  - id: gan_styleswin
+    dataset: cfe_small
+    family: modern_gans
+    model_name: StyleSwin
+    target: 200
+  - id: gan_cips
+    dataset: cfe_small
+    family: modern_gans
+    model_name: CIPS
+    target: 200
+  - id: gan_gansformer
+    dataset: cfe_small
+    family: modern_gans
+    model_name: Gansformer
+    target: 200
+  - id: gan_projectedgan
+    dataset: cfe_small
+    family: modern_gans
+    model_name: ProjectedGAN
+    target: 200
+  - id: gan_stylesanxl
+    dataset: cfe_small
+    family: modern_gans
+    model_name: StyleSANXL
+    target: 200
+
+  # --- pixel diffusion ----------------------------------------------------
+  # DeepFloyd IF la model pixel-space duy nhat con lai sau deny-list:
+  # glide / guidedDiffusion / Hourglass deu nam trong tap test.
+  - id: pix_deepfloyd_small
+    dataset: cfe_small
+    family: pixel_diffusion
+    model_name: DeepFloyd
+    target: 1036
+  - id: pix_deepfloyd_base
+    dataset: cfe_base_manual
+    family: pixel_diffusion
+    model_name: DeepFloyd
+    target: 164
+
+  # --- latent diffusion ---------------------------------------------------
+  - id: lat_dit
+    dataset: cfe_small
+    family: latent_diffusion
+    model_name: DiT
+    target: 200
+  - id: lat_lfm
+    dataset: cfe_small
+    family: latent_diffusion
+    model_name: LFM
+    target: 200
+  - id: lat_sdxl_acorn
+    dataset: cfe_small
+    family: latent_diffusion
+    model_name: stablediffusionapi/acorn-is-boning-xl
+    target: 30
+  - id: lat_sdxl_samaritan
+    dataset: cfe_small
+    family: latent_diffusion
+    model_name: stablediffusionapi/samaritan-3d-cartoon-v40
+    target: 30
+  - id: lat_sdxl_realcartoon
+    dataset: cfe_small
+    family: latent_diffusion
+    model_name: stablediffusionapi/realcartoon-anime-v11
+    target: 30
+  - id: lat_sdxl_animagine
+    dataset: cfe_small
+    family: latent_diffusion
+    model_name: stablediffusionapi/animagine-xl-31
+    target: 30
+  - id: lat_sdxl_dreamshaper
+    dataset: cfe_small
+    family: latent_diffusion
+    model_name: stablediffusionapi/dreamshaperxlturbov21fix5
+    target: 30
+
+  # --- commercial ---------------------------------------------------------
+  # GPT-4o (2025) la generator thuong mai DUY NHAT khong xuat hien trong bat
+  # ky tap test nao cua du an (MJ / DALL-E / Firefly / Imagen / FLUX / Ideogram
+  # deu bi chan). 1150 + 600 replay MJ = 1750.
+  - id: com_gpt4o
+    dataset: gpt4o_t2i
+    family: commercial
+    model_name: GPT-4o
+    target: 1150
+
+# ---------------------------------------------------------------------------
+# Anh THAT. Moi nguon la mot `model_name` trong CFE (cot real_source = N/A).
+# 4 nguon * 1.525 = 6.100; + 1.800 replay ImageNet = 7.900 (52.67%).
+# ---------------------------------------------------------------------------
+reals:
+  - id: real_ffhq
+    dataset: cfe_small
+    model_name: FFHQ
+    target: 1525
+  - id: real_coco
+    dataset: cfe_small
+    model_name: COCO
+    target: 1525
+  - id: real_landscapeshq
+    dataset: cfe_small
+    model_name: LandscapesHQ
+    target: 1525
+  - id: real_vision
+    dataset: cfe_small
+    model_name: VISION
+    target: 1525
+
+# ---------------------------------------------------------------------------
+# Replay in-dist: 3.600 mau cua kho cu, giu nguyen label/generator.
+# ---------------------------------------------------------------------------
+replay:
+  manifest: DATASET/manifests/data_manifest.json
+  total: 3600
+  copy_mode: copy          # copy | hardlink | reference
+  # prefix cu trong data_manifest.json -> thu muc goc sau khi giai nen tar
+  path_markers: ["diffusion_staging/"]
+  family_of_generator:
+    stable_diffusion: latent_diffusion
+    midjourney: commercial
+    real: real
+  generator_display:
+    stable_diffusion: stable_diffusion_v1_5
+    midjourney: midjourney_v5
+    real: imagenet_replay
+  real_source_of_generator:
+    real: ImageNet
+
+# ---------------------------------------------------------------------------
+# Bo loc chat luong anh
+# ---------------------------------------------------------------------------
+quality:
+  reject_flat_images: true
+  reject_fully_transparent: true
+  reject_nsfw: true
+  allowed_formats: [png, jpeg, jpg, webp]
+  # Khong re-encode: luu nguyen byte goc de sha256 phan anh dung nguon.
+  max_side: 0              # 0 = khong gioi han

@@ -17,17 +17,23 @@ Cac che do thuc thi:
 
 import os
 import sys
-import hashlib
 import argparse
 from typing import Dict, List, Set, Tuple
 
-import numpy as np
 from PIL import Image
-from scipy.fftpack import dct
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+if TOOLS_DIR not in sys.path:
+    sys.path.insert(0, TOOLS_DIR)
+
+from hash_utils import (  # noqa: E402  (canonical hash implementation)
+    hamming as _hamming,
+    phash_from_pil as _phash_from_pil,
+    sha256_file as _sha256_file,
+)
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -35,44 +41,22 @@ if hasattr(sys.stdout, "reconfigure"):
 
 def compute_sha256(filepath: str) -> str:
     """Tinh ma bam SHA-256 cua tep tin de kiem tra trung lap byte-exact."""
-    hasher = hashlib.sha256()
-    with open(filepath, "rb") as f:
-        while chunk := f.read(65536):
-            hasher.update(chunk)
-    return hasher.hexdigest()
+    return _sha256_file(filepath)
 
 
 def compute_phash_from_image(img: Image.Image, hash_size: int = 8, highfreq_factor: int = 4) -> int:
     """
-    Tinh toan Perceptual Hash (pHash) 64-bit bang bien doi DCT 2D:
-    1. Chuyen ve anh xam va resize thanh (32, 32).
-    2. Ap dung bien doi DCT 2D theo chieu dong va cot.
-    3. Trch xuat khoi tan so thap 8x8 (bo thanh phan DC goc (0,0)).
-    4. So sanh voi gia tri trung vi (median) de tao chuoi 64 bit.
+    Tinh Perceptual Hash (pHash) 64-bit bang DCT 2D.
+
+    Uy quyen cho tools/hash_utils.py de moi tool trong repo dung chung mot
+    cong thuc duy nhat (builder, audit, index test set).
     """
-    img_size = hash_size * highfreq_factor
-    img_gray = img.convert("L").resize((img_size, img_size), Image.Resampling.BICUBIC)
-    pixels = np.asarray(img_gray, dtype=np.float64)
-
-    # 2D DCT
-    dct_data = dct(dct(pixels, axis=0, norm="ortho"), axis=1, norm="ortho")
-    # Lay goc tren tan so thap
-    dct_lowfreq = dct_data[:hash_size, :hash_size]
-
-    # Tinh trung vi (loai bo phan tu DC goc tai [0, 0])
-    med = np.median(dct_lowfreq[1:, 1:])
-    diff = dct_lowfreq > med
-
-    # Chuyen ma tran boolean 8x8 thanh so nguyen 64-bit
-    hash_int = 0
-    for bit in diff.flatten():
-        hash_int = (hash_int << 1) | int(bit)
-    return hash_int
+    return _phash_from_pil(img, hash_size=hash_size, highfreq_factor=highfreq_factor)
 
 
 def hamming_distance(hash1: int, hash2: int) -> int:
     """Tinh khoang cach Hamming giua 2 ma pHash (so bit khac nhau)."""
-    return bin(hash1 ^ hash2).count("1")
+    return _hamming(hash1, hash2)
 
 
 class DataIsolationAuditor:

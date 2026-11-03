@@ -1,0 +1,553 @@
+{
+ "created_at": "2026-11-03T08:08:11+00:00",
+ "config_sha256": "70478fcf21214adecfec00ebdc5291b5992a2f1bfa0eace589515ec8e296ac0c",
+ "seed": 42,
+ "surplus": 1.15,
+ "limit_per_family": null,
+ "entries": [
+  {
+   "id": "lat_sdxl_animagine",
+   "dataset": "cfe_small",
+   "kind": "fake",
+   "family": "latent_diffusion",
+   "model_name": "stablediffusionapi/animagine-xl-31",
+   "target": 30,
+   "need": 35,
+   "available": 37,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 66,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_66.parquet",
+     "n": 41,
+     "size_bytes": 1062922743
+    }
+   ],
+   "predicted_bytes": 1062922743
+  },
+  {
+   "id": "lat_sdxl_dreamshaper",
+   "dataset": "cfe_small",
+   "kind": "fake",
+   "family": "latent_diffusion",
+   "model_name": "stablediffusionapi/dreamshaperxlturbov21fix5",
+   "target": 30,
+   "need": 35,
+   "available": 41,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 66,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_66.parquet",
+     "n": 41,
+     "size_bytes": 1062922743
+    }
+   ],
+   "predicted_bytes": 1062922743
+  },
+  {
+   "id": "lat_sdxl_realcartoon",
+   "dataset": "cfe_small",
+   "kind": "fake",
+   "family": "latent_diffusion",
+   "model_name": "stablediffusionapi/realcartoon-anime-v11",
+   "target": 30,
+   "need": 35,
+   "available": 47,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 66,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_66.parquet",
+     "n": 47,
+     "size_bytes": 1062922743
+    }
+   ],
+   "predicted_bytes": 1062922743
+  },
+  {
+   "id": "lat_sdxl_acorn",
+   "dataset": "cfe_small",
+   "kind": "fake",
+   "family": "latent_diffusion",
+   "model_name": "stablediffusionapi/acorn-is-boning-xl",
+   "target": 30,
+   "need": 35,
+   "available": 50,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 66,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_66.parquet",
+     "n": 52,
+     "size_bytes": 1062922743
+    }
+   ],
+   "predicted_bytes": 1062922743
+  },
+  {
+   "id": "lat_sdxl_samaritan",
+   "dataset": "cfe_small",
+   "kind": "fake",
+   "family": "latent_diffusion",
+   "model_name": "stablediffusionapi/samaritan-3d-cartoon-v40",
+   "target": 30,
+   "need": 35,
+   "available": 51,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 66,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_66.parquet",
+     "n": 52,
+     "size_bytes": 1062922743
+    }
+   ],
+   "predicted_bytes": 1062922743
+  },
+  {
+   "id": "gan_cips",
+   "dataset": "cfe_small",
+   "kind": "fake",
+   "family": "modern_gans",
+   "model_name": "CIPS",
+   "target": 200,
+   "need": 230,
+   "available": 1036,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 74,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_74.parquet",
+     "n": 891,
+     "size_bytes": 1792578458
+    }
+   ],
+   "predicted_bytes": 1792578458
+  },
+  {
+   "id": "gan_gansformer",
+   "dataset": "cfe_small",
+   "kind": "fake",
+   "family": "modern_gans",
+   "model_name": "Gansformer",
+   "target": 200,
+   "need": 230,
+   "available": 1036,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 66,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_66.parquet",
+     "n": 1036,
+     "size_bytes": 1062922743
+    }
+   ],
+   "predicted_bytes": 1062922743
+  },
+  {
+   "id": "gan_projectedgan",
+   "dataset": "cfe_small",
+   "kind": "fake",
+   "family": "modern_gans",
+   "model_name": "ProjectedGAN",
+   "target": 200,
+   "need": 230,
+   "available": 1036,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 67,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_67.parquet",
+     "n": 877,
+     "size_bytes": 1930987423
+    }
+   ],
+   "predicted_bytes": 1930987423
+  },
+  {
+   "id": "lat_dit",
+   "dataset": "cfe_small",
+   "kind": "fake",
+   "family": "latent_diffusion",
+   "model_name": "DiT",
+   "target": 200,
+   "need": 230,
+   "available": 1036,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 76,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_76.parquet",
+     "n": 1036,
+     "size_bytes": 1123678640
+    }
+   ],
+   "predicted_bytes": 1123678640
+  },
+  {
+   "id": "pix_deepfloyd_small",
+   "dataset": "cfe_small",
+   "kind": "fake",
+   "family": "pixel_diffusion",
+   "model_name": "DeepFloyd",
+   "target": 1036,
+   "need": 1192,
+   "available": 1036,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 83,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_83.parquet",
+     "n": 1036,
+     "size_bytes": 1995186828
+    }
+   ],
+   "predicted_bytes": 1995186828
+  },
+  {
+   "id": "gan_styleswin",
+   "dataset": "cfe_small",
+   "kind": "fake",
+   "family": "modern_gans",
+   "model_name": "StyleSwin",
+   "target": 200,
+   "need": 230,
+   "available": 3108,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 76,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_76.parquet",
+     "n": 261,
+     "size_bytes": 1123678640
+    }
+   ],
+   "predicted_bytes": 1123678640
+  },
+  {
+   "id": "ar_taming_imagenet",
+   "dataset": "cfe_small",
+   "kind": "fake",
+   "family": "autoregressive",
+   "model_name": "tamingTransformers",
+   "target": 1200,
+   "need": 1380,
+   "available": 6216,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 71,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_71.parquet",
+     "n": 2992,
+     "size_bytes": 298638659
+    }
+   ],
+   "predicted_bytes": 298638659
+  },
+  {
+   "id": "gan_stylesanxl",
+   "dataset": "cfe_small",
+   "kind": "fake",
+   "family": "modern_gans",
+   "model_name": "StyleSANXL",
+   "target": 200,
+   "need": 230,
+   "available": 6216,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 74,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_74.parquet",
+     "n": 855,
+     "size_bytes": 1792578458
+    }
+   ],
+   "predicted_bytes": 1792578458
+  },
+  {
+   "id": "lat_lfm",
+   "dataset": "cfe_small",
+   "kind": "fake",
+   "family": "latent_diffusion",
+   "model_name": "LFM",
+   "target": 200,
+   "need": 230,
+   "available": 6216,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 78,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_78.parquet",
+     "n": 2992,
+     "size_bytes": 35031046
+    }
+   ],
+   "predicted_bytes": 35031046
+  },
+  {
+   "id": "real_vision",
+   "dataset": "cfe_small",
+   "kind": "real",
+   "family": "real",
+   "model_name": "VISION",
+   "target": 1525,
+   "need": 1754,
+   "available": 6809,
+   "denylist_status": "n/a",
+   "shards": [
+    {
+     "shard": 115,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_115.parquet",
+     "n": 2992,
+     "size_bytes": 2629339802
+    }
+   ],
+   "predicted_bytes": 2629339802
+  },
+  {
+   "id": "pix_deepfloyd_base",
+   "dataset": "cfe_base_manual",
+   "kind": "fake",
+   "family": "pixel_diffusion",
+   "model_name": "DeepFloyd",
+   "target": 164,
+   "need": 189,
+   "available": 10000,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 49,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics/resolve/main/data/manual/HFCF_Manual_49.parquet",
+     "n": 2156,
+     "size_bytes": 3774280138
+    }
+   ],
+   "predicted_bytes": 3774280138
+  },
+  {
+   "id": "gan_gigagan",
+   "dataset": "cfe_small",
+   "kind": "fake",
+   "family": "modern_gans",
+   "model_name": "GigaGAN",
+   "target": 200,
+   "need": 230,
+   "available": 17612,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 89,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_89.parquet",
+     "n": 2992,
+     "size_bytes": 859466946
+    }
+   ],
+   "predicted_bytes": 859466946
+  },
+  {
+   "id": "com_gpt4o",
+   "dataset": "gpt4o_t2i",
+   "kind": "fake",
+   "family": "commercial",
+   "model_name": "GPT-4o",
+   "target": 1150,
+   "need": 1323,
+   "available": 45717,
+   "denylist_status": "allowed",
+   "shards": [
+    {
+     "shard": 0,
+     "url": "https://huggingface.co/datasets/yufan/GPT4O_Image_T2I/resolve/main/data/train-00000-of-00014.parquet",
+     "n": 3266,
+     "size_bytes": 475010142
+    }
+   ],
+   "predicted_bytes": 475010142
+  },
+  {
+   "id": "real_ffhq",
+   "dataset": "cfe_small",
+   "kind": "real",
+   "family": "real",
+   "model_name": "FFHQ",
+   "target": 1525,
+   "need": 1754,
+   "available": 63000,
+   "denylist_status": "n/a",
+   "shards": [
+    {
+     "shard": 93,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_93.parquet",
+     "n": 2832,
+     "size_bytes": 3932350538
+    }
+   ],
+   "predicted_bytes": 3932350538
+  },
+  {
+   "id": "real_landscapeshq",
+   "dataset": "cfe_small",
+   "kind": "real",
+   "family": "real",
+   "model_name": "LandscapesHQ",
+   "target": 1525,
+   "need": 1754,
+   "available": 90000,
+   "denylist_status": "n/a",
+   "shards": [
+    {
+     "shard": 163,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_163.parquet",
+     "n": 2992,
+     "size_bytes": 1746838361
+    }
+   ],
+   "predicted_bytes": 1746838361
+  },
+  {
+   "id": "real_coco",
+   "dataset": "cfe_small",
+   "kind": "real",
+   "family": "real",
+   "model_name": "COCO",
+   "target": 1525,
+   "need": 1754,
+   "available": 118287,
+   "denylist_status": "n/a",
+   "shards": [
+    {
+     "shard": 121,
+     "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_121.parquet",
+     "n": 2992,
+     "size_bytes": 151717011
+    }
+   ],
+   "predicted_bytes": 151717011
+  }
+ ],
+ "reals_target": 6100,
+ "fakes_new_target": 5300,
+ "replay_composition": {
+  "n_real": 1800,
+  "n_fake": 1800,
+  "by_generator": {
+   "midjourney": 600,
+   "real": 1800,
+   "stable_diffusion": 1200
+  }
+ },
+ "predicted_bytes": 21808026735,
+ "byte_budget": 60000000000.0,
+ "n_shards": 14,
+ "shards": {
+  "cfe_small": [
+   {
+    "shard": 66,
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_66.parquet",
+    "size_bytes": 1062922743
+   },
+   {
+    "shard": 67,
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_67.parquet",
+    "size_bytes": 1930987423
+   },
+   {
+    "shard": 71,
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_71.parquet",
+    "size_bytes": 298638659
+   },
+   {
+    "shard": 74,
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_74.parquet",
+    "size_bytes": 1792578458
+   },
+   {
+    "shard": 76,
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_76.parquet",
+    "size_bytes": 1123678640
+   },
+   {
+    "shard": 78,
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_78.parquet",
+    "size_bytes": 35031046
+   },
+   {
+    "shard": 83,
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_83.parquet",
+    "size_bytes": 1995186828
+   },
+   {
+    "shard": 89,
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_89.parquet",
+    "size_bytes": 859466946
+   },
+   {
+    "shard": 93,
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_93.parquet",
+    "size_bytes": 3932350538
+   },
+   {
+    "shard": 115,
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_115.parquet",
+    "size_bytes": 2629339802
+   },
+   {
+    "shard": 121,
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_121.parquet",
+    "size_bytes": 151717011
+   },
+   {
+    "shard": 163,
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics-Small/resolve/main/data/HFCF_small_163.parquet",
+    "size_bytes": 1746838361
+   }
+  ],
+  "cfe_base_manual": [
+   {
+    "shard": 49,
+    "url": "https://huggingface.co/datasets/OwensLab/CommunityForensics/resolve/main/data/manual/HFCF_Manual_49.parquet",
+    "size_bytes": 3774280138
+   }
+  ],
+  "gpt4o_t2i": [
+   {
+    "shard": 0,
+    "url": "https://huggingface.co/datasets/yufan/GPT4O_Image_T2I/resolve/main/data/train-00000-of-00014.parquet",
+    "size_bytes": 475010142
+   }
+  ]
+ },
+ "family_table": {
+  "latent_diffusion": {
+   "n_candidates": 207581,
+   "n_blocked": 2103,
+   "n_related": 41,
+   "n_kept": 550
+  },
+  "modern_gans": {
+   "n_candidates": 491426,
+   "n_blocked": 231382,
+   "n_related": 0,
+   "n_kept": 1200
+  },
+  "pixel_diffusion": {
+   "n_candidates": 7251,
+   "n_blocked": 6215,
+   "n_related": 0,
+   "n_kept": 1200
+  },
+  "autoregressive": {
+   "n_candidates": 6216,
+   "n_blocked": 0,
+   "n_related": 0,
+   "n_kept": 1200
+  },
+  "commercial": {
+   "n_candidates": 45717,
+   "n_blocked": 0,
+   "n_related": 0,
+   "n_kept": 1150
+  }
+ }
+}
