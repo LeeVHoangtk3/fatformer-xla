@@ -1,7 +1,7 @@
 # CHUYÊN KHẢO KHOA HỌC: TỔNG HỢP TOÀN DIỆN CÁC THẾ HỆ CHECKPOINT & LỊCH SỬ THỰC NGHIỆM ĐO ĐẠC ĐA MIỀN DỰ ÁN FATFORMER-XLA
 
 > **Dự án**: Nâng cao độ bền vững pháp y cho FatFormer trước biến dạng nén mạng xã hội (FatFormer-XLA)  
-> **Tài liệu tham chiếu quy hoạch**: [`docs/plan/quy_trinh_thuc_hien_tu_dau.md`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/plan/quy_trinh_thuc_hien_tu_dau.md) & [`docs/plan/ke_hoach_cac_cot_moc_va_diem_dung.md`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/plan/ke_hoach_cac_cot_moc_va_diem_dung.md)  
+> **Tài liệu tham chiếu quy hoạch**: [`docs/plan/quy_trinh_thuc_hien_tu_dau.md`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/plan/quy_trinh_thuc_hien_tu_dau.md) & [`docs/plan/ke_hoach_cac_cot_moc_va_diem_dung.md`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/plan/ke_hoach_cac_cot_moc_va_diem_dung.md) | **Sơ đồ hạ tầng Drive 5TB**: [`so_do_ha_tang_google_drive_5tb.md`](so_do_ha_tang_google_drive_5tb.md)  
 > **Cơ quan lưu trữ**: Kho nhật ký thực nghiệm [`DATASET/logs/README.md`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/README.md)  
 > **Ngày lập văn bản**: 24/10/2026  
 > **Phiên bản tài liệu**: `v1.0-Comprehensive`  
