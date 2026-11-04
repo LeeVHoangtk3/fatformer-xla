@@ -3,7 +3,7 @@ from typing import List, Optional, Tuple, Union, Any, Dict
 import torch
 from torch.utils.data import Dataset, DataLoader, ConcatDataset, Subset, WeightedRandomSampler
 from torchvision.datasets import ImageFolder
-from .transforms import get_eval_transforms, get_train_transforms
+from .transforms import get_eval_transforms, get_train_transforms, DegradationPipelineV2
 
 
 import numpy as np
@@ -167,22 +167,31 @@ class DatasetCreator:
         self,
         train_folder_name: str = "train",
         use_dual_stream: bool = True,
-        scheduler: Optional[Any] = None
+        scheduler=None,
+        degradation_config=None,
     ) -> Dataset:
         """
-        Khởi tạo Dataset huấn luyện (ProGAN 4-class hoặc tập tùy chọn).
-        Hỗ trợ gắn CurriculumDegradationScheduler theo 3 giai đoạn epoch.
+        Khởi tạo Dataset huấn luyện.
+        Args:
+            degradation_config: đường dẫn YAML hoặc dict cho DegradationPipelineV2.
+                                Nếu None, dùng default v2. Truyền False để tắt hoàn toàn.
         """
         train_path = os.path.join(self.dataset_path, train_folder_name)
         if not os.path.exists(train_path):
             raise FileNotFoundError(f"Không tìm thấy thư mục dữ liệu huấn luyện tại: {train_path}")
 
-        transform = get_train_transforms(
-            img_resolution=self.img_resolution,
-            crop_resolution=self.crop_resolution,
-            use_dual_stream=use_dual_stream,
-            scheduler=scheduler
-        )
+        # Ưu tiên degradation_config v2 nếu có; fallback sang scheduler/dual_stream cũ
+        if degradation_config is not False and scheduler is None:
+            pipeline_v2 = DegradationPipelineV2.from_config(degradation_config) \
+                if degradation_config else DegradationPipelineV2()
+            transform = pipeline_v2
+        else:
+            transform = get_train_transforms(
+                img_resolution=self.img_resolution,
+                crop_resolution=self.crop_resolution,
+                use_dual_stream=use_dual_stream,
+                scheduler=scheduler,
+            )
 
         sub_dir_contents = os.listdir(train_path)
         if "0_real" in sub_dir_contents and "1_fake" in sub_dir_contents:

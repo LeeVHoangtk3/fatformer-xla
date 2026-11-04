@@ -1,0 +1,42 @@
+# configs/degradation_v2.yaml — Task 7.8
+# Pipeline suy biến v2: mô phỏng phân phối mạng xã hội 2024-2025
+# Người thực hiện: Thành viên A (Data & Infrastructure Lead)
+
+seed: 42
+img_resolution: 224
+crop_resolution: 224
+
+# 40% mẫu bị suy biến (trước: 30%)
+clean_prob: 0.60
+
+jpeg:
+  prob: 0.55
+  q_range: [30, 85]
+  heavy_share: 0.35        # >= 35% khối lượng JPEG rơi vào [30, 45]
+  heavy_range: [30, 45]
+  light_range: [45, 85]    # 65% còn lại
+
+webp:
+  prob: 0.15
+  q_range: [30, 70]
+
+double_jpeg:
+  prob: 0.15
+  q1_range: [70, 90]       # nén lần 1 (nhẹ)
+  q2_range: [30, 50]       # nén lần 2 (nặng)
+
+blur:
+  prob: 0.20
+  sigma_range: [0.5, 2.0]
+
+down_up:
+  prob: 0.20
+  ratio_range: [0.50, 0.75]
+
+composite:
+  prob: 0.25               # 25% mẫu bị >= 2 suy biến (trong nhóm bị suy biến)
+  pairs:                   # cặp được phép ghép, áp dụng tuần tự
+    - [jpeg, down_up]
+    - [jpeg, blur]
+    - [webp, down_up]
+    - [double_jpeg, blur]

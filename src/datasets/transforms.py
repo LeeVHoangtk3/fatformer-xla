@@ -1,9 +1,14 @@
 import io
 import random
+from pathlib import Path
 from typing import Optional, Dict, Any, List, Tuple, Union, Set
 from PIL import Image, ImageFilter
 import torchvision.transforms as transforms
 import torchvision.transforms.functional as TF
+try:
+    import yaml
+except ImportError:
+    yaml = None  # lean: yaml optional — chỉ cần khi dùng from_config(path)
 
 
 class RandomJPEGCompression:
@@ -43,6 +48,44 @@ class RandomDownUpSampling:
         low_w, low_h = max(16, int(w * ratio)), max(16, int(h * ratio))
         img_down = img.resize((low_w, low_h), Image.BILINEAR)
         return img_down.resize((w, h), Image.BILINEAR)
+
+
+
+class RandomWebPCompression:
+    """Nén ảnh WebP ngẫu nhiên với chất lượng Q trong [min_q, max_q]. Dùng PIL."""
+    def __init__(self, min_q=30, max_q=70):
+        self.min_q = min_q
+        self.max_q = max_q
+
+    def __call__(self, img: Image.Image) -> Image.Image:
+        q = random.randint(self.min_q, self.max_q)
+        buf = io.BytesIO()
+        try:
+            img.save(buf, format="WEBP", quality=q)
+            buf.seek(0)
+            return Image.open(buf).convert("RGB")
+        except (KeyError, OSError):
+            # lean: fallback khi PIL build không hỗ trợ WebP
+            return RandomJPEGCompression(self.min_q, self.max_q)(img)
+
+
+class RandomDoubleJPEG:
+    """Double JPEG: nén 2 lần liên tiếp (mô phỏng ảnh tải lên - tải xuống)."""
+    def __init__(self, q1_range=(70, 90), q2_range=(30, 50)):
+        self.q1_range = q1_range
+        self.q2_range = q2_range
+
+    def __call__(self, img: Image.Image) -> Image.Image:
+        q1 = random.randint(*self.q1_range)
+        q2 = random.randint(*self.q2_range)
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=q1)
+        buf.seek(0)
+        img2 = Image.open(buf).convert("RGB")
+        buf2 = io.BytesIO()
+        img2.save(buf2, format="JPEG", quality=q2)
+        buf2.seek(0)
+        return Image.open(buf2).convert("RGB")
 
 
 class DualStreamRobustAugmentation:
@@ -355,5 +398,194 @@ class PairedCleanDegradedAugmentation:
         img_degraded = self._apply_degradation(img_cropped)
         x_degraded   = self._to_tensor_norm(img_degraded)
 
+        return x_clean, x_degraded
+
+
+# ============================================================
+# TASK 7.8 — DegradationPipelineV2
+# Mở rộng PairedCleanDegradedAugmentation với phân phối
+# mạng xã hội 2024-2025: JPEG Q30-85, WebP, Double-JPEG,
+# Composite, Blur σ [0.5-2.0], Down-Up [0.50-0.75].
+# ============================================================
+
+class DegradationPipelineV2(PairedCleanDegradedAugmentation):
+    """
+    Pipeline suy biến v2 — Task 7.8.
+
+    API tương thích ngược: __call__(img) -> Tuple[Tensor, Tensor]
+    - x_clean:    Resize → CenterCrop → ToTensor → Normalize (không đổi)
+    - x_degraded: phân phối đầy đủ theo config v2
+
+    Attributes:
+        last_tag: list[str] — tag suy biến vừa áp dụng (phục vụ test/phân tích).
+    """
+
+    _SINGLE_TYPES = ["jpeg", "webp", "double_jpeg", "blur", "down_up"]
+
+    @classmethod
+    def from_config(cls, path_or_dict):
+        """Khởi tạo từ đường dẫn YAML hoặc dict config."""
+        if isinstance(path_or_dict, dict):
+            cfg = path_or_dict
+        else:
+            assert yaml is not None, "Cần cài pyyaml: pip install pyyaml"
+            with open(path_or_dict, "r", encoding="utf-8") as f:
+                cfg = yaml.safe_load(f)
+        return cls(config=cfg)
+
+    def __init__(self, config: Optional[Dict[str, Any]] = None, **kwargs):
+        """
+        Args:
+            config: dict từ degradation_v2.yaml. Nếu None, dùng default v2.
+            **kwargs: forward sang PairedCleanDegradedAugmentation (backward-compat).
+        """
+        cfg = config or {}
+        img_res  = cfg.get("img_resolution",  kwargs.pop("img_resolution",  256))
+        crop_res = cfg.get("crop_resolution", kwargs.pop("crop_resolution", 224))
+        clean_p  = cfg.get("clean_prob",      kwargs.pop("clean_prob",      0.60))
+
+        # Khởi tạo nhánh clean (dùng lại từ parent)
+        super().__init__(
+            img_resolution=img_res,
+            crop_resolution=crop_res,
+            clean_prob=clean_p,
+            **kwargs,
+        )
+
+        # Tham số v2
+        j = cfg.get("jpeg", {})
+        self._jpeg_prob        = j.get("prob", 0.55)
+        self._jpeg_heavy_share = j.get("heavy_share", 0.35)
+        self._jpeg_heavy_range = tuple(j.get("heavy_range", [30, 45]))
+        self._jpeg_light_range = tuple(j.get("light_range", [45, 85]))
+
+        w = cfg.get("webp", {})
+        self._webp_prob  = w.get("prob", 0.15)
+        self._webp_q     = tuple(w.get("q_range", [30, 70]))
+
+        dj = cfg.get("double_jpeg", {})
+        self._djpeg_prob = dj.get("prob", 0.15)
+        self._djpeg_q1   = tuple(dj.get("q1_range", [70, 90]))
+        self._djpeg_q2   = tuple(dj.get("q2_range", [30, 50]))
+
+        bl = cfg.get("blur", {})
+        self._blur_prob  = bl.get("prob", 0.20)
+        self._blur_sigma = tuple(bl.get("sigma_range", [0.5, 2.0]))
+
+        du = cfg.get("down_up", {})
+        self._du_prob    = du.get("prob", 0.20)
+        self._du_ratio   = tuple(du.get("ratio_range", [0.50, 0.75]))
+
+        comp = cfg.get("composite", {})
+        self._comp_prob  = comp.get("prob", 0.25)
+        self._comp_pairs = comp.get("pairs", [["jpeg", "down_up"], ["jpeg", "blur"],
+                                               ["webp", "down_up"], ["double_jpeg", "blur"]])
+
+        # Pre-build transforms tái sử dụng
+        self._webp   = RandomWebPCompression(*self._webp_q)
+        self._djpeg  = RandomDoubleJPEG(self._djpeg_q1, self._djpeg_q2)
+
+        self.last_tag: List[str] = []
+
+    # ------------------------------------------------------------------
+    # Primitive degraders
+    # ------------------------------------------------------------------
+
+    def _apply_jpeg(self, img: Image.Image) -> Tuple[Image.Image, str]:
+        """JPEG với nhóm nặng/nhẹ tách rời — đảm bảo heavy_share chính xác."""
+        if random.random() < self._jpeg_heavy_share:
+            q = random.randint(*self._jpeg_heavy_range)
+        else:
+            q = random.randint(*self._jpeg_light_range)
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=q)
+        buf.seek(0)
+        return Image.open(buf).convert("RGB"), f"jpeg:{q}"
+
+    def _apply_webp(self, img: Image.Image) -> Tuple[Image.Image, str]:
+        result = self._webp(img)
+        return result, f"webp"
+
+    def _apply_double_jpeg(self, img: Image.Image) -> Tuple[Image.Image, str]:
+        result = self._djpeg(img)
+        return result, "double_jpeg"
+
+    def _apply_blur(self, img: Image.Image) -> Tuple[Image.Image, str]:
+        sigma = random.uniform(*self._blur_sigma)
+        return img.filter(ImageFilter.GaussianBlur(radius=sigma)), f"blur:{sigma:.2f}"
+
+    def _apply_down_up(self, img: Image.Image) -> Tuple[Image.Image, str]:
+        ratio = random.uniform(*self._du_ratio)
+        w, h = img.size
+        lw, lh = max(16, int(w * ratio)), max(16, int(h * ratio))
+        resample = getattr(Image, "Resampling", Image).BICUBIC
+        result = img.resize((lw, lh), resample).resize((w, h), resample)
+        return result, f"down_up:{ratio:.2f}"
+
+    def _dispatch(self, name: str, img: Image.Image) -> Tuple[Image.Image, str]:
+        """Áp dụng suy biến theo tên."""
+        if name == "jpeg":
+            return self._apply_jpeg(img)
+        elif name == "webp":
+            return self._apply_webp(img)
+        elif name == "double_jpeg":
+            return self._apply_double_jpeg(img)
+        elif name == "blur":
+            return self._apply_blur(img)
+        else:  # down_up
+            return self._apply_down_up(img)
+
+    def _pick_single(self) -> str:
+        """Chọn 1 suy biến đơn theo trọng số đã chuẩn hoá."""
+        weights = [self._jpeg_prob, self._webp_prob, self._djpeg_prob,
+                   self._blur_prob, self._du_prob]
+        total = sum(weights)
+        r = random.uniform(0, total)
+        acc = 0.0
+        for name, w in zip(self._SINGLE_TYPES, weights):
+            acc += w
+            if r < acc:
+                return name
+        return self._SINGLE_TYPES[-1]
+
+    # ------------------------------------------------------------------
+    # Public API — tương thích ngược với PairedCleanDegradedAugmentation
+    # ------------------------------------------------------------------
+
+    def __call__(self, img: Image.Image, seed: Optional[int] = None):
+        """
+        Args:
+            img:  PIL Image RGB
+            seed: nếu không None, đặt random.seed trước khi xử lý (phục vụ test tái lập).
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor]: (x_clean, x_degraded), shape (3,224,224)
+        """
+        if seed is not None:
+            random.seed(seed)
+
+        x_clean = self.clean_transform(img)
+        self.last_tag = []
+
+        # Bước 1: clean_prob
+        if random.random() < self.clean_prob:
+            return x_clean, x_clean
+
+        img_cropped = self._resize_crop(img)
+
+        # Bước 2: composite?
+        if random.random() < self._comp_prob:
+            pair = random.choice(self._comp_pairs)
+            result = img_cropped
+            for name in pair:
+                result, tag = self._dispatch(name, result)
+                self.last_tag.append(tag)
+        else:
+            # Bước 3: suy biến đơn
+            name = self._pick_single()
+            result, tag = self._dispatch(name, img_cropped)
+            self.last_tag.append(tag)
+
+        x_degraded = self._to_tensor_norm(result)
         return x_clean, x_degraded
 
