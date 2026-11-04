@@ -8,7 +8,7 @@
 > **Môi trường thực thi**: Google Colab CPU | Google Drive 5TB (Stream Parquet theo batch + SSD Caching) + Local Audit  
 > **Trạng thái**: `[x] ĐÃ HOÀN THÀNH XUẤT SẮC (PASS 100% TIÊU CHUẨN DoD & CHỐT CHẶN G7.2)`  
 > **Hiện vật bàn giao chính thức**:
-> - Gói dữ liệu nén nhị phân: `Fatformer/phase7/train_crossdomain_v2.tar` trên Google Drive
+> - Gói dữ liệu nén nhị phân: `Fatformer/phase7/train_crossdomain_v2.tar` trên Google Drive ($7.777,69\text{ MB} \approx 7,59\text{ GB}$)
 > - Chữ ký băm SHA-256 của gói: `16e5952892035ea0058cc6e996be191c43f6b3af608a6c92fb0a75ebc0a78dff`
 > - Tệp kê khai toàn diện: [`DATASET/manifests/data_manifest_v2.json`](../../../DATASET/manifests/data_manifest_v2.json) (`c1e883fed2e0fdd55ad9732ddc3bd44e1d21438b009100134f91788cf6af218a`)
 > - Tệp kê khai chia split huấn luyện: [`DATASET/manifests/data_manifest_v2_train.json`](../../../DATASET/manifests/data_manifest_v2_train.json) ($12.240$ mẫu)
