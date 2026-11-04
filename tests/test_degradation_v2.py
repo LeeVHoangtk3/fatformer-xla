@@ -144,9 +144,13 @@ def test_T4_composite_ratio(sample_img):
 # T5 — Tất định: cùng seed → cùng tag + cùng tensor
 # ---------------------------------------------------------------------------
 
-def test_T5_deterministic(sample_img):
+@pytest.mark.parametrize("degradation", DegradationPipelineV2._SINGLE_TYPES)
+def test_T5_deterministic(sample_img, degradation):
     """Cùng seed → cùng last_tag và cùng tensor (allclose)."""
-    pipe = DegradationPipelineV2()
+    cfg = {"clean_prob": 0.0, "composite": {"prob": 0.0}}
+    cfg.update({name: {"prob": float(name == degradation)}
+                for name in DegradationPipelineV2._SINGLE_TYPES})
+    pipe = DegradationPipelineV2(cfg)
     seed = 123
 
     c1, d1 = pipe(sample_img, seed=seed)
@@ -156,5 +160,7 @@ def test_T5_deterministic(sample_img):
     tag2 = list(pipe.last_tag)
 
     assert tag1 == tag2, f"Tag khác nhau: {tag1} vs {tag2}"
+    assert len(tag1) == 1 and tag1[0].split(":")[0] == degradation
     assert torch.allclose(c1, c2, atol=1e-6), "x_clean không tất định"
+    assert torch.equal(c1, pipe.clean_transform(sample_img)), "Nhánh clean bị thay đổi khi suy biến"
     assert torch.allclose(d1, d2, atol=1e-6), "x_degraded không tất định"

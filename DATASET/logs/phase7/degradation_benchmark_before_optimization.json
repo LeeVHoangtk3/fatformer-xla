@@ -1,0 +1,37 @@
+{
+  "method": "DataLoader; median of repeated runs; alternating order; startup/shutdown excluded",
+  "measured_at_utc": "2026-11-04T15:21:36.168983+00:00",
+  "source": "synthetic:32 seeded RGB noise images, 256x256",
+  "source_image_count": 32,
+  "v1_ms_per_batch": 9.591190500004814,
+  "v2_ms_per_batch": 14.306252500000483,
+  "pct_overhead": 49.1603414611909,
+  "threshold_pct": 15.0,
+  "passed": false,
+  "batches": 200,
+  "batch_size": 8,
+  "num_workers": 4,
+  "warmup_batches": 20,
+  "repeats": 3,
+  "seed": 42,
+  "img_resolution": 224,
+  "crop_resolution": 224,
+  "return_pair": true,
+  "config": "configs/degradation_v2.yaml",
+  "runs_ms_per_batch": {
+    "v1": [
+      9.591190500004814,
+      10.130026999995607,
+      9.319172999994407
+    ],
+    "v2": [
+      13.834442000006675,
+      14.306252500000483,
+      14.78990349999549
+    ]
+  },
+  "python": "3.14.0",
+  "torch": "2.10.0+cpu",
+  "platform": "Windows-11-10.0.22621-SP0",
+  "parent_torch_threads": 1
+}

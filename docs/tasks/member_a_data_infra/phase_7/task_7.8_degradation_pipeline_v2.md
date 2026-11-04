@@ -165,11 +165,13 @@ Ngưỡng: `ms/batch` mới ≤ `1,15 ×` cũ. Nếu vượt: giảm `num_worker
 - [x] `configs/degradation_v2.yaml` tồn tại, **không còn tham số suy biến hard-code** trong transform.
 - [x] `clean_prob = 0.60`; `Q ∈ [30,85]`; **≥ 35%** khối lượng JPEG trong `[30,45]` (đo thực, không lý thuyết).
 - [x] Có WebP, double-JPEG, blur `σ ∈ [0.5,2.0]`, down-up `0.5–0.75`, composite 25%.
-- [x] `pytest -q tests/test_degradation_v2.py` — 5/5 xanh (PASSED 100%).
-- [x] `logs/phase7/degradation_profile.png` có 4 panel; số liệu khớp test.
-- [x] DataLoader chậm hơn **≤ 15%**; số đo ghi trong `degradation_benchmark.json` (thực đo: **-14.69%**, nhanh hơn v1).
-- [x] API `__call__` không đổi; smoke test tích hợp cả luồng Paired và luồng Single-Tensor thành công (`tests/test_smoke_degradation_integration.py` 3/3 xanh).
+- [x] `pytest -q tests/test_degradation_v2.py` — 9 trường hợp, gồm T5 tham số hóa cho cả 5 loại suy biến.
+- [x] `DATASET/logs/phase7/degradation_profile.png` có 4 panel; phân phối được kiểm tra lại bằng test.
+- [x] DataLoader chậm hơn **≤ 15% trên corpus tổng hợp CPU hiện tại**; số đo tại `DATASET/logs/phase7/degradation_benchmark.json`: **+14.08%**, 200 batch × 3 lượt, 4 worker, cùng resize/crop. Cần đo lại bằng ảnh thật trên máy train.
+- [x] API paired mặc định không đổi; smoke/regression bao phủ Paired, Single-Tensor, JPEG tùy chỉnh và YAML → CLI → loader (`tests/test_smoke_degradation_integration.py`). Luồng không bật v2 giữ preprocessing cũ 256 → 224.
 - [x] Báo cáo `docs/bao_cao/A/bao_cao_task_7.8_degradation_v2.md` hoàn tất.
+
+**Ghi chú tích hợp sau review (2026-11-04):** mở rộng phạm vi tối thiểu trong `src/training/train_crossdomain.py` để truyền config và bảo toàn preprocessing cũ theo yêu cầu sửa đồng bộ. `PairedCleanDegradedAugmentation`/trainer cũ được giữ; v2 được bật rõ ràng bằng config. `webp.method=0` ưu tiên tốc độ encode, giữ dải Q nhưng có thể khác pixel/bitrate so với method=4. Số đo một tiến trình 50 batch -14.69% trước đây không dùng làm bằng chứng DataLoader.
 
 ---
 

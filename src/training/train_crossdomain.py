@@ -104,32 +104,38 @@ class CrossDomainDataset(Dataset):
         self,
         records: list,
         paired: bool = True,
-        img_resolution: int = 224,
+        img_resolution: Optional[int] = None,
         crop_resolution: int = 224,
         degradation_config: Optional[Union[str, dict]] = None,
     ):
         self.records = records
         self.paired = paired
         if paired:
-            if degradation_config:
+            if degradation_config is not None and degradation_config is not False:
+                resolution_override = {} if img_resolution is None else {"img_resolution": img_resolution}
                 self.paired_aug = DegradationPipelineV2.from_config(
                     degradation_config,
-                    img_resolution=img_resolution,
+                    **resolution_override,
                     crop_resolution=crop_resolution,
                     return_pair=True,
                 )
             else:
                 self.paired_aug = PairedCleanDegradedAugmentation(
-                    img_resolution=img_resolution,
+                    img_resolution=256 if img_resolution is None else img_resolution,
                     crop_resolution=crop_resolution,
                 )
         else:
             self.paired_aug = None
 
+        # Legacy runs retain Resize(256); an opted-in v2 run reads its YAML.
+        self.img_resolution = (self.paired_aug.img_resolution if self.paired_aug is not None
+                               else 256 if img_resolution is None else img_resolution)
+        self.crop_resolution = crop_resolution
+
         _mean = [0.485, 0.456, 0.406]
         _std = [0.229, 0.224, 0.225]
         self.eval_transform = transforms.Compose([
-            transforms.Resize((img_resolution, img_resolution)),
+            transforms.Resize((self.img_resolution, self.img_resolution)),
             transforms.CenterCrop(crop_resolution),
             transforms.ToTensor(),
             transforms.Normalize(mean=_mean, std=_std),
@@ -379,7 +385,7 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
 
     paired_train = (args.branch in ["M4", "M5"])
     deg_cfg = getattr(args, "degradation_config", None)
-    img_res = getattr(args, "img_resolution", 224)
+    img_res = getattr(args, "img_resolution", None)
     crop_res = getattr(args, "crop_resolution", 224)
     train_ds = CrossDomainDataset(
         train_records,
@@ -391,7 +397,7 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
     val_ds = CrossDomainDataset(
         val_records,
         paired=False,
-        img_resolution=img_res,
+        img_resolution=train_ds.img_resolution,
         crop_resolution=crop_res,
     )
 
@@ -1019,7 +1025,7 @@ def parse_arguments():
         "val_dir": "DATASET/val_crossdomain",
         "num_workers": 2,
         "degradation_config": None,
-        "img_resolution": 224,
+        "img_resolution": None,
         "crop_resolution": 224,
     }
 
@@ -1093,8 +1099,8 @@ def parse_arguments():
     parser.add_argument("--num_workers", type=int, default=defaults["num_workers"], help="So luong workers cho DataLoader (mac dinh 2)")
     parser.add_argument("--degradation_config", type=str, default=defaults.get("degradation_config", None),
                         help="Duong dan tep cau hinh suy bien v2 (vi du configs/degradation_v2.yaml)")
-    parser.add_argument("--img_resolution", type=int, default=defaults.get("img_resolution", 224),
-                        help="Do phan giai resize anh")
+    parser.add_argument("--img_resolution", type=int, default=defaults.get("img_resolution"),
+                        help="Resize override (default: v2 YAML, otherwise legacy 256)")
     parser.add_argument("--crop_resolution", type=int, default=defaults.get("crop_resolution", 224),
                         help="Do phan giai crop anh")
 

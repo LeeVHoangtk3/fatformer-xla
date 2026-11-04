@@ -53,15 +53,18 @@ class RandomDownUpSampling:
 
 class RandomWebPCompression:
     """Nén ảnh WebP ngẫu nhiên với chất lượng Q trong [min_q, max_q]. Dùng PIL."""
-    def __init__(self, min_q=30, max_q=70):
+    def __init__(self, min_q=30, max_q=70, method=0):
         self.min_q = min_q
         self.max_q = max_q
+        if type(method) is not int or not 0 <= method <= 6:
+            raise ValueError("webp.method must be an integer in [0, 6]")
+        self.method = method
 
     def __call__(self, img: Image.Image) -> Image.Image:
         q = random.randint(self.min_q, self.max_q)
         buf = io.BytesIO()
         try:
-            img.save(buf, format="WEBP", quality=q)
+            img.save(buf, format="WEBP", quality=q, method=self.method)
             buf.seek(0)
             return Image.open(buf).convert("RGB")
         except (KeyError, OSError):
@@ -460,13 +463,26 @@ class DegradationPipelineV2(PairedCleanDegradedAugmentation):
         j = cfg.get("jpeg", {})
         self._jpeg_prob        = j.get("prob", 0.55)
         self._jpeg_heavy_share = j.get("heavy_share", 0.35)
-        q_rng = j.get("q_range", [30, 85])
-        q_min, q_max = q_rng[0], q_rng[1]
-        self._jpeg_q_range = (q_min, q_max)
+        def quality_range(value, name):
+            if (not isinstance(value, (list, tuple)) or len(value) != 2
+                    or any(type(q) is not int for q in value)
+                    or not 1 <= value[0] <= value[1] <= 100):
+                raise ValueError(f"jpeg.{name} must contain two ordered integers in [1, 100]")
+            return tuple(value)
 
-        def_heavy_end = min(45, max(q_min, int(q_min + (q_max - q_min) * self._jpeg_heavy_share)))
-        self._jpeg_heavy_range = tuple(j.get("heavy_range", [q_min, def_heavy_end]))
-        self._jpeg_light_range = tuple(j.get("light_range", [self._jpeg_heavy_range[1], q_max]))
+        q_min, q_max = quality_range(j.get("q_range", [30, 85]), "q_range")
+        self._jpeg_q_range = (q_min, q_max)
+        if not 0 <= self._jpeg_heavy_share <= 1:
+            raise ValueError("jpeg.heavy_share must be in [0, 1]")
+        # q_range is authoritative, including when a YAML still has old subranges.
+        # A disjoint subrange collapses to the nearest allowed quality.
+        def bounded_range(value, name):
+            low, high = quality_range(value, name)
+            return (max(q_min, min(q_max, low)), max(q_min, min(q_max, high)))
+
+        split = max(q_min, min(q_max, 45))
+        self._jpeg_heavy_range = bounded_range(j.get("heavy_range", [q_min, split]), "heavy_range")
+        self._jpeg_light_range = bounded_range(j.get("light_range", [split, q_max]), "light_range")
 
         w = cfg.get("webp", {})
         self._webp_prob  = w.get("prob", 0.15)
@@ -491,7 +507,7 @@ class DegradationPipelineV2(PairedCleanDegradedAugmentation):
                                                ["webp", "down_up"], ["double_jpeg", "blur"]])
 
         # Pre-build transforms tái sử dụng
-        self._webp   = RandomWebPCompression(*self._webp_q)
+        self._webp   = RandomWebPCompression(*self._webp_q, method=w.get("method", 0))
         self._djpeg  = RandomDoubleJPEG(self._djpeg_q1, self._djpeg_q2)
 
         self.last_tag: List[str] = []
@@ -573,16 +589,17 @@ class DegradationPipelineV2(PairedCleanDegradedAugmentation):
         if seed is not None:
             random.seed(seed)
 
-        x_clean = self.clean_transform(img)
+        # Share the deterministic PIL resize/crop between the two streams.
+        # In single-tensor mode do not normalize an unused clean tensor.
+        img_cropped = self._resize_crop(img)
         self.last_tag = []
 
         # Bước 1: clean_prob
         if random.random() < self.clean_prob:
+            x_clean = self._to_tensor_norm(img_cropped)
             if not self.return_pair:
                 return x_clean
             return x_clean, x_clean
-
-        img_cropped = self._resize_crop(img)
 
         # Bước 2: composite?
         if random.random() < self._comp_prob:
@@ -600,5 +617,6 @@ class DegradationPipelineV2(PairedCleanDegradedAugmentation):
         x_degraded = self._to_tensor_norm(result)
         if not self.return_pair:
             return x_degraded
+        x_clean = self._to_tensor_norm(img_cropped)
         return x_clean, x_degraded
 

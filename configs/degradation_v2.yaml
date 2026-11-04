@@ -11,7 +11,7 @@ clean_prob: 0.60
 
 jpeg:
   prob: 0.55
-  q_range: [30, 85]
+  q_range: [30, 85]        # Giới hạn cuối; các dải con được chặn vào khoảng này
   heavy_share: 0.35        # >= 35% khối lượng JPEG rơi vào [30, 45]
   heavy_range: [30, 45]
   light_range: [45, 85]    # 65% còn lại
@@ -19,6 +19,7 @@ jpeg:
 webp:
   prob: 0.15
   q_range: [30, 70]
+  method: 0               # Encoder nhanh (0..6); giữ dải Q, không đảm bảo byte/bitrate giống method=4
 
 double_jpeg:
   prob: 0.15

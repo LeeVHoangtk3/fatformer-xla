@@ -1,172 +1,61 @@
-# Báo cáo Task 7.8 — Pipeline Suy Biến v2
+# Báo cáo Task 7.8 — Pipeline suy biến v2
 
-- **Mã nhiệm vụ**: Task 7.8 (Phase 7 — D4–D5)
-- **Người thực hiện**: Thành viên A (Data & Infrastructure Lead)
-- **Ngày hoàn thành**: 2026-11-04
-- **Trạng thái**: ✅ Hoàn thành
+Cập nhật kiểm tra tích hợp: 2026-11-04. Thành viên A phụ trách triển khai ban đầu.
 
----
+## Phạm vi và hành vi
 
-## 1. Tóm tắt thực hiện
+`DegradationPipelineV2` tạo cặp `(clean, degraded)` để phục vụ KD/consistency; `return_pair=False` trả một tensor cho trainer đơn luồng. YAML chuẩn đặt clean 60%, JPEG Q30–85 với nhóm nặng Q30–45, WebP, double-JPEG, blur, down-up và composite 25% trong nhóm degraded. Đây là thay đổi augmentation; chưa có phép đo chứng minh cải thiện AUC Q30 sau huấn luyện.
 
-Nâng cấp `PairedCleanDegradedAugmentation` (v1) lên `DegradationPipelineV2` (v2) để mô phỏng phân phối mạng xã hội 2024–2025, giải quyết lỗ hổng AUC Q30 ~55%.
+- `DatasetCreator.build_train_dataset()` giữ nguyên transform cũ và đầu ra một tensor. Bật v2 bằng `degradation_config`; bật cặp bằng `return_pair=True`.
+- Cross-domain M4/M5 đọc `degradation_config` từ YAML/CLI. Khi không bật v2, train và validation giữ Resize(256) → CenterCrop(224). Khi bật v2, kích thước lấy từ YAML suy biến, trừ khi có override rõ ràng; validation dùng cùng kích thước với train và không áp suy biến.
+- `jpeg.q_range` là giới hạn cuối. Các dải `heavy_range`/`light_range` được chặn vào giới hạn đó; dải con không giao được thu về đầu mút gần nhất. Q60 cố định luôn trả Q60. Dải đảo, ngoài [1,100], sai kiểu và heavy_share ngoài [0,1] bị từ chối ngay khi tạo pipeline.
+- T5 ép lần lượt cả năm loại suy biến để kiểm tra cùng seed cho cùng tag và tensor, thay vì chỉ kiểm tra nhánh clean.
 
----
+Ví dụ cấu hình train cross-domain:
 
-## 2. Phân phối lý thuyết vs thực đo (10.000 mẫu)
-
-| Tham số | Lý thuyết | Thực đo | PASS? |
-|:--------|:---------:|:-------:|:-----:|
-| `clean_prob` | 0.60 ± 0.02 | **0.605** | ✅ T2 |
-| Heavy JPEG [30-45] trong nhóm JPEG | 35% ± 3pp | **0.367** | ✅ T3 |
-| Composite (≥2 suy biến) trong degraded | 25% ± 2pp | **0.249** | ✅ T4 |
-| Deterministic (cùng seed) | 100% | **100%** | ✅ T5 |
-| Clean branch bất biến | allclose | **allclose** | ✅ T1 |
-
-> Số liệu đo trên 10.000 mẫu (single-process, không cần PyTorch tensor). Full tensor test cần môi trường có torch.
-
----
-
-## 3. Vấn đề của v1 đã được giải quyết
-
-| Tham số v1 | Giá trị cũ | Giá trị v2 | Giải pháp |
-|:-----------|:----------:|:----------:|:----------|
-| `clean_prob` | 0.70 | **0.60** | Tăng exposure 10% |
-| `jpeg_q_range` | (50, 90) | **[30, 85]** với 35% heavy [30-45] | Tung theo nhóm tách rời |
-| `blur_sigma_range` | (0.5, 1.5) | **[0.5, 2.0]** | Mở rộng sigma mạnh |
-| `down_ratio` | cố định 0.714 | **[0.50, 0.75]** | Đa dạng hoá |
-| Định dạng | JPEG only | **+ WebP Q[30,70]** | `RandomWebPCompression` |
-| Ghép suy biến | Không | **Composite 25%** | 4 cặp hợp lệ |
-
----
-
-## 4. Các artifact được tạo
-
-| # | Artifact | Đường dẫn | Trạng thái |
-|:-:|:---------|:----------|:----------:|
-| O1 | Transform v2 | [`src/datasets/transforms.py`](../../../../src/datasets/transforms.py) | ✅ |
-| O2 | Cấu hình | [`configs/degradation_v2.yaml`](../../../../configs/degradation_v2.yaml) | ✅ |
-| O3 | Test phân phối | [`tests/test_degradation_v2.py`](../../../../tests/test_degradation_v2.py) | ✅ |
-| O4 | Script histogram | [`tools/plot_degradation_profile.py`](../../../../tools/plot_degradation_profile.py) | ✅ |
-| O5 | Benchmark tool | [`tools/bench_degradation.py`](../../../../tools/bench_degradation.py) | ✅ |
-| O6 | Dataset update | [`src/datasets/dataset.py`](../../../../src/datasets/dataset.py) | ✅ |
-| O7 | Tích hợp CrossDomain | [`src/training/train_crossdomain.py`](../../../../src/training/train_crossdomain.py) | ✅ |
-| O8 | Smoke test tích hợp | [`tests/test_smoke_degradation_integration.py`](../../../../tests/test_smoke_degradation_integration.py) | ✅ |
-
----
-
-## 5. Thiết kế quy tắc chọn (đúng thứ tự)
-
-```
-u ~ U(0,1)
-├─ u < clean_prob (0.60) → trả (clean, clean)
-└─ ngược lại:
-   v ~ U(0,1)
-   ├─ v < composite.prob (0.25) → chọn 1 cặp trong 4 pairs, áp tuần tự
-   └─ ngược lại → chọn 1 suy biến đơn theo trọng số chuẩn hoá
-
-JPEG: 35% → q ~ U(30,45) | 65% → q ~ U(45,85)   ← tung theo nhóm tách rời
-```
-
-> ⚠️ Điểm dễ sai: nếu dùng `q ~ U(30,85)` gộp, tỷ lệ heavy thực tế chỉ 15/55 ≈ 27%, không đạt 35%.
-
----
-
-## 6. Thay đổi API
-
-### Backward-compatible
-```python
-# Code cũ — vẫn chạy được
-aug = PairedCleanDegradedAugmentation()
-x_clean, x_degraded = aug(img)
-
-# Dùng v2 từ YAML
-aug_v2 = DegradationPipelineV2.from_config("configs/degradation_v2.yaml")
-x_clean, x_degraded = aug_v2(img)
-
-# Dùng v2 với seed cho test
-x_clean, x_degraded = aug_v2(img, seed=42)
-print(aug_v2.last_tag)  # ["jpeg:37", "down_up:0.62"]
-```
-
-### Dataset & Training Integration
-```python
-# 1. Luồng Paired đa miền (Task 6.3-R / Task 7.11):
-# CrossDomainDataset nhận degradation_config v2, xuất ra cặp (x_clean, x_degraded)
-train_ds = CrossDomainDataset(
-    train_records,
-    paired=True,
-    img_resolution=224,
-    crop_resolution=224,
-    degradation_config="configs/degradation_v2.yaml"
-)
-
-# 2. Luồng Đơn Tensor huấn luyện chuẩn (src.main / Trainer):
-# DatasetCreator mặc định bảo toàn hợp đồng đơn tensor (3, 224, 224), không phá vỡ Trainer
-train_ds_single = creator.build_train_dataset(use_dual_stream=True)
-
-# 3. Chạy qua CLI hoặc cấu hình YAML trong train_crossdomain.py:
-# python src/training/train_crossdomain.py --config configs/train_m4_distill.yaml --degradation_config configs/degradation_v2.yaml
-```
-
----
-
-## 7. Benchmark tốc độ & Phân phối thực nghiệm
-
-### 7.1. Kết quả đo tốc độ (Benchmark)
-Đã thực thi công cụ đo kiểm chuẩn `tools/bench_degradation.py` (50 batches, batch_size=8, num_workers=4) và ghi nhận tại `DATASET/logs/phase7/degradation_benchmark.json`:
-
-| Chỉ số | Pipeline v1 (Cũ) | Pipeline v2 (Mới) | Chênh lệch (%) | Ngưỡng cho phép | Đánh giá |
-|:-------|:----------------:|:-----------------:|:--------------:|:---------------:|:--------:|
-| **Thời gian xử lý / batch** | **107.14 ms** | **91.40 ms** | **-14.69%** | $\le +15.0\%$ | ✅ **PASS** (Nhanh hơn v1) |
-
-> **Tối ưu cốt lõi**:
-> - Đồng bộ chuẩn độ phân giải 224x224 (không resize dư thừa 256 -> 224).
-> - WebP dùng `io.BytesIO` tối ưu in-memory stream.
-> - Double-JPEG tái sử dụng buffer nén tuần tự.
-
-### 7.2. Biểu đồ phân tích phân phối suy biến (Degradation Profile)
-Artifact đồ thị 4 panel đã được lưu trữ tại:
-📁 `DATASET/logs/phase7/degradation_profile.png`
-- Panel 1: Phân bố Quality JPEG [30-85] (nhóm nặng [30, 45] chiếm 36.7%).
-- Panel 2: Phân phối Quality WebP [30, 70].
-- Panel 3: Phân phối Sigma Gaussian Blur [0.5, 2.0].
-- Panel 4: Tỷ lệ các loại suy biến (Clean: 60.5%, Single: 29.7%, Composite: 9.8% tổng thể / 24.9% nhóm suy biến).
-
----
-
-## 8. Rủi ro đã xử lý
-
-| Rủi ro | Giải pháp |
-|:-------|:----------|
-| WebP không khả dụng | Fallback tự động sang JPEG, ghi log |
-| Q lệch khi lấy U(30,85) gộp | Tung theo nhóm tách rời (heavy_share) + test T3 chặn |
-| Composite phá vết giả mạo vi mô | Giới hạn 25%, ưu tiên cặp `jpeg+down_up` |
-
----
-
-## 9. Thông báo cho Thành viên C
-
-`configs/degradation_v2.yaml` đã sẵn sàng cho Task 7.11. Dùng:
 ```yaml
-# Trong config huấn luyện
-degradation_config: configs/degradation_v2.yaml
+dataset:
+  degradation_config: configs/degradation_v2.yaml
+  # img_resolution: 256  # chỉ đặt nếu chủ động ghi đè kích thước trong YAML v2
 ```
 
----
+`train.py` vẫn dùng curriculum/transform cũ. Việc bật v2 trong tài liệu này áp dụng cho `src.training.train_crossdomain` hoặc DatasetCreator có truyền config rõ ràng.
 
-## 10. Lệnh chạy kiểm tra
+## Kiểm tra
 
-```bash
-# Tests phân phối (cần PyTorch - 5 tests)
-pytest -q tests/test_degradation_v2.py
+Các test bao phủ: nhánh clean chuẩn, phân phối 10.000 mẫu, tất định từng codec, Q60 và các dải tùy chỉnh trên cả dict/YAML cũ, cấu hình không hợp lệ, preprocessing cũ, đầu ra đơn/cặp, YAML → CLI → DataLoader train/validation. Smoke paired đưa ảnh từ loader qua model CPU nhỏ, tính loss KD/consistency, backward và cập nhật trọng số. Đây không phải phép thử GPU/CLIP thực tế.
 
-# Smoke tests kiểm thử tích hợp toàn diện (Paired flow + Single tensor flow + SSOT)
-pytest -v tests/test_smoke_degradation_integration.py
-
-# Benchmark tốc độ
-python -m tools.bench_degradation --config configs/degradation_v2.yaml --batches 200
-
-# Vẽ histogram
-python -m tools.plot_degradation_profile --config configs/degradation_v2.yaml --n 10000
+```powershell
+$env:OMP_NUM_THREADS='1'
+$env:MKL_NUM_THREADS='1'
+python -m pytest -q -p no:cacheprovider --basetemp scratch/pytest-task78-final tests/test_degradation_v2.py tests/test_smoke_degradation_integration.py
 ```
+
+Lần chạy cuối sau tối ưu: **31 passed in 133.14s** (9 trường hợp degradation, 22 trường hợp smoke/regression). `--basetemp` đặt thư mục tạm trong workspace để không phụ thuộc quyền truy cập thư mục pytest dùng chung của Windows.
+
+Các số clean=0.605, heavy JPEG=0.367, composite=0.249 thuộc báo cáo lấy mẫu trước đó. Test phân phối chạy lại kiểm tra ngưỡng; không dùng các số cũ làm số đo mới. Histogram hiện lưu tại `DATASET/logs/phase7/degradation_profile.png`; panel là Q JPEG, tỷ lệ loại suy biến, sigma blur và tỷ lệ composite, không phải histogram Q WebP.
+
+## Benchmark DataLoader
+
+Kết quả một tiến trình 50 batch cũ (-14.69%) không đáp ứng phương pháp nghiệm thu và đã được thay thế. Công cụ mới dùng DataLoader thật với 4 worker; hai pipeline cùng nguồn ảnh, resize/crop, batch size và đầu ra paired. Mỗi lượt đo 200 batch sau 20 batch warmup; chạy ba lượt, đảo thứ tự v1/v2, lấy median và loại thời gian khởi động/tắt worker.
+
+```powershell
+python -m tools.bench_degradation --config configs/degradation_v2.yaml --batches 200 --num_workers 4 --repeats 3 --output DATASET/logs/phase7/degradation_benchmark.json
+```
+
+Nguồn mặc định là 32 ảnh nhiễu RGB tổng hợp có seed, không phải ảnh từ manifest v2. Có thể dùng `--image-dir <thu_muc_anh>` để đo cả đọc/giải mã dữ liệu thật. JSON lưu từng lượt, cấu hình, nguồn ảnh, môi trường và trạng thái ngưỡng; lệnh trả exit code 1 khi overhead vượt 15%. Kết quả trên CPU hiện tại không thay cho benchmark trên máy train.
+
+Phép đo trước tối ưu với phương pháp mới vượt ngưỡng, lưu tại `DATASET/logs/phase7/degradation_benchmark_before_optimization.json`. Profiling cho thấy WebP encode chiếm phần lớn chi phí tăng thêm. Tối ưu đã áp dụng:
+
+- Dùng chung ảnh PIL sau resize/crop cho hai nhánh, bỏ resize lặp; chế độ đơn tensor không tạo tensor clean bị bỏ đi.
+- `webp.method=0` chọn encoder nhanh, giữ Q30–70 và tỷ lệ lấy mẫu. Bitrate/pixel sau giải mã có thể khác encoder method=4 trước đây; có thể cấu hình method 0..6. Không thay tỷ lệ clean/composite để đạt tốc độ.
+
+Kết quả sau tối ưu trên CPU Windows hiện tại: v1 median **9.702 ms/batch**, v2 median **11.068 ms/batch**, overhead **+14.08%**, đạt ngưỡng ≤15% trên corpus tổng hợp này. Ngưỡng đạt sát giới hạn; cần đo lại với ảnh thật và máy train trước khi suy rộng hiệu năng. JSON lưu đủ ba lượt, không chọn lượt nhanh nhất.
+
+## Artifact
+
+- Transform: `src/datasets/transforms.py`; cấu hình: `configs/degradation_v2.yaml`.
+- Tích hợp: `src/datasets/dataset.py`, `src/training/train_crossdomain.py`.
+- Tests: `tests/test_degradation_v2.py`, `tests/test_smoke_degradation_integration.py`.
+- Đo/vẽ: `tools/bench_degradation.py`, `tools/plot_degradation_profile.py`.
+- Kết quả: `DATASET/logs/phase7/degradation_benchmark.json`, `DATASET/logs/phase7/degradation_profile.png`.
