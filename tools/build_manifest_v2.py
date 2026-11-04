@@ -889,7 +889,7 @@ def _select_rows_for_shard(
             rows_meta.append((i, {"image_name": f"{shard}:{i}", "model_name": spec.model_name or spec.name,
                                   "label": 1, "nsfw_flag": False, "real_source": None}))
     else:
-        schema_cols = set(pq.ParquetFile(local).schema.names)
+        schema_cols = set(pq.ParquetFile(local).schema_arrow.names)
         wanted = [c for c in ["image_name", "model_name", "label", "nsfw_flag", "real_source"] if c in schema_cols]
         for batch in _iter_local_rows(local, wanted, 256):
             for row in batch:
@@ -1031,9 +1031,6 @@ def stage_fetch(
                 f"({sum(can.values())} ung vien)")
 
             cols = ["image_name", "image_data"] if spec.kind == "cfe" else ["image"]
-            import pyarrow.parquet as pq
-            schema_cols = set(pq.ParquetFile(local).schema.names)
-            cols = [c for c in cols if c in schema_cols]
             kept = 0
             rejected: Dict[str, int] = {}
             buffer: List[Dict] = []
