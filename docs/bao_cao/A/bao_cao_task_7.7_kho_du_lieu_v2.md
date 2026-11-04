@@ -183,3 +183,4 @@ tar -xf /content/drive/MyDrive/Fatformer/phase7/train_crossdomain_v2.tar -C /con
 
 *Báo cáo được lập và ký nhận điện tử bởi Thành viên A (Data & Infrastructure Lead).*  
 *Trạng thái Phase 7 Dashboard: Task 7.7 [x] Hoàn thành $\rightarrow$ Mở khóa Task 7.11.*
+
