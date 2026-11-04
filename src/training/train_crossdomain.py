@@ -452,6 +452,8 @@ class CrossDomainTrainer:
         grad_clip_norm: float = 1.0,
         grad_accum_steps: int = 1,
         use_amp: bool = False,
+        weight_feat: float = 0.0,
+        weight_guard: float = 0.0,
     ):
         self.student = student_model.to(device)
         self.teacher = teacher_model.to(device) if teacher_model is not None else None
@@ -468,6 +470,9 @@ class CrossDomainTrainer:
         self.use_amp = use_amp and (self.device.type == "cuda")
         self.scaler = torch.amp.GradScaler("cuda", enabled=True) if self.use_amp else None
         self.best_composite_score = -1.0
+        self.weight_feat = float(weight_feat)
+        self.weight_guard = float(weight_guard)
+        self.use_features = (self.weight_feat > 0.0 or self.weight_guard > 0.0)
 
         os.makedirs(self.save_dir, exist_ok=True)
 
@@ -489,6 +494,9 @@ class CrossDomainTrainer:
         total_ce = 0.0
         total_kd = 0.0
         total_cons = 0.0
+        total_feat = 0.0
+        total_guard = 0.0
+        guard_active_count = 0
         num_batches = len(self.train_loader)
 
         self.optimizer.zero_grad()
@@ -518,8 +526,16 @@ class CrossDomainTrainer:
                         teacher_logits = self.teacher(x_clean)
 
             with torch.amp.autocast(self.device.type, enabled=self.use_amp):
-                student_clean_logits = self.student(x_clean)
-                student_degraded_logits = self.student(x_degraded) if x_degraded is not None else None
+                if self.use_features:
+                    student_clean_logits, features_clean = self.student(x_clean, return_features=True)
+                    if x_degraded is not None:
+                        student_degraded_logits, features_deg = self.student(x_degraded, return_features=True)
+                    else:
+                        student_degraded_logits, features_deg = None, None
+                else:
+                    student_clean_logits = self.student(x_clean)
+                    student_degraded_logits = self.student(x_degraded) if x_degraded is not None else None
+                    features_clean, features_deg = None, None
 
                 loss_dict = self.criterion(
                     logits=student_clean_logits,
@@ -527,6 +543,10 @@ class CrossDomainTrainer:
                     teacher_logits=teacher_logits,
                     logits_degraded=student_degraded_logits,
                     clean_mask=clean_mask,
+                    features_clean=features_clean,
+                    features_deg=features_deg,
+                    weight_feat=self.weight_feat,
+                    weight_guard=self.weight_guard,
                 )
                 loss = loss_dict["loss_total"] / self.grad_accum_steps
 
@@ -552,6 +572,12 @@ class CrossDomainTrainer:
             total_ce += loss_dict["loss_ce"].item()
             total_kd += loss_dict["loss_kd"].item()
             total_cons += loss_dict["loss_cons"].item()
+            if "loss_feat" in loss_dict:
+                total_feat += loss_dict["loss_feat"].item()
+            if "loss_guard" in loss_dict:
+                total_guard += loss_dict["loss_guard"].item()
+            if loss_dict.get("guard_active", False):
+                guard_active_count += 1
 
         if self.scheduler is not None:
             self.scheduler.step()
@@ -560,12 +586,17 @@ class CrossDomainTrainer:
             torch.cuda.empty_cache()
 
         avg_loss = total_loss / max(num_batches, 1)
-        return {
+        metrics = {
             "loss_total": avg_loss,
             "loss_ce": total_ce / max(num_batches, 1),
             "loss_kd": total_kd / max(num_batches, 1),
             "loss_cons": total_cons / max(num_batches, 1),
         }
+        if self.use_features:
+            metrics["loss_feat"] = total_feat / max(num_batches, 1)
+            metrics["loss_guard"] = total_guard / max(num_batches, 1)
+            metrics["guard_active_ratio"] = guard_active_count / max(num_batches, 1)
+        return metrics
 
     def validate(self) -> Dict[str, float]:
         if self.val_loader is None:
@@ -711,13 +742,14 @@ def run_training_pipeline(args):
     print(f"Thiet bi: {device} | Dry-run: {args.dry_run} | Epochs: {args.epochs}")
     print("=" * 80)
 
-    # 1. Khoi tao Loss (Anchored Recovery Task 6.3-R: 0.7 CE + 0.3 KD + 0.2 Cons)
+    # 1. Khoi tao Loss (Anchored Recovery Task 6.3-R & Phase 7 Loss v2)
     criterion = CrossDomainTotalLoss(
         weight_ce=getattr(args, "weight_ce", 0.7),
         label_smoothing=args.label_smoothing,
         temperature=args.temperature,
         alpha_kd=args.alpha_kd if args.branch in ["M4", "M5"] else 0.0,
         beta_cons=args.beta_cons if args.branch in ["M4", "M5"] else 0.0,
+        fake_index=getattr(args, "fake_index", 1),
     )
 
     # 2. Khoi tao Model (Thuc te hoac Dry-run)
@@ -908,6 +940,8 @@ def run_training_pipeline(args):
         save_name=getattr(args, "save_name", "fatformer_anchored_recovery_best.pth"),
         grad_accum_steps=args.grad_accum_steps,
         use_amp=(args.device == "cuda"),
+        weight_feat=getattr(args, "weight_feat", 0.0),
+        weight_guard=getattr(args, "weight_guard", 0.0),
     )
 
     # Chot chan kiem toan Step-0 Identity giua Student va Teacher
@@ -940,8 +974,9 @@ def run_training_pipeline(args):
         print("\n[DRY-RUN] Bat dau chay kiem thu 1 step Train + 1 step Val...")
         train_metrics = trainer.train_epoch(epoch=1)
         val_metrics = trainer.validate()
+        v2_log = f", Feat={train_metrics['loss_feat']:.4f}, Guard={train_metrics['loss_guard']:.4f}" if "loss_feat" in train_metrics else ""
         print(f"  -> Ket qua Train: Loss={train_metrics['loss_total']:.4f} "
-              f"(CE={train_metrics['loss_ce']:.4f}, KD={train_metrics['loss_kd']:.4f}, Cons={train_metrics['loss_cons']:.4f})")
+              f"(CE={train_metrics['loss_ce']:.4f}, KD={train_metrics['loss_kd']:.4f}, Cons={train_metrics['loss_cons']:.4f}{v2_log})")
         print(f"  -> Ket qua Val: ACC={val_metrics['val_acc']:.2f}%, Composite={val_metrics['val_composite']:.2f}%")
         trainer.save_checkpoint(epoch=1, is_best=True, val_metrics=val_metrics)
         print("[DRY-RUN] HOAN THANH XUAT SAC — MA NGUON SAN SANG 100% CHO KAGGLE/COLAB!")
@@ -964,7 +999,8 @@ def run_training_pipeline(args):
             trainer.best_composite_score = max(trainer.best_composite_score, val_metrics["val_composite"])
 
         trainer.save_checkpoint(epoch, is_best=is_best, val_metrics=val_metrics)
-        print(f"Epoch {epoch}/{args.epochs} ({elapsed:.1f}s) | Train Loss: {train_metrics['loss_total']:.4f} | "
+        v2_log = f" (Feat: {train_metrics['loss_feat']:.4f}, Guard: {train_metrics['loss_guard']:.4f})" if "loss_feat" in train_metrics else ""
+        print(f"Epoch {epoch}/{args.epochs} ({elapsed:.1f}s) | Train Loss: {train_metrics['loss_total']:.4f}{v2_log} | "
               f"Val ACC: {val_metrics['val_acc']:.2f}% (Real: {val_metrics['val_r_acc']:.2f}%, Fake: {val_metrics['val_f_acc']:.2f}%) | "
               f"Composite: {val_metrics['val_composite']:.2f}% {'[BEST]' if is_best else ''}")
 
@@ -1027,6 +1063,9 @@ def parse_arguments():
         "degradation_config": None,
         "img_resolution": None,
         "crop_resolution": 224,
+        "weight_feat": 0.0,
+        "weight_guard": 0.0,
+        "fake_index": 1,
     }
 
     # 2. Neu co config YAML, nap cac truong vao defaults truoc khi xu ly CLI
@@ -1055,6 +1094,12 @@ def parse_arguments():
             defaults["beta_cons"] = float(l_cfg.get("beta_cons", defaults["beta_cons"]))
             defaults["temperature"] = float(l_cfg.get("temperature", defaults["temperature"]))
             defaults["label_smoothing"] = float(l_cfg.get("label_smoothing", defaults["label_smoothing"]))
+            if "weight_feat" in l_cfg:
+                defaults["weight_feat"] = float(l_cfg["weight_feat"])
+            if "weight_guard" in l_cfg:
+                defaults["weight_guard"] = float(l_cfg["weight_guard"])
+            if "fake_index" in l_cfg:
+                defaults["fake_index"] = int(l_cfg["fake_index"])
         if "dataset" in cfg:
             d_cfg = cfg["dataset"]
             defaults["train_manifest"] = d_cfg.get("manifest", defaults["train_manifest"])
@@ -1083,6 +1128,12 @@ def parse_arguments():
     parser.add_argument("--weight_ce", type=float, default=defaults["weight_ce"], help="Trong so Cross-Entropy loss tren anh tang cuong (mac dinh 0.7)")
     parser.add_argument("--alpha_kd", type=float, default=defaults["alpha_kd"], help="Trong so KD loss (mac dinh 0.3)")
     parser.add_argument("--beta_cons", type=float, default=defaults["beta_cons"], help="Trong so Consistency loss (mac dinh 0.2)")
+    parser.add_argument("--weight_feat", type=float, default=defaults["weight_feat"],
+                        help="Trong so FeatureConsistencyLoss (Task 7.9, mac dinh 0.0)")
+    parser.add_argument("--weight_guard", type=float, default=defaults["weight_guard"],
+                        help="Trong so RealGuardLoss (Task 7.9, mac dinh 0.0)")
+    parser.add_argument("--fake_index", type=int, default=defaults["fake_index"],
+                        help="Index lop Fake trong nhan phan loai (mac dinh 1)")
     parser.add_argument("--temperature", type=float, default=defaults["temperature"], help="Nhiet do KD")
     parser.add_argument("--label_smoothing", type=float, default=defaults["label_smoothing"], help="Label smoothing")
     parser.add_argument("--save_dir", type=str, default=defaults["save_dir"], help="Thu muc luu checkpoint")

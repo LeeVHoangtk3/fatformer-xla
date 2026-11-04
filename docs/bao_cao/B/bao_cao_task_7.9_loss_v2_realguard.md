@@ -158,3 +158,18 @@ Bàn giao cho Thành viên C:
 - Gọi `model(x, return_features=True)` cho cả nhánh clean và degraded, truyền `features_clean`, `features_deg`, `weight_feat`, `weight_guard` vào `CrossDomainTotalLoss`.
 - Đọc trọng số từ `configs/train_phase7_anchored_v2.yaml`; log thêm `loss_feat`, `loss_guard`, `guard_active`.
 - Đầu vào cho **Task 7.10** (selection metric v2) và cổng **G7.2**.
+
+---
+
+## 9. Tích Hợp Đồng Bộ Huấn Luyện (End-to-End Integration)
+
+Đã hoàn tất nối Loss v2 trực tiếp vào pipeline huấn luyện của dự án tại [`src/training/train_crossdomain.py`](../../../src/training/train_crossdomain.py):
+1. **Trích xuất đặc trưng tự động**: Trong `CrossDomainTrainer.train_epoch()`, khi `weight_feat > 0` hoặc `weight_guard > 0`, student model được gọi với `return_features=True` cho cả hai nhánh clean và degraded, trích xuất `features_clean` và `features_deg` để cung cấp cho `CrossDomainTotalLoss`.
+2. **Nạp cấu hình YAML & CLI**: `parse_arguments()` đã được bổ sung nạp tự động `weight_feat`, `weight_guard`, `fake_index` từ file YAML (`loss.*`) và hỗ trợ cờ CLI tương ứng (`--weight_feat`, `--weight_guard`, `--fake_index`).
+3. **Giám sát Loss phụ**: Vòng lặp huấn luyện ghi nhận và log chi tiết `loss_feat`, `loss_guard`, và tỷ lệ kích hoạt `guard_active_ratio`.
+4. **Kiểm thử tích hợp khép kín (Smoke Test)**:
+   - File test: [`tests/test_smoke_loss_v2_integration.py`](../../../tests/test_smoke_loss_v2_integration.py)
+   - Kết quả: **3/3 PASSED (100%)**
+     * `test_smoke_loss_v2_trainer_integration`: PASSED (Forward + Backward + Optimizer Step với đầy đủ 5 thành phần loss).
+     * `test_smoke_config_yaml_loss_v2_parsing`: PASSED (Đọc chuẩn `train_phase7_anchored_v2.yaml`).
+     * `test_smoke_backward_compat_legacy_mode`: PASSED (Khi weights=0, hoàn toàn không gọi `return_features`, bảo toàn tài nguyên).

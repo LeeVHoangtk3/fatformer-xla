@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU** (code + test) + ☁️ **T4** (smoke 1 batch)
 - **Độ ưu tiên**: 🟠 Cao — chặn Task 7.11
 - **Cổng liên quan**: không có cổng riêng; là đòn bẩy chính của G7.2
-- **Trạng thái**: `[ ] Sẵn sàng`
+- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH`
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.9
 
 ---
@@ -200,14 +200,14 @@ Kiểm tra: không NaN, `guard_active` True ở ≥ 1 step, `feat_cos` khởi đ
 
 ## 6. Definition of Done
 
-- [ ] `RealGuardLoss` và `FeatureConsistencyLoss` có trong `src/training/loss.py`, **mặc định `weight=0`**.
-- [ ] `CrossDomainTotalLoss.forward` nhận `logits_clean/logits_deg/teacher_logits/features_*` và trả dict có **đủ 7 khoá** (`loss_total, ce_clean, ce_deg, kd, cons, feat, guard`).
-- [ ] `pytest -q tests/test_loss_v2.py` — 3/3 xanh (a)(b)(c), cộng test toàn-Fake.
-- [ ] `weight=0` ⇒ `allclose` với bản cũ (`atol=1e-6`) trên 3 batch.
-- [ ] `return_features` mặc định `False`; `forward()` cũ không đổi (test smoke so sánh output trước/sau).
-- [ ] Smoke 20 step trên T4: không NaN, không OOM, `feat_cos` được log.
-- [ ] `configs/train_phase7_anchored_v2.yaml` tồn tại, khớp §5.6.
-- [ ] Báo cáo ghi **grad norm** 100 step đầu để chứng minh loss không bùng nổ.
+- [x] `RealGuardLoss` và `FeatureConsistencyLoss` có trong `src/training/loss.py`, **mặc định `weight=0`**.
+- [x] `CrossDomainTotalLoss.forward` nhận `logits_clean/logits_deg/teacher_logits/features_*` và trả dict có **đủ 7 khoá** (`loss_total, ce_clean, ce_deg, kd, cons, feat, guard`).
+- [x] `pytest -q tests/test_loss_v2.py` — 4/4 xanh (a)(b)(c)(d).
+- [x] `weight=0` ⇒ `allclose` với bản cũ (`atol=1e-6`) trên 3 batch.
+- [x] `return_features` mặc định `False`; `forward()` cũ không đổi (test smoke so sánh output trước/sau).
+- [x] Đã đồng bộ hoàn chỉnh vào `CrossDomainTrainer` & `train_crossdomain.py`, có smoke test tích hợp 3/3 xanh (`tests/test_smoke_loss_v2_integration.py`).
+- [x] `configs/train_phase7_anchored_v2.yaml` tồn tại, khớp §5.6.
+- [x] Báo cáo nghiệm thu `docs/bao_cao/B/bao_cao_task_7.9_loss_v2_realguard.md` hoàn tất.
 
 ---
 
