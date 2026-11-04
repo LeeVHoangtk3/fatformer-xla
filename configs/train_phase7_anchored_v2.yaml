@@ -1,0 +1,48 @@
+# ==============================================================================
+# FATFORMER-XLA: CAU HINH HUAN LUYEN ANCHORED RECOVERY V2 (PHASE 7)
+# Task 7.9 — Thanh vien B (Architecture & Loss Lead)
+# ==============================================================================
+# Cong thuc loss moi (Phase 7):
+#   L = 0.3·CE_clean + 0.3·CE_deg + 0.7·KD + 0.3·Feat + 0.5·Guard
+# Backward-compat: khi weight_feat=weight_guard=0 → cong thuc cu chinh xac
+# ==============================================================================
+
+experiment:
+  name: "phase7_anchored_v2"
+  branch: "M4"
+  seed: 42
+  description: "Phase 7 Anchored Recovery v2 with RealGuardLoss + FeatureConsistencyLoss"
+
+model:
+  backbone: "CLIP:ViT-L/14"
+  clip_path: "DATASET/pretrained/ViT-L-14.pt"
+  checkpoint_init: "DATASET/pretrained/fatformer_anchored_recovery_best.pth"
+  teacher_checkpoint: "DATASET/pretrained/fatformer_4class_ckpt.pth"
+  num_classes: 2
+  use_srm: true
+  use_gating: true
+  srm_out_dim: 1024
+
+loss:
+  type: "CrossDomainTotalLoss"
+  label_smoothing: 0.05
+  temperature: 2.0
+  weight_ce: 0.3        # CE (dung cho legacy_mode; trong Phase 7 mode dung 0.3/0.3 truc tiep)
+  alpha_kd: 0.7         # KD weight trong CrossDomainDistillationLoss
+  beta_cons: 0.2        # Consistency weight trong PairedConsistencyLoss
+  weight_feat: 0.3      # FeatureConsistencyLoss
+  weight_guard: 0.5     # RealGuardLoss
+  fake_index: 1         # REAL=0, FAKE=1 (theo data_manifest.json)
+
+training:
+  device: "cuda"
+  epochs: 5
+  batch_size: 16
+  learning_rate: 1.0e-4
+  min_lr: 1.0e-6
+  weight_decay: 1.0e-4
+  grad_accum_steps: 2
+  grad_clip_norm: 1.0
+  use_amp: true
+  save_dir: "DATASET/checkpoints/phase7"
+  save_name: "fatformer_anchored_v2_best.pth"

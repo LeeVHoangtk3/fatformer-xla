@@ -5,7 +5,7 @@
 > **Người thực hiện**: **Thành viên B** *(Architecture & Loss Lead)*  
 > **Người phối hợp**: **Thành viên C** *(Training Lead)*  
 > **Cổng kiểm soát chất lượng**: **Cổng G7.0 (Toàn vẹn đo lường)**
-> **Trạng thái**: `[~] ĐÃ TRIỂN KHAI — CHỜ ĐÓNG repo-wide strict=False VÀ TÁI LẬP SMOKE LOCAL`
+> **Trạng thái**: `[x] ĐÃ HOÀN THÀNH — ĐÃ KIỂM ĐỊNH 13/13 TEST VÀ SMOKE LOCAL`
 > **Môi trường xác minh**: Google Colab CPU (Python 3.13, torch 2.x+cpu) — chạy thực tế 4 checkpoint + smoke test forward pass  
 > **Hiện vật bàn giao**:
 > - Module loader chính: [`src/models/canonical_loader.py`](../../../src/models/canonical_loader.py)

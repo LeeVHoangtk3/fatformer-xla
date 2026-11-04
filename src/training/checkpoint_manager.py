@@ -98,11 +98,28 @@ class CheckpointManager:
             os.replace(temp_path, local_path)
             print(f"[CHECKPOINT] [Latest] Đã lưu/ghi đè epoch {epoch} tại: {local_path}")
 
-            # Cập nhật model_best nếu đạt kỷ lục
-            if is_best:
-                best_path = os.path.join(self.save_dir, "model_best.pth")
-                shutil.copyfile(local_path, best_path)
-                print(f"[CHECKPOINT] [Best] ★ Đã cập nhật mô hình tốt nhất (Kỷ lục mới) tại: {best_path}")
+        # Cap nhat best.pth hoac best_effort.pth (Task 7.10 Selection Metric v2)
+        is_best_effort = val_metrics.get("is_best_effort", False) if val_metrics else False
+        if is_best:
+            best_path = os.path.join(self.save_dir, "best.pth")
+            legacy_best_path = os.path.join(self.save_dir, "model_best.pth")
+            for bp in [best_path, legacy_best_path]:
+                if os.path.exists(bp):
+                    try:
+                        os.remove(bp)
+                    except Exception:
+                        pass
+                shutil.copyfile(local_path, bp)
+            print(f"[CHECKPOINT] Da cap nhat mo hinh chinh thuc best.pth: {best_path}")
+        elif is_best_effort:
+            effort_path = os.path.join(self.save_dir, "best_effort.pth")
+            if os.path.exists(effort_path):
+                try:
+                    os.remove(effort_path)
+                except Exception:
+                    pass
+            shutil.copyfile(local_path, effort_path)
+            print(f"[CHECKPOINT] Da cap nhat mo hinh no luc cao nhat best_effort.pth: {effort_path}")
 
             # Sao lưu sang Google Drive (nếu có)
             if self.drive_backup_dir and os.path.exists(self.drive_backup_dir):
@@ -145,16 +162,28 @@ class CheckpointManager:
                 pass
         shutil.copyfile(local_path, latest_path)
 
-        # Cập nhật model_best nếu đạt kỷ lục
+        # Cap nhat best.pth hoac best_effort.pth (Task 7.10 Selection Metric v2)
+        is_best_effort = val_metrics.get("is_best_effort", False) if val_metrics else False
         if is_best:
-            best_path = os.path.join(self.save_dir, "model_best.pth")
-            if os.path.exists(best_path):
+            best_path = os.path.join(self.save_dir, "best.pth")
+            legacy_best_path = os.path.join(self.save_dir, "model_best.pth")
+            for bp in [best_path, legacy_best_path]:
+                if os.path.exists(bp):
+                    try:
+                        os.remove(bp)
+                    except Exception:
+                        pass
+                shutil.copyfile(local_path, bp)
+            print(f"[CHECKPOINT] Da cap nhat mo hinh chinh thuc best.pth: {best_path}")
+        elif is_best_effort:
+            effort_path = os.path.join(self.save_dir, "best_effort.pth")
+            if os.path.exists(effort_path):
                 try:
-                    os.remove(best_path)
+                    os.remove(effort_path)
                 except Exception:
                     pass
-            shutil.copyfile(local_path, best_path)
-            print(f"[CHECKPOINT] Đã cập nhật mô hình tốt nhất (Best Model) tại: {best_path}")
+            shutil.copyfile(local_path, effort_path)
+            print(f"[CHECKPOINT] Da cap nhat mo hinh no luc cao nhat best_effort.pth: {effort_path}")
 
         # Đồng bộ sang Google Drive
         if self.drive_backup_dir and os.path.exists(self.drive_backup_dir):

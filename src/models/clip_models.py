@@ -164,7 +164,7 @@ class CLIPModel(nn.Module):
         tgt = self.norm2(tgt)
         return tgt
 
-    def forward(self, image, return_dual=False):
+    def forward(self, image, return_dual=False, return_features=False):
         tokenized_prompts = self.tokenized_prompts
         logit_scale = self.logit_scale.exp()
 
@@ -200,4 +200,7 @@ class CLIPModel(nn.Module):
         # Trả về 2 luồng riêng biệt cho DualStreamFocalLoss hoặc tổng hợp cho suy luận
         if return_dual:
             return logits, aug_logits
+        if return_features:
+            # Task 7.9: trả thêm aug_image_features cho FeatureConsistencyLoss
+            return logits + aug_logits, aug_image_features
         return logits + aug_logits
