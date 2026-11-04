@@ -1,0 +1,506 @@
+{
+ "metadata": {
+  "created_at": "2026-11-04T05:24:58+00:00",
+  "task": "Task 7.7 - audit co lap kho du lieu v2",
+  "tool": "tools/audit_manifest_v2.py",
+  "manifest": "/content/fatformer-xla/DATASET/manifests/data_manifest_v2.json",
+  "manifest_sha256": "c1e883fed2e0fdd55ad9732ddc3bd44e1d21438b009100134f91788cf6af218a",
+  "config_sha256": "ae07f54333f09fab00cc9e6c3647338c2cb53b2b2b625dd91ac6a6c02339bd6e",
+  "manifest_version": "2.0",
+  "n_records": 14400,
+  "thresholds": {
+   "external": 8,
+   "internal": 3
+  },
+  "hash_algorithms": {
+   "sha256": "byte-exact",
+   "phash": "DCT 8x8 64-bit (tools/hash_utils.py)"
+  },
+  "references": {
+   "cfe": {
+    "path": "/content/fatformer-xla/DATASET/logs/phase7/hashes_cfe_test.json",
+    "sha256": "496fa515b9fb9354c7ebeaa50fec3454fe927bf017d97de5698148c987561e2a",
+    "n_images": 2000,
+    "n_generators": 16
+   },
+   "test18": {
+    "path": "/content/fatformer-xla/DATASET/logs/phase7/hashes_18sets.json.gz",
+    "sha256": "b31feb1a6639e8e18efcabae729bc57b1a2f1e85311fb60da9bbdff80df9fe38",
+    "n_images": 110329,
+    "n_generators": 23
+   }
+  }
+ },
+ "pairs": {
+  "v2_vs_cfe_test": {
+   "reference": "cfe",
+   "n_reference_images": 2000,
+   "n_reference_generators": 16,
+   "threshold": 8,
+   "n_checked": 14400,
+   "sha256_matches": 0,
+   "phash_matches": 0,
+   "violations": 0,
+   "examples": [],
+   "per_reference": [
+    {
+     "reference": "cfe",
+     "reference_path": "/content/fatformer-xla/DATASET/logs/phase7/hashes_cfe_test.json",
+     "n_reference_images": 2000,
+     "n_reference_generators": 16,
+     "threshold": 8,
+     "n_checked": 14400,
+     "sha256_matches": 0,
+     "phash_matches": 0,
+     "violations": 0,
+     "examples": [],
+     "phash_distance_histogram": {
+      "0-0": 0,
+      "1-1": 0,
+      "2-2": 0,
+      "3-3": 0,
+      "4-4": 0,
+      "5-6": 0,
+      "7-8": 0,
+      "9-12": 138,
+      "13-16": 4179,
+      "17-24": 10083,
+      "25-32": 0,
+      "33-64": 0,
+      ">64": 0
+     }
+    }
+   ]
+  },
+  "v2_vs_task51_18sets": {
+   "reference": "test18",
+   "n_reference_images": 110329,
+   "n_reference_generators": 23,
+   "threshold": 8,
+   "n_checked": 14400,
+   "sha256_matches": 0,
+   "phash_matches": 0,
+   "violations": 0,
+   "examples": [],
+   "per_reference": [
+    {
+     "reference": "test18",
+     "reference_path": "/content/fatformer-xla/DATASET/logs/phase7/hashes_18sets.json.gz",
+     "n_reference_images": 110329,
+     "n_reference_generators": 23,
+     "threshold": 8,
+     "n_checked": 14400,
+     "sha256_matches": 0,
+     "phash_matches": 0,
+     "violations": 0,
+     "examples": [],
+     "phash_distance_histogram": {
+      "0-0": 0,
+      "1-1": 0,
+      "2-2": 0,
+      "3-3": 0,
+      "4-4": 0,
+      "5-6": 0,
+      "7-8": 0,
+      "9-12": 3210,
+      "13-16": 11159,
+      "17-24": 31,
+      "25-32": 0,
+      "33-64": 0,
+      ">64": 0
+     }
+    }
+   ]
+  },
+  "internal_splits": {
+   "pairs": {
+    "train__vs__val_calib": {
+     "n_a": 12240,
+     "n_b": 1080,
+     "threshold": 3,
+     "sha256_matches": 0,
+     "phash_matches": 0,
+     "violations": 0,
+     "examples": []
+    },
+    "train__vs__val_select": {
+     "n_a": 12240,
+     "n_b": 1080,
+     "threshold": 3,
+     "sha256_matches": 0,
+     "phash_matches": 0,
+     "violations": 0,
+     "examples": []
+    },
+    "val_calib__vs__val_select": {
+     "n_a": 1080,
+     "n_b": 1080,
+     "threshold": 3,
+     "sha256_matches": 0,
+     "phash_matches": 0,
+     "violations": 0,
+     "examples": []
+    },
+    "sha_in_multiple_splits": {
+     "count": 0,
+     "violations": 0
+    }
+   },
+   "violations": 0
+  }
+ },
+ "generator_check": {
+  "n_test_generators": 39,
+  "test_generators": {
+   "DFGAN": [
+    "cfe"
+   ],
+   "Dalle2": [
+    "cfe"
+   ],
+   "Dalle3": [
+    "cfe"
+   ],
+   "DeciDiffusionV2": [
+    "cfe"
+   ],
+   "Firefly_Image2": [
+    "cfe"
+   ],
+   "Firefly_Image3": [
+    "cfe"
+   ],
+   "GALIP": [
+    "cfe"
+   ],
+   "Hourglass": [
+    "cfe"
+   ],
+   "LCM_lora_sdv15": [
+    "cfe"
+   ],
+   "LCM_lora_sdxl": [
+    "cfe"
+   ],
+   "LCM_lora_ssd1b": [
+    "cfe"
+   ],
+   "MidjourneyV5_2": [
+    "cfe"
+   ],
+   "MidjourneyV6_1": [
+    "cfe"
+   ],
+   "biggan": [
+    "test18"
+   ],
+   "crn": [
+    "test18"
+   ],
+   "cyclegan": [
+    "test18"
+   ],
+   "dalle": [
+    "test18"
+   ],
+   "deepfake": [
+    "test18"
+   ],
+   "gaugan": [
+    "test18"
+   ],
+   "glide_100_10": [
+    "test18"
+   ],
+   "glide_100_27": [
+    "test18"
+   ],
+   "glide_50_27": [
+    "test18"
+   ],
+   "guided": [
+    "test18"
+   ],
+   "imle": [
+    "test18"
+   ],
+   "kandinsky_2_2": [
+    "cfe"
+   ],
+   "kvikontent_midjourney_v6": [
+    "cfe"
+   ],
+   "ldm_100": [
+    "test18"
+   ],
+   "ldm_200": [
+    "test18"
+   ],
+   "ldm_200_cfg": [
+    "test18"
+   ],
+   "pndm": [
+    "test18"
+   ],
+   "progan": [
+    "test18"
+   ],
+   "san": [
+    "test18"
+   ],
+   "seeingdark": [
+    "test18"
+   ],
+   "stable_cascade": [
+    "cfe"
+   ],
+   "stargan": [
+    "test18"
+   ],
+   "stylegan": [
+    "test18"
+   ],
+   "stylegan2": [
+    "test18"
+   ],
+   "vqdiffusion": [
+    "test18"
+   ],
+   "whichfaceisreal": [
+    "test18"
+   ]
+  },
+  "n_train_generators": 17,
+  "blocked": [],
+  "related": [],
+  "allowed": [
+   {
+    "generator": "CIPS",
+    "n": 200,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "DeepFloyd",
+    "n": 1187,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "DiT",
+    "n": 200,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "GPT-4o",
+    "n": 1200,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "Gansformer",
+    "n": 200,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "GigaGAN",
+    "n": 200,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "LFM",
+    "n": 200,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "ProjectedGAN",
+    "n": 200,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "StyleSANXL",
+    "n": 200,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "StyleSwin",
+    "n": 200,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "stable_diffusion_v1_5",
+    "n": 1199,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "stablediffusionapi/acorn-is-boning-xl",
+    "n": 30,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "stablediffusionapi/animagine-xl-31",
+    "n": 31,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "stablediffusionapi/dreamshaperxlturbov21fix5",
+    "n": 30,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "stablediffusionapi/realcartoon-anime-v11",
+    "n": 30,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "stablediffusionapi/samaritan-3d-cartoon-v40",
+    "n": 30,
+    "matched_test_generator": null,
+    "refs": []
+   },
+   {
+    "generator": "tamingTransformers",
+    "n": 1200,
+    "matched_test_generator": null,
+    "refs": []
+   }
+  ],
+  "violations": 0,
+  "denylist_status": {
+   "CIPS": "allowed",
+   "DeepFloyd": "allowed",
+   "DiT": "allowed",
+   "GPT-4o": "allowed",
+   "Gansformer": "allowed",
+   "GigaGAN": "allowed",
+   "LFM": "allowed",
+   "ProjectedGAN": "allowed",
+   "StyleSANXL": "allowed",
+   "StyleSwin": "allowed",
+   "stable_diffusion_v1_5": "allowed",
+   "stablediffusionapi/acorn-is-boning-xl": "allowed",
+   "stablediffusionapi/animagine-xl-31": "allowed",
+   "stablediffusionapi/dreamshaperxlturbov21fix5": "allowed",
+   "stablediffusionapi/realcartoon-anime-v11": "allowed",
+   "stablediffusionapi/samaritan-3d-cartoon-v40": "allowed",
+   "tamingTransformers": "allowed"
+  }
+ },
+ "integrity": {
+  "summary": {
+   "n_records": 14400,
+   "n_bytes_images": 8107529958,
+   "by_split": {
+    "train": 12240,
+    "val_calib": 1080,
+    "val_select": 1080
+   },
+   "split_ratio": {
+    "train": 0.85,
+    "val_calib": 0.075,
+    "val_select": 0.075
+   },
+   "family_totals": {
+    "autoregressive": 1200,
+    "commercial": 1200,
+    "latent_diffusion": 1750,
+    "modern_gans": 1200,
+    "pixel_diffusion": 1187,
+    "real": 7863
+   },
+   "family_new_only": {
+    "autoregressive": 1200,
+    "commercial": 1200,
+    "latent_diffusion": 551,
+    "modern_gans": 1200,
+    "pixel_diffusion": 1187,
+    "real": 6071
+   },
+   "family_imbalance": 1.4743,
+   "n_families": 6,
+   "real_frac_by_split": {
+    "train": 0.546,
+    "val_calib": 0.5463,
+    "val_select": 0.5463
+   },
+   "real_frac_total": 0.54604,
+   "replay": 2991,
+   "replay_frac": 0.20771,
+   "n_generators": 22,
+   "n_sources": 8
+  },
+  "problems": [],
+  "failures": 0
+ },
+ "violations": 0,
+ "violations_breakdown": {
+  "hash_pairs": 0,
+  "generator_instance": 0,
+  "integrity_problems": 0
+ },
+ "pass": true,
+ "coverage": {
+  "complete": true,
+  "expected_sets": [
+   "biggan",
+   "cyclegan",
+   "dalle",
+   "deepfake",
+   "gaugan",
+   "glide_100_10",
+   "glide_100_27",
+   "glide_50_27",
+   "guided",
+   "ldm_100",
+   "ldm_200",
+   "ldm_200_cfg",
+   "pndm",
+   "progan",
+   "stargan",
+   "stylegan",
+   "stylegan2",
+   "vqdiffusion"
+  ],
+  "observed_sets": [
+   "biggan",
+   "cyclegan",
+   "dalle",
+   "deepfake",
+   "gaugan",
+   "glide_100_10",
+   "glide_100_27",
+   "glide_50_27",
+   "guided",
+   "ldm_100",
+   "ldm_200",
+   "ldm_200_cfg",
+   "pndm",
+   "progan",
+   "stargan",
+   "stylegan",
+   "stylegan2",
+   "vqdiffusion"
+  ],
+  "supplemental_sets": [
+   "crn",
+   "imle",
+   "san",
+   "seeingdark",
+   "whichfaceisreal"
+  ],
+  "supplemental_images_checked": 28326
+ },
+ "elapsed_s": 512.7
+}

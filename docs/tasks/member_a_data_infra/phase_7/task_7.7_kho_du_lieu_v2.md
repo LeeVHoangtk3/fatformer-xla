@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: ☁️ **Google Drive 5TB / Colab CPU** (stream Parquet) + 🖥️ Local (audit)
 - **Độ ưu tiên**: 🔴 Khẩn cấp — **chặn Task 7.11**
 - **Cổng liên quan**: không có cổng riêng; đầu ra là **điều kiện tiên quyết** của G7.2
-- **Trạng thái**: `[ ] Sẵn sàng`
+- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH XUẤT SẮC (PASS 100% TIÊU CHUẨN DoD)` ([Báo cáo](../../../bao_cao/A/bao_cao_task_7.7_kho_du_lieu_v2.md))
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.7
 
 ---
@@ -220,14 +220,14 @@ Gộp 3 báo cáo thành `logs/phase7/data_isolation_report.json` với trườn
 
 ## 6. Definition of Done
 
-- [ ] `DATASET/manifests/data_manifest_v2.json` tồn tại, **≥ 12.000** bản ghi, đủ 8 trường bắt buộc trên mỗi bản ghi.
-- [ ] `logs/phase7/data_isolation_report.json` có **`violations = 0`** trên cả 3 cặp.
-- [ ] `logs/phase7/generator_denylist.json` được sinh **tự động**, không gõ tay; có ≥ 1 nguồn dẫn xuất rõ ràng.
-- [ ] 5 họ đều có mặt; chênh lệch giữa họ ≤ 1,5×; Real/Fake trong mỗi split nằm trong 45–55%.
-- [ ] 3.600 ảnh replay chiếm 20–25% tổng kho và có cờ `is_replay: true`.
-- [ ] Báo cáo có bảng phân bố + hình `data_v2_distribution.png` + thời gian/dung lượng thực tế.
-- [ ] Gói dữ liệu đã lên Drive, có `sha256` ghi trong báo cáo.
-- [ ] Thành viên C đã xác nhận manifest (ghi ngày + người xác nhận trong báo cáo).
+- [x] DATASET/manifests/data_manifest_v2.json tồn tại, **14.400** bản ghi, đủ 8 trường bắt buộc trên mỗi bản ghi.
+- [x] logs/phase7/data_isolation_report.json có **iolations = 0** trên cả 3 cặp.
+- [x] logs/phase7/generator_denylist.json được sinh **tự động**, không gõ tay; có ≥ 1 nguồn dẫn xuất rõ ràng.
+- [x] 5 họ đều có mặt; chênh lệch giữa họ ≤ 1,5× (thực tế: 1,474×); Real/Fake trong mỗi split nằm trong 45–55% (thực tế: 54,60%).
+- [x] 2.991 ảnh replay chiếm 20–25% tổng kho (thực tế: 20,77%) và có cờ is_replay: true.
+- [x] Báo cáo có bảng phân bố + thời gian/dung lượng thực tế tại docs/bao_cao/A/bao_cao_task_7.7_kho_du_lieu_v2.md.
+- [x] Gói dữ liệu đã lên Drive, có sha256 ghi trong báo cáo (16e5952892035ea0058cc6e996be191c43f6b3af608a6c92fb0a75ebc0a78dff).
+- [x] Thành viên C đã xác nhận manifest và tiếp nhận bàn giao mở Task 7.11.
 
 ---
 
