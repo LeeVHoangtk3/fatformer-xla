@@ -1,0 +1,11 @@
+{
+  "v1_ms_per_batch": 107.14,
+  "v2_ms_per_batch": 91.4,
+  "pct_overhead": -14.69,
+  "threshold_pct": 15.0,
+  "passed": true,
+  "batches": 50,
+  "batch_size": 8,
+  "num_workers": 4,
+  "config": "configs/degradation_v2.yaml"
+}

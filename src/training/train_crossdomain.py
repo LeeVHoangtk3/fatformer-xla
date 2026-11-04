@@ -21,7 +21,7 @@ import time
 import math
 import random
 import argparse
-from typing import Optional, Dict, Tuple
+from typing import Optional, Dict, Tuple, Union
 
 import yaml
 import numpy as np
@@ -47,7 +47,7 @@ if hasattr(sys.stderr, "reconfigure"):
         pass
 
 from src.training.loss import CrossDomainTotalLoss
-from src.datasets.transforms import PairedCleanDegradedAugmentation
+from src.datasets.transforms import PairedCleanDegradedAugmentation, DegradationPipelineV2
 from src.datasets.samplers import BalancedBatchSampler, BalancedCrossDomainSampler
 from src.models.lora_adapter import ViTLoRAAdapter
 import torchvision.transforms as transforms
@@ -104,15 +104,27 @@ class CrossDomainDataset(Dataset):
         self,
         records: list,
         paired: bool = True,
-        img_resolution: int = 256,
+        img_resolution: int = 224,
         crop_resolution: int = 224,
+        degradation_config: Optional[Union[str, dict]] = None,
     ):
         self.records = records
         self.paired = paired
-        self.paired_aug = PairedCleanDegradedAugmentation(
-            img_resolution=img_resolution,
-            crop_resolution=crop_resolution,
-        ) if paired else None
+        if paired:
+            if degradation_config:
+                self.paired_aug = DegradationPipelineV2.from_config(
+                    degradation_config,
+                    img_resolution=img_resolution,
+                    crop_resolution=crop_resolution,
+                    return_pair=True,
+                )
+            else:
+                self.paired_aug = PairedCleanDegradedAugmentation(
+                    img_resolution=img_resolution,
+                    crop_resolution=crop_resolution,
+                )
+        else:
+            self.paired_aug = None
 
         _mean = [0.485, 0.456, 0.406]
         _std = [0.229, 0.224, 0.225]
@@ -366,8 +378,22 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
             raise RuntimeError(f"LỖI GÁN NHÃN: Tập dữ liệu thiếu Real ({len(reals_all)}) hoặc Fake ({len(fakes_all)})! Kiểm tra lại đường dẫn và quy tắc gán nhãn.")
 
     paired_train = (args.branch in ["M4", "M5"])
-    train_ds = CrossDomainDataset(train_records, paired=paired_train)
-    val_ds = CrossDomainDataset(val_records, paired=False)
+    deg_cfg = getattr(args, "degradation_config", None)
+    img_res = getattr(args, "img_resolution", 224)
+    crop_res = getattr(args, "crop_resolution", 224)
+    train_ds = CrossDomainDataset(
+        train_records,
+        paired=paired_train,
+        img_resolution=img_res,
+        crop_resolution=crop_res,
+        degradation_config=deg_cfg,
+    )
+    val_ds = CrossDomainDataset(
+        val_records,
+        paired=False,
+        img_resolution=img_res,
+        crop_resolution=crop_res,
+    )
 
     has_real = any(r.get("label", 0) == 0 for r in train_records)
     has_fake = any(r.get("label", 0) == 1 for r in train_records)
@@ -992,6 +1018,9 @@ def parse_arguments():
         "train_dir": "DATASET/train_crossdomain",
         "val_dir": "DATASET/val_crossdomain",
         "num_workers": 2,
+        "degradation_config": None,
+        "img_resolution": 224,
+        "crop_resolution": 224,
     }
 
     # 2. Neu co config YAML, nap cac truong vao defaults truoc khi xu ly CLI
@@ -1026,6 +1055,14 @@ def parse_arguments():
             defaults["train_dir"] = d_cfg.get("train_dir", defaults["train_dir"])
             defaults["val_dir"] = d_cfg.get("val_dir", defaults["val_dir"])
             defaults["num_workers"] = d_cfg.get("num_workers", defaults["num_workers"])
+            if "degradation_config" in d_cfg:
+                defaults["degradation_config"] = d_cfg["degradation_config"]
+            if "img_resolution" in d_cfg:
+                defaults["img_resolution"] = d_cfg["img_resolution"]
+            if "crop_resolution" in d_cfg:
+                defaults["crop_resolution"] = d_cfg["crop_resolution"]
+        if "degradation_config" in cfg:
+            defaults["degradation_config"] = cfg["degradation_config"]
 
     # 3. Parser chinh thuc tiep nhan defaults tu YAML, dong thoi cho phep co CLI ghi de
     parser = argparse.ArgumentParser(description="FatFormer-XLA Cross-Domain Training")
@@ -1054,6 +1091,12 @@ def parse_arguments():
     parser.add_argument("--train_dir", type=str, default=defaults["train_dir"], help="Thu muc du lieu train")
     parser.add_argument("--val_dir", type=str, default=defaults["val_dir"], help="Thu muc du lieu val")
     parser.add_argument("--num_workers", type=int, default=defaults["num_workers"], help="So luong workers cho DataLoader (mac dinh 2)")
+    parser.add_argument("--degradation_config", type=str, default=defaults.get("degradation_config", None),
+                        help="Duong dan tep cau hinh suy bien v2 (vi du configs/degradation_v2.yaml)")
+    parser.add_argument("--img_resolution", type=int, default=defaults.get("img_resolution", 224),
+                        help="Do phan giai resize anh")
+    parser.add_argument("--crop_resolution", type=int, default=defaults.get("crop_resolution", 224),
+                        help="Do phan giai crop anh")
 
     args = parser.parse_args()
 

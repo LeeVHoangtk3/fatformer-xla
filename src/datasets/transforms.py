@@ -423,26 +423,30 @@ class DegradationPipelineV2(PairedCleanDegradedAugmentation):
     _SINGLE_TYPES = ["jpeg", "webp", "double_jpeg", "blur", "down_up"]
 
     @classmethod
-    def from_config(cls, path_or_dict):
+    def from_config(cls, path_or_dict, **kwargs):
         """Khởi tạo từ đường dẫn YAML hoặc dict config."""
         if isinstance(path_or_dict, dict):
-            cfg = path_or_dict
+            cfg = dict(path_or_dict)
         else:
             assert yaml is not None, "Cần cài pyyaml: pip install pyyaml"
             with open(path_or_dict, "r", encoding="utf-8") as f:
-                cfg = yaml.safe_load(f)
-        return cls(config=cfg)
+                cfg = yaml.safe_load(f) or {}
+        for k, v in kwargs.items():
+            cfg[k] = v
+        return cls(config=cfg, **kwargs)
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None, **kwargs):
+    def __init__(self, config: Optional[Dict[str, Any]] = None, return_pair: bool = True, **kwargs):
         """
         Args:
             config: dict từ degradation_v2.yaml. Nếu None, dùng default v2.
+            return_pair: nếu True trả về (x_clean, x_degraded), nếu False chỉ trả về x_degraded (đơn tensor).
             **kwargs: forward sang PairedCleanDegradedAugmentation (backward-compat).
         """
         cfg = config or {}
-        img_res  = cfg.get("img_resolution",  kwargs.pop("img_resolution",  256))
-        crop_res = cfg.get("crop_resolution", kwargs.pop("crop_resolution", 224))
-        clean_p  = cfg.get("clean_prob",      kwargs.pop("clean_prob",      0.60))
+        crop_res = kwargs.pop("crop_resolution", cfg.get("crop_resolution", 224))
+        img_res  = kwargs.pop("img_resolution",  cfg.get("img_resolution",  crop_res))
+        clean_p  = kwargs.pop("clean_prob",      cfg.get("clean_prob",      0.60))
+        self.return_pair = return_pair
 
         # Khởi tạo nhánh clean (dùng lại từ parent)
         super().__init__(
@@ -456,8 +460,13 @@ class DegradationPipelineV2(PairedCleanDegradedAugmentation):
         j = cfg.get("jpeg", {})
         self._jpeg_prob        = j.get("prob", 0.55)
         self._jpeg_heavy_share = j.get("heavy_share", 0.35)
-        self._jpeg_heavy_range = tuple(j.get("heavy_range", [30, 45]))
-        self._jpeg_light_range = tuple(j.get("light_range", [45, 85]))
+        q_rng = j.get("q_range", [30, 85])
+        q_min, q_max = q_rng[0], q_rng[1]
+        self._jpeg_q_range = (q_min, q_max)
+
+        def_heavy_end = min(45, max(q_min, int(q_min + (q_max - q_min) * self._jpeg_heavy_share)))
+        self._jpeg_heavy_range = tuple(j.get("heavy_range", [q_min, def_heavy_end]))
+        self._jpeg_light_range = tuple(j.get("light_range", [self._jpeg_heavy_range[1], q_max]))
 
         w = cfg.get("webp", {})
         self._webp_prob  = w.get("prob", 0.15)
@@ -569,6 +578,8 @@ class DegradationPipelineV2(PairedCleanDegradedAugmentation):
 
         # Bước 1: clean_prob
         if random.random() < self.clean_prob:
+            if not self.return_pair:
+                return x_clean
             return x_clean, x_clean
 
         img_cropped = self._resize_crop(img)
@@ -587,5 +598,7 @@ class DegradationPipelineV2(PairedCleanDegradedAugmentation):
             self.last_tag.append(tag)
 
         x_degraded = self._to_tensor_norm(result)
+        if not self.return_pair:
+            return x_degraded
         return x_clean, x_degraded
 

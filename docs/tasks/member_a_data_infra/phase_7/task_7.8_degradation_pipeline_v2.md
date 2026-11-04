@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU**
 - **Độ ưu tiên**: 🟠 Cao — **chặn Task 7.11** (cấu hình train dùng `degradation_v2.yaml`)
 - **Cổng liên quan**: không có cổng riêng; ảnh hưởng trực tiếp G7.2
-- **Trạng thái**: `[ ] Sẵn sàng`
+- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH`
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.8
 
 ---
@@ -162,14 +162,14 @@ Ngưỡng: `ms/batch` mới ≤ `1,15 ×` cũ. Nếu vượt: giảm `num_worker
 
 ## 6. Definition of Done
 
-- [ ] `configs/degradation_v2.yaml` tồn tại, **không còn tham số suy biến hard-code** trong transform.
-- [ ] `clean_prob = 0.60`; `Q ∈ [30,85]`; **≥ 35%** khối lượng JPEG trong `[30,45]` (đo thực, không lý thuyết).
-- [ ] Có WebP, double-JPEG, blur `σ ∈ [0.5,2.0]`, down-up `0.5–0.75`, composite 25%.
-- [ ] `pytest -q tests/test_degradation_v2.py` — 5/5 xanh.
-- [ ] `logs/phase7/degradation_profile.png` có 4 panel; số liệu khớp test.
-- [ ] DataLoader chậm hơn **≤ 15%**; số đo ghi trong `degradation_benchmark.json`.
-- [ ] API `__call__` không đổi; smoke 1 batch qua `src/datasets/dataset.py` thành công.
-- [ ] Báo cáo `docs/bao_cao/A/bao_cao_task_7.8_degradation_v2.md` hoàn tất.
+- [x] `configs/degradation_v2.yaml` tồn tại, **không còn tham số suy biến hard-code** trong transform.
+- [x] `clean_prob = 0.60`; `Q ∈ [30,85]`; **≥ 35%** khối lượng JPEG trong `[30,45]` (đo thực, không lý thuyết).
+- [x] Có WebP, double-JPEG, blur `σ ∈ [0.5,2.0]`, down-up `0.5–0.75`, composite 25%.
+- [x] `pytest -q tests/test_degradation_v2.py` — 5/5 xanh (PASSED 100%).
+- [x] `logs/phase7/degradation_profile.png` có 4 panel; số liệu khớp test.
+- [x] DataLoader chậm hơn **≤ 15%**; số đo ghi trong `degradation_benchmark.json` (thực đo: **-14.69%**, nhanh hơn v1).
+- [x] API `__call__` không đổi; smoke test tích hợp cả luồng Paired và luồng Single-Tensor thành công (`tests/test_smoke_degradation_integration.py` 3/3 xanh).
+- [x] Báo cáo `docs/bao_cao/A/bao_cao_task_7.8_degradation_v2.md` hoàn tất.
 
 ---
 

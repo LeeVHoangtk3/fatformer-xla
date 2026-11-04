@@ -169,21 +169,31 @@ class DatasetCreator:
         use_dual_stream: bool = True,
         scheduler=None,
         degradation_config=None,
+        return_pair: bool = False,
     ) -> Dataset:
         """
         Khởi tạo Dataset huấn luyện.
         Args:
+            use_dual_stream: giữ tương thích luồng huấn luyện cũ.
+            scheduler: CurriculumDegradationScheduler cũ.
             degradation_config: đường dẫn YAML hoặc dict cho DegradationPipelineV2.
-                                Nếu None, dùng default v2. Truyền False để tắt hoàn toàn.
+                                Mặc định None -> dùng get_train_transforms đơn tensor để bảo toàn hợp đồng trainer cũ.
+                                Truyền False để tắt hoàn toàn.
+            return_pair: nếu True trả về cặp ((x_clean, x_degraded), label).
+                         Mặc định False để bảo đảm an toàn cho các trainer đơn tensor (src.main).
         """
         train_path = os.path.join(self.dataset_path, train_folder_name)
         if not os.path.exists(train_path):
             raise FileNotFoundError(f"Không tìm thấy thư mục dữ liệu huấn luyện tại: {train_path}")
 
-        # Ưu tiên degradation_config v2 nếu có; fallback sang scheduler/dual_stream cũ
-        if degradation_config is not False and scheduler is None:
-            pipeline_v2 = DegradationPipelineV2.from_config(degradation_config) \
-                if degradation_config else DegradationPipelineV2()
+        # Chỉ kích hoạt DegradationPipelineV2 khi người dùng truyền degradation_config cụ thể
+        if degradation_config is not None and degradation_config is not False and scheduler is None:
+            pipeline_v2 = DegradationPipelineV2.from_config(
+                degradation_config,
+                img_resolution=self.img_resolution,
+                crop_resolution=self.crop_resolution,
+                return_pair=return_pair,
+            )
             transform = pipeline_v2
         else:
             transform = get_train_transforms(

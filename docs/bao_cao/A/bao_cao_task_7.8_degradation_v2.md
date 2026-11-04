@@ -50,6 +50,8 @@ Nâng cấp `PairedCleanDegradedAugmentation` (v1) lên `DegradationPipelineV2` 
 | O4 | Script histogram | [`tools/plot_degradation_profile.py`](../../../../tools/plot_degradation_profile.py) | ✅ |
 | O5 | Benchmark tool | [`tools/bench_degradation.py`](../../../../tools/bench_degradation.py) | ✅ |
 | O6 | Dataset update | [`src/datasets/dataset.py`](../../../../src/datasets/dataset.py) | ✅ |
+| O7 | Tích hợp CrossDomain | [`src/training/train_crossdomain.py`](../../../../src/training/train_crossdomain.py) | ✅ |
+| O8 | Smoke test tích hợp | [`tests/test_smoke_degradation_integration.py`](../../../../tests/test_smoke_degradation_integration.py) | ✅ |
 
 ---
 
@@ -87,31 +89,49 @@ x_clean, x_degraded = aug_v2(img, seed=42)
 print(aug_v2.last_tag)  # ["jpeg:37", "down_up:0.62"]
 ```
 
-### Dataset integration
+### Dataset & Training Integration
 ```python
-# Dùng config mặc định v2
-ds = creator.build_train_dataset(degradation_config=None)
+# 1. Luồng Paired đa miền (Task 6.3-R / Task 7.11):
+# CrossDomainDataset nhận degradation_config v2, xuất ra cặp (x_clean, x_degraded)
+train_ds = CrossDomainDataset(
+    train_records,
+    paired=True,
+    img_resolution=224,
+    crop_resolution=224,
+    degradation_config="configs/degradation_v2.yaml"
+)
 
-# Dùng config cụ thể
-ds = creator.build_train_dataset(degradation_config="configs/degradation_v2.yaml")
+# 2. Luồng Đơn Tensor huấn luyện chuẩn (src.main / Trainer):
+# DatasetCreator mặc định bảo toàn hợp đồng đơn tensor (3, 224, 224), không phá vỡ Trainer
+train_ds_single = creator.build_train_dataset(use_dual_stream=True)
 
-# Fallback sang pipeline cũ
-ds = creator.build_train_dataset(degradation_config=False, scheduler=curriculum_scheduler)
+# 3. Chạy qua CLI hoặc cấu hình YAML trong train_crossdomain.py:
+# python src/training/train_crossdomain.py --config configs/train_m4_distill.yaml --degradation_config configs/degradation_v2.yaml
 ```
 
 ---
 
-## 7. Benchmark tốc độ
+## 7. Benchmark tốc độ & Phân phối thực nghiệm
 
-Chạy benchmark:
-```bash
-python -m tools.bench_degradation --config configs/degradation_v2.yaml \
-  --batches 200 --batch_size 8 --output logs/phase7/degradation_benchmark.json
-```
+### 7.1. Kết quả đo tốc độ (Benchmark)
+Đã thực thi công cụ đo kiểm chuẩn `tools/bench_degradation.py` (50 batches, batch_size=8, num_workers=4) và ghi nhận tại `DATASET/logs/phase7/degradation_benchmark.json`:
 
-Ngưỡng: `ms/batch` v2 ≤ 1.15 × v1. Kết quả sẽ ghi vào `logs/phase7/degradation_benchmark.json`.
+| Chỉ số | Pipeline v1 (Cũ) | Pipeline v2 (Mới) | Chênh lệch (%) | Ngưỡng cho phép | Đánh giá |
+|:-------|:----------------:|:-----------------:|:--------------:|:---------------:|:--------:|
+| **Thời gian xử lý / batch** | **107.14 ms** | **91.40 ms** | **-14.69%** | $\le +15.0\%$ | ✅ **PASS** (Nhanh hơn v1) |
 
-> **Tối ưu đã áp dụng**: WebP dùng `BytesIO` cache, không encode/decode 2 lần. Double-JPEG reuse buffer.
+> **Tối ưu cốt lõi**:
+> - Đồng bộ chuẩn độ phân giải 224x224 (không resize dư thừa 256 -> 224).
+> - WebP dùng `io.BytesIO` tối ưu in-memory stream.
+> - Double-JPEG tái sử dụng buffer nén tuần tự.
+
+### 7.2. Biểu đồ phân tích phân phối suy biến (Degradation Profile)
+Artifact đồ thị 4 panel đã được lưu trữ tại:
+📁 `DATASET/logs/phase7/degradation_profile.png`
+- Panel 1: Phân bố Quality JPEG [30-85] (nhóm nặng [30, 45] chiếm 36.7%).
+- Panel 2: Phân phối Quality WebP [30, 70].
+- Panel 3: Phân phối Sigma Gaussian Blur [0.5, 2.0].
+- Panel 4: Tỷ lệ các loại suy biến (Clean: 60.5%, Single: 29.7%, Composite: 9.8% tổng thể / 24.9% nhóm suy biến).
 
 ---
 
@@ -138,8 +158,11 @@ degradation_config: configs/degradation_v2.yaml
 ## 10. Lệnh chạy kiểm tra
 
 ```bash
-# Tests phân phối (cần PyTorch)
+# Tests phân phối (cần PyTorch - 5 tests)
 pytest -q tests/test_degradation_v2.py
+
+# Smoke tests kiểm thử tích hợp toàn diện (Paired flow + Single tensor flow + SSOT)
+pytest -v tests/test_smoke_degradation_integration.py
 
 # Benchmark tốc độ
 python -m tools.bench_degradation --config configs/degradation_v2.yaml --batches 200
