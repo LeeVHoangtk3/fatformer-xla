@@ -6,6 +6,7 @@ Không cần checkpoint hay GPU — chỉ dùng tensor giả.
 import pytest
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from src.training.loss import (
     CrossDomainTotalLoss,
     RealGuardLoss,
@@ -20,7 +21,6 @@ def test_a_backward_compat_allclose():
     """Khi cả hai weight mới = 0, loss_total phải khớp hoàn toàn công thức cũ."""
     torch.manual_seed(0)
     loss_new = CrossDomainTotalLoss(weight_ce=0.7, alpha_kd=0.3, beta_cons=0.2)
-    loss_old = CrossDomainTotalLoss(weight_ce=0.7, alpha_kd=0.3, beta_cons=0.2)
 
     for seed in range(3):
         torch.manual_seed(seed)
@@ -35,14 +35,32 @@ def test_a_backward_compat_allclose():
             teacher_logits=teacher, logits_degraded=logits_d,
             weight_feat=0.0, weight_guard=0.0,
         )
-        out_old = loss_old(
-            logits=logits_c, targets=targets,
-            teacher_logits=teacher, logits_degraded=logits_d,
-        )
-        assert torch.allclose(out_new["loss_total"], out_old["loss_total"], atol=1e-6), (
+        # Independent frozen formula, not a second call to the implementation.
+        expected = (0.7 * (0.7 * F.cross_entropy(logits_c, targets, label_smoothing=.05)
+                           + 0.3 * F.cross_entropy(logits_d, targets, label_smoothing=.05))
+                    + .3 * reference_kd(logits_c, teacher, targets)
+                    + .2 * .5 * F.mse_loss(logits_d, logits_c.detach()))
+        assert torch.allclose(out_new["loss_total"], expected, atol=1e-6), (
             f"seed={seed}: loss_total mới={out_new['loss_total'].item():.6f} "
-            f"!= cũ={out_old['loss_total'].item():.6f}"
+            f"!= cũ={expected.item():.6f}"
         )
+
+
+def reference_kd(student, teacher, targets, temperature=2.0):
+    per_sample = F.kl_div(F.log_softmax(student / temperature, dim=-1),
+                          F.softmax(teacher.detach() / temperature, dim=-1),
+                          reduction="none").sum(-1)
+    correct = teacher.argmax(-1) == targets
+    real, fake = correct & (targets == 0), correct & (targets == 1)
+    if real.any() and fake.any():
+        raw = .5 * (per_sample[real].mean() + per_sample[fake].mean())
+    elif real.any():
+        raw = .25 * per_sample[real].mean()
+    elif fake.any():
+        raw = per_sample[fake].mean()
+    else:
+        raw = student.sum() * 0
+    return raw * temperature ** 2
 
 
 # ---------------------------------------------------------------------------
@@ -130,3 +148,88 @@ def test_d_all_fake_no_nan():
     )
     assert not torch.isnan(out["loss_total"]), "loss_total không được NaN khi batch toàn Fake"
     assert out["guard_active"] is False
+
+
+@pytest.mark.parametrize("weights", [(.3, .3, .7, .2, .3, .5), (.6, .8, .4, .6, .2, .1)])
+def test_v2_formula_applies_configured_weights_once(weights):
+    ce, ce_deg, kd, cons, feat, guard = weights
+    torch.manual_seed(7)
+    x, d, t = (torch.randn(6, 2, requires_grad=True) for _ in range(3))
+    fc, fd = (torch.randn(6, 4, requires_grad=True) for _ in range(2))
+    targets = torch.tensor([0, 1, 0, 1, 0, 1])
+    criterion = CrossDomainTotalLoss(weight_ce=ce, weight_ce_deg=ce_deg, alpha_kd=kd, beta_cons=cons)
+    out = criterion(x, targets, teacher_logits=t, logits_degraded=d,
+                    features_clean=fc, features_deg=fd, weight_feat=feat, weight_guard=guard)
+    feat_raw = ((1 - F.cosine_similarity(fd, fc.detach(), dim=-1, eps=1e-8)).mean()
+                + F.kl_div(F.log_softmax(d / 2, dim=-1), F.softmax(x.detach() / 2, dim=-1),
+                           reduction="batchmean") * 4)
+    guard_raw = F.relu(d[targets == 0, 1] - t.detach()[targets == 0, 1]).square().mean()
+    expected = (ce * F.cross_entropy(x, targets, label_smoothing=.05)
+                + ce_deg * F.cross_entropy(d, targets, label_smoothing=.05)
+                + kd * reference_kd(x, t, targets) + cons * .5 * F.mse_loss(d, x.detach())
+                + feat * feat_raw + guard * guard_raw)
+    assert torch.allclose(out["loss_total"], expected, atol=1e-6)
+    assert {"loss_total", "ce_clean", "ce_deg", "kd", "cons", "feat", "guard"} <= out.keys()
+    out["loss_total"].backward()
+    assert t.grad is None
+
+
+def test_feature_loss_detaches_clean_and_scales_by_batchmean():
+    torch.manual_seed(5)
+    fd, fc = (torch.randn(3, 4, requires_grad=True) for _ in range(2))
+    ld, lc = (torch.randn(3, 2, requires_grad=True) for _ in range(2))
+    criterion = FeatureConsistencyLoss()
+    loss, _ = criterion(fd, fc, ld, lc)
+    duplicated, _ = criterion(fd.repeat(2, 1), fc.repeat(2, 1), ld.repeat(2, 1), lc.repeat(2, 1))
+    assert torch.allclose(loss, duplicated, atol=1e-6)
+    loss.backward()
+    assert fc.grad is None and lc.grad is None
+    assert torch.isfinite(fd.grad).all() and torch.isfinite(ld.grad).all()
+
+
+def test_fp16_feature_zero_norm_and_guard_square_are_finite():
+    fd = torch.zeros(2, 4, dtype=torch.float16, requires_grad=True)
+    fc = torch.zeros_like(fd, requires_grad=True)
+    ld = torch.zeros(2, 2, dtype=torch.float16, requires_grad=True)
+    lc = torch.zeros_like(ld, requires_grad=True)
+    feature, _ = FeatureConsistencyLoss()(fd, fc, ld, lc)
+    feature.backward()
+    assert torch.isfinite(feature) and torch.isfinite(fd.grad).all()
+    assert fc.grad is None and lc.grad is None
+    s = torch.tensor([[0., 400.]], dtype=torch.float16, requires_grad=True)
+    t = torch.zeros_like(s, requires_grad=True)
+    guard, _ = RealGuardLoss()(s, t, torch.tensor([True]))
+    guard.backward()
+    assert guard.item() == pytest.approx(160000.)
+    assert torch.isfinite(s.grad).all() and t.grad is None
+
+
+@pytest.mark.parametrize("temperature", [0, -1, float("nan"), float("inf")])
+def test_feature_temperature_validation(temperature):
+    with pytest.raises(ValueError, match="temperature"):
+        FeatureConsistencyLoss(temperature)
+
+
+@pytest.mark.parametrize("kwargs, message", [({"weight_feat": .3}, "features"),
+                                           ({"weight_guard": .5}, "teacher"),
+                                           ({"weight_feat": -.3}, "weight_feat")])
+def test_v2_rejects_missing_inputs_and_invalid_weights(kwargs, message):
+    x = torch.randn(2, 2)
+    with pytest.raises(ValueError, match=message):
+        CrossDomainTotalLoss()(x, torch.tensor([0, 1]), logits_degraded=x, **kwargs)
+
+
+def test_guard_rejects_invalid_class_index_even_on_all_fake_batch():
+    with pytest.raises(ValueError, match="fake_index"):
+        RealGuardLoss(fake_index=2)(torch.zeros(2, 2), torch.zeros(2, 2), torch.zeros(2, dtype=torch.bool))
+
+
+def test_phase7_keyword_aliases_match_legacy_call():
+    x, d = torch.randn(4, 2), torch.randn(4, 2)
+    targets = torch.tensor([0, 1, 0, 1])
+    criterion = CrossDomainTotalLoss()
+    old = criterion(logits=x, logits_degraded=d, targets=targets)
+    new = criterion(logits_clean=x, logits_deg=d, targets=targets)
+    assert torch.equal(old["loss_total"], new["loss_total"])
+    with pytest.raises(ValueError, match="not both"):
+        criterion(logits=x, logits_clean=x, targets=targets)

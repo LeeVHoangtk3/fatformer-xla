@@ -1,0 +1,35 @@
+{
+  "date": "2026-11-05",
+  "device": "cpu",
+  "model": "tiny pooled RGB student/teacher; no CLIP checkpoint",
+  "seed": 42,
+  "metrics": {
+    "loss_total": 0.45271970331668854,
+    "loss_ce": 0.44772791862487793,
+    "loss_kd": 0.0031703647691756487,
+    "loss_cons": 1.7564769083655563e-09,
+    "loss_feat": 3.650784492492676e-07,
+    "loss_guard": 0.003642574418336153,
+    "guard_active_ratio": 0.5,
+    "ce_clean": 0.7462465018033981,
+    "ce_deg": 0.7461798042058945,
+    "kd": 0.004529092460870743,
+    "cons": 8.782384597338933e-09,
+    "feat_cos": 0.999999612569809,
+    "feat_kl": -4.470348358154297e-08,
+    "guard_excess_mean": 0.042675357311964035,
+    "n_real": 2.0,
+    "weighted_feat": 1.0952353868276532e-07,
+    "weighted_guard": 0.0018212872091680765,
+    "grad_norm": 0.63933165371418,
+    "train_steps": 2
+  },
+  "guard_example": {
+    "loss": 1.440000057220459,
+    "student_fake_gradient": 2.4000000953674316,
+    "teacher_gradient_is_none": true
+  },
+  "teacher_frozen": true,
+  "cuda_available": false,
+  "torch": "2.10.0+cpu"
+}

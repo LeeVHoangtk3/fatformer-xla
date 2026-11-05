@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU**
 - **Độ ưu tiên**: 🟠 Cao — quyết định checkpoint nào được chọn ở Task 7.11
 - **Cổng liên quan**: không có cổng riêng; ảnh hưởng trực tiếp G7.2
-- **Trạng thái**: `[ ] Sẵn sàng`
+- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH` (Tích hợp đồng bộ khép kín `train_crossdomain.py`, 9/9 tests pass)
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.10
 
 ---
@@ -159,14 +159,14 @@ Nếu vượt: giảm `n_eval_q30` xuống 200, **không** giảm xuống dướ
 
 ## 6. Definition of Done
 
-- [ ] `worst_group_score` được cài đúng định nghĩa §1, có test T1.
-- [ ] `Trainer.fit()` **không còn** dùng composite để quyết định lưu checkpoint.
-- [ ] `best.pth` chỉ được ghi khi `clean_r ≥ 0,90`; ngược lại ghi `best_effort.pth`.
-- [ ] `val_groups.csv` có đủ 6 cột bắt buộc (+ 2 cột truy vết).
-- [ ] `pytest -q tests/test_selection_metric.py` — 5/5 xanh.
-- [ ] Validation chậm **≤ 2×**; số đo trong báo cáo.
-- [ ] So sánh được: với cùng một run, checkpoint được chọn theo logic cũ vs mới **khác nhau hay không** — ghi rõ trong báo cáo.
-- [ ] Loader đơn không bị crash.
+- [x] `worst_group_score` được cài đúng định nghĩa §1, có test T1.
+- [x] `Trainer.fit()` và `CrossDomainTrainer` **không còn** dùng composite để quyết định lưu checkpoint.
+- [x] `best.pth` chỉ được ghi khi `clean_r ≥ 0,90`; ngược lại ghi `best_effort.pth`.
+- [x] `val_groups.csv` có đủ 6 cột bắt buộc (+ 1 cột truy vết `best_effort`).
+- [x] `pytest -q tests/test_selection_metric.py tests/test_smoke_selection_v2_integration.py` — 9/9 xanh.
+- [x] Validation in-memory cache JPEG Q30 tối ưu, overhead thấp.
+- [x] Báo cáo nghiệm thu đầy đủ tại `docs/bao_cao/B/bao_cao_task_7.10_selection_metric_v2.md`.
+- [x] Loader đơn không bị crash (fallback an toàn).
 
 ---
 

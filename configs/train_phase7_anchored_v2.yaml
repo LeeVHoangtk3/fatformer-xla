@@ -3,7 +3,7 @@
 # Task 7.9 — Thanh vien B (Architecture & Loss Lead)
 # ==============================================================================
 # Cong thuc loss moi (Phase 7):
-#   L = 0.3·CE_clean + 0.3·CE_deg + 0.7·KD + 0.3·Feat + 0.5·Guard
+#   L = 0.3·CE_clean + 0.3·CE_deg + 0.7·KD + 0.2·Cons + 0.3·Feat + 0.5·Guard
 # Backward-compat: khi weight_feat=weight_guard=0 → cong thuc cu chinh xac
 # ==============================================================================
 
@@ -16,7 +16,7 @@ experiment:
 model:
   backbone: "CLIP:ViT-L/14"
   clip_path: "DATASET/pretrained/ViT-L-14.pt"
-  checkpoint_init: "DATASET/pretrained/fatformer_anchored_recovery_best.pth"
+  checkpoint_init: "DATASET/pretrained/fatformer_4class_ckpt.pth"
   teacher_checkpoint: "DATASET/pretrained/fatformer_4class_ckpt.pth"
   num_classes: 2
   use_srm: true
@@ -27,7 +27,8 @@ loss:
   type: "CrossDomainTotalLoss"
   label_smoothing: 0.05
   temperature: 2.0
-  weight_ce: 0.3        # CE (dung cho legacy_mode; trong Phase 7 mode dung 0.3/0.3 truc tiep)
+  weight_ce: 0.3        # CE clean (v2); legacy: weight of the 70/30 CE mixture
+  weight_ce_deg: 0.3    # CE degraded (v2 only)
   alpha_kd: 0.7         # KD weight trong CrossDomainDistillationLoss
   beta_cons: 0.2        # Consistency weight trong PairedConsistencyLoss
   weight_feat: 0.3      # FeatureConsistencyLoss
@@ -39,6 +40,7 @@ training:
   epochs: 5
   batch_size: 16
   learning_rate: 1.0e-4
+  anchor_learning_rate: 1.0e-5
   min_lr: 1.0e-6
   weight_decay: 1.0e-4
   grad_accum_steps: 2
@@ -46,3 +48,12 @@ training:
   use_amp: true
   save_dir: "DATASET/checkpoints/phase7"
   save_name: "fatformer_anchored_v2_best.pth"
+  real_guard_threshold: 0.90
+
+dataset:
+  manifest: "DATASET/manifests/data_manifest_v2.json"
+  train_dir: ""        # Use the audited manifest, not folder discovery
+  val_dir: ""
+  val_split: "val_select"  # Keep val_calib isolated from model selection
+  degradation_config: "configs/degradation_v2.yaml"
+  num_workers: 2

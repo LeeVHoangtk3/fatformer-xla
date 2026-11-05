@@ -58,8 +58,9 @@ Mỗi epoch tự động xuất các trường:
 
 ## 3. Kết Quả Kiểm Thử (DoD Verification)
 
-Đã chạy toàn bộ 5/5 test cases trong [`tests/test_selection_metric.py`](../../../tests/test_selection_metric.py) trên local:
+Đã chạy toàn bộ **9/9 test cases** (5 unit tests + 4 smoke integration tests) trên local CPU:
 
+### 3.1. Unit Tests (`tests/test_selection_metric.py`)
 | Test Case | Mục tiêu kiểm chứng | Trạng thái |
 | :---: | :--- | :---: |
 | **T1** | Mảng giả 4 nhóm đã biết $\rightarrow$ `worst` đúng giá trị min | ✅ PASS |
@@ -68,10 +69,37 @@ Mỗi epoch tự động xuất các trường:
 | **T4** | `worst` tăng và `clean_r = 0.92` $\rightarrow$ lưu chính thức `best.pth` | ✅ PASS |
 | **T5** | Loader đơn (không dict) $\rightarrow$ fallback an toàn, không crash | ✅ PASS |
 
+### 3.2. Integration Tests (`tests/test_smoke_selection_v2_integration.py`)
+| Test Case | Mục tiêu kiểm chứng | Trạng thái |
+| :---: | :--- | :---: |
+| **S1** | `test_val_q30_cache_and_worst_group_calculation`: Tự động sinh nhánh Q30 trong RAM và tính chuẩn 4 nhóm recall | ✅ PASS |
+| **S2** | `test_dual_checkpoint_saving_best_and_best_effort`: Cơ chế phân tách lưu `best.pth` vs `best_effort.pth` | ✅ PASS |
+| **S3** | `test_val_groups_csv_logging`: Ghi xuất nhật ký 7 cột `val_groups.csv` chuẩn xác | ✅ PASS |
+| **S4** | `test_config_parsing_real_guard_threshold`: Nạp đúng cấu hình `real_guard_threshold: 0.90` từ file YAML Phase 7 | ✅ PASS |
+
 ---
 
-## 4. Bàn Giao & Kết Nối Giai Đoạn Tiếp Theo
+## 4. Tích Hợp Đồng Bộ Vào Pipeline Huấn Luyện (`train_crossdomain.py`)
 
-- **Đầu ra bàn giao**: Đã hoàn tất toàn bộ logic chọn và lưu checkpoint cho vòng huấn luyện Phase 7.
-- **Kết nối Task 7.11 (Thành viên C)**: Script huấn luyện `train_crossdomain.py` / `trainer.py` khi chạy trên Kaggle/Colab GPU sẽ tự động áp dụng luật worst-group mới để chọn checkpoint, bảo vệ hoàn toàn Real ACC không bị suy giảm.
+1. **Bộ nhớ đệm Q30 trong RAM (`val_q30_cache`)**:
+   - Tự động lấy tối đa 300 mẫu phân tầng (150 Real / 150 Fake, `seed=42`) từ tập validation.
+   - Nén JPEG $Q=30$ một lần duy nhất lúc khởi tạo và lưu trong RAM, loại bỏ hoàn toàn hiện tượng bottleneck CPU ở mỗi epoch.
+2. **Quy tắc chọn Checkpoint Kép**:
+   - `clean_r >= 0.90` (hoặc `--real_guard_threshold`) $\rightarrow$ Lưu `fatformer_anchored_v2_best.pth`.
+   - `clean_r < 0.90` nhưng `worst_group` tăng $\rightarrow$ Lưu `fatformer_anchored_v2_best_effort.pth`.
+3. **Nhật ký tiến trình 7 cột**:
+   - Tự động ghi xuất file `val_groups.csv` với các cột: `epoch,clean_r,clean_f,q30_r,q30_f,worst,best_effort`.
+   - Tự động đồng bộ sang Google Drive `/content/drive/MyDrive/Fatformer/logs` khi phát hiện môi trường Colab.
+
+---
+
+## 5. Bàn Giao & Mở Đường Cho Task 7.11 (Thành viên C)
+
+- **Đầu ra bàn giao**: Hoàn tất $100\%$ logic chọn và lưu checkpoint cho toàn bộ pipeline huấn luyện.
+- **Sẵn sàng cho Task 7.11**: Cả 4 nhiệm vụ tiền đề của Phase 7:
+  + **Task 7.7**: Kho dữ liệu v2 (`data_manifest_v2.json`, `train_crossdomain_v2.tar` 7.78 GB trên Drive).
+  + **Task 7.8**: Degradation Pipeline v2 (`degradation_v2.yaml`, WebP + Composite, benchmark overhead $-14.69\% \le 15\%$).
+  + **Task 7.9**: Loss v2 (`CrossDomainTotalLoss` với `RealGuardLoss` + `FeatureConsistencyLoss`).
+  + **Task 7.10**: Selection Metric v2 (Worst-Group + Checkpoint Kép + In-memory Q30 cache + `val_groups.csv`).
+  Đều đã được tích hợp đồng bộ và kiểm thử khép kín thành công $100\%$, sẵn sàng thực thi huấn luyện **Anchored Recovery v2** tại Task 7.11 để chinh phục Cổng G7.2!
 

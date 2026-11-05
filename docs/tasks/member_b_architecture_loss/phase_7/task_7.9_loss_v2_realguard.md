@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU** (code + test) + ☁️ **T4** (smoke 1 batch)
 - **Độ ưu tiên**: 🟠 Cao — chặn Task 7.11
 - **Cổng liên quan**: không có cổng riêng; là đòn bẩy chính của G7.2
-- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH`
+- **Trạng thái**: Code và test CPU đã kiểm tra lại 2026-11-05; chờ smoke checkpoint thật trên T4.
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.9
 
 ---
@@ -145,7 +145,7 @@ if weight_feat > 0:
     feat, _ = self.feat_loss(features_deg, features_clean, logits_deg, logits_clean)
 if weight_guard > 0:
     guard, _ = self.guard_loss(logits_deg, teacher_logits, is_real=(targets == 0))
-total = (0.3*ce_clean + 0.3*ce_deg + 0.7*kd + 0.2*cons
+total = (self.weight_ce*ce_clean + self.weight_ce_deg*ce_deg + kd + cons
          + weight_feat*feat + weight_guard*guard)
 return {"loss_total": total, "ce_clean": ..., "ce_deg": ..., "kd": ...,
         "cons": ..., "feat": ..., "guard": ..., "guard_active": ...}
@@ -153,11 +153,13 @@ return {"loss_total": total, "ce_clean": ..., "ce_deg": ..., "kd": ...,
 
 > ⚠️ **Chú ý quan trọng**: công thức cũ là `0.7·[0.7·CE_clean + 0.3·CE_deg] = 0.49/0.21`, không phải `0.3/0.3`. Khi `weight_feat=weight_guard=0`, để test allclose với bản cũ, phải **giữ nhánh cũ** (`self.weight_ce * (0.7*ce_clean + 0.3*ce_deg)`), và chỉ dùng `0.3/0.3` khi có ít nhất một weight mới > 0. Cài bằng một cờ `legacy_mode` nội bộ, **không** để lộ ra ngoài.
 
+> Sửa sau review: `kd_loss` và `cons_loss` đã nhân `alpha_kd`/`beta_cons` bên trong; tổng chỉ cộng chúng một lần. Hai trọng số CE v2 đọc từ config. Các khóa `kd`/`cons` trong dict trả về là giá trị thô, còn `loss_kd`/`loss_cons` đã có trọng số.
+
 ### Bước 4 — `return_features` (D5, ~0,5 h)
 
-1. Trong `VisionTransformer.forward(..., return_full)` và wrapper `clip_models`, thêm `return_features: bool = False`.
+1. Wrapper `CLIPModel` hỗ trợ `return_features: bool = False`; dùng `VisionTransformer(..., return_full=True)` hiện có để lấy tokens. Không cần thay API VisionTransformer.
 2. Khi `True`, trả `(logits, aug_image_features)`; khi `False`, hành vi **giữ nguyên**.
-3. `train_crossdomain.py`: gọi `model(x_deg, return_features=True)` khi `weight_feat > 0` hoặc `weight_guard > 0`; ngược lại dùng đường cũ.
+3. `train_crossdomain.py`: chỉ gọi `return_features=True` khi `weight_feat > 0`. Guard-only dùng logit, không yêu cầu feature API.
 
 ### Bước 5 — Test (D5, ~1 h)
 
@@ -202,12 +204,13 @@ Kiểm tra: không NaN, `guard_active` True ở ≥ 1 step, `feat_cos` khởi đ
 
 - [x] `RealGuardLoss` và `FeatureConsistencyLoss` có trong `src/training/loss.py`, **mặc định `weight=0`**.
 - [x] `CrossDomainTotalLoss.forward` nhận `logits_clean/logits_deg/teacher_logits/features_*` và trả dict có **đủ 7 khoá** (`loss_total, ce_clean, ce_deg, kd, cons, feat, guard`).
-- [x] `pytest -q tests/test_loss_v2.py` — 4/4 xanh (a)(b)(c)(d).
+- [x] `tests/test_loss_v2.py`: test công thức legacy độc lập, trọng số v2, dấu gradient, detach, FP16, input/config và alias API.
 - [x] `weight=0` ⇒ `allclose` với bản cũ (`atol=1e-6`) trên 3 batch.
 - [x] `return_features` mặc định `False`; `forward()` cũ không đổi (test smoke so sánh output trước/sau).
-- [x] Đã đồng bộ hoàn chỉnh vào `CrossDomainTrainer` & `train_crossdomain.py`, có smoke test tích hợp 3/3 xanh (`tests/test_smoke_loss_v2_integration.py`).
+- [x] Tích hợp CPU vào `CrossDomainTrainer`: config → ảnh → loader → forward/backward; test guard-only và production CLIP wrapper với encoder nhỏ (`tests/test_smoke_loss_v2_integration.py`).
 - [x] `configs/train_phase7_anchored_v2.yaml` tồn tại, khớp §5.6.
 - [x] Báo cáo nghiệm thu `docs/bao_cao/B/bao_cao_task_7.9_loss_v2_realguard.md` hoàn tất.
+- [ ] Smoke 20 batch với checkpoint thật và CUDA/T4 cho phiên bản sau review. Máy local hiện tại chỉ có CPU.
 
 ---
 

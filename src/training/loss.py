@@ -1,4 +1,5 @@
 from typing import Optional
+import math
 
 import torch
 import torch.nn as nn
@@ -257,13 +258,25 @@ class RealGuardLoss(nn.Module):
     """
     def __init__(self, fake_index: int = 1):
         super().__init__()
+        if type(fake_index) is not int or fake_index < 0:
+            raise ValueError("fake_index must be a nonnegative integer")
         self.fake_index = fake_index
 
     def forward(self, logits_student_deg, logits_teacher_clean, is_real):
+        if logits_student_deg.ndim != 2 or logits_student_deg.shape != logits_teacher_clean.shape:
+            raise ValueError("Guard requires matching [batch, classes] logits")
+        if self.fake_index >= logits_student_deg.shape[1]:
+            raise ValueError("fake_index is outside the logits class dimension")
+        if is_real.dtype != torch.bool or is_real.shape != logits_student_deg.shape[:1]:
+            raise ValueError("is_real must be a boolean mask of shape [batch]")
+        # AMP inputs must not square/reduce in FP16 (overflow even at z=400).
+        student = logits_student_deg.float() if logits_student_deg.dtype in (torch.float16, torch.bfloat16) else logits_student_deg
+        teacher = logits_teacher_clean.detach().to(student.dtype)
         if is_real.sum() == 0:
-            return logits_student_deg.sum() * 0.0, {"guard_active": False, "n_real": 0}
-        z_s = logits_student_deg[is_real, self.fake_index]
-        z_t = logits_teacher_clean[is_real, self.fake_index].detach()
+            return student.sum() * 0.0, {"guard_active": False, "n_real": 0,
+                                        "guard_excess_mean": student.new_zeros(())}
+        z_s = student[is_real, self.fake_index]
+        z_t = teacher[is_real, self.fake_index]
         excess = torch.relu(z_s - z_t)
         loss = (excess ** 2).mean()
         return loss, {"guard_active": True, "n_real": int(is_real.sum()),
@@ -278,12 +291,22 @@ class FeatureConsistencyLoss(nn.Module):
     """
     def __init__(self, temperature: float = 2.0):
         super().__init__()
+        if not math.isfinite(temperature) or temperature <= 0:
+            raise ValueError("temperature must be finite and > 0")
         self.T = temperature
 
     def forward(self, f_deg, f_clean, logits_deg, logits_clean):
-        cos = F.cosine_similarity(f_deg, f_clean.detach(), dim=-1, eps=1e-8)
+        if f_deg.ndim != 2 or f_deg.shape != f_clean.shape:
+            raise ValueError("Features must have matching [batch, features] shapes")
+        if logits_deg.shape != logits_clean.shape or logits_deg.shape[0] != f_deg.shape[0]:
+            raise ValueError("Feature and logit batch shapes must match")
+        # eps=1e-8 underflows in FP16. Perform new losses in FP32 under AMP.
+        f_deg = f_deg.float() if f_deg.dtype in (torch.float16, torch.bfloat16) else f_deg
+        f_clean = f_clean.detach().to(f_deg.dtype)
+        logits_deg = logits_deg.float() if logits_deg.dtype in (torch.float16, torch.bfloat16) else logits_deg
+        cos = F.cosine_similarity(f_deg, f_clean, dim=-1, eps=1e-8)
         loss_cos = (1.0 - cos).mean()
-        p_clean  = F.softmax(logits_clean.detach() / self.T, dim=-1)
+        p_clean  = F.softmax(logits_clean.detach().to(logits_deg.dtype) / self.T, dim=-1)
         log_p_deg = F.log_softmax(logits_deg / self.T, dim=-1)
         loss_kl  = F.kl_div(log_p_deg, p_clean, reduction="batchmean") * (self.T ** 2)
         return loss_cos + loss_kl, {"feat_cos": cos.mean().detach(), "feat_kl": loss_kl.detach()}
@@ -311,9 +334,14 @@ class CrossDomainTotalLoss(nn.Module):
         alpha_kd: float = 0.3,
         beta_cons: float = 0.2,
         fake_index: int = 1,
+        weight_ce_deg: float = 0.3,
     ):
         super().__init__()
         self.weight_ce = weight_ce
+        self.weight_ce_deg = weight_ce_deg
+        for name, value in (("weight_ce", weight_ce), ("weight_ce_deg", weight_ce_deg)):
+            if not math.isfinite(value) or value < 0:
+                raise ValueError(f"{name} must be finite and >= 0")
         self.ce_loss   = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
         self.kd_loss   = CrossDomainDistillationLoss(temperature=temperature, alpha_kd=alpha_kd)
         self.cons_loss = PairedConsistencyLoss(beta_cons=beta_cons)
@@ -323,8 +351,8 @@ class CrossDomainTotalLoss(nn.Module):
 
     def forward(
         self,
-        logits: torch.Tensor,           # = logits_clean; tên giữ nguyên → train_crossdomain.py dùng keyword
-        targets: torch.Tensor,
+        logits: Optional[torch.Tensor] = None,  # legacy name
+        targets: Optional[torch.Tensor] = None,
         teacher_logits: Optional[torch.Tensor] = None,
         logits_degraded: Optional[torch.Tensor] = None,
         clean_mask: Optional[torch.Tensor] = None,
@@ -332,9 +360,30 @@ class CrossDomainTotalLoss(nn.Module):
         features_deg: Optional[torch.Tensor] = None,     # Task 7.9: aug_image_features nhánh deg
         weight_feat: float = 0.0,
         weight_guard: float = 0.0,
+        logits_clean: Optional[torch.Tensor] = None,
+        logits_deg: Optional[torch.Tensor] = None,
     ) -> dict:
+        if logits_clean is not None:
+            if logits is not None:
+                raise ValueError("Use either logits or logits_clean, not both")
+            logits = logits_clean
+        if logits_deg is not None:
+            if logits_degraded is not None:
+                raise ValueError("Use either logits_degraded or logits_deg, not both")
+            logits_degraded = logits_deg
+        if logits is None or targets is None or targets.numel() == 0:
+            raise ValueError("Nonempty logits and targets are required")
         # lean: legacy_mode giữ công thức cũ → allclose test (a) pass
         legacy_mode = (weight_feat == 0.0 and weight_guard == 0.0)
+        for name, value in (("weight_feat", weight_feat), ("weight_guard", weight_guard)):
+            if not math.isfinite(value) or value < 0:
+                raise ValueError(f"{name} must be finite and >= 0")
+        if not legacy_mode and logits_degraded is None:
+            raise ValueError("Loss v2 requires paired clean/degraded logits")
+        if weight_feat > 0 and (features_clean is None or features_deg is None):
+            raise ValueError("weight_feat > 0 requires clean and degraded features")
+        if weight_guard > 0 and teacher_logits is None:
+            raise ValueError("weight_guard > 0 requires clean teacher logits")
 
         ce_clean = self.ce_loss(logits, targets)
         ce_deg   = self.ce_loss(logits_degraded, targets) if logits_degraded is not None else None
@@ -343,10 +392,11 @@ class CrossDomainTotalLoss(nn.Module):
             ce_raw = (0.7 * ce_clean + 0.3 * ce_deg) if ce_deg is not None else ce_clean
             loss_ce = self.weight_ce * ce_raw
         else:
-            loss_ce = 0.3 * ce_clean + (0.3 * ce_deg if ce_deg is not None else 0.0)
+            loss_ce = self.weight_ce * ce_clean + self.weight_ce_deg * ce_deg
 
-        loss_kd   = logits.sum() * 0.0
-        loss_cons = logits.sum() * 0.0
+        zero = (logits if legacy_mode else logits.float()).sum() * 0.0
+        loss_kd   = zero
+        loss_cons = zero
 
         if teacher_logits is not None and self.kd_loss.alpha_kd > 0.0:
             loss_kd = self.kd_loss(logits, teacher_logits, labels=targets, clean_mask=clean_mask)
@@ -354,23 +404,23 @@ class CrossDomainTotalLoss(nn.Module):
         if logits_degraded is not None and self.cons_loss.beta_cons > 0.0:
             loss_cons = self.cons_loss(logits, logits_degraded)
 
-        loss_feat  = logits.sum() * 0.0
-        loss_guard = logits.sum() * 0.0
+        loss_feat  = zero
+        loss_guard = zero
         guard_active = False
+        feat_info = {}
+        g_info = {"n_real": 0}
 
         if weight_feat > 0.0 and features_clean is not None and features_deg is not None:
             lf_input = logits_degraded if logits_degraded is not None else logits
-            loss_feat, _ = self.feat_loss(features_deg, features_clean, lf_input, logits)
+            loss_feat, feat_info = self.feat_loss(features_deg, features_clean, lf_input, logits)
 
         if weight_guard > 0.0 and teacher_logits is not None and logits_degraded is not None:
             loss_guard, g_info = self.guard_loss(logits_degraded, teacher_logits, is_real=(targets == 0))
             guard_active = g_info.get("guard_active", False)
 
-        if legacy_mode:
-            loss_total = loss_ce + loss_kd + loss_cons
-        else:
-            loss_total = (loss_ce + 0.7 * loss_kd + 0.2 * loss_cons
-                          + weight_feat * loss_feat + weight_guard * loss_guard)
+        # kd_loss/cons_loss already apply alpha_kd/beta_cons. Never weight twice.
+        loss_total = (loss_ce + loss_kd + loss_cons
+                      + weight_feat * loss_feat + weight_guard * loss_guard)
 
         return {
             "loss_total":  loss_total,
@@ -380,5 +430,15 @@ class CrossDomainTotalLoss(nn.Module):
             "loss_feat":   loss_feat,
             "loss_guard":  loss_guard,
             "guard_active": guard_active,
+            "ce_clean": ce_clean,
+            "ce_deg": ce_deg if ce_deg is not None else logits.new_zeros(()),
+            "kd": loss_kd / self.kd_loss.alpha_kd if self.kd_loss.alpha_kd else loss_kd,
+            "cons": loss_cons / self.cons_loss.beta_cons if self.cons_loss.beta_cons else loss_cons,
+            "feat": loss_feat,
+            "guard": loss_guard,
+            "weighted_feat": weight_feat * loss_feat,
+            "weighted_guard": weight_guard * loss_guard,
+            **feat_info,
+            **{k: v for k, v in g_info.items() if k != "guard_active"},
         }
 

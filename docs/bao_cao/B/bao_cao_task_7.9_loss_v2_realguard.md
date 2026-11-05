@@ -1,175 +1,72 @@
-# BÁO CÁO NGHIỆM THU NHIỆM VỤ 7.9 (TASK 7.9)
-## LOSS V2: `RealGuardLoss` + `FeatureConsistencyLoss`
+# Báo cáo Task 7.9 — RealGuardLoss và FeatureConsistencyLoss
 
-> **Mã nhiệm vụ**: `Task 7.9` *(Phase 7 — D4–D5)*  
-> **Người thực hiện**: **Thành viên B** *(Architecture & Loss Lead)*  
-> **Người phối hợp**: **Thành viên C** *(Training Lead — sử dụng loss trong vòng huấn luyện Phase 7)*  
-> **Cổng kiểm soát chất lượng**: — *(nạp đầu vào cho **G7.2**)*  
-> **Trạng thái**: `[x] ĐÃ HOÀN THÀNH`  
-> **Môi trường xác minh**: Google Colab CPU (Python 3.13.18, pytest 8.4.2, torch 2.x+cpu) — 2026-11-01  
-> **Hiện vật bàn giao**:
-> - Loss: [`src/training/loss.py`](../../../src/training/loss.py) — `RealGuardLoss`, `FeatureConsistencyLoss`, cập nhật `CrossDomainTotalLoss`
-> - Model: [`src/models/clip_models.py`](../../../src/models/clip_models.py) — cờ `return_features` trong `CLIPModel.forward`
-> - Bộ test: [`tests/test_loss_v2.py`](../../../tests/test_loss_v2.py)
-> - Config: [`configs/train_phase7_anchored_v2.yaml`](../../../configs/train_phase7_anchored_v2.yaml)
-> - Báo cáo này: `docs/bao_cao/B/bao_cao_task_7.9_loss_v2_realguard.md`
+Cập nhật review và sửa tích hợp: **2026-11-05**. Triển khai ban đầu: Thành viên B; phối hợp huấn luyện: Thành viên C.
 
----
+**Trạng thái:** đã sửa và kiểm tra CPU; chưa xác nhận smoke với checkpoint CLIP thật trên T4 cho phiên bản hiện tại. Đây là nghiệm thu module loss và tích hợp cơ bản, chưa phải nghiệm thu toàn bộ Task 7.11/G7.2.
 
-## 1. Bối Cảnh & Vấn Đề Giải Quyết
+## Những vấn đề đã sửa
 
-**Kế thừa từ Task 6.3-B** ([`bao_cao_task_6.3_b_distillation_and_consistency_loss.md`](./bao_cao_task_6.3_b_distillation_and_consistency_loss.md)): `CrossDomainTotalLoss` gồm `AugCE + KD (Teacher-Correct) + PairedConsistency` chỉ ràng buộc ở mức **logit**. Mô hình student có xu hướng đẩy logit Fake của ảnh **Real** bị suy biến lên cao hơn teacher → tăng False Positive trên Real.
+- KD và consistency từng bị nhân trọng số hai lần: `alpha_kd=.7` thành `.49`, `beta_cons=.2` thành `.04`. Các module cũ đã trả loss có trọng số; tổng mới cộng trực tiếp các giá trị đó.
+- CE clean/degraded từng hard-code `.3/.3`, không tôn trọng config. Nay đọc `weight_ce` và `weight_ce_deg` trong chế độ v2.
+- Feature cosine với vector zero FP16 từng trả NaN do `eps=1e-8` underflow; Guard với excess 400 từng trả Inf do bình phương FP16. Hai module mới tính toán FP32 cho đầu vào FP16/BF16 và detach nhánh clean/teacher đúng vị trí.
+- Bật loss mới nhưng thiếu feature, teacher hoặc cặp ảnh nay báo lỗi rõ ràng, thay vì âm thầm bỏ thành phần loss.
+- Guard kiểm tra index lớp và mask. Trainer xác minh mapping hiện có của dự án `REAL=0, FAKE=1`; guard-only không yêu cầu model hỗ trợ feature API.
+- Test legacy trước đây so hai lần gọi cùng implementation. Nay đối chiếu với công thức CE/KD selective/MSE độc lập trên ba batch cố định.
 
-**Kế thừa từ Task 7.2** ([`bao_cao_task_7.2_canonical_loader.md`](./bao_cao_task_7.2_canonical_loader.md)): `load_canonical()` là đường nạp chuẩn; mọi thay đổi model ở task này phải giữ nguyên kết quả `DoD #4` của 7.2.
+## Công thức và API
 
-**Vấn đề cần giải quyết**:
-1. Chặn student vượt teacher trên logit Fake của mẫu Real (**RealGuard**).
-2. Đồng nhất biểu diễn **feature** clean ↔ degraded, không chỉ logit (**FeatureConsistency**).
-3. Hoàn toàn tương thích ngược: run cũ (weight mới = 0) cho kết quả y hệt.
+Với cấu hình Phase 7 hiện tại, KD/Cons/Feat/Guard dưới đây là các giá trị **chưa nhân trọng số**:
 
----
-
-## 2. Kiến Trúc Giải Pháp
-
-### 2.1. `RealGuardLoss`
-
-Với tập mẫu Real `R` (`targets == 0`), `k = fake_index = 1`:
-
-```
-L_guard = mean_{i∈R} [ ReLU( z_s[i,k] − stopgrad(z_t[i,k]) ) ]²
+```text
+total = .3 CE_clean + .3 CE_deg + .7 KD + .2 Cons + .3 Feat + .5 Guard
 ```
 
-- `z_s`: logit student trên ảnh degraded; `z_t`: logit teacher trên ảnh clean (detach).
-- ReLU → chỉ có gradient khi `z_s > z_t`; không kéo logit xuống vô hạn.
-- Batch không có Real → trả `0` (giữ graph), `guard_active=False`, không NaN.
+`beta_cons=.2` giữ thêm logit consistency như cấu hình và bước tích hợp §5.3 của task; đặt `beta_cons=0` nếu thí nghiệm chỉ dùng năm thành phần ở công thức đầu task. Không nhân thêm `.7` hoặc `.2` vào các khóa `loss_kd`/`loss_cons` đã có trọng số.
 
-### 2.2. `FeatureConsistencyLoss`
+Khi `weight_feat=weight_guard=0`, giữ nguyên công thức legacy:
 
-```
-L_feat = mean(1 − cos(f_deg, stopgrad(f_clean)))
-       + T² · KL( softmax(stopgrad(z_clean)/T) ‖ softmax(z_deg/T) ),   T = 2.0
+```text
+total = weight_ce * (.7 CE_clean + .3 CE_deg) + loss_kd + loss_cons
 ```
 
-- `f_*` = `aug_image_features` lấy qua `CLIPModel.forward(..., return_features=True)`.
-- Stop-gradient trên nhánh clean để nhánh degraded học theo, không kéo ngược.
+Không thay đổi `CrossDomainDistillationLoss` và `PairedConsistencyLoss`. Tên tham số cũ `logits`/`logits_degraded` tiếp tục hoạt động; có thêm alias `logits_clean`/`logits_deg` dùng bằng keyword. Không truyền cả hai alias cho cùng một đầu vào.
 
-### 2.3. `CrossDomainTotalLoss` (cập nhật)
+Các khóa trả về gồm `loss_total`, `ce_clean`, `ce_deg`, `kd`, `cons`, `feat`, `guard`; vẫn giữ các khóa `loss_*` cũ. `loss_ce`, `loss_kd`, `loss_cons`, `weighted_feat`, `weighted_guard` cộng lại thành `loss_total`; `loss_feat` và `loss_guard` là giá trị thô. Có thêm `feat_cos`, `feat_kl`, `guard_active`, `n_real`, `guard_excess_mean` để chẩn đoán.
 
-| Chế độ | Điều kiện | Công thức |
-| :--- | :--- | :--- |
-| **Legacy** | `weight_feat = weight_guard = 0` (mặc định) | `0.7·[0.7·CE_c + 0.3·CE_d] + L_KD + L_cons` — **y hệt Phase 6-R** |
-| **Phase 7** | có weight mới > 0 | `0.3·CE_c + 0.3·CE_d + 0.7·L_KD + 0.2·L_cons + w_feat·L_feat + w_guard·L_guard` |
+## Đồng bộ với dự án
 
-Dict trả về bổ sung `loss_feat`, `loss_guard`, `guard_active` để log.
+- Config [`train_phase7_anchored_v2.yaml`](../../../configs/train_phase7_anchored_v2.yaml) bật degradation v2 (Task 7.8), đọc manifest v2 (Task 7.7), chỉ lấy `val_select` cho validation. `val_calib` không được đưa vào loader chọn checkpoint.
+- Warm start đổi về baseline `fatformer_4class_ckpt.pth`, phù hợp Step-0 identity và kế hoạch 7.11. Parser thực sự đọc đường dẫn model, tên checkpoint, LR adapter `1e-5`, CE degraded, AMP và gradient clipping từ YAML; CLI vẫn có quyền ghi đè.
+- Vòng train chỉ bật `return_features` khi `weight_feat>0`; Guard dùng logit. Teacher được freeze, `eval()` và chạy trong `no_grad()`.
+- Mất/hỏng ảnh thật báo lỗi; ảnh giả lập chỉ được phép trong dry-run. Không thay dữ liệu thiếu bằng ảnh màu khi train thật.
+- Có `--max_steps` để giới hạn batch train xuyên các epoch. Gradient accumulation chuẩn hóa đúng cửa sổ cuối chưa đủ batch.
+- Log v2 lưu tại `DATASET/logs/phase7/train_history.csv`, gồm các thành phần loss, cosine, KL, tỷ lệ Guard hoạt động và gradient norm trước clip. `n_real` trong metric epoch là số Real trung bình mỗi batch. Luồng legacy vẫn dùng lịch sử M6 cũ.
+- Smoke CPU kiểm tra pipeline dry-run với v2; teacher giả lập được sao chép từ student trước audit Step-0. Kết quả giả lập không chứng minh tải checkpoint thật hoặc chất lượng phát hiện.
 
-### 2.4. `CLIPModel.forward(image, return_dual=False, return_features=False)`
+Wrapper `CLIPModel.forward(return_features=True)` đã có từ triển khai trước. Test mới gọi chính forward đó với encoder nhỏ để so sánh logit thường, dual và feature, đồng thời kiểm tra backward và state-dict keys. Không sửa cấu trúc model hay checkpoint trong lần review này.
 
-- Mặc định `False` → hành vi cũ không đổi.
-- `True` → trả `(logits, aug_image_features)`; feature shape `(B, 768)`.
+## Kiểm tra và số đo
 
-### 2.5. Config Phase 7
+```powershell
+$env:OMP_NUM_THREADS='1'
+$env:MKL_NUM_THREADS='1'
+python -m pytest -q -p no:cacheprovider --basetemp scratch/pytest-task79-final-alias tests
+```
 
-`configs/train_phase7_anchored_v2.yaml`: `weight_feat=0.3`, `weight_guard=0.5`, `alpha_kd=0.7`, `beta_cons=0.2`, `T=2.0`, `fake_index=1` (REAL=0, FAKE=1 theo `data_manifest.json`).
+Phạm vi: công thức độc lập, trọng số cấu hình, stop-gradient, scale KL theo batch, vector zero FP16, Guard overflow FP16, cấu hình không hợp lệ, input thiếu, alias API, config → loader → trainer với ảnh tạm thật, cách ly calibration, guard-only, forward CLIP wrapper, dry-run CLI và regression Task 7.2/7.8 cùng các test Phase 7 hiện có.
 
----
+Lần chạy cuối: **85 passed in 69.49s**, không có test fail. Trong đó `test_loss_v2.py` có 17 trường hợp và `test_smoke_loss_v2_integration.py` có 9 trường hợp; các trường hợp còn lại là regression của dự án.
 
-## 3. Kết Quả Kiểm Tra Chức Năng (pytest)
+Smoke CPU có seed 42 lưu ở [`task_7.9_cpu_smoke.json`](../../../DATASET/logs/phase7/task_7.9_cpu_smoke.json): hai batch model nhỏ, loss tổng `0.452720`, cosine `0.9999996`, gradient norm trung bình `0.639332`, tỷ lệ batch có Real cho Guard `0.5`; teacher đóng băng và không nhận gradient. Ví dụ Guard: student Fake logit `1.5`, teacher `.3` cho loss `1.44`, gradient student Fake `+2.4`, gradient teacher không có. KL rất nhỏ có thể âm cỡ `1e-8` do làm tròn FP32.
 
-Chạy thực tế trên Colab CPU (2026-11-01): **4 passed in 13.32s**.
+Báo cáo trước ghi 4 test và forward feature `(1,768)` trên Colab CPU ngày 2026-11-01. Các số đó thuộc phiên bản trước review, không thay cho kiểm tra lại với checkpoint thật sau sửa.
 
-| Test | Nội dung | Kỳ vọng | Kết quả |
-| :--- | :--- | :--- | :---: |
-| `test_a_backward_compat_allclose` | weight mới = 0 so với công thức Phase 6-R | `allclose` | ✅ PASSED |
-| `test_b_guard_zero_when_student_below_teacher` | `z_s < z_t` | `L_guard = 0` | ✅ PASSED |
-| `test_c_guard_positive_and_gradient_pulls_down` | `z_s > z_t` | `L_guard > 0`, gradient kéo `z_s` xuống | ✅ PASSED |
-| `test_d_all_fake_no_nan` | Batch toàn Fake | Không NaN, `guard_active=False` | ✅ PASSED |
+## Bước xác nhận còn lại
 
-**Lệnh kiểm tra**:
+Máy kiểm tra hiện tại là Windows/PyTorch CPU, CUDA không khả dụng. Sau khi stage đầy đủ ảnh theo manifest và checkpoint trên máy GPU:
+
 ```bash
-python -m pytest tests/test_loss_v2.py -v
+python -m src.training.train_crossdomain --config configs/train_phase7_anchored_v2.yaml --max_steps 20
 ```
 
----
-
-## 4. Kiểm Tra Hồi Quy (Regression) Task 7.2
-
-Do sửa `clip_models.py`, chạy lại `scratch/verify_task_7_2.py` với code mới (Colab CPU, 2026-11-01):
-
-| Checkpoint | n_keys | Layout | missing | unexpected | sha256 | Trạng thái |
-| :--- | :---: | :--- | :---: | :---: | :--- | :---: |
-| **Baseline** | 1116 | `n=3 {7,15,23}` | 0 | 0 | `3b904401...` | ✅ LOADED |
-| **Anchored** | 1200 | `n=3 {7,15,23}` | 0 | 0 | `f70a11df...` | ✅ LOADED |
-| **M4** | 1684 | `n=8 {2,5,...,23}` | 0 | 0 | `b5ad8396...` | ✅ LOADED |
-| **Gen 1** | — | `partial=True, dropped=[7,15]` | — | — | — | ✅ REJECTED |
-
-→ **`DoD #4: PASS`**, sha256 trùng khớp báo cáo 7.2.
-
-**Smoke forward (Baseline)**:
-- `forward: (1, 2)` | `return_features: (1, 2) (1, 768)`
-- `torch.allclose(out, out_return_features) = True` → cờ mới không làm đổi logit.
-
----
-
-## 5. Kiểm Tra DoD
-
-| DoD Item | Trạng thái | Ghi chú |
-| :--- | :---: | :--- |
-| `RealGuardLoss` chỉ phạt khi `z_s > z_t` trên mẫu Real | ✅ | Test (b), (c) |
-| Batch không có Real không NaN | ✅ | Test (d) |
-| `FeatureConsistencyLoss` cosine + KL, stop-grad nhánh clean | ✅ | Mục 2.2 |
-| `CrossDomainTotalLoss` tương thích ngược khi weight = 0 | ✅ | Test (a) allclose |
-| `CLIPModel` xuất feature, không đổi logit cũ | ✅ | `allclose = True`, feature `(1, 768)` |
-| Config Phase 7 với đủ 5 trọng số | ✅ | `train_phase7_anchored_v2.yaml` |
-| Không phá Task 7.2 | ✅ | `DoD #4: PASS` |
-
----
-
-## 6. Rủi Ro Đã Giải Quyết
-
-| Rủi ro | Kết quả |
-| :--- | :--- |
-| Thay đổi loss làm lệch run cũ | ✅ `legacy_mode` giữ nguyên công thức; test allclose |
-| Guard kéo logit Real xuống vô hạn | ✅ ReLU + so với teacher, chỉ phạt phần vượt |
-| NaN khi batch toàn Fake | ✅ Trả `0 * sum` giữ graph; test (d) |
-| Sửa `forward` phá loader/eval | ✅ Mặc định `return_features=False`; regression 7.2 PASS |
-| Local Windows không chạy được PyTorch (Smart App Control / PowerShell `DriveNotFound`) | ✅ Xác minh toàn bộ trên Colab |
-
----
-
-## 7. Ghi Chú Tái Lập Trên Colab
-
-- Code: `MyDrive/xla_ckpt/xla_code.zip` (chứa `src/`, `tests/`, `configs/`, `scratch/`), giải nén vào `/content/xla`.
-- CLIP: `ViT-L-14.pt` đã lưu trên Drive `MyDrive/xla_ckpt/ViT-L-14.pt`, symlink vào `/content/xla/pretrained/ViT-L-14.pt` (code tìm tại `pretrained/`).
-- Checkpoint: symlink 4 file `.pth` từ Drive vào đúng đường dẫn `scratch/verify_task_7_2.py` yêu cầu.
-
----
-
-## 8. Kết Luận Nghiệm Thu
-
-Task 7.9 **hoàn thành**. Loss v2 sẵn sàng, tương thích ngược, không ảnh hưởng loader 7.2.
-
-| Hạng mục | Kết quả thực tế |
-| :--- | :--- |
-| pytest `test_loss_v2.py` | **4 passed** (13.32s) |
-| Regression 7.2 `DoD #4` | **PASS** |
-| Forward + `return_features` | `(1,2)` + `(1,768)`, logit không đổi |
-
-Bàn giao cho Thành viên C:
-- Gọi `model(x, return_features=True)` cho cả nhánh clean và degraded, truyền `features_clean`, `features_deg`, `weight_feat`, `weight_guard` vào `CrossDomainTotalLoss`.
-- Đọc trọng số từ `configs/train_phase7_anchored_v2.yaml`; log thêm `loss_feat`, `loss_guard`, `guard_active`.
-- Đầu vào cho **Task 7.10** (selection metric v2) và cổng **G7.2**.
-
----
-
-## 9. Tích Hợp Đồng Bộ Huấn Luyện (End-to-End Integration)
-
-Đã hoàn tất nối Loss v2 trực tiếp vào pipeline huấn luyện của dự án tại [`src/training/train_crossdomain.py`](../../../src/training/train_crossdomain.py):
-1. **Trích xuất đặc trưng tự động**: Trong `CrossDomainTrainer.train_epoch()`, khi `weight_feat > 0` hoặc `weight_guard > 0`, student model được gọi với `return_features=True` cho cả hai nhánh clean và degraded, trích xuất `features_clean` và `features_deg` để cung cấp cho `CrossDomainTotalLoss`.
-2. **Nạp cấu hình YAML & CLI**: `parse_arguments()` đã được bổ sung nạp tự động `weight_feat`, `weight_guard`, `fake_index` từ file YAML (`loss.*`) và hỗ trợ cờ CLI tương ứng (`--weight_feat`, `--weight_guard`, `--fake_index`).
-3. **Giám sát Loss phụ**: Vòng lặp huấn luyện ghi nhận và log chi tiết `loss_feat`, `loss_guard`, và tỷ lệ kích hoạt `guard_active_ratio`.
-4. **Kiểm thử tích hợp khép kín (Smoke Test)**:
-   - File test: [`tests/test_smoke_loss_v2_integration.py`](../../../tests/test_smoke_loss_v2_integration.py)
-   - Kết quả: **3/3 PASSED (100%)**
-     * `test_smoke_loss_v2_trainer_integration`: PASSED (Forward + Backward + Optimizer Step với đầy đủ 5 thành phần loss).
-     * `test_smoke_config_yaml_loss_v2_parsing`: PASSED (Đọc chuẩn `train_phase7_anchored_v2.yaml`).
-     * `test_smoke_backward_compat_legacy_mode`: PASSED (Khi weights=0, hoàn toàn không gọi `return_features`, bảo toàn tài nguyên).
+Xác nhận loss/gradient hữu hạn, Guard có batch hoạt động, feature cosine và đầu ra checkpoint. Logic selection worst-group, preflight/cổng dữ liệu, resume và benchmark GPU thuộc các Task 7.10/7.11; các test CPU ở đây không chứng minh những hạng mục đó đã hoàn tất.
