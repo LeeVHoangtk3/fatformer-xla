@@ -3,10 +3,10 @@
 - **Mã nhiệm vụ**: `Task 7.11` *(Phase 7 — D6–D7)*
 - **Người thực hiện**: **Thành viên C (Training & Evaluation Lead)**
 - **Người phối hợp**: **Thành viên A** (dữ liệu, kiểm toán lần 2) + **Thành viên B** (loss, selection, sửa lỗi train)
-- **Môi trường thực thi**: ☁️ **T4 / L4 / A100**
+- **Môi trường**: kế hoạch T4 / L4 / A100; preflight/notebook lưu L4, benchmark lưu Blackwell. Chưa xác định đầy đủ GPU của từng phiên; chưa có bằng chứng cấu hình này chạy được trên T4 16 GB.
 - **Độ ưu tiên**: 🔴 Khẩn cấp — **quyết định G7.2**
 - **Cổng liên quan**: **G7.2** (cuối D8, sau Task 7.12)
-- **Trạng thái**: `[ ] Chưa train/nghiệm thu GPU`. Workflow preflight, benchmark riêng và epoch-resume đã sửa; xem [báo cáo chuẩn bị](../../../bao_cao/C/bao_cao_task_7.11_preflight_va_khoi_dong.md).
+- **Trạng thái**: `[~] Có log 5 epoch; epoch 4 tốt nhất trên val_select (Worst-Group 46.67%, Clean Real 97.97%). Chưa đủ bằng chứng nghiệm thu toàn bộ DoD; G7.2 chưa kết luận.` Xem [báo cáo kết quả](../../../bao_cao/C/bao_cao_task_7.11_train_v2.md).
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.11
 
 ---
@@ -23,7 +23,9 @@ $$\text{Fake@Real90} \ge 65\%,\quad \text{AUC} \ge 78\%,\quad \text{AUC}_{Q30} \
 
 - Baseline là checkpoint **gốc**, không nhiễm dữ liệu Phase 6.
 - Anchored đã qua một vòng fine-tune; warm start từ Anchored sẽ **cộng dồn** sai lệch của Phase 6 và khó quy trách nhiệm khi G7.2 trượt.
-- SRM/Gating được thêm vào với **Zero-Init** (`SRM proj = 0`, `λ ≡ 1,0`) để mô hình **bắt đầu đúng bằng Baseline** — mọi thay đổi sau đó đều quy được về dữ liệu/loss mới.
+- SRM/Gating được thêm vào với **Zero-Init** (`SRM proj = 0`, `λ ≡ 1,0`) nhằm giữ đầu ra khởi tạo gần Baseline. Phải kiểm tra Step-0 identity trong run mới; không suy ra đóng góp riêng của dữ liệu hay loss từ thiết kế khởi tạo.
+
+Đây là thiết kế khởi tạo và mục tiêu của task, không thay cho kiểm chứng từng run. Chưa có ablation thì chưa tách được đóng góp của dữ liệu, từng loss hay thành phần train được.
 
 ---
 
@@ -161,16 +163,18 @@ Theo kế hoạch §VI, **chỉ bật khi** `worst_group` không tăng ≥ 2 pp 
 
 ## 6. Definition of Done
 
-- [ ] Preflight train đủ 8 PASS trên máy GPU/dữ liệu thật. Audit local hiện `ready_to_train=false`, không tính là PASS.
-- [ ] Benchmark 100 step có thật; ước lượng/epoch ghi trong báo cáo.
-- [ ] `train_history.csv` có **6 cột nhóm** + 5 thành phần loss + `lr` + `minutes`.
-- [ ] `m7_convergence.png` có 2 panel, đọc được.
-- [ ] `best.pth` **hoặc** `best_effort.pth` tồn tại; lý do chọn ghi rõ.
-- [ ] Checkpoint cuối `verify 0/0`, `layout.n = 3`, `dropped = []`.
-- [ ] Thời gian thực tế mỗi epoch + tổng được ghi (không ước lượng).
-- [ ] Nếu dùng đòn bẩy: có run riêng, cùng seed, ghi rõ.
-- [ ] Nếu cắt xuống 4 epoch: ghi rõ lý do ngân sách GPU.
-- [ ] Báo cáo nêu rõ epoch dừng và **vì sao**.
+- [x] Preflight đã lưu đủ 8 PASS: L4 21.66 GiB trống, 14.400 ảnh staged khớp SHA256, `ready_to_train=true` tại `DATASET/logs/anchored_v2_run1/preflight_train.json`. Đây là bằng chứng trước train, không xác minh checkpoint cuối.
+- [x] Có JSON benchmark 100 step trên Blackwell: 162.04 ms/step, 2.07 phút/epoch ước lượng, peak allocated 18.23 GiB. Notebook lưu phiên L4 và bỏ qua benchmark khi resume; chưa làm rõ lịch sử từng phiên. Không suy số đo này sang L4/T4.
+- [x] `train_history.csv` có 42 cột, đủ 5 epoch và các trường nhóm/loss/LR/thời gian. `grad_norm` NaN tại epoch 1, 4; cần điều tra, không coi log đủ cột là bằng chứng train hoàn toàn ổn định.
+- [x] `m7_convergence.png` có 2 panel, đọc được và khớp CSV tại `DATASET/logs/anchored_v2_run1/`.
+- [ ] `best.pth` **hoặc** `best_effort.pth` tồn tại và được kiểm chứng. CSV hỗ trợ chọn epoch 4 (Worst-Group 46.67%, Clean Real 97.97%); chưa trực tiếp kiểm tệp `.pth` trên Drive. Cần xác minh tệp best chứa đúng trọng số epoch đó.
+- [ ] Checkpoint cuối `verify 0/0`, `layout.n = 3`, `dropped = []`. Chưa có output canonical load sau train trong bộ hiện vật; không dùng kết quả load baseline thay thế.
+- [x] Thời gian mỗi epoch và tổng có trong CSV: 130.54, 129.79, 130.40, 129.93, 720.83 giây; tổng 1,241.50 giây (~20.69 phút). Đây là train+validation, không phải toàn bộ wall-clock phiên hoặc thời gian backup.
+- [x] Log không cho thấy worst-group trì trệ theo ngưỡng theo dõi: tăng từ 0% đến 46.67% tại epoch 4, còn 38% tại epoch 5. Chưa có bằng chứng chạy đòn bẩy riêng; không suy ra đã đạt G7.2.
+- [x] Log ghi đủ epoch 1–5, khớp horizon 5 epoch của cấu hình runtime. Notebook đã lưu có resume; không khẳng định đây là một phiên chạy liên tục.
+- [x] Báo cáo kết quả đã ghi cả giới hạn và phần cần bổ sung: [báo cáo Task 7.11](../../../bao_cao/C/bao_cao_task_7.11_train_v2.md).
+
+**Phần nghiệm thu còn mở**: kiểm chứng tệp checkpoint và canonical load sau train; điều tra gradient NaN; làm rõ lịch sử GPU/benchmark/resume. Các chỉ số validation hiện tại chưa thay cho phép đo G7.2 hoặc ablation Task 7.12.
 
 ---
 
