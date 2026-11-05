@@ -1,211 +1,103 @@
-# TASK 7.12 — ABLATION MINI 4 CẤU HÌNH (CÙNG SEED 42)
+﻿# TASK 7.12 — ABLATION GUARD / FEATURE TRÊN DỮ LIỆU v2
 
-- **Mã nhiệm vụ**: `Task 7.12` *(Phase 7 — D7–D8)*
-- **Người thực hiện**: **Thành viên C (Training & Evaluation Lead)** — chạy
-- **Người phối hợp**: **Thành viên B (Architecture & Loss Lead)** — review kết luận đòn bẩy
-- **Môi trường thực thi**: ☁️ **T4**
-- **Độ ưu tiên**: 🟠 Cao — quyết định **G7.2** và nội dung mục "Đóng góp" của luận văn
-- **Cổng liên quan**: **G7.2** (cuối D8)
-- **Trạng thái**: `[ ] Sẵn sàng`
-- **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.12
+- **Phụ trách**: Thành viên C; Thành viên B review loss và cách diễn giải.
+- **Trạng thái**: `[~] Đã sửa triển khai và có kiểm thử CPU; chưa chạy thí nghiệm GPU, chưa có kết luận thực nghiệm hoặc nghiệm thu G7.2.`
+- **Notebook**: [`task_7.12_ablation_mini_colab.ipynb`](../../../../notebooks/task/task_7.12/task_7.12_ablation_mini_colab.ipynb).
+- **Kế hoạch liên quan**: [Phase 7](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md). Quy định cụ thể dưới đây sửa các điểm mâu thuẫn về epoch, tương tác và đóng góp dữ liệu của đặc tả cũ.
 
----
+## 1. Câu hỏi và giới hạn thiết kế
 
-## 1. Mục tiêu
+So sánh việc thêm **RealGuard** và **FeatureConsistency** khi giữ nguyên dữ liệu v2, CE, KD, logit consistency, khởi tạo, luật chọn checkpoint và ngân sách huấn luyện.
 
-Trả lời **một** câu hỏi có thể bảo vệ trước hội đồng:
+| Cấu hình | Feature | Guard | Thành phần chung |
+| :--- | ---: | ---: | :--- |
+| A1 `a1_data` | 0.0 | 0.0 | CE clean/deg + KD + Consistency, dữ liệu v2 |
+| A2 `a2_data_guard` | 0.0 | 0.5 | Như A1 |
+| A3 `a3_data_featcons` | 0.3 | 0.0 | Như A1 |
+| A4 `a4_full` | 0.3 | 0.5 | Như A1 |
 
-> "Nếu kết quả tốt lên, điều gì thực sự tạo ra nó — dữ liệu mới, `RealGuardLoss`, hay `FeatureConsistencyLoss`?"
+Tên file A1 được giữ để tương thích; **không gọi A1 là “Data only”**. Cả bốn cùng dùng dữ liệu v2 nên không tách được đóng góp riêng của dữ liệu mới. Không thêm run ngoài thiết kế để lựa chọn kết quả thuận lợi.
 
-**4 cấu hình**, **cùng seed 42**, **cùng manifest v2**, **cùng số epoch**, **cùng siêu tham số** — chỉ khác thành phần loss:
+Mặc định **train cả bốn cấu hình trong một thí nghiệm mới**. Không tự tái sử dụng A4 từ Task 7.11: checkpoint, gradient NaN và lịch sử phiên của run cũ còn cần kiểm chứng. Đối chiếu với 7.11 chỉ là thông tin tham khảo, không dùng số của run đó ghép vào bảng mới. Cùng seed không bảo đảm bit-exact khi đổi GPU/framework.
 
-| # | Tên | Dữ liệu | `L_CE` | `L_KD` | `L_Feat` | `L_Guard` | Ý nghĩa |
-| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| A1 | `+data` | v2 | ✅ | ✅ | ✗ | ✗ | Đòn bẩy **dữ liệu** |
-| A2 | `+data+guard` | v2 | ✅ | ✅ | ✗ | ✅ | Thêm **RealGuard** |
-| A3 | `+data+featcons` | v2 | ✅ | ✅ | ✅ | ✗ | Thêm **FeatureConsistency** |
-| A4 | `full` | v2 | ✅ | ✅ | ✅ | ✅ | Đầy đủ (trùng Task 7.11) |
+## 2. Cấu hình chung
 
-> **A4 phải trùng Task 7.11** (cùng seed, cùng config). Nếu lệch > 1 pp ⇒ có phi tất định ⇒ phải điều tra **trước khi** kết luận.
+Nguồn: `configs/ablation_v2/*.yaml`; [`audit_ablation_configs.py`](../../../../tools/audit_ablation_configs.py) kiểm cả bốn cấu hình đầy đủ, không dùng `inherits` chưa được CLI hỗ trợ.
 
-**Quy ước đọc kết quả**
+- `loss.mode: v2` bắt buộc, **kể cả A1**. Không dùng việc tắt Guard/Feature để chọn công thức legacy.
+- CE: `0.3 CE_clean + 0.3 CE_deg`; KD `0.7`; Consistency `0.2`; nhiệt độ loss `2.0`; label smoothing `0.05`.
+- Baseline làm khởi tạo và teacher; SRM/gating bật, backbone đóng băng theo pipeline hiện có.
+- Seed 42, mini-batch 16, accumulation 2, AMP, hai LR `1e-4` và `1e-5`, cùng `num_workers=2`.
+- **5 epoch cho cả bốn**, khớp YAML hiện tại. Bảng 6/3 epoch của đặc tả cũ không áp dụng cho thí nghiệm này. Nếu cần đổi ngân sách, sửa đồng loạt bốn config **trước khi chạy**, dùng experiment mới; không ghép A4 5 epoch với các run 3/6 epoch.
+- Train/selection đọc manifest v2 gốc: `train` và `val_select`; không đưa `val_calib` vào train/selection.
+- Chọn checkpoint theo worst-group với `clean_r >= 0.90`; dùng checkpoint do trainer chọn và metadata của chính tệp đó, không chọn lại epoch từ CSV để ghép với trọng số khác.
 
-- `Δ(A2 − A1)` = đóng góp của **RealGuard**.
-- `Δ(A3 − A1)` = đóng góp của **FeatureConsistency**.
-- `Δ(A4 − max(A2, A3))` = đóng góp **tương tác** (nếu âm ⇒ hai loss triệt tiêu nhau — phải báo cáo).
+Audit YAML chỉ xác nhận cấu hình; không chứng minh dữ liệu staged, GPU đủ bộ nhớ hoặc train đã hoàn thành.
 
----
+## 3. Chuẩn bị và chạy
 
-## 2. Đầu vào
+1. Commit/push mã đã sửa trước khi dùng Colab. Notebook khóa SHA cho cả experiment; chạy tiếp dùng SHA đã lưu. Không reset source tree có thay đổi.
+2. Dùng tên mới, mặc định `ablation_v2_fixed_run1`; không dùng thư mục các run cũ thiếu identity. Runtime và Drive tách theo experiment/cấu hình.
+3. Stage `train_crossdomain_v2.tar` đã audit, kiểm sidecar SHA256, giữ manifest/report/config nguyên bản; copy backbone và baseline có kiểm hash.
+4. Stage CFE tar gốc và `phase7_measured_artifacts.zip` của Task 7.6. Trích baseline calibration cùng `logits_baseline_clean_calib_split.npz` và `..._eval_split.npz`. Thiếu artifact gốc thì dừng; không tự fit lại hay chia split mới.
+5. Runner [`run_ablation_v2.py`](../../../../tools/run_ablation_v2.py) chạy preflight đủ 8 PASS và benchmark 100 mini-batch trên GPU hiện tại cho từng cấu hình. Ngưỡng đầu vào >=20 GiB trống là mức kiểm tra thận trọng dựa trên số đo cũ >18 GiB; không bảo đảm mọi GPU đều chạy được. Không khẳng định T4 16 GB phù hợp.
+6. Chạy train/full-state resume. Gradient không hữu hạn sẽ dừng, không lưu optimizer update đó. Nếu điều tra AMP/batch/LR, tạo experiment riêng và giữ cùng thay đổi cho cả bốn cấu hình trước khi so sánh.
+7. Xác minh đầy đủ horizon, steps/epoch, loss/gradient hữu hạn, checksum, best metadata và CSV. Eval nạp best qua canonical loader; aggregator kiểm missing/unexpected/layout và SHA256 của đúng tệp.
+8. Chấm CFE clean/Q30 trên **cùng evaluation IDs độc lập**, sau đó tổng hợp. Không coi việc tạo được file đầu ra là tự động đạt G7.2.
 
-| # | Đầu vào | Đường dẫn | Vai trò |
-| :---: | :--- | :--- | :--- |
-| I1 | Manifest v2 | `DATASET/manifests/data_manifest_v2.json` | Dữ liệu chung |
-| I2 | Degradation v2 | `configs/degradation_v2.yaml` | Chung |
-| I3 | Loss v2 | `src/training/loss.py` (Task 7.9) | Có cờ bật/tắt từng thành phần |
-| I4 | Selection v2 | `src/training/trainer.py` (Task 7.10) | Chọn checkpoint |
-| I5 | Config gốc | `configs/train_phase7_anchored_v2.yaml` | Sinh 4 config con |
-| I6 | Checkpoint A4 | `DATASET/checkpoints/phase7/fatformer_anchored_v2_best.pth` | Đối chiếu |
+Runner không suy “đã xong” từ best + CSV. Full latest từ Drive phải có checksum, schema và context khớp; tiếp tục từ epoch hoàn tất. Horizon, code hoặc đầu vào đổi thì từ chối resume. Metadata ghi commit, cấu hình, fingerprints và seed thực tế. Các lỗi không được đổi thành số liệu mặc định.
 
----
+## 4. Khế ước evaluation và calibration
 
-## 3. Đầu ra
+Baseline calibration hiện có được fit trên **400 ảnh CFE calibration**. Không chấm tổng hợp chính thức trên toàn bộ 2.000 ảnh bao gồm lại 400 ảnh đó. Eval đọc **1.600 evaluation IDs gốc** trong artifact Task 7.6, kiểm tag split, nhãn, ID duy nhất và không giao calibration; SHA256 calibration NPZ phải khớp artifact calibration đã đo.
 
-| # | Artifact | Đường dẫn | Nội dung |
-| :---: | :--- | :--- | :--- |
-| O1 | 4 config | `configs/ablation_v2/a1_data.yaml` … `a4_full.yaml` | Chỉ khác trọng số loss |
-| O2 | Bảng kết quả | `logs/phase7/ablation_mini_v2.csv` | 4 dòng × 8 chỉ số |
-| O3 | JSON | `logs/phase7/ablation_mini_v2.json` | Kèm `ci95` + `delta` |
-| O4 | Hình | `logs/phase7/m7_ablation.png` | Bar chart 4 cấu hình × 4 chỉ số chính |
-| O5 | Báo cáo | `docs/bao_cao/C/bao_cao_task_7.12_ablation.md` | Kết luận đòn bẩy nào đóng góp nhiều nhất |
+Cả bốn model dùng operating point cố định từ calibration baseline để so sánh. Nhiệt độ này **không phải nhiệt độ đã fit riêng cho từng model mới**. Vì vậy, ECE được ghi rõ là `ece_q30_frozen_temperature_pct`, không tuyên bố là ECE đã tối ưu sau hiệu chuẩn từng model. Không fit calibration trên evaluation để giảm ECE.
 
----
+Evaluator xuất `metrics.auc`, `metrics.fake_at_real90`, `metrics.ece`, `metrics.ci95` theo **phần trăm**. Aggregator không nhân thêm 100, không dùng `metrics_pooled/roc_auc` sai schema. Thiếu tệp/key/CI, nguồn synthetic, source dirty hoặc checkpoint không khớp đều bị từ chối; không thay bằng 0.
 
-## 4. Ràng buộc
+`Fake@Real90` ở đây giữ đúng định nghĩa quantile 90% trên Real của evaluator. Không thay ngầm bằng TPR nội suy tại FPR 10% vì hai phép tính có thể khác nhau khi có ties. CI của Fake@Real90 tính lại ngưỡng trong từng bootstrap resample.
 
-1. **Cùng seed 42**, cùng thứ tự dữ liệu (`DataLoader` seed), cùng `num_workers`. Sai khác duy nhất: trọng số loss.
-2. **Cùng số epoch** cho cả 4 cấu hình. Nếu cắt ngân sách ⇒ cắt **đều** (3 epoch cho cả 4), không cắt riêng.
-3. **Cùng luật chọn checkpoint** (`worst_group` + ràng buộc `clean_r ≥ 0,90`).
-4. **Không chọn epoch tốt nhất cho từng cấu hình** — dùng checkpoint do Trainer lưu.
-5. **Không chạy thêm cấu hình thứ 5** để "cứu" kết quả. Nếu cần, đó là Phase 8.
-6. **Báo cáo cả kết quả âm**: nếu `Δ` âm, ghi rõ; không được chỉ báo cáo cấu hình tốt.
+## 5. Chỉ số và diễn giải
 
----
+CSV ghi epoch horizon thực, epoch best và tám chỉ số:
 
-## 5. Các bước thực hiện
+1. `worst_group` trên val_select.
+2. `clean_r` trên val_select.
+3. `q30_r` trên val_select.
+4. `q30_f` trên val_select.
+5. `fake_at_real90_q30` trên CFE held-out.
+6. `auc_clean` trên CFE held-out.
+7. `auc_q30` trên CFE held-out.
+8. `ece_q30_frozen_temperature_pct` trên CFE held-out.
 
-### Bước 1 — Sinh 4 config (D7, ~0,5 h)
+Các tương phản theo điểm phần trăm:
 
-```yaml
-# configs/ablation_v2/a1_data.yaml
-inherits: ../train_phase7_anchored_v2.yaml
-loss:
-  weight_feat: 0.0
-  weight_guard: 0.0
-```
+- `guard = A2 - A1`.
+- `feature = A3 - A1`.
+- `interaction_2x2 = A4 - A2 - A3 + A1`.
+- `full_over_best_single = A4 - max(A2, A3)`; đây là mức hơn cấu hình đơn tốt nhất, không gọi là tương tác 2×2.
 
-Tương tự:
+Worst-group lấy trên tập dùng chọn checkpoint nên các delta của nó được ghi **mô tả**, `ci95=null`, chưa kết luận có ý nghĩa thống kê hay loss đóng góp lớn nhất. Không biến việc chưa có CI thành “CI không chồng”.
 
-| File | `weight_feat` | `weight_guard` |
-| :--- | ---: | ---: |
-| `a1_data.yaml` | 0,0 | 0,0 |
-| `a2_data_guard.yaml` | 0,0 | 0,5 |
-| `a3_data_featcons.yaml` | 0,3 | 0,0 |
-| `a4_full.yaml` | 0,3 | 0,5 |
+CFE dùng 1.000 bootstrap resample phân tầng theo nhãn, cùng chỉ số ảnh cho cả bốn model; clean/Q30 và các model phải khớp sample IDs/targets. JSON ghi CI của các tương phản CFE. CI này chỉ đo bất định theo ảnh **với seed huấn luyện đã chạy**, không đo biến thiên giữa các seed huấn luyện. Báo cả delta âm và trường hợp chưa đủ bằng chứng; không ép một câu kết luận thắng/thua khi dữ liệu không hỗ trợ.
 
-Viết script kiểm tra: 4 config chỉ khác **đúng 2 khoá** này; mọi khoá khác phải giống hệt (so hash của dict đã loại 2 khoá).
+## 6. Đầu ra và điều kiện nghiệm thu
 
-### Bước 2 — Chốt ngân sách (D7, ~0,2 h)
+Mỗi run có `run_identity.json`, cấu hình runtime, full latest, best, history, val_groups, preflight, benchmark, `run_verification.json`, JSON evaluation và logits NPZ. Summary tại `<run_root>/summary/`, sao lưu vào thư mục experiment trên Drive; không tự chép sang đường dẫn kết quả chính thức khác.
 
-| Ngân sách GPU còn lại | Số epoch | Ghi chú |
-| :--- | :---: | :--- |
-| ≥ 8 h | 6 | Đầy đủ |
-| 4–8 h | 3 | Cắt đều, ghi rõ |
-| < 4 h | 3, chỉ A1 và A4 | Cắt xuống **2 cấu hình** (theo kế hoạch §V.4) |
+- [x] Có bốn YAML explicit v2 và công cụ audit chỉ khác hai trọng số loss.
+- [x] Có kiểm thử CPU cho công thức CE, schema/đơn vị, split, resume, checkpoint, delta và xử lý thiếu bằng chứng.
+- [ ] Preflight/benchmark GPU thực của từng cấu hình đạt và được lưu.
+- [ ] Bốn run hoàn tất cùng horizon, seed, dữ liệu, steps/epoch và các siêu tham số ngoài hai trọng số đã ablate.
+- [ ] Checkpoint thực có canonical 0/0, layout n=3, không dropped; SHA256 khớp best và log.
+- [ ] CSV/JSON/PNG từ các run đo thật, evaluation không chứa calibration IDs; CI yêu cầu được tính từ dự đoán thực.
+- [ ] Báo cáo thực nghiệm trình bày đầy đủ kết quả và giới hạn. Nếu chưa xác định đóng góp lớn nhất thì ghi rõ chưa xác định.
 
-Nếu cắt xuống 2 cấu hình: chỉ trả lời được "dữ liệu + full", **không** tách được guard/featcons. Ghi rõ hạn chế này.
+Công cụ tổng hợp không có chế độ dummy xuất cùng tên/kho kết quả thật. Test dùng fixture trong thư mục tạm. JSON ablation dùng schema riêng `ablation-v2/v1`; `gate_eligible=false` vì nó chưa kiểm mọi yêu cầu G7.2, kể cả 18 tập in-dist. Không nâng trạng thái G7.2 chỉ từ bảng ablation.
 
-### Bước 3 — Chạy 4 cấu hình (D7–D8, ~3–6 h GPU)
+## 7. Liên kết
 
-```bash
-for cfg in a1_data a2_data_guard a3_data_featcons a4_full; do
-  python -m src.training.train_crossdomain \
-    --config configs/ablation_v2/${cfg}.yaml \
-    --seed 42 --save_dir DATASET/checkpoints/phase7/ablation/${cfg} \
-    --history_csv logs/phase7/ablation_${cfg}_history.csv
-done
-```
-
-Theo dõi: mỗi run phải có **cùng** `n_train`, `n_val`, và `steps_per_epoch` (kiểm tra từ log).
-
-### Bước 4 — Chấm 8 chỉ số (D8, ~1 h GPU)
-
-Trên `val_select` (Q30 in-memory) + CFE clean/Q30:
-
-| # | Chỉ số | Nguồn |
-| :---: | :--- | :--- |
-| 1 | `worst_group` | `val_select` |
-| 2 | `clean_r` | `val_select` |
-| 3 | `q30_r` | `val_select` |
-| 4 | `q30_f` | `val_select` |
-| 5 | `fake_at_real90` (Q30) | CFE |
-| 6 | `auc_clean` | CFE |
-| 7 | `auc_q30` | CFE |
-| 8 | `ece` | CFE (sau hiệu chuẩn) |
-
-Kèm `ci95` cho 5, 6, 7.
-
-CSV:
-
-```csv
-config,epochs,worst_group,clean_r,q30_r,q30_f,fake_at_real90_q30,auc_clean,auc_q30,ece_after
-a1_data,6,...
-a2_data_guard,6,...
-a3_data_featcons,6,...
-a4_full,6,...
-```
-
-### Bước 5 — Phân tích đòn bẩy (D8, ~0,5 h)
-
-```python
-delta_guard    = a2.worst - a1.worst
-delta_featcons = a3.worst - a1.worst
-delta_interact = a4.worst - max(a2.worst, a3.worst)
-```
-
-**Luật kết luận** (theo Phụ lục A.8 — chênh lệch phải lớn hơn nửa độ rộng CI):
-
-| Điều kiện | Kết luận |
-| :--- | :--- |
-| `Δ ≥ +2 pp` và CI không chồng | Đòn bẩy **có đóng góp** |
-| `-1 < Δ < +2 pp` | **Không kết luận được** — ghi "không có bằng chứng" |
-| `Δ ≤ −1 pp` | Đòn bẩy **phản tác dụng** — ghi rõ, xem xét bỏ |
-
-Trả lời dứt khoát: **đòn bẩy nào đóng góp nhiều nhất**, kèm số.
-
-### Bước 6 — Hình & báo cáo (D8, ~0,5 h)
-
-`m7_ablation.png`: 4 nhóm cột (A1–A4) × 4 chỉ số (`worst_group`, `fake@real90`, `auc_q30`, `clean_r`), có error bar CI.
-
-Báo cáo phải có:
-
-1. Bảng 4 × 8.
-2. 3 giá trị `Δ` + phán quyết.
-3. Câu trả lời 1 dòng: "Đòn bẩy đóng góp nhiều nhất là **…**, +x,x pp trên `worst_group`."
-4. Nếu cắt epoch/2 cấu hình: ghi rõ ảnh hưởng tới khả năng kết luận.
-
----
-
-## 6. Definition of Done
-
-- [ ] 4 config tồn tại, **chỉ khác** `weight_feat` và `weight_guard` (đã kiểm bằng hash).
-- [ ] 4 run cùng seed 42, cùng số epoch, cùng `steps_per_epoch` (log chứng minh).
-- [ ] `logs/phase7/ablation_mini_v2.csv` có **4 dòng × 8 chỉ số**.
-- [ ] `ablation_mini_v2.json` có `ci95` cho ít nhất 3 chỉ số chính và 3 giá trị `delta`.
-- [ ] `m7_ablation.png` có error bar, đọc được.
-- [ ] A4 khớp Task 7.11 trong **1 pp**; nếu lệch ⇒ có ghi chú điều tra.
-- [ ] Kết luận nêu **đòn bẩy đóng góp nhiều nhất** kèm số pp; kết quả âm được báo cáo trung thực.
-- [ ] Nếu cắt ngân sách: ghi rõ số epoch và hệ quả lên khả năng kết luận.
-
----
-
-## 7. Rủi ro & giảm thiểu
-
-| Rủi ro | Khả năng | Tác động | Giảm thiểu |
-| :--- | :---: | :---: | :--- |
-| Phi tất định ⇒ 4 run không so sánh được | **Cao** | Kết luận vô nghĩa | Cùng seed + `torch.use_deterministic_algorithms(True)` nếu có thể; ghi rõ nếu không |
-| A4 lệch Task 7.11 | Trung bình | Nghi ngờ pipeline | So `steps_per_epoch`, `n_train`, loss khởi đầu; nếu lệch > 1 pp ⇒ dừng, điều tra |
-| 4 run vượt ngân sách GPU | **Cao** | Trễ G7.2 | Chốt ngân sách **trước**; cắt đều xuống 3 epoch |
-| `Δ` nằm trong nhiễu (CI rộng) | Cao | Không kết luận được | Báo cáo "không có bằng chứng", **không** suy diễn |
-| Guard và FeatCons triệt tiêu nhau | Trung bình | A4 < max(A2,A3) | Báo cáo `delta_interact` âm; đề xuất Phase 8 tách |
-| Chọn checkpoint khác nhau giữa các run do ngưỡng | Trung bình | So sánh sai | Cùng `val_select`, cùng ngưỡng từ Task 7.4 |
-
----
-
-## 8. Liên kết
-
-- Kế hoạch Phase 7: [`../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) — §IV.2, §V.4
-- Train chính: [`task_7.11_train_anchored_v2.md`](task_7.11_train_anchored_v2.md)
-- Loss: [`../../member_b_architecture_loss/phase_7/task_7.9_loss_v2_realguard.md`](../../member_b_architecture_loss/phase_7/task_7.9_loss_v2_realguard.md)
-- Khế ước CI: [`../../../plan/ke_hoach_test_communityforensics_eval.md`](../../../plan/ke_hoach_test_communityforensics_eval.md) — A.8
-- Chỉ mục giai đoạn: [`README.md`](README.md)
+- [Báo cáo sửa triển khai, chưa phải kết quả GPU](../../../bao_cao/C/bao_cao_task_7.12_ablation.md).
+- [Task 7.11](task_7.11_train_anchored_v2.md).
+- [Khế ước CFE](../../../plan/ke_hoach_test_communityforensics_eval.md).
+- [Task 7.14 — locked benchmark](task_7.14_locked_benchmark_phase7.md).

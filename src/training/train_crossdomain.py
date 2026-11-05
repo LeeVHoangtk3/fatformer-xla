@@ -518,7 +518,7 @@ class CrossDomainTrainer:
         self.weight_feat = float(weight_feat)
         self.weight_guard = float(weight_guard)
         self.use_features = self.weight_feat > 0.0
-        self.use_v2 = self.weight_feat > 0.0 or self.weight_guard > 0.0
+        self.use_v2 = criterion.loss_mode == "v2" or self.weight_feat > 0.0 or self.weight_guard > 0.0
         self.real_guard_threshold = float(real_guard_threshold)
         if not .90 <= self.real_guard_threshold <= 1:
             raise ValueError("real_guard_threshold must be in [0.90, 1]")
@@ -643,6 +643,8 @@ class CrossDomainTrainer:
                     norm = nn.utils.clip_grad_norm_(self.student.parameters(),
                                                      self.grad_clip_norm if self.grad_clip_norm > 0 else float("inf"))
                     grad_norms.append(float(norm))
+                    if self.use_v2 and not math.isfinite(float(norm)):
+                        raise FloatingPointError(f"Non-finite gradient at epoch {epoch}, step {step + 1}; no optimizer update saved. Investigate AMP in a separate run.")
                     self.scaler.step(self.optimizer)
                     self.scaler.update()
                     self.optimizer.zero_grad()
@@ -652,6 +654,8 @@ class CrossDomainTrainer:
                     norm = nn.utils.clip_grad_norm_(self.student.parameters(),
                                                      self.grad_clip_norm if self.grad_clip_norm > 0 else float("inf"))
                     grad_norms.append(float(norm))
+                    if self.use_v2 and not math.isfinite(float(norm)):
+                        raise FloatingPointError(f"Non-finite gradient at epoch {epoch}, step {step + 1}")
                     self.optimizer.step()
                     self.optimizer.zero_grad()
 
@@ -1070,6 +1074,7 @@ def run_training_pipeline(args):
         beta_cons=args.beta_cons if args.branch in ["M4", "M5"] else 0.0,
         fake_index=getattr(args, "fake_index", 1),
         weight_ce_deg=getattr(args, "weight_ce_deg", 0.3),
+        loss_mode=getattr(args, "loss_mode", "auto"),
     )
 
     # 2. Khoi tao Model (Thuc te hoac Dry-run)
@@ -1385,6 +1390,7 @@ def parse_arguments():
         "anchor_learning_rate": 5e-5,
         "weight_ce": 0.7,
         "weight_ce_deg": 0.3,
+        "loss_mode": "auto",
         "alpha_kd": 0.3,
         "beta_cons": 0.2,
         "temperature": 2.0,
@@ -1449,6 +1455,7 @@ def parse_arguments():
                 defaults["grad_accum_steps"] = t_cfg.get("grad_accum_steps", defaults["grad_accum_steps"])
         if "loss" in cfg:
             l_cfg = cfg["loss"]
+            defaults["loss_mode"] = l_cfg.get("mode", "auto")
             if "weight_ce" in l_cfg:
                 defaults["weight_ce"] = float(l_cfg["weight_ce"])
             defaults["weight_ce_deg"] = float(l_cfg.get("weight_ce_deg", defaults["weight_ce_deg"]))
@@ -1491,6 +1498,7 @@ def parse_arguments():
     parser.add_argument("--anchor_learning_rate", type=float, default=defaults["anchor_learning_rate"], help="Learning rate cho pretrained adapters (FAA/LGA/ctx)")
     parser.add_argument("--weight_ce", type=float, default=defaults["weight_ce"], help="Trong so Cross-Entropy loss tren anh tang cuong (mac dinh 0.7)")
     parser.add_argument("--weight_ce_deg", type=float, default=defaults["weight_ce_deg"], help="Degraded CE weight in v2; ignored in legacy mode")
+    parser.add_argument("--loss_mode", choices=["auto", "legacy", "v2"], default=defaults["loss_mode"])
     parser.add_argument("--alpha_kd", type=float, default=defaults["alpha_kd"], help="Trong so KD loss (mac dinh 0.3)")
     parser.add_argument("--beta_cons", type=float, default=defaults["beta_cons"], help="Trong so Consistency loss (mac dinh 0.2)")
     parser.add_argument("--weight_feat", type=float, default=defaults["weight_feat"],

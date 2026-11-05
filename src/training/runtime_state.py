@@ -1,5 +1,7 @@
 """Epoch-boundary resume state and immutable input fingerprints."""
 import hashlib
+import importlib.metadata
+import platform
 import random
 from pathlib import Path
 
@@ -58,15 +60,19 @@ def restore_rng(state, loader=None):
 
 
 def training_context(args, root):
-    names = ("branch", "epochs", "batch_size", "grad_accum_steps", "num_workers", "use_amp",
+    names = ("branch", "seed", "epochs", "batch_size", "grad_accum_steps", "num_workers", "use_amp",
              "learning_rate", "anchor_learning_rate", "grad_clip_norm", "temperature", "label_smoothing",
-             "weight_ce", "weight_ce_deg", "alpha_kd", "beta_cons", "weight_feat", "weight_guard",
+             "weight_ce", "weight_ce_deg", "loss_mode", "alpha_kd", "beta_cons", "weight_feat", "weight_guard",
              "fake_index", "real_guard_threshold", "selection_threshold", "q30_max_samples",
              "img_resolution", "crop_resolution", "val_split", "dry_run")
     context = {name: getattr(args, name, None) for name in names}
     context["device_type"] = torch.device(args.device).type
     context["torch_version"] = torch.__version__
     context["cuda_runtime"] = torch.version.cuda
+    context["python_version"] = platform.python_version()
+    context["gpu_name"] = torch.cuda.get_device_name() if context["device_type"] == "cuda" and torch.cuda.is_available() else None
+    for package in ("torchvision", "numpy", "Pillow"):
+        context[package + "_version"] = importlib.metadata.version(package)
     cached = {}
     assets = getattr(args, "_resolved_model_assets", {})
     for name in ("train_manifest", "degradation_config", "calibration_file", "checkpoint_init", "teacher_checkpoint", "clip_path"):

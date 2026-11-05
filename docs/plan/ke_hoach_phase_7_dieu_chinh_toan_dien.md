@@ -405,8 +405,8 @@ $$\mathcal{L} = 0.3\,\mathcal{L}_{CE}(x_{clean}) + 0.3\,\mathcal{L}_{CE}(x_{deg}
 
 #### 🔹 Task 7.12 — Ablation mini `[C+B, 4 h + GPU, G7.2]`
 
-4 cấu hình, cùng seed 42, cùng manifest: (1) `+data`, (2) `+data+guard`, (3) `+data+featcons`, (4) full. Nếu ngân sách GPU < 8 h: chạy 3 epoch thay vì 6 và ghi rõ.
-**DoD**: bảng 4×8 chỉ số + kết luận đòn bẩy nào đóng góp nhiều nhất.
+Theo [đặc tả sửa ngày 06/11/2026](../tasks/member_c_training_eval/phase_7/task_7.12_ablation_mini_v2.md): bốn run mới, cùng seed 42, manifest và explicit loss mode v2; chỉ khác Guard/Feature. A1 vẫn có CE + KD + Consistency. Mặc định 5 epoch cho cả bốn; nếu đổi ngân sách thì đổi đồng loạt trước khi chạy trong experiment mới, không ghép với A4 7.11 chưa được kiểm chứng. Thiết kế này chưa tách được đóng góp riêng của dữ liệu mới.
+**DoD**: bảng chỉ số từ checkpoint đã xác minh, evaluation IDs tách calibration, CI CFE ghép cặp và báo cáo giới hạn. Delta worst-group trên tập selection là mô tả; không bắt buộc tuyên bố một loss thắng khi chưa đủ bằng chứng. Ablation không tự chứng minh đủ mọi điều kiện G7.2.
 
 ---
 
@@ -494,11 +494,11 @@ Theo đúng danh mục §VIII. **DoD**: mọi file trong §VIII đã cập nhậ
 | :--- | ---: | :--- |
 | GPU T4/L4 cho eval | 2,5 h | ~12 lượt chấm 2.000 ảnh |
 | GPU cho train 7.11 | 3–5 h | T4 batch 32; A100 ~1–1,5 h |
-| GPU cho ablation 7.12 | 3–6 h | 3 epoch × 3 cấu hình phụ |
+| GPU cho ablation 7.12 | Chưa đo bản sửa | Bốn run mới × 5 epoch; benchmark GPU hiện tại trước train, không tự dùng A4 cũ |
 | Đĩa | 40–60 GB | manifest v2 + 3 checkpoint (~2 GB/file) |
 | Băng thông | ~30–60 GB | CFE-Small stream, có cache |
 
-> **Chốt trước khi bắt đầu**: nếu tổng GPU < 8 h, cắt 7.12 xuống 2 cấu hình và giảm 7.11 còn 4 epoch; ghi rõ trong báo cáo.
+> **Chốt trước khi bắt đầu**: với Task 7.12 bản sửa, nếu cần giảm epoch thì áp dụng cùng horizon cho cả bốn run trong experiment mới. Nếu chỉ đủ ngân sách cho hai cấu hình, đó là so sánh rút gọn, chưa đạt DoD bốn cấu hình và không tách được Guard/Feature. Không thay đổi run 7.11 đã lưu để ép khớp ngân sách mới.
 
 ---
 

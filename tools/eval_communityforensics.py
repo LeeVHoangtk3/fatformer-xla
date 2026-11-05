@@ -77,6 +77,8 @@ def get_git_info() -> Tuple[str, bool]:
                 ":(exclude)DATASET/logs/**",
                 ":(exclude)DATASET/checkpoints/**",
                 ":(exclude)DATASET/pretrained/**",
+                ":(exclude)logs/**",
+                ":(exclude)scratch/**",
             ],
             cwd=PROJECT_ROOT,
             stderr=subprocess.DEVNULL,
@@ -237,13 +239,14 @@ def compute_bootstrap_ci(
         return {
             "auc": [None, None],
             "ap": [None, None],
-            "tpr_at_fpr_0.05": [None, None]
+            "tpr_at_fpr_0.05": [None, None],
+            "fake_at_real90": [None, None],
         }
 
     rng = np.random.RandomState(seed)
     indices = rng.randint(0, n, size=(n_boot, n))
 
-    boot_auc, boot_ap, boot_tpr5 = [], [], []
+    boot_auc, boot_ap, boot_tpr5, boot_fake90 = [], [], [], []
 
     for idx_row in indices:
         b_probs = fake_probs[idx_row]
@@ -258,6 +261,8 @@ def compute_bootstrap_ci(
                 boot_ap.append(average_precision_score(b_targets, b_probs) * 100.0)
                 fpr, tpr, _ = roc_curve(b_targets, b_probs)
                 boot_tpr5.append(np.interp(0.05, fpr, tpr) * 100.0)
+                threshold90 = np.quantile(b_probs[b_targets == 0], .90)
+                boot_fake90.append((b_probs[b_targets == 1] >= threshold90).mean() * 100.)
             except Exception:
                 continue
 
@@ -272,7 +277,8 @@ def compute_bootstrap_ci(
     return {
         "auc": get_ci(boot_auc),
         "ap": get_ci(boot_ap),
-        "tpr_at_fpr_0.05": get_ci(boot_tpr5)
+        "tpr_at_fpr_0.05": get_ci(boot_tpr5),
+        "fake_at_real90": get_ci(boot_fake90),
     }
 
 
@@ -692,6 +698,8 @@ def parse_args():
     parser.add_argument("--output_dir", type=str, default="DATASET/logs/phase7")
     parser.add_argument("--threshold", "-t", type=float, default=None, help="Ngưỡng cố định T* (mặc định đọc từ calibration hoặc 0.50)")
     parser.add_argument("--calibration", type=str, default=None, help="Đường dẫn file calibration.json (Task 7.4)")
+    parser.add_argument("--evaluation_split", help="NPZ of fixed held-out sample IDs")
+    parser.add_argument("--calibration_split", help="Original NPZ bound to calibration artifact")
     parser.add_argument("--degrade_order", type=str, default="post_resize", choices=["post_resize", "pre_resize"],
                         help="Thứ tự nén ảnh (mặc định post_resize theo chuẩn CFE)")
     parser.add_argument("--seed", type=int, default=42, help="Seed ngẫu nhiên cho bootstrap CI")
@@ -771,6 +779,13 @@ def main():
     else:
         records_by_subset = scan_cfe_dataset(args.data_dir)
 
+    partition = None
+    if args.evaluation_split or args.calibration_split:
+        if not (args.evaluation_split and args.calibration_split and args.calibration) or args.test_dummy:
+            raise ValueError("Held-out evaluation requires both original splits and measured calibration")
+        from tools.ablation_v2_common import load_partition, filter_records
+        expected_ids, partition = load_partition(args.evaluation_split, args.calibration_split, args.calibration)
+        records_by_subset = filter_records(records_by_subset, expected_ids)
     total_scanned = sum(len(recs) for recs in records_by_subset.values())
     if total_scanned == 0 and not args.test_dummy:
         print(f"[!] Lỗi: Không tìm thấy ảnh nào trong {args.data_dir}!")
@@ -868,6 +883,7 @@ def main():
             "overall": overall_m,
         }
 
+        predictions_artifact = None
         # Lưu logits và targets NPZ nếu được yêu cầu
         if args.save_logits_npz and len(all_logits_cat) > 0:
             npz_name = f"logits_{model_name}_{cond}.npz"
@@ -883,6 +899,8 @@ def main():
                 threshold=fixed_thresh,
             )
             print(f"  [✓] Logits NPZ: {os.path.abspath(npz_path)}")
+            from src.training.runtime_state import sha256_file
+            predictions_artifact = {"file": npz_name, "sha256": sha256_file(npz_path)}
 
         # Xuất file schema v3 JSON & MD cho condition này
         schema_v3_output = {
@@ -894,6 +912,8 @@ def main():
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),
             "degrade_order": args.degrade_order,
             "dataset": {"name": "communityforensics_eval", "n": total_scanned, "condition": cond},
+            "partition": partition,
+            "predictions": predictions_artifact,
             "checkpoints": [{
                 "path": ckpt_target or "dummy",
                 "load_report": load_report,

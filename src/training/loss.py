@@ -335,10 +335,14 @@ class CrossDomainTotalLoss(nn.Module):
         beta_cons: float = 0.2,
         fake_index: int = 1,
         weight_ce_deg: float = 0.3,
+        loss_mode: str = "auto",
     ):
         super().__init__()
         self.weight_ce = weight_ce
         self.weight_ce_deg = weight_ce_deg
+        if loss_mode not in ("auto", "legacy", "v2"):
+            raise ValueError("loss_mode must be auto, legacy or v2")
+        self.loss_mode = loss_mode
         for name, value in (("weight_ce", weight_ce), ("weight_ce_deg", weight_ce_deg)):
             if not math.isfinite(value) or value < 0:
                 raise ValueError(f"{name} must be finite and >= 0")
@@ -374,7 +378,10 @@ class CrossDomainTotalLoss(nn.Module):
         if logits is None or targets is None or targets.numel() == 0:
             raise ValueError("Nonempty logits and targets are required")
         # lean: legacy_mode giữ công thức cũ → allclose test (a) pass
-        legacy_mode = (weight_feat == 0.0 and weight_guard == 0.0)
+        legacy_mode = self.loss_mode == "legacy" or (
+            self.loss_mode == "auto" and weight_feat == 0.0 and weight_guard == 0.0)
+        if self.loss_mode == "legacy" and (weight_feat or weight_guard):
+            raise ValueError("legacy loss_mode cannot enable v2 losses")
         for name, value in (("weight_feat", weight_feat), ("weight_guard", weight_guard)):
             if not math.isfinite(value) or value < 0:
                 raise ValueError(f"{name} must be finite and >= 0")
