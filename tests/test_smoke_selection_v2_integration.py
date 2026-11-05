@@ -153,22 +153,19 @@ def test_dual_checkpoint_saving_best_and_best_effort():
 
 
 def test_val_groups_csv_logging():
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        val_groups_csv = os.path.join(tmp_dir, "val_groups.csv")
-
-        # Giả lập ghi dòng epoch 1 và epoch 2
-        with open(val_groups_csv, "w", encoding="utf-8") as f:
-            f.write("epoch,clean_r,clean_f,q30_r,q30_f,worst,best_effort\n")
-            f.write("1,0.9412,0.9880,0.7120,0.8010,0.7120,False\n")
-            f.write("2,0.8500,0.9900,0.7500,0.8400,0.7500,True\n")
-
-        with open(val_groups_csv, "r", encoding="utf-8") as f:
-            lines = [line.strip() for line in f.readlines()]
-
-        assert len(lines) == 3
-        assert lines[0] == "epoch,clean_r,clean_f,q30_r,q30_f,worst,best_effort"
-        assert lines[1] == "1,0.9412,0.9880,0.7120,0.8010,0.7120,False"
-        assert lines[2] == "2,0.8500,0.9900,0.7500,0.8400,0.7500,True"
+    import csv
+    with tempfile.TemporaryDirectory() as root:
+        model = _MockBackbone()
+        trainer = CrossDomainTrainer(model, None, None, None, CrossDomainTotalLoss(),
+                                     torch.optim.SGD(model.parameters(), lr=.01), save_dir=root)
+        trainer.record_validation(1, {"clean_r": .94, "clean_f": .98, "q30_r": .71,
+                                      "q30_f": .8, "worst_group": .71})
+        with open(os.path.join(root, "val_groups.csv"), newline="") as f:
+            row = next(csv.DictReader(f))
+        assert float(row["clean_r"]) == .94
+        assert float(row["worst"]) == .71
+        assert float(row["threshold"]) == .5
+        assert row["best_effort"] == "False"
 
 
 def test_config_parsing_real_guard_threshold(monkeypatch):

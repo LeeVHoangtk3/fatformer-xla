@@ -76,6 +76,8 @@ def parse_args():
 
     # 1. Cấu hình cơ bản & Dữ liệu đa miền (Phương Án A)
     parser.add_argument("--config", type=str, default="configs/train_config.yaml", help="Đường dẫn file cấu hình train_config.yaml")
+    parser.add_argument("--calibration_file", type=str, default=None)
+    parser.add_argument("--selection_threshold", type=float, default=None)
     
     # Nguồn dữ liệu ProGAN & Diffusion Staging & Validation
     parser.add_argument("--progan_tar", type=str, default=None, help="Đường dẫn file nén progan_train.tar (144k ảnh)")
@@ -185,6 +187,10 @@ def load_config_and_override_args(args) -> Tuple[argparse.Namespace, Dict[str, A
             print("  [✓] Đã kích hoạt file cấu hình làm Source of Truth (ưu tiên CLI flags)!")
         else:
             print(f"[!] Không tìm thấy file config tại '{config_path}'. Dùng thiết lập CLI mặc định.")
+
+    for key in ("calibration_file", "selection_threshold"):
+        if key in cfg.get("training", {}) and can_override(key):
+            setattr(args, key, cfg["training"][key])
 
     # 1. Cấu hình mô hình
     m_cfg = cfg.get("model", {})
@@ -463,7 +469,8 @@ def main():
             batch_size=args.batch_size,
             num_workers=args.num_workers,
             pin_memory=(device.type == "cuda"),
-            transform=get_eval_transforms(degradation={"type": "jpeg", "quality": 30})
+            transform=get_eval_transforms(degradation={"type": "jpeg", "quality": 30}, degrade_order="post_resize"),
+            max_samples=300,
         )
         if v_deg_30:
             val_loaders["progan_degraded_q30"] = v_deg_30
@@ -705,7 +712,9 @@ def main():
         criterion=criterion,
         grad_clip_norm=getattr(args, "grad_clip_norm", 1.0),
         best_val_score=saved_best_score,
-        best_val_ap=saved_best_ap
+        best_val_ap=saved_best_ap,
+        calibration_file=args.calibration_file,
+        selection_threshold=args.selection_threshold,
     )
     trainer.optimizer = optimizer
 

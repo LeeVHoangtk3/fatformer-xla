@@ -49,6 +49,8 @@ training:
   save_dir: "DATASET/checkpoints/phase7"
   save_name: "fatformer_anchored_v2_best.pth"
   real_guard_threshold: 0.90
+  calibration_file: "DATASET/logs/phase7/calibration/baseline.json"  # Frozen Task 7.4 operating point; no fit on val_select
+  q30_max_samples: 300
 
 dataset:
   manifest: "DATASET/manifests/data_manifest_v2.json"

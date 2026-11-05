@@ -1,0 +1,36 @@
+{
+  "source": "synthetic:32 seeded PNG RGB noise images reused across 400 records",
+  "model": "CPU pooled RGB linear classifier, not CLIP",
+  "seed": 42,
+  "n_eval_clean": 400,
+  "n_eval_q30": 300,
+  "q30_real": 150,
+  "q30_fake": 150,
+  "batch_size": 32,
+  "num_workers": 0,
+  "parent_torch_threads": 1,
+  "method": "2 warmups; alternating order; median; one-time cache setup excluded",
+  "setup_ms": 1202.7035999999498,
+  "runs_ms": {
+    "clean": [
+      779.204600000412,
+      765.9099000002243,
+      761.5500000001703,
+      803.2653000000209,
+      748.0329999998503
+    ],
+    "clean_plus_q30": [
+      825.2976999992825,
+      801.3194999994084,
+      761.868499999764,
+      909.3353999996907,
+      768.0814999994254
+    ]
+  },
+  "clean_median_ms": 765.9099000002243,
+  "clean_plus_q30_median_ms": 801.3194999994084,
+  "ratio": 1.0462320698546574,
+  "limit_ratio": 2,
+  "passed": true,
+  "torch": "2.10.0+cpu"
+}

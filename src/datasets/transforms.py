@@ -18,7 +18,7 @@ class RandomJPEGCompression:
         self.max_q = max_q
 
     def __call__(self, img: Image.Image) -> Image.Image:
-        q = random.randint(self.min_q, self.max_q)
+        q = self.min_q if self.min_q == self.max_q else random.randint(self.min_q, self.max_q)
         buffer = io.BytesIO()
         img.save(buffer, format="JPEG", quality=q)
         buffer.seek(0)
@@ -214,18 +214,20 @@ class CurriculumDegradationScheduler:
             return self.apply_down_up(img)
 
 
-def get_eval_transforms(img_resolution=256, crop_resolution=224, degradation=None):
+def get_eval_transforms(img_resolution=256, crop_resolution=224, degradation=None, degrade_order="pre_resize"):
     """
     Trả về bộ transforms chuẩn dùng cho pha đánh giá (Validation / Test).
     Hỗ trợ chèn thêm suy thoái tĩnh (degradation) để kiểm thử độ bền vững (robustness test).
     """
     transform_list = []
+    if degrade_order not in ("pre_resize", "post_resize"):
+        raise ValueError("degrade_order must be pre_resize or post_resize")
     
     if degradation is not None:
         deg_type = degradation.get("type", "")
         if deg_type == "jpeg":
             q = degradation.get("quality", 50)
-            transform_list.append(lambda img: _apply_fixed_jpeg(img, q))
+            transform_list.append(RandomJPEGCompression(min_q=q, max_q=q))
         elif deg_type == "blur":
             r = degradation.get("radius", 1.5)
             transform_list.append(lambda img: img.filter(ImageFilter.GaussianBlur(radius=r)))
@@ -233,9 +235,12 @@ def get_eval_transforms(img_resolution=256, crop_resolution=224, degradation=Non
             ratio = degradation.get("ratio", 0.5)
             transform_list.append(lambda img: _apply_fixed_down_up(img, ratio))
 
-    transform_list.extend([
+    geometry = [
         transforms.Resize((img_resolution, img_resolution)),
         transforms.CenterCrop(crop_resolution),
+    ]
+    transform_list = geometry + transform_list if degrade_order == "post_resize" else transform_list + geometry
+    transform_list.extend([
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])

@@ -25,6 +25,10 @@ def group_recalls(
     y_true_arr = np.asarray(y_true)
     y_pred_arr = np.asarray(y_pred)
     cond_arr = np.asarray(condition)
+    if any(a.ndim != 1 for a in (y_true_arr, y_pred_arr, cond_arr)):
+        raise ValueError("Labels, predictions and conditions must be one-dimensional")
+    if any(not np.isin(a, [0, 1]).all() for a in (y_true_arr, y_pred_arr, cond_arr)):
+        raise ValueError("Labels, predictions and conditions must be binary")
 
     if not (len(y_true_arr) == len(y_pred_arr) == len(cond_arr)):
         raise ValueError("y_true, y_pred và condition phải có cùng độ dài.")
@@ -57,11 +61,15 @@ def worst_group_score(recalls: Dict[str, float], nan_policy: str = "raise") -> f
         "omit": bỏ qua np.nan khi tính min.
     """
     required_keys = ["clean_r", "clean_f", "q30_r", "q30_f"]
+    if nan_policy not in ("raise", "omit"):
+        raise ValueError("nan_policy must be 'raise' or 'omit'")
     for k in required_keys:
         if k not in recalls:
             raise KeyError(f"Thiếu chỉ số '{k}' trong recalls dict.")
 
     vals = [recalls[k] for k in required_keys]
+    if any(np.isinf(v) or (np.isfinite(v) and not 0 <= v <= 1) for v in vals):
+        raise ValueError("Recalls must be finite values in [0, 1], or NaN for an empty group")
 
     if any(np.isnan(v) for v in vals):
         if nan_policy == "raise":

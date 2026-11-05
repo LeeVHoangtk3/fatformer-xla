@@ -60,6 +60,7 @@ if hasattr(sys.stderr, "reconfigure"):
         pass
 
 from src.training.loss import CrossDomainTotalLoss
+from src.training.selection import OperatingPoint, build_q30_cache, checkpoint_decision, write_group_log
 from src.datasets.transforms import PairedCleanDegradedAugmentation, DegradationPipelineV2
 from src.datasets.samplers import BalancedBatchSampler, BalancedCrossDomainSampler
 from src.models.lora_adapter import ViTLoRAAdapter
@@ -480,6 +481,9 @@ class CrossDomainTrainer:
         weight_feat: float = 0.0,
         weight_guard: float = 0.0,
         real_guard_threshold: float = 0.90,
+        calibration_file: Optional[str] = None,
+        selection_threshold: Optional[float] = None,
+        q30_max_samples: int = 300,
     ):
         self.student = student_model.to(device)
         self.teacher = teacher_model.to(device) if teacher_model is not None else None
@@ -501,9 +505,12 @@ class CrossDomainTrainer:
         self.use_features = self.weight_feat > 0.0
         self.use_v2 = self.weight_feat > 0.0 or self.weight_guard > 0.0
         self.real_guard_threshold = float(real_guard_threshold)
+        if not .90 <= self.real_guard_threshold <= 1:
+            raise ValueError("real_guard_threshold must be in [0.90, 1]")
+        self.operating_point = OperatingPoint(calibration_file, selection_threshold)
         self.best_worst_group = -1.0
         self.best_effort_worst_group = -1.0
-        self.val_q30_cache = self._build_val_q30_cache()
+        self.val_q30_cache = self._build_val_q30_cache(max_samples=q30_max_samples)
         if self.weight_guard > 0 and self.teacher is None:
             raise ValueError("RealGuard requires a teacher model")
         if self.weight_guard > 0 and criterion.guard_loss.fake_index != 1:
@@ -660,88 +667,25 @@ class CrossDomainTrainer:
         metrics["train_steps"] = num_batches
         return metrics
 
-    def _build_val_q30_cache(self, max_samples: int = 300, seed: int = 42) -> List[Tuple[torch.Tensor, int]]:
-        """
-        Task 7.10 (Bước 2): Sinh nhánh đánh giá Q30 trong bộ nhớ (In-memory JPEG Q=30 Cache).
-        - Stratified sampling tối đa 300 mẫu (150 Real / 150 Fake, seed=42) từ tập val.
-        - Áp JPEG(quality=30) cố định 1 lần duy nhất, cache tensor để không nén lại mỗi epoch.
-        """
-        if self.val_loader is None or not hasattr(self.val_loader, "dataset"):
+    def _build_val_q30_cache(self, max_samples=300, seed=42):
+        if self.val_loader is None:
             return []
-
         dataset = self.val_loader.dataset
-        records = getattr(dataset, "records", None)
-        cached_items = []
+        if hasattr(self.val_loader.sampler, "indices"):
+            dataset = torch.utils.data.Subset(dataset, self.val_loader.sampler.indices)
+        return build_q30_cache(dataset, max_samples=max_samples, seed=seed)
 
-        import io
-        from PIL import Image
-
-        _mean = [0.485, 0.456, 0.406]
-        _std = [0.229, 0.224, 0.225]
-        eval_tf = getattr(dataset, "eval_transform", None)
-        if eval_tf is None:
-            eval_tf = transforms.Compose([
-                transforms.Resize((224, 224)),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=_mean, std=_std),
-            ])
-
-        if records and len(records) > 0:
-            import random
-            reals = [r for r in records if int(r.get("label", 0)) == 0]
-            fakes = [r for r in records if int(r.get("label", 0)) == 1]
-            rng = random.Random(seed)
-            rng.shuffle(reals)
-            rng.shuffle(fakes)
-
-            n_each = max_samples // 2
-            selected = reals[:n_each] + fakes[:n_each]
-            allow_dummy = getattr(dataset, "allow_dummy", False)
-
-            for idx, r in enumerate(selected):
-                file_p = r.get("file_path", r.get("path", ""))
-                target = int(r.get("label", 0))
-                pil_img = None
-                if file_p and os.path.isfile(file_p):
-                    try:
-                        pil_img = Image.open(file_p).convert("RGB")
-                    except Exception:
-                        pil_img = None
-                if pil_img is None:
-                    if not allow_dummy:
-                        continue
-                    pil_img = Image.new("RGB", (256, 256), color=(idx * 17 % 255, idx * 37 % 255, 128))
-
-                buf = io.BytesIO()
-                pil_img.save(buf, format="JPEG", quality=30)
-                buf.seek(0)
-                q30_pil = Image.open(buf).convert("RGB")
-                cached_items.append((eval_tf(q30_pil), target))
-        else:
-            # Fallback nếu dataset không có records (ví dụ _DummyDataset)
-            total = len(dataset)
-            n_take = min(max_samples, total)
-            for idx in range(n_take):
-                item = dataset[idx]
-                x_val = item[0][0] if isinstance(item[0], (list, tuple)) else item[0]
-                target = int(item[1])
-                try:
-                    mean_t = torch.tensor(_mean).view(3, 1, 1)
-                    std_t = torch.tensor(_std).view(3, 1, 1)
-                    unnorm = (x_val.cpu() * std_t + mean_t).clamp(0, 1)
-                    pil_img = transforms.ToPILImage()(unnorm)
-                    buf = io.BytesIO()
-                    pil_img.save(buf, format="JPEG", quality=30)
-                    buf.seek(0)
-                    q30_pil = Image.open(buf).convert("RGB")
-                    cached_items.append((eval_tf(q30_pil), target))
-                except Exception:
-                    cached_items.append((x_val.clone(), target))
-
-        if cached_items:
-            print(f"[*] Task 7.10: Da tao in-memory JPEG Q30 cache ({len(cached_items)} mau, q30_source=in_memory_jpeg30)")
-        return cached_items
+    def record_validation(self, epoch, metrics):
+        official, effort = checkpoint_decision(metrics, self.best_worst_group,
+                                               self.best_effort_worst_group, self.real_guard_threshold)
+        if official:
+            self.best_worst_group = metrics["worst_group"]
+        if effort:
+            self.best_effort_worst_group = metrics["worst_group"]
+        self.save_checkpoint(epoch, is_best=official, is_best_effort=effort, val_metrics=metrics)
+        write_group_log(os.path.join(self.save_dir, "val_groups.csv"), epoch, metrics,
+                        effort, self.operating_point)
+        return official, effort
 
     def validate(self) -> Dict[str, float]:
         if self.val_loader is None:
@@ -773,7 +717,7 @@ class CrossDomainTrainer:
                 with torch.amp.autocast(self.device.type, enabled=self.use_amp):
                     logits = self.student(x_eval)
 
-                preds = torch.argmax(logits, dim=-1)
+                preds = self.operating_point.predictions(logits)
                 t_cpu = targets.cpu().numpy().tolist()
                 p_cpu = preds.cpu().numpy().tolist()
                 all_y_true.extend(t_cpu)
@@ -795,7 +739,7 @@ class CrossDomainTrainer:
 
             # 2. Nhánh Q30 (val_q30_cache)
             if self.val_q30_cache:
-                batch_size = 16
+                batch_size = self.val_loader.batch_size or 16
                 for i in range(0, len(self.val_q30_cache), batch_size):
                     chunk = self.val_q30_cache[i:i + batch_size]
                     x_q30 = torch.stack([item[0] for item in chunk]).to(self.device)
@@ -804,7 +748,7 @@ class CrossDomainTrainer:
                     with torch.amp.autocast(self.device.type, enabled=self.use_amp):
                         logits_q30 = self.student(x_q30)
 
-                    preds_q30 = torch.argmax(logits_q30, dim=-1)
+                    preds_q30 = self.operating_point.predictions(logits_q30)
                     t_cpu = targets_q30.cpu().numpy().tolist()
                     p_cpu = preds_q30.cpu().numpy().tolist()
                     all_y_true.extend(t_cpu)
@@ -817,21 +761,9 @@ class CrossDomainTrainer:
         min_rf = min(r_acc, f_acc)
         composite = 0.5 * macro_acc + 0.5 * min_rf
 
-        # Task 7.10: Tinh Worst-Group Score
         from src.training.metrics import group_recalls, worst_group_score
-        try:
-            recalls = group_recalls(all_y_true, all_y_pred, all_cond)
-            # Trong moi truong dry-run hoac tap test qua nho, cho phep omit nan de tranh crash
-            nan_pol = "omit" if (clean_total < 4 or len(self.val_q30_cache) < 2) else "raise"
-            worst = worst_group_score(recalls, nan_policy=nan_pol)
-        except Exception:
-            recalls = {
-                "clean_r": r_acc / 100.0,
-                "clean_f": f_acc / 100.0,
-                "q30_r": r_acc / 100.0,
-                "q30_f": f_acc / 100.0,
-            }
-            worst = worst_group_score(recalls, nan_policy="omit")
+        recalls = group_recalls(all_y_true, all_y_pred, all_cond)
+        worst = worst_group_score(recalls)
 
         clean_r_val = float(recalls.get("clean_r", r_acc / 100.0))
         clean_f_val = float(recalls.get("clean_f", f_acc / 100.0))
@@ -848,6 +780,11 @@ class CrossDomainTrainer:
             "q30_r": q30_r_val,
             "q30_f": q30_f_val,
             "worst_group": float(worst),
+            "n_eval_clean": clean_total,
+            "n_eval_q30": len(self.val_q30_cache),
+            "q30_source": "in_memory_jpeg30_post_resize",
+            "threshold": self.operating_point.threshold,
+            "temperature": self.operating_point.temperature,
         }
 
     def save_checkpoint(
@@ -866,6 +803,12 @@ class CrossDomainTrainer:
         - Sử dụng Hardlink (os.link) cho các bí danh để chia sẻ chung block ổ cứng, ngốn 0 MB.
         """
         model_sd = self.student.module.state_dict() if hasattr(self.student, "module") else self.student.state_dict()
+        if is_best and is_best_effort:
+            raise ValueError("A checkpoint cannot be official best and best effort simultaneously")
+        if is_best or is_best_effort:
+            eligible, effort_eligible = checkpoint_decision(val_metrics or {}, -1, -1, self.real_guard_threshold)
+            if (is_best and not eligible) or (is_best_effort and not effort_eligible):
+                raise ValueError("Checkpoint flags violate the Real guard")
         
         clean_state = {
             "model": model_sd,
@@ -883,6 +826,15 @@ class CrossDomainTrainer:
                 "is_best": is_best,
                 "is_best_effort": is_best_effort,
                 "branch": "M4",
+                "threshold": self.operating_point.threshold,
+                "temperature": self.operating_point.temperature,
+                "calibration_source": self.operating_point.source,
+                "calibration_sha256": self.operating_point.sha256,
+                "n_eval_clean": (val_metrics or {}).get("n_eval_clean"),
+                "n_eval_q30": (val_metrics or {}).get("n_eval_q30"),
+                "q30_source": "in_memory_jpeg30_post_resize",
+                "best_worst_group": self.best_worst_group,
+                "best_effort_worst_group": self.best_effort_worst_group,
             }
         }
 
@@ -904,7 +856,8 @@ class CrossDomainTrainer:
 
         # 2. Ghi vật lý tệp chính
         primary_save_path = best_path if is_best else (effort_path if is_best_effort else latest_path)
-        torch.save(clean_state, primary_save_path)
+        torch.save(clean_state, primary_save_path + ".tmp")
+        os.replace(primary_save_path + ".tmp", primary_save_path)
         
         # 3. Tạo Hardlink ngốn 0 MB cho các bí danh còn lại
         def make_hardlink(src, dst):
@@ -923,6 +876,7 @@ class CrossDomainTrainer:
         if is_best:
             make_hardlink(primary_save_path, latest_path)
             make_hardlink(primary_save_path, alt_path)
+            make_hardlink(primary_save_path, os.path.join(self.save_dir, "best.pth"))
             comp = val_metrics.get("worst_group", 0.0) if val_metrics else 0.0
             print(f"  -> [* BEST] Luu model dat chuan chinh thuc tai epoch {epoch}: {best_path} (Worst-Group={comp*100.0:.2f}%)")
         elif is_best_effort:
@@ -1170,6 +1124,9 @@ def run_training_pipeline(args):
         weight_feat=getattr(args, "weight_feat", 0.0),
         weight_guard=getattr(args, "weight_guard", 0.0),
         real_guard_threshold=getattr(args, "real_guard_threshold", 0.90),
+        calibration_file=getattr(args, "calibration_file", None),
+        selection_threshold=getattr(args, "selection_threshold", None),
+        q30_max_samples=getattr(args, "q30_max_samples", 300),
     )
 
     # Chot chan kiem toan Step-0 Identity giua Student va Teacher
@@ -1191,14 +1148,10 @@ def run_training_pipeline(args):
             val_0 = trainer.validate()
             w_0 = val_0.get("worst_group", 0.0)
             print(f"[Epoch 0 Baseline] Clean Val ACC: {val_0['val_acc']:.2f}% | Worst-Group: {w_0*100.0:.2f}% | Clean Real: {val_0['clean_r']*100.0:.2f}% | Composite: {val_0['val_composite']:.2f}%")
-            trainer.best_worst_group = w_0
             trainer.best_composite_score = val_0["val_composite"]
             trainer.epoch0_val_acc = val_0["val_acc"]
             trainer.epoch0_composite = val_0["val_composite"]
-
-            # [YÊU CẦU 2.1]: Luu ngay lap tuc checkpoint moc san Epoch 0 xuong o dia de dam bao best_ckpt luon ton tai 100%
-            trainer.save_checkpoint(epoch=0, is_best=True, val_metrics=val_0)
-            print(f"  [✓] Da khoi tao va bao luu checkpoint neo san Epoch 0 tai: {os.path.join(trainer.save_dir, trainer.save_name)}")
+            trainer.record_validation(0, val_0)
 
     if args.dry_run:
         print("\n[DRY-RUN] Bat dau chay kiem thu 1 step Train + 1 step Val...")
@@ -1209,24 +1162,7 @@ def run_training_pipeline(args):
               f"(CE={train_metrics['loss_ce']:.4f}, KD={train_metrics['loss_kd']:.4f}, Cons={train_metrics['loss_cons']:.4f}{v2_log})")
         print(f"  -> Ket qua Val: ACC={val_metrics['val_acc']:.2f}%, Worst-Group={val_metrics['worst_group']*100.0:.2f}% (Clean Real={val_metrics['clean_r']*100.0:.2f}%)")
         
-        worst_g = val_metrics.get("worst_group", 0.0)
-        clean_r = val_metrics.get("clean_r", 0.0)
-        passes_real_guard = (clean_r >= trainer.real_guard_threshold)
-        is_best = passes_real_guard
-        is_best_effort = not passes_real_guard
-        trainer.save_checkpoint(epoch=1, is_best=is_best, is_best_effort=is_best_effort, val_metrics=val_metrics)
-
-        # Ghi val_groups.csv cho dry-run
-        val_groups_csv = os.path.join(trainer.save_dir, "val_groups.csv")
-        try:
-            with open(val_groups_csv, "w", encoding="utf-8") as f:
-                f.write("epoch,clean_r,clean_f,q30_r,q30_f,worst,best_effort\n")
-                f.write(f"1,{val_metrics['clean_r']:.4f},{val_metrics['clean_f']:.4f},"
-                        f"{val_metrics['q30_r']:.4f},{val_metrics['q30_f']:.4f},"
-                        f"{val_metrics['worst_group']:.4f},{is_best_effort}\n")
-        except Exception as e:
-            print(f"  [!] Luu val_groups.csv dry-run loi: {e}")
-
+        trainer.record_validation(1, val_metrics)
         print("[DRY-RUN] Mock training/validation completed; real checkpoint and GPU smoke still required.")
         return
 
@@ -1246,37 +1182,14 @@ def run_training_pipeline(args):
         # Task 7.10: Selection Metric v2 (Worst-Group + Rang buoc Real ACC)
         worst_g = val_metrics.get("worst_group", 0.0)
         clean_r = val_metrics.get("clean_r", 0.0)
-        passes_real_guard = (clean_r >= trainer.real_guard_threshold)
-
-        is_best = False
-        is_best_effort = False
-
-        if worst_g > trainer.best_worst_group and passes_real_guard:
-            trainer.best_worst_group = worst_g
-            is_best = True
-        elif worst_g > trainer.best_effort_worst_group and not passes_real_guard:
-            trainer.best_effort_worst_group = worst_g
-            is_best_effort = True
-
-        trainer.save_checkpoint(epoch, is_best=is_best, is_best_effort=is_best_effort, val_metrics=val_metrics)
+        is_best, is_best_effort = trainer.record_validation(epoch, val_metrics)
         v2_log = f" (Feat: {train_metrics['loss_feat']:.4f}, Guard: {train_metrics['loss_guard']:.4f})" if "loss_feat" in train_metrics else ""
         best_tag = " [* BEST]" if is_best else (" [^ BEST EFFORT]" if is_best_effort else "")
         print(f"Epoch {epoch}/{args.epochs} ({elapsed:.1f}s) | Train Loss: {train_metrics['loss_total']:.4f}{v2_log} | "
               f"Val ACC: {val_metrics['val_acc']:.2f}% (Real: {val_metrics['val_r_acc']:.2f}%, Fake: {val_metrics['val_f_acc']:.2f}%) | "
               f"Worst-Group: {worst_g*100.0:.2f}% (Clean Real: {clean_r*100.0:.2f}%){best_tag}")
 
-        # Ghi vao val_groups.csv (Task 7.10)
         val_groups_csv = os.path.join(trainer.save_dir, "val_groups.csv")
-        try:
-            write_header = not os.path.exists(val_groups_csv)
-            with open(val_groups_csv, "a", encoding="utf-8") as f:
-                if write_header:
-                    f.write("epoch,clean_r,clean_f,q30_r,q30_f,worst,best_effort\n")
-                f.write(f"{epoch},{val_metrics['clean_r']:.4f},{val_metrics['clean_f']:.4f},"
-                        f"{val_metrics['q30_r']:.4f},{val_metrics['q30_f']:.4f},"
-                        f"{val_metrics['worst_group']:.4f},{is_best_effort}\n")
-        except Exception as e:
-            print(f"  [!] Luu val_groups.csv loi: {e}")
 
         # Ghi vao history CSV
         history_csv = os.path.join(PROJECT_ROOT, "DATASET", "logs", "phase7", "train_history.csv") if trainer.use_v2 else os.path.join(PROJECT_ROOT, "DATASET", "logs", "m6_training_history.csv")
@@ -1306,13 +1219,9 @@ def run_training_pipeline(args):
             except Exception:
                 pass
 
-    # [YÊU CẦU 2.2]: Chot chan an toan: Dam bao checkpoint best.pth ton tai 100% truoc khi ket thuc
     best_ckpt_path = os.path.join(trainer.save_dir, trainer.save_name)
     if not os.path.exists(best_ckpt_path):
-        print(f"[!] Canh bao: Fallback luu checkpoint epoch cuoi cung thanh {best_ckpt_path}")
-        trainer.save_checkpoint(epoch=args.epochs, is_best=True, val_metrics=val_metrics)
-    assert os.path.exists(best_ckpt_path), f"CRITICAL LỖI: Checkpoint {best_ckpt_path} không tồn tại sau huấn luyện!"
-    print(f"[✓] XAC NHAN: Checkpoint best hop le ton tai 100%: {best_ckpt_path}")
+        print("No epoch passed Real guard; only latest/best_effort are available.")
 
 
 def parse_arguments():
@@ -1357,6 +1266,9 @@ def parse_arguments():
         "max_steps": None,
         "val_split": None,
         "real_guard_threshold": 0.90,
+        "calibration_file": None,
+        "selection_threshold": None,
+        "q30_max_samples": 300,
     }
 
     # 2. Neu co config YAML, nap cac truong vao defaults truoc khi xu ly CLI
@@ -1376,7 +1288,8 @@ def parse_arguments():
             defaults["learning_rate"] = float(t_cfg.get("learning_rate", defaults["learning_rate"]))
             defaults["anchor_learning_rate"] = float(t_cfg.get("anchor_learning_rate", defaults["anchor_learning_rate"]))
             defaults["save_dir"] = t_cfg.get("save_dir", defaults["save_dir"])
-            for key in ("save_name", "use_amp", "grad_clip_norm", "max_steps", "real_guard_threshold"):
+            for key in ("save_name", "use_amp", "grad_clip_norm", "max_steps", "real_guard_threshold",
+                        "calibration_file", "selection_threshold", "q30_max_samples"):
                 if key in t_cfg:
                     defaults[key] = t_cfg[key]
             if "device" in t_cfg:
@@ -1461,6 +1374,9 @@ def parse_arguments():
     parser.add_argument("--real_guard_threshold", type=float, default=defaults.get("real_guard_threshold", 0.90),
                         help="Nguong toi thieu cua Clean Real ACC de duoc chon lam best.pth (Task 7.10, mac dinh 0.90)")
 
+    parser.add_argument("--calibration_file", default=defaults["calibration_file"])
+    parser.add_argument("--selection_threshold", type=float, default=defaults["selection_threshold"])
+    parser.add_argument("--q30_max_samples", type=int, choices=[100, 200, 300], default=defaults["q30_max_samples"])
     args = parser.parse_args()
     if args.max_steps is not None and args.max_steps < 1:
         parser.error("--max_steps must be >= 1")

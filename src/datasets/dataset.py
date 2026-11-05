@@ -329,7 +329,8 @@ def build_val_dataloader(
     batch_size: int = 32,
     num_workers: int = 4,
     pin_memory: bool = True,
-    transform: Optional[Any] = None
+    transform: Optional[Any] = None,
+    max_samples: Optional[int] = None,
 ) -> Optional[DataLoader]:
     """
     Khởi tạo DataLoader validation độc lập (vd: progan_val 8.000 ảnh).
@@ -345,6 +346,8 @@ def build_val_dataloader(
         return None
 
     val_ds = ConcatDataset(sub_ds) if len(sub_ds) > 1 else sub_ds[0]
+    if max_samples is not None and len(val_ds) > max_samples:
+        val_ds = Subset(val_ds, _get_balanced_subset_indices(val_ds, max_samples=max_samples, seed=42))
     print(f"[DATASET] Khởi tạo Validation DataLoader thành công: {len(val_ds):,} ảnh từ {val_dir}")
     return DataLoader(
         val_ds,

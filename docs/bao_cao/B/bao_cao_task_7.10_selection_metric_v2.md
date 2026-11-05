@@ -1,105 +1,61 @@
-# BÁO CÁO NGHIỆM THU NHIỆM VỤ 7.10 (TASK 7.10)
-## SELECTION METRIC v2: WORST-GROUP + RÀNG BUỘC REAL ACC
+# Báo cáo Task 7.10 — Selection metric v2
 
-> **Mã nhiệm vụ**: `Task 7.10` *(Phase 7 — D5–D6)*  
-> **Người thực hiện**: **Thành viên B** *(Architecture & Loss Lead)*  
-> **Người phối hợp**: **Thành viên C** *(Training Lead — sử dụng hàm chọn checkpoint trong Task 7.11)*  
-> **Cổng kiểm soát chất lượng**: — *(nạp đầu vào cho Cổng **G7.2**)*  
-> **Trạng thái**: `[x] ĐÃ HOÀN THÀNH`  
-> **Môi trường xác minh**: Local CPU (Python 3.14 / pytest 9.0.3) — 2026-11-03  
-> **Hiện vật bàn giao**:
-> - Module metric: [`src/training/metrics.py`](../../../src/training/metrics.py) (`group_recalls`, `worst_group_score`)
-> - Module trainer nâng cấp: [`src/training/trainer.py`](../../../src/training/trainer.py) (tích hợp selection metric v2, log `val_groups.csv`)
-> - Module lưu checkpoint: [`src/training/checkpoint_manager.py`](../../../src/training/checkpoint_manager.py) (phân tách `best.pth` và `best_effort.pth`)
-> - Bộ test kiểm thử: [`tests/test_selection_metric.py`](../../../tests/test_selection_metric.py) (5/5 unit tests pass)
-> - Báo cáo này: `docs/bao_cao/B/bao_cao_task_7.10_selection_metric_v2.md`
+Cập nhật review/sửa đồng bộ: **2026-11-05**. Triển khai ban đầu: Thành viên B.
 
----
+## Quy tắc được kiểm chứng
 
-## 1. Bối Cảnh & Vấn Đề Giải Quyết
+`worst_group = min(clean_r, clean_f, q30_r, q30_f)`. Recall tính ở operating point cố định; nhóm thiếu, dữ liệu không hữu hạn hoặc recall ngoài [0,1] gây lỗi. Điểm không được suy ra bằng cách chép recall clean sang Q30.
 
-**Kế thừa từ Task 7.1 & 7.6**:
-- Phân tích từ Task 7.1 ([`bao_cao_task_7.1_checkpoint_audit.md`](../C/bao_cao_task_7.1_checkpoint_audit.md)) chỉ ra checkpoint WiSE-FT Gen 1 đạt điểm composite trung bình cao giả tạo nhưng Fake ACC thực tế bị sụp đổ còn **4.10%**.
-- Nguyên nhân cốt lõi trong logic chọn cũ (`trainer.py` dòng 204–231):
-  1. **Trung bình che lấp nhóm yếu nhất**: Phép lấy trung bình (Clean 40%, Robust 40%, Diff 20%) cho phép mô hình hy sinh Real ACC hoặc Fake ACC ở một miền suy biến mà điểm tổng hợp vẫn cao.
-  2. **Trộn AP vào quyết định checkpoint**: AP đo toàn dải ngưỡng phân loại thay vì ngưỡng vận hành thực chiến.
-  3. **Thiếu cơ chế bảo vệ Real**: Không có ràng buộc đảm bảo Real ACC đạt chuẩn an toàn.
+Hai kỷ lục theo dõi riêng: ứng viên đạt `clean_r >= 0.90` chỉ cập nhật official best khi worst-group tăng; ứng viên không đạt ràng buộc chỉ cập nhật best-effort khi cải thiện kỷ lục riêng của nhóm này. Bằng điểm không ghi đè. Chính sách dùng chung ở epoch 0, dry-run và mỗi epoch; không ép checkpoint cuối thành official best khi chưa có ứng viên đạt chuẩn.
 
----
+`CrossDomainTrainer.save_checkpoint` còn kiểm tra lại ràng buộc trước ghi để phát hiện cờ `is_best` sai từ caller. Các alias `best.pth` và tên checkpoint cấu hình chỉ cập nhật từ ứng viên official; best-effort có file riêng. CheckpointManager được sửa dùng chung đường ghi atomic cho chế độ latest, lưu từng epoch và filename tùy chỉnh; không còn lỗi `local_path` chưa khởi tạo. Backup sao chép cả latest và loại best tương ứng.
 
-## 2. Thiết Kế & Hiện Thực Kỹ Thuật
+## Đồng bộ ảnh Q30, calibration và trainer
 
-### 2.1. Không gian đánh giá phân tầng 4 nhóm
-$$g \in \{\text{clean}, \text{Q30}\} \times \{\text{real}, \text{fake}\}$$
+- Q30 nén **sau Resize → CenterCrop**, trước ToTensor/Normalize; dùng `quality=30` cố định. Tối đa 300 ảnh, tối đa 150 mỗi nhãn, seed 42. Khi một lớp ít hơn 150, dùng số sẵn có; vẫn bắt buộc có cả hai nhãn.
+- Cache chọn theo chỉ số dataset, hỗ trợ Subset/Concat và sampler có indices. Dataset tensor không có records vẫn lấy mẫu theo nhãn, không lấy 300 phần tử đầu. Mất/hỏng ảnh hoặc cache thiếu nhóm gây lỗi; không bỏ ảnh âm thầm hay gán ảnh clean là Q30.
+- Cache từ records đọc ảnh gốc để tránh vòng đổi tensor/PIL làm lệch pixel. Dataset tensor tổng quát phải dùng ImageNet normalization theo hợp đồng eval của dự án. Q30 tensor được cache một lần; startup được tách khỏi phép đo warm validation.
+- `OperatingPoint` đọc artifact Task 7.4 có `evidence_level=measured`, `T` và `T_star_default`. Cả clean và Q30 dùng `softmax(logits/T)[:,1] >= threshold`. Không fit trên `val_select`. Source và SHA256 của calibration được lưu trong metadata.
+- YAML Phase 7 giữ manifest v2/`val_select` của Task 7.7 và degradation v2 của 7.8; thêm `training.calibration_file: DATASET/logs/phase7/calibration/baseline.json`. Đây là operating point baseline được đóng băng cho run, không phải calibration tự cập nhật theo từng epoch. Có CLI `--calibration_file`, `--selection_threshold`, `--q30_max_samples`.
+- `Trainer` thường chọn đúng cặp loader clean/Q30; Q50 hoặc tên mơ hồ không được coi là Q30. Nếu có thêm diffusion_clean, lấy clean cùng miền với Q30. Root `train.py` tạo Q30 post-resize, giới hạn 300 ảnh cân bằng và truyền cấu hình calibration cho Trainer. Loader Q30 được materialize một lần.
+- Riêng `Trainer` thường với **loader đơn** giữ chính sách ACC/AP legacy và phát cảnh báo; không báo Q30/worst-group giả, không tạo `val_groups.csv`. Đây là nhánh tương thích cũ, không phải nghiệm thu selection v2. CrossDomainTrainer tự tạo nhánh Q30 từ loader clean nên vẫn dùng đủ bốn nhóm.
 
-Hàm `group_recalls(y_true, y_pred, condition)` tính toán recall độc lập:
-- `clean_r`: Recall ảnh Real ở trạng thái Clean
-- `clean_f`: Recall ảnh Fake ở trạng thái Clean
-- `q30_r`: Recall ảnh Real bị nén JPEG Q=30
-- `q30_f`: Recall ảnh Fake bị nén JPEG Q=30
+`val_groups.csv` lưu đủ `epoch, clean_r, clean_f, q30_r, q30_f, worst, best_effort`, cộng threshold, temperature, calibration source, số mẫu clean/Q30 và nguồn Q30. Không làm tròn score để quyết định. CSV cũ khác schema phải đổi run directory, không append các cột không khớp.
 
-### 2.2. Điểm chọn Worst-Group Score
-$$\text{worst\_group} = \min(\text{clean\_r}, \text{clean\_f}, \text{q30\_r}, \text{q30\_f})$$
-- Nếu phát hiện nhóm rỗng (thiếu dữ liệu kiểm thử), hàm `worst_group_score(recalls, nan_policy="raise")` lập tức fail-loud bằng ngoại lệ `ValueError`, ngăn chặn tuyệt đối việc ngụy tạo điểm số.
+## Test và bằng chứng
 
-### 2.3. Cơ chế phân tách Checkpoint Kép
-Mô hình loại bỏ hoàn toàn việc quyết định lưu dựa trên composite score cũ:
-1. **Checkpoint chính thức (`best.pth`)**:
-   - Điều kiện: $\text{worst\_group} > \text{best\_worst\_group}$ **VÀ** $\text{clean\_r} \ge 90.0\%$.
-2. **Checkpoint nỗ lực cao nhất (`best_effort.pth`)**:
-   - Điều kiện: $\text{worst\_group} > \text{best\_effort\_worst\_group}$ nhưng $\text{clean\_r} < 90.0\%$.
-   - Giữ lại phục vụ nghiên cứu và phân tích phân kỳ, tuyệt đối không dùng làm nghiệm thu đích.
+Các test mới dùng đường code thật để kiểm chứng:
 
-### 2.4. Xuất nhật ký 6 cột `val_groups.csv`
-Mỗi epoch tự động xuất các trường:
-`epoch, clean_r, clean_f, q30_r, q30_f, worst, best_effort`
+- Dataset xếp 300 Real trước 20 Fake tạo cache 150 Real/20 Fake; cache thiếu nhóm bị từ chối.
+- Tensor Q30 khớp pipeline post-resize, lặp lại tất định, không vượt khỏi Subset/sampler.
+- Ngưỡng và temperature từ JSON thay đổi dự đoán cả hai điều kiện và được ghi vào CSV/checkpoint.
+- Epoch 0 và cuối pipeline không thể nâng ứng viên `clean_r=.85` thành best; best-effort cao hơn không chặn một official hợp lệ có score thấp hơn; điểm hòa giữ checkpoint cũ.
+- Cả bốn tổ hợp chế độ CheckpointManager/filename ghi đúng file và backup; ứng viên vi phạm guard không ghi đè official.
+- Trainer nhiều loader chọn Q30 thay vì Q50; loader đơn giữ legacy kèm cảnh báo.
+- Test CSV gọi `record_validation`, đọc lại CSV thật; không tự viết một CSV mẫu để kiểm tra chính nó.
 
----
+```powershell
+$env:OMP_NUM_THREADS='1'
+$env:MKL_NUM_THREADS='1'
+python -m pytest -q -p no:cacheprovider --basetemp scratch/pytest-task710-final tests
+```
 
-## 3. Kết Quả Kiểm Thử (DoD Verification)
+Kết quả toàn bộ thư mục `tests` sau sửa: **111 passed in 68.59s**. Có test hồi quy riêng cho temperature lớn với xác suất float32 đã bão hòa; lựa chọn vẫn lấy từ logits gốc, không dựng lại logits từ xác suất đã làm tròn.
 
-Đã chạy toàn bộ **9/9 test cases** (5 unit tests + 4 smoke integration tests) trên local CPU:
+## Hiệu năng
 
-### 3.1. Unit Tests (`tests/test_selection_metric.py`)
-| Test Case | Mục tiêu kiểm chứng | Trạng thái |
-| :---: | :--- | :---: |
-| **T1** | Mảng giả 4 nhóm đã biết $\rightarrow$ `worst` đúng giá trị min | ✅ PASS |
-| **T2** | Nhóm rỗng $\rightarrow$ `raise ValueError` (không che giấu lỗi bằng 0) | ✅ PASS |
-| **T3** | `worst` tăng nhưng `clean_r = 0.85` $\rightarrow$ lưu `best_effort`, từ chối `best.pth` | ✅ PASS |
-| **T4** | `worst` tăng và `clean_r = 0.92` $\rightarrow$ lưu chính thức `best.pth` | ✅ PASS |
-| **T5** | Loader đơn (không dict) $\rightarrow$ fallback an toàn, không crash | ✅ PASS |
+```powershell
+python -m tools.bench_selection --output DATASET/logs/phase7/selection_benchmark.json
+```
 
-### 3.2. Integration Tests (`tests/test_smoke_selection_v2_integration.py`)
-| Test Case | Mục tiêu kiểm chứng | Trạng thái |
-| :---: | :--- | :---: |
-| **S1** | `test_val_q30_cache_and_worst_group_calculation`: Tự động sinh nhánh Q30 trong RAM và tính chuẩn 4 nhóm recall | ✅ PASS |
-| **S2** | `test_dual_checkpoint_saving_best_and_best_effort`: Cơ chế phân tách lưu `best.pth` vs `best_effort.pth` | ✅ PASS |
-| **S3** | `test_val_groups_csv_logging`: Ghi xuất nhật ký 7 cột `val_groups.csv` chuẩn xác | ✅ PASS |
-| **S4** | `test_config_parsing_real_guard_threshold`: Nạp đúng cấu hình `real_guard_threshold: 0.90` từ file YAML Phase 7 | ✅ PASS |
+Artifact [`selection_benchmark.json`](../../../DATASET/logs/phase7/selection_benchmark.json) ghi phép đo CPU seed 42: 32 ảnh PNG nhiễu 256×256 được dùng lặp cho 400 records cân bằng, model pooled-RGB linear, batch 32, workers 0. Sau hai warmup, chạy năm lượt đảo thứ tự, lấy median:
 
----
+- Clean-only: **765.91 ms**.
+- Clean + cache Q30 (150 Real/150 Fake): **801.32 ms**, tỷ lệ **1.046×**, đạt giới hạn ≤2× trên thử nghiệm này.
+- Tạo trainer/cache một lần: **1202.70 ms**, không tính vào warm validation.
 
-## 4. Tích Hợp Đồng Bộ Vào Pipeline Huấn Luyện (`train_crossdomain.py`)
+Phép đo không chứng minh tốc độ CLIP/T4 hay dữ liệu thật; phải đo lại trên máy train. Công cụ trả exit code 1 nếu vượt ngưỡng và lưu mọi lượt, không chọn lượt nhanh nhất.
 
-1. **Bộ nhớ đệm Q30 trong RAM (`val_q30_cache`)**:
-   - Tự động lấy tối đa 300 mẫu phân tầng (150 Real / 150 Fake, `seed=42`) từ tập validation.
-   - Nén JPEG $Q=30$ một lần duy nhất lúc khởi tạo và lưu trong RAM, loại bỏ hoàn toàn hiện tượng bottleneck CPU ở mỗi epoch.
-2. **Quy tắc chọn Checkpoint Kép**:
-   - `clean_r >= 0.90` (hoặc `--real_guard_threshold`) $\rightarrow$ Lưu `fatformer_anchored_v2_best.pth`.
-   - `clean_r < 0.90` nhưng `worst_group` tăng $\rightarrow$ Lưu `fatformer_anchored_v2_best_effort.pth`.
-3. **Nhật ký tiến trình 7 cột**:
-   - Tự động ghi xuất file `val_groups.csv` với các cột: `epoch,clean_r,clean_f,q30_r,q30_f,worst,best_effort`.
-   - Tự động đồng bộ sang Google Drive `/content/drive/MyDrive/Fatformer/logs` khi phát hiện môi trường Colab.
+## Giới hạn nghiệm thu
 
----
-
-## 5. Bàn Giao & Mở Đường Cho Task 7.11 (Thành viên C)
-
-- **Đầu ra bàn giao**: Hoàn tất $100\%$ logic chọn và lưu checkpoint cho toàn bộ pipeline huấn luyện.
-- **Sẵn sàng cho Task 7.11**: Cả 4 nhiệm vụ tiền đề của Phase 7:
-  + **Task 7.7**: Kho dữ liệu v2 (`data_manifest_v2.json`, `train_crossdomain_v2.tar` 7.78 GB trên Drive).
-  + **Task 7.8**: Degradation Pipeline v2 (`degradation_v2.yaml`, WebP + Composite, benchmark overhead $-14.69\% \le 15\%$).
-  + **Task 7.9**: Loss v2 (`CrossDomainTotalLoss` với `RealGuardLoss` + `FeatureConsistencyLoss`).
-  + **Task 7.10**: Selection Metric v2 (Worst-Group + Checkpoint Kép + In-memory Q30 cache + `val_groups.csv`).
-  Đều đã được tích hợp đồng bộ và kiểm thử khép kín thành công $100\%$, sẵn sàng thực thi huấn luyện **Anchored Recovery v2** tại Task 7.11 để chinh phục Cổng G7.2!
-
+Code/test CPU và liên kết 7.7–7.9 được kiểm tra; chưa có smoke checkpoint thật/GPU cho bản sửa này. Không suy từ mock CPU ra chất lượng phát hiện, khả năng resume hoặc việc Task 7.11/G7.2 đã hoàn tất. Benchmark 7.8 hiện được ghi là **+14.08% trên corpus CPU tổng hợp** trong báo cáo 7.8, thay cho số -14.69% cũ.

@@ -77,132 +77,48 @@ class CheckpointManager:
             "best_val_ap": best_val_ap,
         }
 
-        # 1. Chế độ tối ưu dung lượng: Chỉ lưu latest và model best
-        if self.save_only_latest_and_best and filename is None:
+        is_effort = bool((val_metrics or {}).get("is_best_effort", False))
+        if is_best and is_effort:
+            raise ValueError("A checkpoint cannot be both official best and best effort")
+        if is_best and "worst_group" in (val_metrics or {}):
+            from .selection import checkpoint_decision
+            eligible, _ = checkpoint_decision(val_metrics, -1, -1,
+                                               (val_metrics or {}).get("real_guard_threshold", .90))
+            if not eligible:
+                raise ValueError("Official checkpoint does not pass Real guard")
+
+        optimized = self.save_only_latest_and_best and filename is None
+        if optimized:
             filename = "checkpoint_latest.pth"
-            local_path = os.path.join(self.save_dir, filename)
-
-            # Dọn dẹp bất kỳ file checkpoint_epoch_*.pth cũ nào còn sót
-            self._purge_epoch_checkpoints(self.save_dir)
-            if self.drive_backup_dir and os.path.exists(self.drive_backup_dir):
-                self._purge_epoch_checkpoints(self.drive_backup_dir)
-
-            # Ghi đè an toàn checkpoint_latest.pth
-            temp_path = os.path.join(self.save_dir, "checkpoint_latest.pth.tmp")
-            torch.save(state, temp_path)
-            if os.path.exists(local_path):
-                try:
-                    os.remove(local_path)
-                except Exception:
-                    pass
-            os.replace(temp_path, local_path)
-            print(f"[CHECKPOINT] [Latest] Đã lưu/ghi đè epoch {epoch} tại: {local_path}")
-
-        # Cap nhat best.pth hoac best_effort.pth (Task 7.10 Selection Metric v2)
-        is_best_effort = val_metrics.get("is_best_effort", False) if val_metrics else False
-        if is_best:
-            best_path = os.path.join(self.save_dir, "best.pth")
-            legacy_best_path = os.path.join(self.save_dir, "model_best.pth")
-            for bp in [best_path, legacy_best_path]:
-                if os.path.exists(bp):
-                    try:
-                        os.remove(bp)
-                    except Exception:
-                        pass
-                shutil.copyfile(local_path, bp)
-            print(f"[CHECKPOINT] Da cap nhat mo hinh chinh thuc best.pth: {best_path}")
-        elif is_best_effort:
-            effort_path = os.path.join(self.save_dir, "best_effort.pth")
-            if os.path.exists(effort_path):
-                try:
-                    os.remove(effort_path)
-                except Exception:
-                    pass
-            shutil.copyfile(local_path, effort_path)
-            print(f"[CHECKPOINT] Da cap nhat mo hinh no luc cao nhat best_effort.pth: {effort_path}")
-
-            # Sao lưu sang Google Drive (nếu có)
-            if self.drive_backup_dir and os.path.exists(self.drive_backup_dir):
-                try:
-                    drive_latest = os.path.join(self.drive_backup_dir, "checkpoint_latest.pth")
-                    shutil.copyfile(local_path, drive_latest)
-                    if is_best:
-                        drive_best = os.path.join(self.drive_backup_dir, "model_best.pth")
-                        shutil.copyfile(local_path, drive_best)
-                    print(f"[GOOGLE DRIVE] Đã sao lưu thành công sang Drive: {drive_latest}")
-                except Exception as e:
-                    print(f"[CẢNH BÁO] Lỗi khi sao lưu sang Google Drive: {e}")
-
-            return local_path
-
-        # 2. Chế độ truyền thống (Lưu riêng từng epoch nếu được yêu cầu rõ ràng)
-        # Dọn dẹp trước để giải phóng đĩa cứng trước khi ghi file mới
-        self._prune_old_checkpoints(self.save_dir)
-        if self.drive_backup_dir and os.path.exists(self.drive_backup_dir):
-            self._prune_old_checkpoints(self.drive_backup_dir)
-
-        if filename is None:
+        elif filename is None:
             filename = f"checkpoint_epoch_{epoch:03d}.pth"
-
         local_path = os.path.join(self.save_dir, filename)
-        if os.path.exists(local_path):
-            try:
-                os.remove(local_path)
-            except Exception:
-                pass
-        torch.save(state, local_path)
-        print(f"[CHECKPOINT] Đã lưu checkpoint tại: {local_path}")
+        temp_path = local_path + ".tmp"
+        torch.save(state, temp_path)
+        os.replace(temp_path, local_path)
 
-        # Cập nhật latest
+        def atomic_copy(source, destination):
+            if os.path.abspath(source) != os.path.abspath(destination):
+                shutil.copyfile(source, destination + ".tmp")
+                os.replace(destination + ".tmp", destination)
+
         latest_path = os.path.join(self.save_dir, "checkpoint_latest.pth")
-        if os.path.exists(latest_path):
-            try:
-                os.remove(latest_path)
-            except Exception:
-                pass
-        shutil.copyfile(local_path, latest_path)
-
-        # Cap nhat best.pth hoac best_effort.pth (Task 7.10 Selection Metric v2)
-        is_best_effort = val_metrics.get("is_best_effort", False) if val_metrics else False
+        atomic_copy(local_path, latest_path)
+        names = ["checkpoint_latest.pth"]
         if is_best:
-            best_path = os.path.join(self.save_dir, "best.pth")
-            legacy_best_path = os.path.join(self.save_dir, "model_best.pth")
-            for bp in [best_path, legacy_best_path]:
-                if os.path.exists(bp):
-                    try:
-                        os.remove(bp)
-                    except Exception:
-                        pass
-                shutil.copyfile(local_path, bp)
-            print(f"[CHECKPOINT] Da cap nhat mo hinh chinh thuc best.pth: {best_path}")
-        elif is_best_effort:
-            effort_path = os.path.join(self.save_dir, "best_effort.pth")
-            if os.path.exists(effort_path):
-                try:
-                    os.remove(effort_path)
-                except Exception:
-                    pass
-            shutil.copyfile(local_path, effort_path)
-            print(f"[CHECKPOINT] Da cap nhat mo hinh no luc cao nhat best_effort.pth: {effort_path}")
-
-        # Đồng bộ sang Google Drive
+            names += ["best.pth", "model_best.pth"]
+        elif is_effort:
+            names += ["best_effort.pth"]
+        for name in names[1:]:
+            atomic_copy(local_path, os.path.join(self.save_dir, name))
         if self.drive_backup_dir and os.path.exists(self.drive_backup_dir):
-            try:
-                drive_path = os.path.join(self.drive_backup_dir, filename)
-                if os.path.abspath(local_path) != os.path.abspath(drive_path):
-                    shutil.copyfile(local_path, drive_path)
-                    shutil.copyfile(latest_path, os.path.join(self.drive_backup_dir, "checkpoint_latest.pth"))
-                    if is_best:
-                        shutil.copyfile(local_path, os.path.join(self.drive_backup_dir, "model_best.pth"))
-                    print(f"[GOOGLE DRIVE] Đã sao lưu thành công sang Drive: {drive_path}")
-            except Exception as e:
-                print(f"[CẢNH BÁO] Lỗi khi sao lưu sang Google Drive: {e}")
-
-        # Dọn dẹp giữ lại max_to_keep checkpoint gần nhất
-        self._prune_old_checkpoints(self.save_dir)
-        if self.drive_backup_dir and os.path.exists(self.drive_backup_dir):
-            self._prune_old_checkpoints(self.drive_backup_dir)
-
+            for name in set(names + [filename]):
+                atomic_copy(os.path.join(self.save_dir, name), os.path.join(self.drive_backup_dir, name))
+        if not optimized:
+            self._prune_old_checkpoints(self.save_dir)
+            if self.drive_backup_dir:
+                self._prune_old_checkpoints(self.drive_backup_dir)
+        print(f"[CHECKPOINT] Saved epoch {epoch}: {local_path}")
         return local_path
 
     def _purge_epoch_checkpoints(self, directory: str):

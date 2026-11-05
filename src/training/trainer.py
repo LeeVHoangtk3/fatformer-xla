@@ -1,4 +1,5 @@
 import time
+import warnings
 from typing import Optional, Dict
 import numpy as np
 import torch
@@ -6,6 +7,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from .loss import FatFormerLoss
 from .metrics import group_recalls, worst_group_score
+from .selection import OperatingPoint, checkpoint_decision, write_group_log, selection_loader_names
 from .checkpoint_manager import CheckpointManager
 from ..evaluation.fast_eval import evaluate_dataloader
 
@@ -32,7 +34,10 @@ class Trainer:
         criterion: Optional[nn.Module] = None,
         grad_clip_norm: Optional[float] = 1.0,
         best_val_score: float = 0.0,
-        best_val_ap: float = 0.0
+        best_val_ap: float = 0.0,
+        calibration_file: Optional[str] = None,
+        selection_threshold: Optional[float] = None,
+        real_guard_threshold: float = .90,
     ):
         self.model = model.to(device)
         self.train_loader = train_loader
@@ -60,11 +65,28 @@ class Trainer:
             weight_decay=weight_decay
         )
 
-        self.scaler = torch.cuda.amp.GradScaler(enabled=self.use_amp)
+        self.scaler = torch.amp.GradScaler("cuda", enabled=self.use_amp)
         self.best_val_ap = float(best_val_ap)
         self.best_val_score = float(best_val_score)
         self.best_worst_group = -1.0
         self.best_effort_worst_group = -1.0
+        self.operating_point = OperatingPoint(calibration_file, selection_threshold)
+        self.real_guard_threshold = real_guard_threshold
+        if isinstance(self.val_loader, dict):
+            clean_name, q30_name = selection_loader_names(self.val_loader)
+            q30 = self.val_loader[q30_name]
+            if len(q30.dataset) > 300:
+                raise ValueError("Q30 loader must contain at most 300 stratified samples")
+            # Caller supplies JPEG30 tensors; materialize once, never recompress them.
+            tensors, labels = [], []
+            for images, targets in q30:
+                tensors.append(images.cpu())
+                labels.append(targets.cpu())
+            if not labels or set(torch.cat(labels).tolist()) != {0, 1}:
+                raise ValueError("Q30 loader requires both Real and Fake")
+            self.val_loader = dict(self.val_loader)
+            cached = torch.utils.data.TensorDataset(torch.cat(tensors), torch.cat(labels))
+            self.val_loader[q30_name] = DataLoader(cached, batch_size=q30.batch_size or 16)
 
     def train_epoch(self, epoch: int, print_freq: int = 50) -> float:
         self.model.train()
@@ -177,8 +199,10 @@ class Trainer:
                     diff_scores = []
                     val_metrics = {}
 
+                    loader_outputs = {}
                     for vname, vloader in self.val_loader.items():
-                        m = evaluate_dataloader(self.model, vloader, self.device)
+                        m = evaluate_dataloader(self.model, vloader, self.device, operating_point=self.operating_point)
+                        loader_outputs[vname] = m
                         acc = m.get("acc", 0.0)
                         ap = m.get("ap", 0.0)
                         r_acc = m.get("r_acc", 0.0)
@@ -218,94 +242,47 @@ class Trainer:
                     val_metrics["ap"] = val_ap
                     val_metrics["val_score"] = val_score
 
-                    # Task 7.10: Selection Metric v2 (worst-group + ràng buộc Real ACC)
-                    clean_loader_name = next((k for k in self.val_loader.keys() if "clean" in k.lower() or "val_clean" in k.lower()), None)
-                    q30_loader_name = next((k for k in self.val_loader.keys() if "q30" in k.lower() or "deg" in k.lower()), None)
-
-                    if clean_loader_name and q30_loader_name:
-                        c_r = val_metrics.get(f"{clean_loader_name}_r_acc", 0.0) / 100.0
-                        c_f = val_metrics.get(f"{clean_loader_name}_f_acc", 0.0) / 100.0
-                        q_r = val_metrics.get(f"{q30_loader_name}_r_acc", 0.0) / 100.0
-                        q_f = val_metrics.get(f"{q30_loader_name}_f_acc", 0.0) / 100.0
-                        recalls_dict = {"clean_r": c_r, "clean_f": c_f, "q30_r": q_r, "q30_f": q_f}
-                        worst = worst_group_score(recalls_dict, nan_policy="raise")
-                    else:
-                        c_r = val_metrics.get("r_acc", val_acc) / 100.0
-                        c_f = val_metrics.get("f_acc", val_acc) / 100.0
-                        q_r = c_r
-                        q_f = c_f
-                        recalls_dict = {"clean_r": c_r, "clean_f": c_f, "q30_r": q_r, "q30_f": q_f}
-                        worst = worst_group_score(recalls_dict, nan_policy="omit")
-
-                    val_metrics["clean_r"] = c_r
-                    val_metrics["clean_f"] = c_f
-                    val_metrics["q30_r"] = q_r
-                    val_metrics["q30_f"] = q_f
-                    val_metrics["worst_group"] = worst
-                    print(f"  -> [TASK 7.10 SELECTION v2] Worst-Group: {worst*100.0:.2f}% | Clean Real: {c_r*100.0:.2f}% (Clean Fake: {c_f*100.0:.2f}%, Q30 Real: {q_r*100.0:.2f}%, Q30 Fake: {q_f*100.0:.2f}%)")
-
-                    # Luật lưu checkpoint Task 7.10
-                    passes_real_guard = (c_r >= 0.90)
-                    if worst > self.best_worst_group and passes_real_guard:
-                        self.best_worst_group = worst
-                        is_best = True
-                        val_metrics["is_best_effort"] = False
-                        print(f"  [★ BEST] Đạt chuẩn chính thức best.pth: worst_group={worst*100.0:.2f}% (Clean Real={c_r*100.0:.2f}% >= 90%)")
-                    elif worst > self.best_effort_worst_group and not passes_real_guard:
-                        self.best_effort_worst_group = worst
-                        is_best = False
-                        val_metrics["is_best_effort"] = True
-                        print(f"  [▲ BEST EFFORT] Đạt kỷ lục best_effort.pth: worst_group={worst*100.0:.2f}% (nhưng Clean Real={c_r*100.0:.2f}% < 90%)")
+                    clean_name, q30_name = selection_loader_names(self.val_loader)
+                    true, predicted, conditions = [], [], []
+                    for condition, name in enumerate([clean_name, q30_name]):
+                        output = loader_outputs[name]
+                        true.extend(output["y_true"])
+                        predicted.extend(output["y_pred_selection"])
+                        conditions.extend([condition] * len(output["y_true"]))
+                    recalls = group_recalls(true, predicted, conditions)
+                    val_metrics.update(recalls)
+                    val_metrics["worst_group"] = worst_group_score(recalls)
+                    val_metrics["n_eval_clean"] = len(loader_outputs[clean_name]["y_true"])
+                    val_metrics["n_eval_q30"] = len(loader_outputs[q30_name]["y_true"])
+                    val_metrics["threshold"] = self.operating_point.threshold
+                    val_metrics["temperature"] = self.operating_point.temperature
+                    val_metrics["calibration_source"] = self.operating_point.source
+                    val_metrics["calibration_sha256"] = self.operating_point.sha256
+                    val_metrics["real_guard_threshold"] = self.real_guard_threshold
+                    is_best, effort = checkpoint_decision(val_metrics, self.best_worst_group,
+                                                          self.best_effort_worst_group, self.real_guard_threshold)
+                    val_metrics["is_best_effort"] = effort
+                    if is_best:
+                        self.best_worst_group = val_metrics["worst_group"]
+                    if effort:
+                        self.best_effort_worst_group = val_metrics["worst_group"]
+                    write_group_log(os.path.join(self.checkpoint_manager.save_dir, "val_groups.csv"),
+                                    epoch, val_metrics, effort, self.operating_point)
                 else:
                     val_metrics = evaluate_dataloader(self.model, self.val_loader, self.device)
                     val_acc = val_metrics.get("acc", 0.0)
                     val_ap = val_metrics.get("ap", 0.0)
                     val_auc = val_metrics.get("auc", 0.0)
-                    val_r = val_metrics.get("r_acc", val_acc) / 100.0
-                    val_f = val_metrics.get("f_acc", val_acc) / 100.0
-                    recalls_dict = {"clean_r": val_r, "clean_f": val_f, "q30_r": val_r, "q30_f": val_f}
-                    worst = worst_group_score(recalls_dict, nan_policy="omit")
+                    warnings.warn("Single validation loader: keeping legacy ACC/AP selection; no Q30 score is reported", RuntimeWarning)
                     val_score = 0.5 * val_acc + 0.5 * val_ap
                     val_metrics["val_score"] = val_score
-                    val_metrics["clean_r"] = val_r
-                    val_metrics["clean_f"] = val_f
-                    val_metrics["q30_r"] = val_r
-                    val_metrics["q30_f"] = val_f
-                    val_metrics["worst_group"] = worst
-                    print(f"  -> Validation ACC: {val_acc:.2f}% | AP: {val_ap:.2f}% | Worst-Group: {worst*100.0:.2f}%")
-
-                    passes_real_guard = (val_r >= 0.90)
-                    if worst > self.best_worst_group and passes_real_guard:
-                        self.best_worst_group = worst
-                        is_best = True
-                        val_metrics["is_best_effort"] = False
-                        print(f"  [★ BEST] Đạt chuẩn chính thức best.pth: worst_group={worst*100.0:.2f}% (Real={val_r*100.0:.2f}% >= 90%)")
-                    elif worst > self.best_effort_worst_group and not passes_real_guard:
-                        self.best_effort_worst_group = worst
-                        is_best = False
-                        val_metrics["is_best_effort"] = True
-                        print(f"  [▲ BEST EFFORT] Đạt kỷ lục best_effort.pth: worst_group={worst*100.0:.2f}% (nhưng Real={val_r*100.0:.2f}% < 90%)")
+                    is_best = val_score > self.best_val_score
+                    if is_best:
+                        self.best_val_score = val_score
+                        self.best_val_ap = val_ap
 
             if scheduler:
                 scheduler.step()
-
-            # Ghi nhật ký nhóm vào file val_groups.csv (Task 7.10)
-            val_groups_csv = os.path.join(self.checkpoint_manager.save_dir, "val_groups.csv")
-            try:
-                write_header = not os.path.exists(val_groups_csv)
-                with open(val_groups_csv, "a", encoding="utf-8") as f:
-                    if write_header:
-                        f.write("epoch,clean_r,clean_f,q30_r,q30_f,worst,best_effort\n")
-                    c_r = val_metrics.get("clean_r", 0.0)
-                    c_f = val_metrics.get("clean_f", 0.0)
-                    q_r = val_metrics.get("q30_r", 0.0)
-                    q_f = val_metrics.get("q30_f", 0.0)
-                    w_g = val_metrics.get("worst_group", 0.0)
-                    is_effort = val_metrics.get("is_best_effort", False)
-                    f.write(f"{epoch},{c_r:.4f},{c_f:.4f},{q_r:.4f},{q_f:.4f},{w_g:.4f},{is_effort}\n")
-            except Exception as e:
-                print(f"  [!] Lưu val_groups.csv: {e}")
-
 
             # Ghi nhật ký vào file CSV
             if history_csv_path:

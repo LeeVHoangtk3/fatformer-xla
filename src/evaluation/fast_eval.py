@@ -13,7 +13,8 @@ def evaluate_dataloader(
     model: nn.Module,
     dataloader: DataLoader,
     device: torch.device,
-    print_freq: int = 20
+    print_freq: int = 20,
+    operating_point=None,
 ) -> Dict[str, float]:
     """
     Chạy suy luận trên 1 DataLoader cụ thể và tính toán metrics.
@@ -21,6 +22,7 @@ def evaluate_dataloader(
     model.eval()
     y_true = []
     y_score = []
+    selection_predictions = []
 
     total_batches = len(dataloader)
     for batch_idx, (images, labels) in enumerate(dataloader):
@@ -28,6 +30,8 @@ def evaluate_dataloader(
         outputs = model(images)
         if isinstance(outputs, tuple):
             outputs = outputs[0]
+        if operating_point is not None:
+            selection_predictions.extend(operating_point.predictions(outputs).cpu().tolist())
         # outputs shape: (B, 2), lấy xác suất lớp 1 (fake)
         scores = outputs.softmax(dim=1)[:, 1].cpu().tolist()
         y_score.extend(scores)
@@ -39,6 +43,8 @@ def evaluate_dataloader(
     metrics = compute_binary_metrics(y_true, y_score)
     metrics["y_true"] = y_true
     metrics["y_score"] = y_score
+    if operating_point is not None:
+        metrics["y_pred_selection"] = selection_predictions
     return metrics
 
 

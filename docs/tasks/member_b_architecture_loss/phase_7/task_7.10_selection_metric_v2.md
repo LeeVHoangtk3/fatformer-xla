@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU**
 - **Độ ưu tiên**: 🟠 Cao — quyết định checkpoint nào được chọn ở Task 7.11
 - **Cổng liên quan**: không có cổng riêng; ảnh hưởng trực tiếp G7.2
-- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH` (Tích hợp đồng bộ khép kín `train_crossdomain.py`, 9/9 tests pass)
+- **Trạng thái**: Code/test CPU đã sửa sau review 2026-11-05; benchmark tổng hợp đạt ≤2×. Cần đo lại val_select thật và smoke checkpoint/GPU ở 7.11.
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.10
 
 ---
@@ -115,15 +115,17 @@ worst = worst_group_score(recalls)
 
 passes_real_guard = recalls["clean_r"] >= 0.90
 
-if worst > self.best_worst_group:
+if passes_real_guard and worst > self.best_worst_group:
     self.best_worst_group = worst
-    if passes_real_guard:
-        save("best.pth"); is_best = True
-    else:
-        save("best_effort.pth"); is_best = False
+    save("best.pth")
+elif not passes_real_guard and worst > self.best_effort_worst_group:
+    self.best_effort_worst_group = worst
+    save("best_effort.pth")
 ```
 
-Xoá đoạn `val_score = 0.40*... + 0.40*... + 0.20*...` (dòng 204–210) và `if val_score > self.best_val_score` (dòng 227). Giữ `val_score` như **metric phụ để log**, không dùng để quyết định.
+Giữ composite/AP như metric phụ để log cho nhánh v2, không dùng chọn checkpoint. Loader đơn của Trainer thường giữ legacy kèm cảnh báo theo ràng buộc §4.5; không gán số clean cho Q30. CrossDomainTrainer dựng Q30 từ loader clean và áp đủ bốn nhóm.
+
+Sau review: cùng chính sách được gọi từ epoch 0, dry-run và epoch train. Cuối run không tạo best chính thức bằng fallback. Ngưỡng vận hành đọc `T`/`T_star_default` từ calibration đo thật, áp trực tiếp trên logits cho cả hai trainer; không suy temperature từ xác suất đã bị làm tròn. CSV/checkpoint ghi nguồn calibration và ngưỡng.
 
 ### Bước 4 — Log 6 cột (D6, ~0,5 h)
 
@@ -160,13 +162,14 @@ Nếu vượt: giảm `n_eval_q30` xuống 200, **không** giảm xuống dướ
 ## 6. Definition of Done
 
 - [x] `worst_group_score` được cài đúng định nghĩa §1, có test T1.
-- [x] `Trainer.fit()` và `CrossDomainTrainer` **không còn** dùng composite để quyết định lưu checkpoint.
+- [x] Nhánh v2 của `Trainer.fit()` và `CrossDomainTrainer` không dùng composite/AP để chọn; nhánh loader đơn giữ legacy theo §4.5.
 - [x] `best.pth` chỉ được ghi khi `clean_r ≥ 0,90`; ngược lại ghi `best_effort.pth`.
-- [x] `val_groups.csv` có đủ 6 cột bắt buộc (+ 1 cột truy vết `best_effort`).
-- [x] `pytest -q tests/test_selection_metric.py tests/test_smoke_selection_v2_integration.py` — 9/9 xanh.
-- [x] Validation in-memory cache JPEG Q30 tối ưu, overhead thấp.
+- [x] `val_groups.csv` đủ 6 cột bắt buộc, best_effort, threshold, temperature, calibration source và số mẫu; test gọi code ghi thật.
+- [x] Bổ sung `tests/test_selection_regressions.py`: nhóm thiếu, post-resize, lấy mẫu, calibration, checkpoint đầu/cuối run, legacy và các chế độ lưu.
+- [x] Benchmark CPU tổng hợp tại `DATASET/logs/phase7/selection_benchmark.json`: median 765.91 → 801.32 ms, **1.046×**; cache setup 1202.70 ms đo riêng.
 - [x] Báo cáo nghiệm thu đầy đủ tại `docs/bao_cao/B/bao_cao_task_7.10_selection_metric_v2.md`.
 - [x] Loader đơn không bị crash (fallback an toàn).
+- [ ] Đo lại trên val_select thật/model CLIP và xác minh checkpoint trên máy GPU; kết quả CPU tổng hợp không thay cho bước này.
 
 ---
 
