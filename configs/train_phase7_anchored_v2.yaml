@@ -54,6 +54,8 @@ training:
 
 dataset:
   manifest: "DATASET/manifests/data_manifest_v2.json"
+  isolation_report: "DATASET/logs/phase7/data_isolation_report.json"
+  audit_config: "configs/phase7_data_v2.runtime.yaml"  # Must match audit hash; Colab uses the original config inside the archive
   train_dir: ""        # Use the audited manifest, not folder discovery
   val_dir: ""
   val_split: "val_select"  # Keep val_calib isolated from model selection

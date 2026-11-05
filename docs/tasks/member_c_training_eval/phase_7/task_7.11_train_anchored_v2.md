@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: ☁️ **T4 / L4 / A100**
 - **Độ ưu tiên**: 🔴 Khẩn cấp — **quyết định G7.2**
 - **Cổng liên quan**: **G7.2** (cuối D8, sau Task 7.12)
-- **Trạng thái**: `[ ] Sẵn sàng`
+- **Trạng thái**: `[ ] Chưa train/nghiệm thu GPU`. Workflow preflight, benchmark riêng và epoch-resume đã sửa; xem [báo cáo chuẩn bị](../../../bao_cao/C/bao_cao_task_7.11_preflight_va_khoi_dong.md).
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.11
 
 ---
@@ -35,28 +35,28 @@ $$\text{Fake@Real90} \ge 65\%,\quad \text{AUC} \ge 78\%,\quad \text{AUC}_{Q30} \
 | I2 | Degradation v2 | `configs/degradation_v2.yaml` (Task 7.8) | ✅ | `clean_prob = 0.60` |
 | I3 | Loss v2 | `src/training/loss.py` (Task 7.9) | ✅ | 3 test loss xanh |
 | I4 | Selection v2 | `src/training/trainer.py` (Task 7.10) | ✅ | `worst_group` hoạt động |
-| I5 | Baseline | `DATASET/checkpoints/fatformer_4class_ckpt.pth` | ✅ | `verify 0/0` |
+| I5 | Baseline | `DATASET/pretrained/fatformer_4class_ckpt.pth` | ✅ | `verify 0/0` |
 | I6 | Config | `configs/train_phase7_anchored_v2.yaml` | ✅ | khớp bảng §3 |
 | I7 | GPU | T4 (16 GB) hoặc tốt hơn | ✅ | ≥ 4 h khả dụng |
 
-**Chốt chặn**: nếu `logs/phase7/data_isolation_report.json` **không** có `violations = 0` ⇒ **không được chạy**.
+**Chốt chặn**: nếu `DATASET/logs/phase7/data_isolation_report.json` **không** có `violations = 0` ⇒ **không được chạy**.
 
 ---
 
-## 3. Cấu hình huấn luyện
+## 3. Cấu hình huấn luyện hiện tại
 
 | Tham số | Giá trị | Ghi chú |
 | :--- | :--- | :--- |
 | Warm start | Baseline + Zero-Init SRM/Gating | `SRM proj = 0`, `λ ≡ 1,0` |
 | `num_vit_adapter` | **3** (`{7,15,23}`) | Không đổi — ràng buộc vị trí |
 | Backbone | **Đóng băng** | Chỉ train adapter + SRM + gating |
-| LR adapter cũ | `1e-5` | Cosine schedule, warmup 5% |
+| LR adapter cũ | `1e-5` | Cosine schedule; warmup 5% chưa triển khai |
 | LR SRM / Gating | `1e-4` | |
-| Batch | 32, `grad_accum = 2` | Hiệu dụng 64 |
+| Batch | 16, `grad_accum = 2` | Hiệu dụng 32; khác mục tiêu batch 64 trong kế hoạch gốc |
 | AMP | FP16 | `torch.cuda.amp` |
-| Epoch | 4–6, early stop theo `worst_group` | Patience = 2 |
+| Epoch | 5; có thể cắt xuống 4 trước khi train | Early-stop patience 2 chưa triển khai |
 | Dữ liệu | `train` 85%, `clean_prob = 0.60` | `val_select` để chọn |
-| Loss | `0,3 CE_clean + 0,3 CE_deg + 0,7 KD + 0,3 Feat + 0,5 Guard` | Task 7.9 |
+| Loss | `0,3 CE_clean + 0,3 CE_deg + 0,7 KD + 0,2 Cons + 0,3 Feat + 0,5 Guard` | Task 7.9 |
 | Seed | 42 | |
 | Checkpoint | Mỗi epoch lên Drive | `--resume` bắt buộc |
 
@@ -70,9 +70,9 @@ $$\text{Fake@Real90} \ge 65\%,\quad \text{AUC} \ge 78\%,\quad \text{AUC}_{Q30} \
 | :---: | :--- | :--- | :--- |
 | O1 | Checkpoint chính | `DATASET/checkpoints/phase7/fatformer_anchored_v2_best.pth` | Chỉ ghi khi `clean_r ≥ 0,90` |
 | O2 | Checkpoint dự phòng | `..._best_effort.pth` | `worst_group` cao nhất, kể cả không đạt ràng buộc Real |
-| O3 | Lịch sử train | `logs/phase7/train_history.csv` | 6 cột nhóm + loss components + LR |
-| O4 | Đường hội tụ | `logs/phase7/m7_convergence.png` | 4 recall + worst + loss |
-| O5 | Benchmark bước | `logs/phase7/train_benchmark_100steps.json` | ms/step, VRAM, ước lượng/epoch |
+| O3 | Lịch sử train | `<run_dir>/train_history.csv` | 6 cột nhóm + loss components + LR |
+| O4 | Đường hội tụ | `<run_dir>/m7_convergence.png` | 4 recall + worst + loss |
+| O5 | Benchmark bước | `DATASET/logs/phase7/train_benchmark_100steps.json` | ms/step, VRAM, ước lượng/epoch |
 | O6 | Báo cáo | `docs/bao_cao/C/bao_cao_task_7.11_train_v2.md` | Thời gian thực, epoch dừng, lý do |
 
 ---
@@ -87,23 +87,28 @@ Checklist tự động (viết `tools/preflight_phase7_train.py`):
 [ ] manifest v2 tồn tại, n ≥ 12.000
 [ ] isolation report: violations == 0
 [ ] degradation_v2.yaml: clean_prob == 0.60
-[ ] loss test: pytest tests/test_loss_v2.py (3 passed)
-[ ] selection test: pytest tests/test_selection_metric.py (5 passed)
+[ ] loss test: loss_v2 + smoke integration (26 cases)
+[ ] selection test: selection_metric + smoke + regression (31 cases)
 [ ] baseline load_canonical: missing=0 unexpected=0
 [ ] val_calib != val_select (so sha256 danh sách ảnh)
 [ ] GPU free memory ≥ 14 GB (T4)
 ```
 
-In bảng PASS/FAIL và `sys.exit(1)` nếu có FAIL.
+In PASS/FAIL/SKIP. Chế độ train chỉ `ready_to_train=true` khi đủ tám PASS; CPU không đạt gate GPU. Audit có SKIP không được dùng làm bằng chứng sẵn sàng. Kiểm tra cả ảnh stage/SHA256, audit bound đúng manifest/config và split path/SHA256; không chỉ đếm records.
+
+```bash
+python -m tools.preflight_phase7_train --config configs/train_phase7_anchored_v2.yaml --output DATASET/logs/phase7/preflight_train.json
+```
 
 ### Bước 2 — Benchmark 100 step (D6, ~15 phút GPU)
 
 ```bash
 python -m src.training.train_crossdomain --config configs/train_phase7_anchored_v2.yaml \
-  --benchmark_steps 100 --output logs/phase7/train_benchmark_100steps.json
+  --benchmark_steps 100 --benchmark_warmup 5 \
+  --save_dir scratch/phase7_benchmark --output DATASET/logs/phase7/train_benchmark_100steps.json
 ```
 
-Ghi: `ms/step`, `peak_vram_gb`, `steps_per_epoch`, `est_minutes_per_epoch`, `est_total_minutes`.
+Ghi `ms_per_step` theo mini-batch, `peak_vram_gib`/`peak_reserved_gib`, `steps_per_epoch`, `est_minutes_per_epoch`, `est_total_minutes`. Benchmark không ghi checkpoint/CSV train và không được kết hợp resume/max_steps. Ước lượng chưa tính validation/backup.
 
 **Luật**: nếu `est_total_minutes > 300` trên T4 ⇒ giảm epoch xuống 4 **trước khi** bắt đầu (không dừng giữa chừng).
 
@@ -111,10 +116,12 @@ Ghi: `ms/step`, `peak_vram_gb`, `steps_per_epoch`, `est_minutes_per_epoch`, `est
 
 ```bash
 python -m src.training.train_crossdomain --config configs/train_phase7_anchored_v2.yaml \
-  --resume_from DATASET/checkpoints/phase7/last.pth \
+  --resume_from DATASET/checkpoints/phase7/checkpoint_latest.pth \
   --save_dir DATASET/checkpoints/phase7 \
-  --history_csv logs/phase7/train_history.csv
+  --history_csv DATASET/checkpoints/phase7/train_history.csv
 ```
+
+Lượt mới bỏ `--resume_from` và dùng run directory mới. Resume chỉ nhận full snapshot ở epoch hoàn tất; model-only best và partial `--max_steps` không phải resume. Tắt giữa epoch sẽ chạy lại epoch bị ngắt. Notebook mới kiểm checksum, dùng config gốc trong archive và tự chọn full latest nếu có; không cam kết bit-exact qua môi trường GPU khác.
 
 **Theo dõi mỗi epoch**:
 
@@ -127,7 +134,7 @@ python -m src.training.train_crossdomain --config configs/train_phase7_anchored_
 | `worst` | min 4 giá trị | phải tăng ≥ 2 pp sau 2 epoch |
 | `loss_total` | + 5 thành phần | `guard` không được = 0 suốt 3 epoch |
 
-**Dừng sớm có kiểm soát**:
+**Dừng sớm có kiểm soát (theo dõi thủ công; chưa có early-stop tự động)**:
 
 - Nếu sau 3 epoch `worst` không tăng ≥ 1 pp ⇒ dừng, ghi rõ, chuyển sang đòn bẩy dự phòng.
 - Nếu `loss` NaN ⇒ dừng ngay, kiểm tra `fake_index`, LR, và `guard` (xem Task 7.9 §7).
@@ -154,7 +161,7 @@ Theo kế hoạch §VI, **chỉ bật khi** `worst_group` không tăng ≥ 2 pp 
 
 ## 6. Definition of Done
 
-- [ ] Pre-flight 8/8 PASS, log lưu `logs/phase7/preflight_train.json`.
+- [ ] Preflight train đủ 8 PASS trên máy GPU/dữ liệu thật. Audit local hiện `ready_to_train=false`, không tính là PASS.
 - [ ] Benchmark 100 step có thật; ước lượng/epoch ghi trong báo cáo.
 - [ ] `train_history.csv` có **6 cột nhóm** + 5 thành phần loss + `lr` + `minutes`.
 - [ ] `m7_convergence.png` có 2 panel, đọc được.

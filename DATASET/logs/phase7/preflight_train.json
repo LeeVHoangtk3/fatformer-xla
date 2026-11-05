@@ -1,34 +1,48 @@
 {
-  "1. Manifest v2 (n >= 12.000)": {
-    "passed": true,
-    "message": "Tồn tại, n=14400 records"
-  },
-  "2. Báo cáo cách ly (violations == 0)": {
-    "passed": true,
-    "message": "violations = 0 (tuyệt đối cách ly trong data_isolation_report.json)"
-  },
-  "3. Cấu hình suy biến (clean_prob == 0.60)": {
-    "passed": true,
-    "message": "clean_prob == 0.60 (40% suy biến)"
-  },
-  "4. Kiểm thử Hàm Mất Mát v2 (Loss v2)": {
-    "passed": true,
-    "message": "Toàn bộ unit test Loss v2 PASSED"
-  },
-  "5. Kiểm thử Selection Metric v2": {
-    "passed": true,
-    "message": "Toàn bộ unit test Selection v2 PASSED"
-  },
-  "6. Baseline Load Canonical (verify 0/0)": {
-    "passed": true,
-    "message": "load_canonical bit-perfect: missing=0, unexpected=0"
-  },
-  "7. Tách biệt val_calib != val_select": {
-    "passed": true,
-    "message": "val_calib (1080) tách biệt 100% val_select (1080)"
-  },
-  "8. Tài nguyên GPU / Môi trường": {
-    "passed": true,
-    "message": "CẢNH BÁO: Chạy trên CPU Local (GPU check sẽ bắt buộc trên Colab GPU)"
+  "schema": "phase7-preflight/v2",
+  "mode": "train",
+  "ready_to_train": false,
+  "created_at_utc": "2026-11-05T11:03:21.699632+00:00",
+  "config": "D:\\GIT REPO\\.nam4\\fatformer-xla\\configs\\train_phase7_anchored_v2.yaml",
+  "config_sha256": "52790a5aa314413cacadf19c7b8bc832a7a35f6d124851d2464a087295ea3ebd",
+  "data_root": "D:\\GIT REPO\\.nam4\\fatformer-xla",
+  "source_sha256": "784e1f36c04ab75b6dfdfd72472e75310666a054035aaeb7d01a6e160033dfdb",
+  "preflight_tool_sha256": "505f180a8a7bdfeebed8912f402a75a4b61a8bff4c72c39d452bd56e0d44d778",
+  "python": "3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]",
+  "torch": "2.10.0+cpu",
+  "cuda_runtime": null,
+  "checks": {
+    "manifest_and_staged_images": {
+      "status": "FAIL",
+      "message": "14400/14400 staged images failed: [\"DATASET/raw_v2/autoregressive/tamingtransformers/0064520931f6d5f535d3.png: [Errno 2] No such file or directory: 'D:\\\\\\\\GIT REPO\\\\\\\\.nam4\\\\\\\\fatformer-xla\\\\\\\\DATASET\\\\\\\\raw_v2\\\\\\\\autoregressive\\\\\\\\tamingtransformers\\\\\\\\0064520931f6d5f535d3.png'\", \"DATASET/raw_v2/autoregressive/tamingtransformers/00b526671bda0bbf858a.png: [Errno 2] No such file or directory: 'D:\\\\\\\\GIT REPO\\\\\\\\.nam4\\\\\\\\fatformer-xla\\\\\\\\DATASET\\\\\\\\raw_v2\\\\\\\\autoregressive\\\\\\\\tamingtransformers\\\\\\\\00b526671bda0bbf858a.png'\", \"DATASET/raw_v2/autoregressive/tamingtransformers/015b05ffe1be114db2ea.png: [Errno 2] No such file or directory: 'D:\\\\\\\\GIT REPO\\\\\\\\.nam4\\\\\\\\fatformer-xla\\\\\\\\DATASET\\\\\\\\raw_v2\\\\\\\\autoregressive\\\\\\\\tamingtransformers\\\\\\\\015b05ffe1be114db2ea.png'\"]"
+    },
+    "bound_isolation_audit": {
+      "status": "FAIL",
+      "message": "Audit data-config SHA256 mismatch; stage the original config from the audited archive"
+    },
+    "degradation_and_calibration": {
+      "status": "PASS",
+      "message": "v2 clean_prob=.60; manifest val_select; measured frozen calibration is valid"
+    },
+    "loss_tests": {
+      "status": "PASS",
+      "message": "..........................                                               [100%]\n26 passed in 6.37s"
+    },
+    "selection_tests": {
+      "status": "PASS",
+      "message": "...............................                                          [100%]\n31 passed in 7.53s"
+    },
+    "baseline_canonical": {
+      "status": "PASS",
+      "message": "Strict canonical load 0/0; baseline_sha256=3b904401ad4ce7d0bc33661e83742ec4b659850c076b73cd544e87e26d8cb3db"
+    },
+    "split_path_and_hash_isolation": {
+      "status": "PASS",
+      "message": "{'train': 12240, 'val_calib': 1080, 'val_select': 1080}; disjoint paths and SHA256"
+    },
+    "gpu_14_gib_free": {
+      "status": "FAIL",
+      "message": "CUDA unavailable; GPU training gate is NOT satisfied"
+    }
   }
 }

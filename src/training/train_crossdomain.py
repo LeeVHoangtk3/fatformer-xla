@@ -34,6 +34,9 @@ import random
 import argparse
 import csv
 import itertools
+import json
+import shutil
+from pathlib import Path
 from typing import Optional, Dict, Tuple, Union
 
 import yaml
@@ -60,6 +63,7 @@ if hasattr(sys.stderr, "reconfigure"):
         pass
 
 from src.training.loss import CrossDomainTotalLoss
+from src.training.runtime_state import capture_rng, restore_rng, training_context, image_path, sha256_file
 from src.training.selection import OperatingPoint, build_q30_cache, checkpoint_decision, write_group_log
 from src.datasets.transforms import PairedCleanDegradedAugmentation, DegradationPipelineV2
 from src.datasets.samplers import BalancedBatchSampler, BalancedCrossDomainSampler
@@ -199,6 +203,11 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
     # 0. Uu tien tuyet doi: Neu nguoi dung truyen ro rang train_dir va val_dir
     train_dir_arg = getattr(args, "train_dir", "")
     val_dir_arg = getattr(args, "val_dir", "")
+    if getattr(args, "val_split", None):
+        if train_dir_arg or val_dir_arg:
+            raise ValueError("Explicit manifest split cannot be combined with folder overrides")
+        if not Path(args.train_manifest).is_file():
+            raise FileNotFoundError(f"Explicit manifest not found: {args.train_manifest}")
 
     # 1. Do tim tep manifest neu khong chi dinh ro train_dir
     if not (train_dir_arg and os.path.isdir(train_dir_arg)):
@@ -233,7 +242,9 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
                 for r in records:
                     rel_path = r.get("file_path", r.get("path", ""))
                     abs_path = rel_path
-                    if not os.path.isabs(rel_path):
+                    if getattr(args, "data_root", None):
+                        abs_path = str(image_path(rel_path, args.data_root))
+                    elif not os.path.isabs(rel_path):
                         for bsp in base_search_paths:
                             candidate = os.path.normpath(os.path.join(bsp, rel_path))
                             if os.path.exists(candidate):
@@ -264,6 +275,8 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
                     val_records = temp_val
                     print(f"  [✓] Da nap thanh cong tu manifest ({manifest_file}): Train={len(train_records)} ({train_existing} anh ton tai), Val={len(val_records)} ({val_existing} anh ton tai)")
             except Exception as e:
+                if not getattr(args, "dry_run", False) and getattr(args, "val_split", None):
+                    raise RuntimeError(f"LỖI DỮ LIỆU: explicit manifest could not be loaded: {e}") from e
                 if not getattr(args, "dry_run", False) and "LỖI DỮ LIỆU" in str(e):
                     raise
                 print(f"  [!] Khong the doc manifest {manifest_file}: {e}")
@@ -484,6 +497,8 @@ class CrossDomainTrainer:
         calibration_file: Optional[str] = None,
         selection_threshold: Optional[float] = None,
         q30_max_samples: int = 300,
+        backup_dir: Optional[str] = None,
+        history_csv: Optional[str] = None,
     ):
         self.student = student_model.to(device)
         self.teacher = teacher_model.to(device) if teacher_model is not None else None
@@ -510,6 +525,13 @@ class CrossDomainTrainer:
         self.operating_point = OperatingPoint(calibration_file, selection_threshold)
         self.best_worst_group = -1.0
         self.best_effort_worst_group = -1.0
+        self.global_step = 0
+        self.epoch_complete = True
+        self.run_context = {}
+        self.validation_history = []
+        self.training_history = []
+        self.history_csv = history_csv or os.path.join(save_dir, "train_history.csv")
+        self.backup_dir = backup_dir
         self.val_q30_cache = self._build_val_q30_cache(max_samples=q30_max_samples)
         if self.weight_guard > 0 and self.teacher is None:
             raise ValueError("RealGuard requires a teacher model")
@@ -532,7 +554,7 @@ class CrossDomainTrainer:
             #     self.teacher = self.teacher.half()
             #     print("[*] Da toi uu hoa mo hinh Teacher sang kieu nua do chinh xac FP16 (tiet kiem 50% VRAM).")
 
-    def train_epoch(self, epoch: int, max_steps: Optional[int] = None) -> Dict[str, float]:
+    def train_epoch(self, epoch: int, max_steps: Optional[int] = None, advance_scheduler=True, clear_cache=True) -> Dict[str, float]:
         self.student.train()
         if self.teacher is not None:
             self.teacher.eval()
@@ -544,10 +566,14 @@ class CrossDomainTrainer:
         total_guard = 0.0
         guard_active_count = 0
         num_batches = len(self.train_loader)
+        if not num_batches:
+            raise ValueError("Training loader is empty")
         if max_steps is not None:
             if max_steps < 1:
                 raise ValueError("max_steps must be >= 1")
             num_batches = min(num_batches, max_steps)
+        full_epoch_requested = num_batches == len(self.train_loader)
+        self.epoch_complete = False
         diagnostics = {}
         grad_norms = []
 
@@ -630,6 +656,7 @@ class CrossDomainTrainer:
                     self.optimizer.zero_grad()
 
             total_loss += loss_dict["loss_total"].item()
+            self.global_step += 1
             total_ce += loss_dict["loss_ce"].item()
             total_kd += loss_dict["loss_kd"].item()
             total_cons += loss_dict["loss_cons"].item()
@@ -645,10 +672,10 @@ class CrossDomainTrainer:
                     value = loss_dict.get(key, 0.0)
                     diagnostics[key] = diagnostics.get(key, 0.0) + float(value.detach() if torch.is_tensor(value) else value)
 
-        if self.scheduler is not None:
+        if self.scheduler is not None and advance_scheduler:
             self.scheduler.step()
 
-        if self.device.type == "cuda":
+        if self.device.type == "cuda" and clear_cache:
             torch.cuda.empty_cache()
 
         avg_loss = total_loss / max(num_batches, 1)
@@ -661,10 +688,13 @@ class CrossDomainTrainer:
         if self.use_v2:
             metrics["loss_feat"] = total_feat / max(num_batches, 1)
             metrics["loss_guard"] = total_guard / max(num_batches, 1)
+            metrics["feat"] = metrics["loss_feat"]
+            metrics["guard"] = metrics["loss_guard"]
             metrics["guard_active_ratio"] = guard_active_count / max(num_batches, 1)
             metrics.update({k: v / max(num_batches, 1) for k, v in diagnostics.items()})
             metrics["grad_norm"] = sum(grad_norms) / max(len(grad_norms), 1)
         metrics["train_steps"] = num_batches
+        self.epoch_complete = full_epoch_requested
         return metrics
 
     def _build_val_q30_cache(self, max_samples=300, seed=42):
@@ -682,10 +712,105 @@ class CrossDomainTrainer:
             self.best_worst_group = metrics["worst_group"]
         if effort:
             self.best_effort_worst_group = metrics["worst_group"]
-        self.save_checkpoint(epoch, is_best=official, is_best_effort=effort, val_metrics=metrics)
+        self.validation_history.append({"epoch": epoch, "metrics": dict(metrics), "best_effort": effort})
         write_group_log(os.path.join(self.save_dir, "val_groups.csv"), epoch, metrics,
                         effort, self.operating_point)
+        self._write_training_history()
+        self.save_checkpoint(epoch, is_best=official, is_best_effort=effort, val_metrics=metrics)
         return official, effort
+
+    def _write_training_history(self):
+        if not self.training_history:
+            return
+        path = Path(self.history_csv)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(str(path) + ".tmp", "w", encoding="utf-8", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=list(self.training_history[0]))
+            writer.writeheader()
+            writer.writerows(self.training_history)
+        os.replace(str(path) + ".tmp", path)
+
+    def load_resume(self, path):
+        state = torch.load(path, map_location=self.device, weights_only=False)
+        resume = state.get("resume_state", {})
+        required = {"optimizer", "scheduler", "scaler", "rng", "context", "global_step", "epoch_complete",
+                    "validation_history", "training_history"}
+        if state.get("schema") != "phase7-epoch-resume/v1" or not required <= set(resume):
+            raise ValueError("Not a full resume checkpoint; model-only checkpoints are warm starts, not resume states")
+        if not resume["epoch_complete"]:
+            raise ValueError("Partial --max_steps checkpoint is not resumable; use a completed-epoch checkpoint")
+        if resume["context"] != self.run_context:
+            raise ValueError("Resume context differs: keep the same code, inputs, loss, batch/AMP, and scheduler horizon")
+        expected_point = {"threshold": self.operating_point.threshold, "temperature": self.operating_point.temperature,
+                          "calibration_sha256": self.operating_point.sha256}
+        if any(state["metadata"].get(k) != v for k, v in expected_point.items()):
+            raise ValueError("Resume operating point differs")
+        self.student.load_state_dict(state["model"], strict=True)
+        self.optimizer.load_state_dict(resume["optimizer"])
+        if (self.scheduler is None) != (resume["scheduler"] is None) or (self.scaler is None) != (resume["scaler"] is None):
+            raise ValueError("Resume scheduler/scaler configuration differs")
+        if self.scheduler is not None:
+            self.scheduler.load_state_dict(resume["scheduler"])
+        if self.scaler is not None:
+            self.scaler.load_state_dict(resume["scaler"])
+        self.global_step = resume["global_step"]
+        self.best_worst_group = state["metadata"]["best_worst_group"]
+        self.best_effort_worst_group = state["metadata"]["best_effort_worst_group"]
+        self.validation_history = resume["validation_history"]
+        self.training_history = resume["training_history"]
+        # Repair logs/selected aliases if a session ended between atomic writes.
+        self._write_selected(state["model"], state["metadata"])
+        if self.validation_history:
+            log = Path(self.save_dir) / "val_groups.csv.tmp"
+            if log.exists():
+                log.unlink()
+            for row in self.validation_history:
+                write_group_log(log, row["epoch"], row["metrics"], row["best_effort"], self.operating_point)
+            os.replace(log, Path(self.save_dir) / "val_groups.csv")
+        self._write_training_history()
+        restore_rng(resume["rng"], self.train_loader)
+        return int(state["metadata"]["epoch"]) + 1
+
+    def benchmark(self, steps, warmup=5):
+        original = self.train_loader
+        try:
+            return self._benchmark_run(steps, warmup)
+        finally:
+            self.train_loader = original
+
+    def _benchmark_run(self, steps, warmup=5):
+        if steps < 1 or steps > len(self.train_loader) or not 0 <= warmup <= len(self.train_loader):
+            raise ValueError("Benchmark steps/warmup must fit one loader epoch")
+        original = self.train_loader
+        if warmup and original.num_workers:
+            # A warmup must warm the same worker pool used by the timed section.
+            # Training itself keeps non-persistent workers for epoch RNG resume.
+            self.train_loader = DataLoader(original.dataset, batch_sampler=original.batch_sampler,
+                                            num_workers=original.num_workers, collate_fn=original.collate_fn,
+                                            pin_memory=original.pin_memory, worker_init_fn=original.worker_init_fn,
+                                            generator=original.generator, persistent_workers=True)
+        if warmup:
+            self.train_epoch(0, max_steps=warmup, advance_scheduler=False, clear_cache=False)
+        if self.device.type == "cuda":
+            torch.cuda.synchronize(self.device)
+            torch.cuda.reset_peak_memory_stats(self.device)
+        start = time.perf_counter()
+        measured = self.train_epoch(0, max_steps=steps, advance_scheduler=False, clear_cache=False)
+        if self.device.type == "cuda":
+            torch.cuda.synchronize(self.device)
+        elapsed = time.perf_counter() - start
+        result = {"schema": "phase7-training-benchmark/v1", "device": str(self.device),
+                "gpu_name": torch.cuda.get_device_name(self.device) if self.device.type == "cuda" else None,
+                "evidence_level": "mock" if self.run_context.get("dry_run") else "measured",
+                "steps": steps, "warmup_steps": warmup, "ms_per_step": elapsed * 1000 / steps,
+                "step_unit": "mini-batch (includes backward, accumulation and optimizer updates)",
+                "grad_accum_steps": self.grad_accum_steps, "steps_per_epoch": len(self.train_loader),
+                "est_minutes_per_epoch": elapsed / steps * len(self.train_loader) / 60,
+                "peak_vram_gib": torch.cuda.max_memory_allocated(self.device) / 1024**3 if self.device.type == "cuda" else None,
+                "peak_reserved_gib": torch.cuda.max_memory_reserved(self.device) / 1024**3 if self.device.type == "cuda" else None,
+                "persistent_worker_pool": bool(warmup and original.num_workers),
+                "validation_and_backup_included": False, "metrics": measured}
+        return result
 
     def validate(self) -> Dict[str, float]:
         if self.val_loader is None:
@@ -838,79 +963,98 @@ class CrossDomainTrainer:
             }
         }
 
-        # 1. Xóa các tệp cũ để OS giải phóng không gian ngay lập tức
-        latest_path = os.path.join(self.save_dir, "checkpoint_latest.pth")
-        last_clean_path = os.path.join(self.save_dir, "fatformer_anchored_recovery_last.pth")
-        best_path = os.path.join(self.save_dir, self.save_name)
-        alt_name = "fatformer_anchored_recovery_best.pth" if self.save_name == "crossdomain_model_best.pth" else "crossdomain_model_best.pth"
-        alt_path = os.path.join(self.save_dir, alt_name)
-        effort_path = os.path.join(self.save_dir, "fatformer_anchored_v2_best_effort.pth")
-        effort_alt_path = os.path.join(self.save_dir, "best_effort.pth")
+        # Commit the resumable snapshot first. The previous latest remains intact
+        # until replacement; selected model aliases can be repaired from this state.
+        resume_state = {
+            "optimizer": self.optimizer.state_dict(),
+            "scheduler": self.scheduler.state_dict() if self.scheduler is not None else None,
+            "scaler": self.scaler.state_dict() if self.scaler is not None else None,
+            "rng": capture_rng(self.train_loader), "context": self.run_context,
+            "global_step": self.global_step, "epoch_complete": self.epoch_complete,
+            "validation_history": self.validation_history, "training_history": self.training_history,
+        }
+        snapshot = {**clean_state, "schema": "phase7-epoch-resume/v1", "resume_state": resume_state}
+        latest = Path(self.save_dir) / "checkpoint_latest.pth"
+        torch.save(snapshot, str(latest) + ".tmp")
+        os.replace(str(latest) + ".tmp", latest)
+        self._write_selected(model_sd, clean_state["metadata"])
+        self._atomic_alias(latest, Path(self.save_dir) / "fatformer_anchored_recovery_last.pth")
+        self._sync_backup(clean_state["metadata"])
 
-        for p in [latest_path, last_clean_path]:
-            if os.path.exists(p):
-                try:
-                    os.remove(p)
-                except Exception:
-                    pass
+    @staticmethod
+    def _atomic_alias(source, target):
+        source, target = Path(source), Path(target)
+        if source.resolve() == target.resolve():
+            return
+        temp = Path(str(target) + ".tmp")
+        if temp.exists():
+            temp.unlink()
+        try:
+            os.link(source, temp)
+        except OSError:
+            shutil.copy2(source, temp)
+        os.replace(temp, target)
 
-        # 2. Ghi vật lý tệp chính
-        primary_save_path = best_path if is_best else (effort_path if is_best_effort else latest_path)
-        torch.save(clean_state, primary_save_path + ".tmp")
-        os.replace(primary_save_path + ".tmp", primary_save_path)
-        
-        # 3. Tạo Hardlink ngốn 0 MB cho các bí danh còn lại
-        def make_hardlink(src, dst):
-            if os.path.abspath(src) == os.path.abspath(dst):
-                return
-            if os.path.exists(dst):
-                try:
-                    os.remove(dst)
-                except Exception:
-                    pass
-            try:
-                os.link(src, dst)
-            except Exception:
-                shutil.copy2(src, dst)
+    def _write_selected(self, model, metadata):
+        if metadata.get("is_best"):
+            name = self.save_name
+            aliases = ["best.pth", "crossdomain_model_best.pth"]
+            if name == "crossdomain_model_best.pth":
+                aliases.append("fatformer_anchored_recovery_best.pth")
+        elif metadata.get("is_best_effort"):
+            name = "fatformer_anchored_v2_best_effort.pth"
+            aliases = ["best_effort.pth"]
+        else:
+            return
+        path = Path(self.save_dir) / name
+        torch.save({"schema": "phase7-inference/v1", "model": model, "metadata": metadata}, str(path) + ".tmp")
+        os.replace(str(path) + ".tmp", path)
+        for alias in aliases:
+            self._atomic_alias(path, Path(self.save_dir) / alias)
 
-        if is_best:
-            make_hardlink(primary_save_path, latest_path)
-            make_hardlink(primary_save_path, alt_path)
-            make_hardlink(primary_save_path, os.path.join(self.save_dir, "best.pth"))
-            comp = val_metrics.get("worst_group", 0.0) if val_metrics else 0.0
-            print(f"  -> [* BEST] Luu model dat chuan chinh thuc tai epoch {epoch}: {best_path} (Worst-Group={comp*100.0:.2f}%)")
-        elif is_best_effort:
-            make_hardlink(primary_save_path, latest_path)
-            make_hardlink(primary_save_path, effort_alt_path)
-            comp = val_metrics.get("worst_group", 0.0) if val_metrics else 0.0
-            print(f"  -> [^ BEST EFFORT] Luu model no luc cao nhat tai epoch {epoch}: {effort_path} (Worst-Group={comp*100.0:.2f}%)")
-        
-        make_hardlink(latest_path, last_clean_path)
+    def _sync_backup(self, metadata):
+        destinations = [Path(self.backup_dir)] if self.backup_dir else [
+            Path(base) / Path(self.save_dir).name
+            for base in ("/content/drive/MyDrive/Fatformer/checkpoint", "/content/drive/MyDrive/Fatformer/checkpoints")
+            if Path(base).parent.is_dir()]
+        names = [Path(self.save_dir) / "checkpoint_latest.pth"]
+        if metadata.get("is_best"):
+            names.append(Path(self.save_dir) / self.save_name)
+        if metadata.get("is_best_effort"):
+            names.append(Path(self.save_dir) / "best_effort.pth")
+        names += [Path(self.save_dir) / "val_groups.csv", Path(self.history_csv)]
+        for folder in destinations:
+            folder.mkdir(parents=True, exist_ok=True)
+            for source in names:
+                if not source.exists():
+                    continue
+                target = folder / source.name
+                if target.resolve() == source.resolve():
+                    continue
+                temp = Path(str(target) + ".tmp")
+                shutil.copy2(source, temp)
+                digest = sha256_file(source)
+                if sha256_file(temp) != digest:
+                    raise IOError(f"Backup checksum mismatch: {target}")
+                os.replace(temp, target)
+                if source.name == "checkpoint_latest.pth":
+                    checksum = Path(str(target) + ".sha256")
+                    Path(str(checksum) + ".tmp").write_text(digest + "\n", encoding="ascii")
+                    os.replace(str(checksum) + ".tmp", checksum)
 
-        # Neu phat hien moi truong Google Colab voi Drive duoc mount, tu dong sao luu them ban copy sang Drive
-        for drive_base in [
-            "/content/drive/MyDrive/Fatformer/checkpoint",
-            "/content/drive/MyDrive/Fatformer/checkpoints",
-        ]:
-            if os.path.exists(os.path.dirname(drive_base)):
-                drive_branch_dir = os.path.join(drive_base, os.path.basename(self.save_dir))
-                try:
-                    os.makedirs(drive_branch_dir, exist_ok=True)
-                    shutil.copy2(latest_path, os.path.join(drive_branch_dir, "checkpoint_latest.pth"))
-                    if is_best:
-                        shutil.copy2(best_path, os.path.join(drive_branch_dir, self.save_name))
-                        if self.save_name != "crossdomain_model_best.pth":
-                            shutil.copy2(alt_path, os.path.join(drive_branch_dir, alt_name))
-                    elif is_best_effort:
-                        shutil.copy2(effort_path, os.path.join(drive_branch_dir, "fatformer_anchored_v2_best_effort.pth"))
-                    print(f"  [✓] Da dong bo checkpoint an toan sang Google Drive: {drive_branch_dir}")
-                except Exception as e:
-                    print(f"  [!] Canh bao dong bo Drive ({drive_base}): {e}")
 
 
 def run_training_pipeline(args):
     set_seed(args.seed)
     device = torch.device(args.device)
+    benchmark_steps = getattr(args, "benchmark_steps", 0)
+    resume_from = getattr(args, "resume_from", None)
+    if getattr(args, "requested_device", args.device) == "cuda" and device.type != "cuda" and not args.dry_run:
+        raise RuntimeError("CUDA requested but unavailable; real training cannot silently switch to CPU")
+    if resume_from and not Path(resume_from).is_file():
+        raise FileNotFoundError(f"Resume checkpoint not found: {resume_from}")
+    if not benchmark_steps and not args.dry_run and not resume_from and (Path(args.save_dir) / "checkpoint_latest.pth").exists():
+        raise ValueError("Run already has a latest checkpoint; use --resume_from or a fresh --save_dir")
 
     print("=" * 80)
     print(f"FATFORMER-XLA: PIPELINE HUAN LUYEN THICH UNG DA MIEN ({args.branch})")
@@ -995,7 +1139,8 @@ def run_training_pipeline(args):
     ]
     resolved_teacher = find_first_existing(teacher_candidates)
 
-    if args.dry_run and not (resolved_init and os.path.exists(resolved_init)):
+    using_mock_model = args.dry_run and not (resolved_init and os.path.exists(resolved_init))
+    if using_mock_model:
         print("[*] Dry-run che do gia lap (khong co checkpoint pretrained tren may)...")
         student = _MockBackbone(num_classes=2).to(device)
         teacher = _MockBackbone(num_classes=2).to(device) if args.branch in ["M4", "M5"] else None
@@ -1062,6 +1207,12 @@ def run_training_pipeline(args):
             print("[*] Khoi tao DataLoader da mien thuc te...")
             train_loader, val_loader = build_crossdomain_dataloaders(args)
 
+    args._resolved_model_assets = {
+        "checkpoint_init": None if using_mock_model else resolved_init,
+        "teacher_checkpoint": None if using_mock_model or teacher is None else resolved_teacher,
+        "clip_path": None if using_mock_model else resolved_clip,
+    }
+
     # Task 6.3-R: Differential Learning Rate (Phan chia parameter groups)
     # Nhom 1 (Module moi: SRM, Gating blocks 7, 15, 23) -> lr2 = args.learning_rate (1e-4)
     # Nhom 2 (Pretrained Adapters: FAA, LGA, ctx) -> lr1 = args.learning_rate * 0.1 (1e-5)
@@ -1111,7 +1262,7 @@ def run_training_pipeline(args):
         student_model=student,
         teacher_model=teacher,
         train_loader=train_loader,
-        val_loader=val_loader,
+        val_loader=None if benchmark_steps else val_loader,
         criterion=criterion,
         optimizer=optimizer,
         scheduler=scheduler,
@@ -1127,10 +1278,28 @@ def run_training_pipeline(args):
         calibration_file=getattr(args, "calibration_file", None),
         selection_threshold=getattr(args, "selection_threshold", None),
         q30_max_samples=getattr(args, "q30_max_samples", 300),
+        backup_dir=getattr(args, "backup_dir", None),
+        history_csv=getattr(args, "history_csv", None),
     )
+    trainer.run_context = training_context(args, PROJECT_ROOT)
+    if benchmark_steps:
+        output = Path(getattr(args, "output", None) or "DATASET/logs/phase7/train_benchmark_100steps.json")
+        if output.resolve().is_relative_to(Path(args.save_dir).resolve()):
+            raise ValueError("Benchmark output must be outside the training run directory")
+        result = trainer.benchmark(benchmark_steps, getattr(args, "benchmark_warmup", 5))
+        result["est_total_minutes"] = result["est_minutes_per_epoch"] * args.epochs
+        result["batch_size"] = args.batch_size
+        result["context"] = trainer.run_context
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+        print(f"Benchmark only: {output}; no checkpoints or training CSV written")
+        return result
+    start_epoch = trainer.load_resume(resume_from) if resume_from else 1
+    if resume_from:
+        print(f"Restored full epoch state: next_epoch={start_epoch}, global_step={trainer.global_step}")
 
     # Chot chan kiem toan Step-0 Identity giua Student va Teacher
-    if teacher is not None:
+    if teacher is not None and not resume_from:
         student.eval()
         teacher.eval()
         with torch.no_grad():
@@ -1167,9 +1336,11 @@ def run_training_pipeline(args):
         return
 
     # Huan luyen chinh thuc nhieu epochs
-    completed_steps = 0
-    for epoch in range(1, args.epochs + 1):
+    completed_steps = trainer.global_step
+    for epoch in range(start_epoch, args.epochs + 1):
         t0 = time.time()
+        epoch_lr = trainer.optimizer.param_groups[0]["lr"]
+        adapter_lr = trainer.optimizer.param_groups[-1]["lr"]
         step_limit = getattr(args, "max_steps", None)
         remaining = None if step_limit is None else step_limit - completed_steps
         if remaining is not None and remaining <= 0:
@@ -1178,6 +1349,10 @@ def run_training_pipeline(args):
         completed_steps += train_metrics["train_steps"]
         val_metrics = trainer.validate()
         elapsed = time.time() - t0
+        trainer.training_history.append({"branch": args.branch, "epoch": epoch,
+                                          **train_metrics, **val_metrics, "worst": val_metrics["worst_group"],
+                                          "lr": epoch_lr, "lr_adapter": adapter_lr,
+                                          "time_sec": elapsed, "minutes": elapsed / 60})
 
         # Task 7.10: Selection Metric v2 (Worst-Group + Rang buoc Real ACC)
         worst_g = val_metrics.get("worst_group", 0.0)
@@ -1188,36 +1363,6 @@ def run_training_pipeline(args):
         print(f"Epoch {epoch}/{args.epochs} ({elapsed:.1f}s) | Train Loss: {train_metrics['loss_total']:.4f}{v2_log} | "
               f"Val ACC: {val_metrics['val_acc']:.2f}% (Real: {val_metrics['val_r_acc']:.2f}%, Fake: {val_metrics['val_f_acc']:.2f}%) | "
               f"Worst-Group: {worst_g*100.0:.2f}% (Clean Real: {clean_r*100.0:.2f}%){best_tag}")
-
-        val_groups_csv = os.path.join(trainer.save_dir, "val_groups.csv")
-
-        # Ghi vao history CSV
-        history_csv = os.path.join(PROJECT_ROOT, "DATASET", "logs", "phase7", "train_history.csv") if trainer.use_v2 else os.path.join(PROJECT_ROOT, "DATASET", "logs", "m6_training_history.csv")
-        os.makedirs(os.path.dirname(history_csv), exist_ok=True)
-        file_exists = os.path.isfile(history_csv)
-        if trainer.use_v2:
-            row = {"branch": args.branch, "epoch": epoch, **train_metrics, **val_metrics, "time_sec": elapsed}
-            with open(history_csv, "a", encoding="utf-8", newline="") as f:
-                writer = csv.DictWriter(f, fieldnames=list(row))
-                if not file_exists:
-                    writer.writeheader()
-                writer.writerow(row)
-        else:
-            with open(history_csv, "a", encoding="utf-8") as f:
-                if not file_exists:
-                    f.write("branch,epoch,train_loss,val_macro_acc,val_composite,time_sec\n")
-                f.write(f"{args.branch},{epoch},{train_metrics['loss_total']:.4f},{val_metrics['val_acc']:.2f},{val_metrics['val_composite']:.2f},{elapsed:.1f}\n")
-
-        # Dong bo nhat ky sang Drive neu phat hien Colab Drive
-        drive_logs = "/content/drive/MyDrive/Fatformer/logs"
-        if os.path.exists(drive_logs):
-            try:
-                import shutil
-                shutil.copy2(history_csv, os.path.join(drive_logs, os.path.basename(history_csv)))
-                if os.path.exists(val_groups_csv):
-                    shutil.copy2(val_groups_csv, os.path.join(drive_logs, os.path.basename(val_groups_csv)))
-            except Exception:
-                pass
 
     best_ckpt_path = os.path.join(trainer.save_dir, trainer.save_name)
     if not os.path.exists(best_ckpt_path):
@@ -1269,6 +1414,10 @@ def parse_arguments():
         "calibration_file": None,
         "selection_threshold": None,
         "q30_max_samples": 300,
+        "backup_dir": None,
+        "history_csv": None,
+        "resume_from": None,
+        "data_root": None,
     }
 
     # 2. Neu co config YAML, nap cac truong vao defaults truoc khi xu ly CLI
@@ -1292,6 +1441,8 @@ def parse_arguments():
                         "calibration_file", "selection_threshold", "q30_max_samples"):
                 if key in t_cfg:
                     defaults[key] = t_cfg[key]
+            for key in ("backup_dir", "history_csv", "resume_from"):
+                defaults[key] = t_cfg.get(key, defaults[key])
             if "device" in t_cfg:
                 defaults["device"] = t_cfg.get("device", defaults["device"])
             if "grad_accum_steps" in t_cfg:
@@ -1318,6 +1469,7 @@ def parse_arguments():
             defaults["val_dir"] = d_cfg.get("val_dir", defaults["val_dir"])
             defaults["num_workers"] = d_cfg.get("num_workers", defaults["num_workers"])
             defaults["val_split"] = d_cfg.get("val_split", defaults["val_split"])
+            defaults["data_root"] = d_cfg.get("data_root", defaults["data_root"])
             if "degradation_config" in d_cfg:
                 defaults["degradation_config"] = d_cfg["degradation_config"]
             if "img_resolution" in d_cfg:
@@ -1377,9 +1529,21 @@ def parse_arguments():
     parser.add_argument("--calibration_file", default=defaults["calibration_file"])
     parser.add_argument("--selection_threshold", type=float, default=defaults["selection_threshold"])
     parser.add_argument("--q30_max_samples", type=int, choices=[100, 200, 300], default=defaults["q30_max_samples"])
+    parser.add_argument("--resume_from", "--resume", default=defaults["resume_from"])
+    parser.add_argument("--backup_dir", default=defaults["backup_dir"])
+    parser.add_argument("--history_csv", default=defaults["history_csv"])
+    parser.add_argument("--data_root", default=defaults["data_root"])
+    parser.add_argument("--benchmark_steps", type=int, default=0)
+    parser.add_argument("--benchmark_warmup", type=int, default=5)
+    parser.add_argument("--output")
     args = parser.parse_args()
     if args.max_steps is not None and args.max_steps < 1:
         parser.error("--max_steps must be >= 1")
+    if args.benchmark_steps < 0 or args.benchmark_warmup < 0:
+        parser.error("Benchmark steps/warmup must be nonnegative")
+    if args.benchmark_steps and (args.resume_from or args.max_steps is not None):
+        parser.error("Benchmark cannot be combined with --resume_from or --max_steps")
+    args.requested_device = args.device
 
     # Kiem tra an toan: neu yeu cau cuda ma he thong khong co GPU, tu dong chuyen sang cpu
     if args.device == "cuda" and not torch.cuda.is_available():
