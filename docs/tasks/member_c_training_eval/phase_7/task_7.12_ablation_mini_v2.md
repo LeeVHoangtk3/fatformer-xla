@@ -1,7 +1,7 @@
 ﻿# TASK 7.12 — ABLATION GUARD / FEATURE TRÊN DỮ LIỆU v2
 
 - **Phụ trách**: Thành viên C; Thành viên B review loss và cách diễn giải.
-- **Trạng thái**: `[~] Đã sửa triển khai và có kiểm thử CPU; chưa chạy thí nghiệm GPU, chưa có kết luận thực nghiệm hoặc nghiệm thu G7.2.`
+- **Trạng thái**: `[~] Có log bốn cấu hình A100 40GB, mỗi cấu hình 5 epoch. A3 tốt nhất theo worst-group validation; chưa chứng minh lợi ích tổng quát của hai loss, hậu kiểm checkpoint/logits còn mở và G7.2 chưa đạt đầy đủ.` Xem [báo cáo kết quả](../../../bao_cao/C/bao_cao_task_7.12_ablation.md).
 - **Notebook**: [`task_7.12_ablation_mini_colab.ipynb`](../../../../notebooks/task/task_7.12/task_7.12_ablation_mini_colab.ipynb).
 - **Kế hoạch liên quan**: [Phase 7](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md). Quy định cụ thể dưới đây sửa các điểm mâu thuẫn về epoch, tương tác và đóng góp dữ liệu của đặc tả cũ.
 
@@ -87,17 +87,18 @@ Mỗi run có `run_identity.json`, cấu hình runtime, full latest, best, histo
 
 - [x] Có bốn YAML explicit v2 và công cụ audit chỉ khác hai trọng số loss.
 - [x] Có kiểm thử CPU cho công thức CE, schema/đơn vị, split, resume, checkpoint, delta và xử lý thiếu bằng chứng.
-- [ ] Preflight/benchmark GPU thực của từng cấu hình đạt và được lưu.
-- [ ] Bốn run hoàn tất cùng horizon, seed, dữ liệu, steps/epoch và các siêu tham số ngoài hai trọng số đã ablate.
-- [ ] Checkpoint thực có canonical 0/0, layout n=3, không dropped; SHA256 khớp best và log.
-- [ ] CSV/JSON/PNG từ các run đo thật, evaluation không chứa calibration IDs; CI yêu cầu được tính từ dự đoán thực.
-- [ ] Báo cáo thực nghiệm trình bày đầy đủ kết quả và giới hạn. Nếu chưa xác định đóng góp lớn nhất thì ghi rõ chưa xác định.
+- [x] Có preflight của bốn run ghi đủ 8 PASS và benchmark đo trên A100-SXM4-40GB tại `DATASET/logs/phase7/ablation_v2_fixed_run1/`; chưa gọi đây là lần chạy lại độc lập.
+- [x] History ghi đủ 5 epoch/run, 765 mini-batch/epoch; context giống nhau ngoài hai trọng số loss. Chưa có bộ đếm optimizer updates bị GradScaler bỏ qua để xác nhận số cập nhật thực tế bằng nhau.
+- [ ] Hậu kiểm trực tiếp checkpoint: JSON đã lưu ghi canonical 0/0, layout n=3, dropped=[] và hash best khớp verification; local chưa có tệp `.pth` để nạp lại hoặc kiểm checksum tệp thực.
+- [x] Có CSV/JSON/PNG tổng hợp; tám JSON CFE ghi cùng evaluation partition 1.600 mẫu với fingerprints khớp staged inputs. Bảng số khớp nguồn trong phạm vi đã đối chiếu.
+- [ ] Hậu kiểm sample IDs/targets và tái tính CI từ logits NPZ gốc. Bộ hiện vật local chưa kèm NPZ; chưa kết luận đã tái lập các khoảng tin cậy độc lập.
+- [x] Báo cáo thực nghiệm đã ghi cả delta âm, giới hạn thống kê và phần chưa xác minh. A3 cao nhất trên worst-group validation ở seed 42; chưa xác định loss đóng góp lớn nhất một cách tổng quát.
 
 Công cụ tổng hợp không có chế độ dummy xuất cùng tên/kho kết quả thật. Test dùng fixture trong thư mục tạm. JSON ablation dùng schema riêng `ablation-v2/v1`; `gate_eligible=false` vì nó chưa kiểm mọi yêu cầu G7.2, kể cả 18 tập in-dist. Không nâng trạng thái G7.2 chỉ từ bảng ablation.
 
 ## 7. Liên kết
 
-- [Báo cáo sửa triển khai, chưa phải kết quả GPU](../../../bao_cao/C/bao_cao_task_7.12_ablation.md).
+- [Báo cáo số đo GPU và phạm vi hậu kiểm](../../../bao_cao/C/bao_cao_task_7.12_ablation.md).
 - [Task 7.11](task_7.11_train_anchored_v2.md).
 - [Khế ước CFE](../../../plan/ke_hoach_test_communityforensics_eval.md).
 - [Task 7.14 — locked benchmark](task_7.14_locked_benchmark_phase7.md).

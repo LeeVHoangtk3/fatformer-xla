@@ -1,0 +1,54 @@
+experiment:
+  name: phase7_ablation
+  branch: M4
+  seed: 42
+  description: Phase 7 Anchored Recovery v2 Ablation Study
+model:
+  backbone: CLIP:ViT-L/14
+  clip_path: /content/ablation_v2_fixed_runtime/pretrained/ViT-L-14.pt
+  checkpoint_init: /content/ablation_v2_fixed_runtime/pretrained/fatformer_4class_ckpt.pth
+  teacher_checkpoint: /content/ablation_v2_fixed_runtime/pretrained/fatformer_4class_ckpt.pth
+  num_classes: 2
+  use_srm: true
+  use_gating: true
+  srm_out_dim: 1024
+loss:
+  mode: v2
+  type: CrossDomainTotalLoss
+  label_smoothing: 0.05
+  temperature: 2.0
+  weight_ce: 0.3
+  weight_ce_deg: 0.3
+  alpha_kd: 0.7
+  beta_cons: 0.2
+  weight_feat: 0.3
+  weight_guard: 0.0
+  fake_index: 1
+training:
+  device: cuda
+  epochs: 5
+  batch_size: 16
+  learning_rate: 0.0001
+  anchor_learning_rate: 1.0e-05
+  min_lr: 1.0e-06
+  weight_decay: 0.0001
+  grad_accum_steps: 2
+  grad_clip_norm: 1.0
+  use_amp: true
+  save_dir: /content/ablation_v2_fixed_runtime/ablation_v2_fixed_run1/a3_data_featcons
+  save_name: best.pth
+  real_guard_threshold: 0.9
+  calibration_file: /content/ablation_v2_fixed_runtime/original_partition/baseline.json
+  q30_max_samples: 300
+  backup_dir: /content/drive/MyDrive/Fatformer/checkpoint/phase7/ablation_v2_fixed_run1/a3_data_featcons
+  history_csv: /content/ablation_v2_fixed_runtime/ablation_v2_fixed_run1/a3_data_featcons/train_history.csv
+dataset:
+  manifest: /content/ablation_v2_fixed_runtime/data/DATASET/manifests/data_manifest_v2.json
+  isolation_report: /content/ablation_v2_fixed_runtime/data/DATASET/logs/phase7/data_isolation_report.json
+  audit_config: /content/ablation_v2_fixed_runtime/data/configs/phase7_data_v2.yaml
+  train_dir: ''
+  val_dir: ''
+  val_split: val_select
+  degradation_config: /content/fatformer-xla/configs/degradation_v2.yaml
+  num_workers: 2
+  data_root: /content/ablation_v2_fixed_runtime/data

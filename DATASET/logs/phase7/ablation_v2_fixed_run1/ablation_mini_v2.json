@@ -1,0 +1,241 @@
+{
+  "report_schema": "ablation-v2/v1",
+  "evidence_level": "measured",
+  "gate_eligible": false,
+  "gate_note": "Ablation evidence only; this report does not evaluate every G7.2 requirement.",
+  "units": "percent; deltas in percentage points",
+  "configurations": {
+    "a1_data": {
+      "epochs": 5,
+      "selected_epoch": 4,
+      "clean_r": 98.47457627118644,
+      "clean_f": 63.6734693877551,
+      "q30_r": 97.33333333333334,
+      "q30_f": 34.66666666666667,
+      "worst_group": 34.66666666666667,
+      "auc_clean": 89.18,
+      "auc_clean_ci95": [
+        87.66,
+        90.61
+      ],
+      "auc_q30": 79.14,
+      "auc_q30_ci95": [
+        76.93,
+        81.47
+      ],
+      "fake_at_real90_q30": 41.88,
+      "fake_at_real90_q30_ci95": [
+        36.07,
+        49.11
+      ],
+      "ece_q30_frozen_temperature_pct": 14.05,
+      "partition": {
+        "split": "evaluation",
+        "evaluation_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+        "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+        "calibration_sha256": "4ba4cf620b5b85c2534591be9391a70853845d4c0defedabee8c3aac59be8854",
+        "n": 1600
+      }
+    },
+    "a2_data_guard": {
+      "epochs": 5,
+      "selected_epoch": 4,
+      "clean_r": 98.13559322033898,
+      "clean_f": 59.795918367346935,
+      "q30_r": 98.0,
+      "q30_f": 26.0,
+      "worst_group": 26.0,
+      "auc_clean": 89.32,
+      "auc_clean_ci95": [
+        87.73,
+        90.82
+      ],
+      "auc_q30": 79.01,
+      "auc_q30_ci95": [
+        76.72,
+        81.3
+      ],
+      "fake_at_real90_q30": 42.5,
+      "fake_at_real90_q30_ci95": [
+        36.43,
+        47.44
+      ],
+      "ece_q30_frozen_temperature_pct": 10.79,
+      "partition": {
+        "split": "evaluation",
+        "evaluation_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+        "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+        "calibration_sha256": "4ba4cf620b5b85c2534591be9391a70853845d4c0defedabee8c3aac59be8854",
+        "n": 1600
+      }
+    },
+    "a3_data_featcons": {
+      "epochs": 5,
+      "selected_epoch": 4,
+      "clean_r": 98.47457627118644,
+      "clean_f": 59.183673469387756,
+      "q30_r": 97.33333333333334,
+      "q30_f": 38.0,
+      "worst_group": 38.0,
+      "auc_clean": 88.88,
+      "auc_clean_ci95": [
+        87.27,
+        90.32
+      ],
+      "auc_q30": 78.83,
+      "auc_q30_ci95": [
+        76.58,
+        81.0
+      ],
+      "fake_at_real90_q30": 42.12,
+      "fake_at_real90_q30_ci95": [
+        35.25,
+        49.2
+      ],
+      "ece_q30_frozen_temperature_pct": 12.87,
+      "partition": {
+        "split": "evaluation",
+        "evaluation_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+        "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+        "calibration_sha256": "4ba4cf620b5b85c2534591be9391a70853845d4c0defedabee8c3aac59be8854",
+        "n": 1600
+      }
+    },
+    "a4_full": {
+      "epochs": 5,
+      "selected_epoch": 4,
+      "clean_r": 98.13559322033898,
+      "clean_f": 58.77551020408164,
+      "q30_r": 97.33333333333334,
+      "q30_f": 27.333333333333332,
+      "worst_group": 27.333333333333332,
+      "auc_clean": 88.83,
+      "auc_clean_ci95": [
+        87.22,
+        90.32
+      ],
+      "auc_q30": 79.14,
+      "auc_q30_ci95": [
+        76.89,
+        81.37
+      ],
+      "fake_at_real90_q30": 42.0,
+      "fake_at_real90_q30_ci95": [
+        36.8,
+        49.02
+      ],
+      "ece_q30_frozen_temperature_pct": 11.82,
+      "partition": {
+        "split": "evaluation",
+        "evaluation_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+        "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+        "calibration_sha256": "4ba4cf620b5b85c2534591be9391a70853845d4c0defedabee8c3aac59be8854",
+        "n": 1600
+      }
+    }
+  },
+  "worst_group_descriptive_contrasts": {
+    "guard": {
+      "delta_pp": -8.666666666666671,
+      "ci95": null,
+      "verdict": "Chưa đủ bằng chứng: delta mô tả, chưa có CI của chênh lệch."
+    },
+    "feature": {
+      "delta_pp": 3.3333333333333286,
+      "ci95": null,
+      "verdict": "Chưa đủ bằng chứng: delta mô tả, chưa có CI của chênh lệch."
+    },
+    "interaction_2x2": {
+      "delta_pp": -2.0,
+      "ci95": null,
+      "verdict": "Chưa đủ bằng chứng: delta mô tả, chưa có CI của chênh lệch."
+    },
+    "full_over_best_single": {
+      "delta_pp": -10.666666666666668,
+      "ci95": null,
+      "verdict": "Chưa đủ bằng chứng: delta mô tả, chưa có CI của chênh lệch."
+    }
+  },
+  "paired_cfe_contrast_ci95": {
+    "auc_clean": {
+      "guard": [
+        -0.4911406250000024,
+        0.7533867187500003
+      ],
+      "feature": [
+        -1.2188417968750123,
+        0.49029296875000017
+      ],
+      "interaction_2x2": [
+        -1.0634531250000063,
+        0.8114199218749891
+      ],
+      "full_over_best_single": [
+        -0.7512695312500078,
+        -0.28866406250001936
+      ]
+    },
+    "fake_at_real90_clean": {
+      "guard": [
+        -1.0,
+        5.628124999999997
+      ],
+      "feature": [
+        -4.75,
+        3.75
+      ],
+      "interaction_2x2": [
+        -6.253125,
+        3.125
+      ],
+      "full_over_best_single": [
+        -4.75,
+        0.0
+      ]
+    },
+    "auc_q30": {
+      "guard": [
+        -1.1819726562500015,
+        0.8984843750000104
+      ],
+      "feature": [
+        -1.6991035156249819,
+        1.004152343750005
+      ],
+      "interaction_2x2": [
+        -0.9863281249999709,
+        2.016289062499997
+      ],
+      "full_over_best_single": [
+        -0.7498027343750128,
+        0.4289082031249972
+      ]
+    },
+    "fake_at_real90_q30": {
+      "guard": [
+        -5.628125,
+        4.125
+      ],
+      "feature": [
+        -6.875,
+        5.75
+      ],
+      "interaction_2x2": [
+        -5.875,
+        8.628124999999997
+      ],
+      "full_over_best_single": [
+        -4.125,
+        3.003124999999997
+      ]
+    }
+  },
+  "bootstrap": {
+    "n": 1000,
+    "seed": 42,
+    "unit": "stratified images, paired across models",
+    "limitation": "Conditional on training seed 42; excludes variation across training seeds."
+  },
+  "primary_driver": null,
+  "summary": "Chưa kết luận loss đóng góp nhiều nhất trên worst_group: thiếu CI độc lập của chỉ số selection. Cả bốn run dùng dữ liệu v2 nên không tách được đóng góp riêng của dữ liệu."
+}

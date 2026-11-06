@@ -1,0 +1,7 @@
+epoch,clean_r,clean_f,q30_r,q30_f,worst,best_effort,threshold,temperature,calibration_source,n_eval_clean,n_eval_q30,q30_source
+0,0.9101694915254237,0.45510204081632655,1.0,0.0,0.0,False,0.9127,1.6402,/content/ablation_v2_fixed_runtime/original_partition/baseline.json,1080,300,in_memory_jpeg30_post_resize
+1,0.9677966101694915,0.42244897959183675,0.9866666666666667,0.03333333333333333,0.03333333333333333,False,0.9127,1.6402,/content/ablation_v2_fixed_runtime/original_partition/baseline.json,1080,300,in_memory_jpeg30_post_resize
+2,0.976271186440678,0.49387755102040815,0.9733333333333334,0.1,0.1,False,0.9127,1.6402,/content/ablation_v2_fixed_runtime/original_partition/baseline.json,1080,300,in_memory_jpeg30_post_resize
+3,0.9813559322033898,0.5918367346938775,0.9666666666666667,0.29333333333333333,0.29333333333333333,False,0.9127,1.6402,/content/ablation_v2_fixed_runtime/original_partition/baseline.json,1080,300,in_memory_jpeg30_post_resize
+4,0.9847457627118644,0.5918367346938775,0.9733333333333334,0.38,0.38,False,0.9127,1.6402,/content/ablation_v2_fixed_runtime/original_partition/baseline.json,1080,300,in_memory_jpeg30_post_resize
+5,0.988135593220339,0.5551020408163265,0.9733333333333334,0.3,0.3,False,0.9127,1.6402,/content/ablation_v2_fixed_runtime/original_partition/baseline.json,1080,300,in_memory_jpeg30_post_resize

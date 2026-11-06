@@ -1,0 +1,7 @@
+{
+  "train_archive_sha256": "16e5952892035ea0058cc6e996be191c43f6b3af608a6c92fb0a75ebc0a78dff",
+  "cfe_archive_sha256": "159b47e501686295be8f0edf879fb1a3070a0cf5b85c8157b0abd6bd5744f059",
+  "calibration_sha256": "4ba4cf620b5b85c2534591be9391a70853845d4c0defedabee8c3aac59be8854",
+  "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+  "evaluation_split_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9"
+}

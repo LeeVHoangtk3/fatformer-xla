@@ -1,0 +1,48 @@
+{
+  "schema": "phase7-preflight/v2",
+  "mode": "train",
+  "ready_to_train": true,
+  "created_at_utc": "2026-11-06T18:23:19.948178+00:00",
+  "config": "/content/ablation_v2_fixed_runtime/ablation_v2_fixed_run1/a1_data/run_config.yaml",
+  "config_sha256": "1d2a15a45c82194edb6aff0c4d46e66fd6f9949d72787ea91fa47ce6169b6f82",
+  "data_root": "/content/ablation_v2_fixed_runtime/data",
+  "source_sha256": "c3e651bf1068a26fbb2058faabe3e6456f0a3e870408ec31def0b4fdcfbd2d2c",
+  "preflight_tool_sha256": "505f180a8a7bdfeebed8912f402a75a4b61a8bff4c72c39d452bd56e0d44d778",
+  "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+  "torch": "2.14.1+cu130",
+  "cuda_runtime": "13.0",
+  "checks": {
+    "manifest_and_staged_images": {
+      "status": "PASS",
+      "message": "14400 staged images decoded and matched manifest SHA256"
+    },
+    "bound_isolation_audit": {
+      "status": "PASS",
+      "message": "Passing audit bound to exact manifest and original data config; external reference digests recorded"
+    },
+    "degradation_and_calibration": {
+      "status": "PASS",
+      "message": "v2 clean_prob=.60; manifest val_select; measured frozen calibration is valid"
+    },
+    "loss_tests": {
+      "status": "PASS",
+      "message": "..........................                                               [100%]\n26 passed in 6.07s"
+    },
+    "selection_tests": {
+      "status": "PASS",
+      "message": "...............................                                          [100%]\n31 passed in 11.02s"
+    },
+    "baseline_canonical": {
+      "status": "PASS",
+      "message": "Strict canonical load 0/0; baseline_sha256=3b904401ad4ce7d0bc33661e83742ec4b659850c076b73cd544e87e26d8cb3db"
+    },
+    "split_path_and_hash_isolation": {
+      "status": "PASS",
+      "message": "{'train': 12240, 'val_calib': 1080, 'val_select': 1080}; disjoint paths and SHA256"
+    },
+    "gpu_14_gib_free": {
+      "status": "PASS",
+      "message": "NVIDIA A100-SXM4-40GB: 38.66 GiB free"
+    }
+  }
+}
