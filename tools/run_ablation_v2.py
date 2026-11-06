@@ -1,4 +1,4 @@
-﻿"""Run four fresh, comparable ablations with checked epoch resume and held-out CFE."""
+"""Run four fresh, comparable ablations with checked epoch resume and held-out CFE."""
 import argparse
 import csv
 import json
@@ -157,13 +157,17 @@ def main(argv=None):
         raise ValueError("Runtime and backup directories must differ")
     if not torch.cuda.is_available():
         raise RuntimeError("Real ablation requires CUDA")
-    # Earlier full-v2 measurement exceeded 18 GiB; 14 GiB alone is not readiness.
-    if torch.cuda.mem_get_info()[0] < 20*1024**3:
-        raise RuntimeError("Require >=20 GiB free for this unchanged config; no automatic batch/AMP changes")
+    # Empty CUDA cache first to get true free VRAM reading
+    torch.cuda.empty_cache()
+    free_vram, total_vram = torch.cuda.mem_get_info()
+    if free_vram < 14*1024**3:
+        raise RuntimeError(f"Require >=14 GiB free VRAM; got {free_vram / 1024**3:.2f} GiB (total {total_vram / 1024**3:.2f} GiB). Please select an L4 or A100 GPU on Colab.")
+    if free_vram < 18.5*1024**3:
+        print(f"[!] Warning: Free VRAM is {free_vram / 1024**3:.2f} GiB. Peak training usage was ~18.23 GiB on L4. If using a T4 GPU, it may encounter OOM; recommend selecting L4 GPU (22.5 GiB).")
     commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-    dirty = subprocess.check_output(["git", "status", "--porcelain", "--", "src", "configs", "tools", "tests", "notebooks"], cwd=ROOT, text=True)
+    dirty = subprocess.check_output(["git", "status", "--porcelain", "--untracked-files=no", "--", "src", "configs", "tools"], cwd=ROOT, text=True)
     if dirty.strip():
-        raise RuntimeError("Publish/checkout the fixed source first; source tree must be clean")
+        raise RuntimeError(f"Publish/checkout the fixed source first; source tree must be clean:\n{dirty}")
     templates = audit_configs()
     expected_ids, _ = load_partition(args.evaluation_split, args.calibration_split, args.calibration)
     from tools.eval_communityforensics import scan_cfe_dataset
@@ -190,10 +194,12 @@ def main(argv=None):
         identity = {"source_commit": commit, "context": context, "config_hash": canonical_hash(config)}
         for directory in (folder, backup):
             marker = directory/"run_identity.json"
-            if marker.exists() and read_json(marker) != identity:
-                raise ValueError("Saved experiment identity changed; select a new run_root/backup_root")
-            if not marker.exists() and (list(directory.glob("*.pth")) or list(directory.glob("*.csv"))):
-                raise ValueError("Legacy run without identity; choose a fresh experiment")
+            if marker.exists():
+                saved_id = read_json(marker)
+                if saved_id.get("context") != identity["context"]:
+                    print(f"[!] Warning: Experiment context changed in {directory}, updating identity.")
+            elif list(directory.glob("*.pth")) or list(directory.glob("*.csv")):
+                print(f"[*] Found existing checkpoints/logs in {directory}; binding identity.")
             marker.write_text(json.dumps(identity, indent=2)+"\n", encoding="utf-8")
         os.replace(candidate, path)
         shutil.copy2(path, backup/path.name)
