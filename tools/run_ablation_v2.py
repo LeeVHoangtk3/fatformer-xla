@@ -241,4 +241,13 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        import traceback
+        print("\n" + "="*80, flush=True)
+        print(f"[FATAL ERROR IN RUN_ABLATION_V2]: {e}", flush=True)
+        print("="*80, flush=True)
+        traceback.print_exc(file=sys.stdout)
+        sys.stdout.flush()
+        sys.exit(1)

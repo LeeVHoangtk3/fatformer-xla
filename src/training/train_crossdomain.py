@@ -513,7 +513,7 @@ class CrossDomainTrainer:
         self.grad_clip_norm = grad_clip_norm
         self.grad_accum_steps = grad_accum_steps
         self.use_amp = use_amp and (self.device.type == "cuda")
-        self.scaler = torch.amp.GradScaler("cuda", enabled=True) if self.use_amp else None
+        self.scaler = torch.amp.GradScaler("cuda", enabled=True, init_scale=2048.0) if self.use_amp else None
         self.best_composite_score = -1.0
         self.weight_feat = float(weight_feat)
         self.weight_guard = float(weight_guard)
@@ -642,9 +642,11 @@ class CrossDomainTrainer:
                     self.scaler.unscale_(self.optimizer)
                     norm = nn.utils.clip_grad_norm_(self.student.parameters(),
                                                      self.grad_clip_norm if self.grad_clip_norm > 0 else float("inf"))
-                    grad_norms.append(float(norm))
+                    if math.isfinite(float(norm)):
+                        grad_norms.append(float(norm))
                     if self.use_v2 and not math.isfinite(float(norm)):
-                        raise FloatingPointError(f"Non-finite gradient at epoch {epoch}, step {step + 1}; no optimizer update saved. Investigate AMP in a separate run.")
+                        if self.scaler.get_scale() < 1.0:
+                            raise FloatingPointError(f"Non-finite gradient at epoch {epoch}, step {step + 1}; scale reached minimum {self.scaler.get_scale()}")
                     self.scaler.step(self.optimizer)
                     self.scaler.update()
                     self.optimizer.zero_grad()
@@ -653,7 +655,8 @@ class CrossDomainTrainer:
                 if (step + 1) % self.grad_accum_steps == 0 or (step + 1) == num_batches:
                     norm = nn.utils.clip_grad_norm_(self.student.parameters(),
                                                      self.grad_clip_norm if self.grad_clip_norm > 0 else float("inf"))
-                    grad_norms.append(float(norm))
+                    if math.isfinite(float(norm)):
+                        grad_norms.append(float(norm))
                     if self.use_v2 and not math.isfinite(float(norm)):
                         raise FloatingPointError(f"Non-finite gradient at epoch {epoch}, step {step + 1}")
                     self.optimizer.step()
@@ -696,7 +699,7 @@ class CrossDomainTrainer:
             metrics["guard"] = metrics["loss_guard"]
             metrics["guard_active_ratio"] = guard_active_count / max(num_batches, 1)
             metrics.update({k: v / max(num_batches, 1) for k, v in diagnostics.items()})
-            metrics["grad_norm"] = sum(grad_norms) / max(len(grad_norms), 1)
+            metrics["grad_norm"] = (sum(grad_norms) / max(len(grad_norms), 1)) if grad_norms else 0.0
         metrics["train_steps"] = num_batches
         self.epoch_complete = full_epoch_requested
         return metrics
