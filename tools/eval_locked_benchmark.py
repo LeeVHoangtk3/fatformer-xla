@@ -391,13 +391,12 @@ def compute_bootstrap_ci(
     return res
 
 
-def build_locked_model(checkpoint_path: str, clip_path: str, device: torch.device, is_dummy: bool = False):
+def build_locked_model(checkpoint_path: str, clip_path: str, device: torch.device, is_dummy: bool = False, use_canonical: bool = True):
     """Khoi tao mo hinh voi trong so da rut gon weights_only.pth hoac fatformer_wise_ft_best.pth."""
     if is_dummy:
         print("[*] Khoi tao DummyBackbone cho che do kiem thu...")
         return DummyBackbone(num_classes=2).to(device)
 
-    from src.models import build_model
     model_args = SimpleNamespace(
         backbone="CLIP:ViT-L/14",
         clip_path=clip_path,
@@ -408,6 +407,20 @@ def build_locked_model(checkpoint_path: str, clip_path: str, device: torch.devic
         num_vit_adapter=3,
         num_context_embedding=8,
     )
+
+    if use_canonical and checkpoint_path and os.path.exists(checkpoint_path):
+        try:
+            from src.models.canonical_loader import load_canonical
+            print(f"[*] Dang nap checkpoint theo chuan Canonical Loader (strict=True): {checkpoint_path}")
+            model, load_report = load_canonical(checkpoint_path, model_args)
+            print(f"[✓] Nap Canonical Loader thanh cong: layout={load_report.get('layout')}, missing={load_report.get('missing')}, unexpected={load_report.get('unexpected')}")
+            model = model.to(device)
+            model.eval()
+            return model
+        except Exception as e:
+            print(f"[!] Loi khi nap qua Canonical Loader ({e}). Chuyen sang fallback.")
+
+    from src.models import build_model
     print(f"[*] Dang khoi dung kien truc FatFormer-XLA (SRM 3-Kernels + Gating)...")
     model = build_model(model_args)
 
@@ -553,6 +566,10 @@ def main():
     parser.add_argument("--samples_per_independent_subset", "--samples_per_heldout_subset", type=int, default=500,
                         help="So mau toi da moi subset held-out (0 la lay het)")
     # Runtime & Output
+    parser.add_argument("--calibration", type=str, default=None,
+                        help="Tep JSON hieu chuan Phase 7 (logs/phase7/calibration/*.json)")
+    parser.add_argument("--no_canonical", action="store_true", help="Bo qua canonical loader, dung CheckpointManager cu")
+    parser.add_argument("--export_phase7", action="store_true", default=True, help="Xuat bao cao indist_phase7.json chuan Phase 7 schema v3")
     parser.add_argument("--output_dir", type=str, default="DATASET/logs")
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--num_workers", type=int, default=0)
@@ -577,7 +594,20 @@ def main():
         args.output_dir = os.path.join(args.output_dir, "task_6.6_r", run_tag)
         print(f"[*] Kich hoat Versioned Output: {args.output_dir}")
 
-    th_m1 = args.threshold_mode1 if args.threshold_mode1 is not None else args.threshold
+    if args.calibration and os.path.exists(args.calibration):
+        print(f"[*] Dang nap tham so hieu chuan Phase 7 tu: {args.calibration}")
+        with open(args.calibration, "r", encoding="utf-8") as f:
+            calib_data = json.load(f)
+        args.temperature = float(calib_data.get("T", args.temperature))
+        t_star = calib_data.get("T_star_default", calib_data.get("T_star"))
+        if isinstance(t_star, dict):
+            t_star = t_star.get("0.05", t_star.get("0.050", 0.9127))
+        th_m1 = float(t_star)
+        args.threshold = float(t_star)
+        args.threshold_mode1 = float(t_star)
+        print(f"[✓] Da nap Phase 7 Calibration: T = {args.temperature:.4f}, T* (FPR<=5%) = {th_m1:.4f}")
+    else:
+        th_m1 = args.threshold_mode1 if args.threshold_mode1 is not None else args.threshold
     th_m2 = args.threshold_mode2 if args.dual_mode else None
 
     print("=" * 96)
@@ -608,7 +638,7 @@ def main():
         "DATASET/pretrained/ViT-L-14.pt",
     ])
 
-    model = build_locked_model(resolved_ckpt, resolved_clip, device, is_dummy=args.test_dummy)
+    model = build_locked_model(resolved_ckpt, resolved_clip, device, is_dummy=args.test_dummy, use_canonical=not args.no_canonical)
 
     # =========================================================================
     # CHIEU 1: DANH GIA 18 TAP TEST CLEAN
@@ -1141,6 +1171,36 @@ def main():
     with open(report_json, "w", encoding="utf-8") as f:
         json.dump(json_payload, f, indent=2, ensure_ascii=False)
     print(f"[✓] Da xuat bao cao JSON tong hop che do kep ra: {report_json}")
+
+    if args.export_phase7:
+        phase7_json = os.path.join(args.output_dir, "indist_phase7.json")
+        indist_payload = {
+            "report_schema": "v3",
+            "task": "7.14",
+            "checkpoint": {
+                "path": resolved_ckpt or "N/A",
+                "sha256": "N/A"
+            },
+            "calibration": {
+                "source": args.calibration or "default",
+                "T": args.temperature,
+                "T_star": th_m1
+            },
+            "indist": {
+                "n_total": sum(r["num_samples"] for r in clean_results),
+                "macro_acc": mean_clean_overall["macro_acc"] if mean_clean_overall else 0.0,
+                "micro_acc": clean_pooled_metrics.get("overall_acc", 0.0),
+                "real_acc": clean_pooled_metrics.get("real_acc", 0.0),
+                "fake_acc": clean_pooled_metrics.get("fake_acc", 0.0),
+                "auc": clean_pooled_metrics.get("auc", 0.0),
+                "mean_gans": mean_clean_gans,
+                "mean_diffusion": mean_clean_diff,
+                "subsets": clean_results
+            }
+        }
+        with open(phase7_json, "w", encoding="utf-8") as f:
+            json.dump(indist_payload, f, indent=2, ensure_ascii=False)
+        print(f"[✓] Da xuat bao cao Phase 7 In-Dist chuan schema v3 ra: {phase7_json}")
 
     # 5. Hien thi bang tong hop chung cuoc 2 che do
     print("\n" + "=" * 104)

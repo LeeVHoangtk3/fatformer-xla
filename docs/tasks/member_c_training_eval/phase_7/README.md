@@ -19,7 +19,7 @@
 | **7.6** | [`task_7.6_rebaseline_cfe_v3.md`](task_7.6_rebaseline_cfe_v3.md) | Re-baseline 4 cấu hình trên CFE bằng harness v3 | D4 | 3 h | **G7.1** | `[x] Nghiệm thu số đo; G7.1 FAIL` |
 | **7.11** | [`task_7.11_train_anchored_v2.md`](task_7.11_train_anchored_v2.md) | Huấn luyện Anchored Recovery v2 | D6–D7 | 5 h + GPU (kế hoạch) | **G7.2** | `[~] Có log 5 epoch; còn kiểm chứng checkpoint/gradient/GPU. G7.2 chưa kết luận.` |
 | **7.12** | [`task_7.12_ablation_mini_v2.md`](task_7.12_ablation_mini_v2.md) | Ablation Guard / Feature, bốn run mới (seed 42) | D7–D8 | 95,66 phút train+validation đã ghi; chưa gồm toàn bộ phụ trợ | **G7.2** | `[~] Có số đo bốn run A100 40GB; hậu kiểm checkpoint/logits còn mở. G7.2 chưa đạt đầy đủ theo tiêu chí hiện hành.` |
-| **7.14** | [`task_7.14_locked_benchmark_phase7.md`](task_7.14_locked_benchmark_phase7.md) | Locked Benchmark Phase 7 (in-dist 82k + CFE + 6 biến thể) | D9–D10 | 5 h | **G7.3** | `[ ] Sẵn sàng` |
+| **7.14** | [`task_7.14_locked_benchmark_phase7.md`](task_7.14_locked_benchmark_phase7.md) | Locked Benchmark Phase 7 (in-dist 82k + CFE + 6 biến thể) | D9–D10 | 5 h | **G7.3** | `[~] Đã khóa cấu hình & sẵn sàng chạy đo GPU trên Colab` |
 | **7.15** | [`task_7.15_unified_packaging.md`](task_7.15_unified_packaging.md) | Đóng gói `UnifiedFatFormerXLA` + báo cáo nghiệm thu | D11 | 4 h | **G7.3** | `[ ] Sẵn sàng` |
 | **7.16** | [`task_7.16_cap_nhat_tai_lieu_du_an.md`](task_7.16_cap_nhat_tai_lieu_du_an.md) | Cập nhật tài liệu dự án & Chương 5/Hạn chế | D10–D12 | 6 h | **G7.3** | `[ ] Sẵn sàng` |
 

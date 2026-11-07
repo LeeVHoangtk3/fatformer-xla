@@ -325,6 +325,42 @@ def compress_jpeg_q30(image: Image.Image) -> Image.Image:
     return Image.open(buf).convert("RGB")
 
 
+def apply_degradation(image: Image.Image, condition: str) -> Image.Image:
+    """Áp dụng biến thể suy biến xác định theo đặc tả Task 7.14."""
+    cond = condition.lower()
+    if cond in ["clean", "none"]:
+        return image
+    if cond in ["q30", "jpeg_q30"]:
+        return compress_jpeg_q30(image)
+    if cond in ["q50", "jpeg_q50"]:
+        buf = io.BytesIO()
+        image.convert("RGB").save(buf, format="JPEG", quality=50)
+        buf.seek(0)
+        return Image.open(buf).convert("RGB")
+    if cond in ["q75", "jpeg_q75"]:
+        buf = io.BytesIO()
+        image.convert("RGB").save(buf, format="JPEG", quality=75)
+        buf.seek(0)
+        return Image.open(buf).convert("RGB")
+    if cond in ["webp40", "webp_q40"]:
+        buf = io.BytesIO()
+        try:
+            image.convert("RGB").save(buf, format="WEBP", quality=40)
+            buf.seek(0)
+            return Image.open(buf).convert("RGB")
+        except Exception:
+            return image
+    if cond in ["blur15", "blur_s15"]:
+        from PIL import ImageFilter
+        return image.convert("RGB").filter(ImageFilter.GaussianBlur(radius=1.5))
+    if cond in ["downup05", "down_up_05"]:
+        w, h = image.size
+        low_w, low_h = max(16, int(w * 0.5)), max(16, int(h * 0.5))
+        img_down = image.convert("RGB").resize((low_w, low_h), Image.BILINEAR)
+        return img_down.resize((w, h), Image.BILINEAR)
+    raise ValueError(f"Biến thể suy biến không được hỗ trợ: {condition}")
+
+
 def compute_jpeg_blockiness(pil_img: Image.Image) -> float:
     """Đo chỉ số nhiễu khối lưới DCT 8x8 B(x) không tham chiếu."""
     arr = np.asarray(pil_img.convert("L"), dtype=np.float32)
@@ -386,13 +422,13 @@ class CommunityForensicsDataset(Dataset):
             print(f"  [!] Cảnh báo đọc file lỗi ({file_path}): {e}")
             img = Image.new("RGB", (224, 224), color=(128, 128, 128))
 
-        if self.condition in ["q30", "jpeg_q30"]:
+        if self.condition not in ["clean", "none"]:
             if self.degrade_order == "pre_resize":
-                img = compress_jpeg_q30(img)
+                img = apply_degradation(img, self.condition)
                 img = self.spatial_crop(img)
             else:  # post_resize (Mặc định)
                 img = self.spatial_crop(img)
-                img = compress_jpeg_q30(img)
+                img = apply_degradation(img, self.condition)
         else:
             img = self.spatial_crop(img)
 
@@ -711,8 +747,8 @@ def parse_args():
     parser.add_argument("--model_name", type=str, default=None,
                         help="Tên định danh mô hình cho tệp đầu ra (mặc định lấy theo model_type)")
     parser.add_argument("--condition", type=str, default="clean",
-                        choices=["clean", "q30", "jpeg_q30", "all"],
-                        help="Điều kiện ảnh: clean, q30, hoặc all (cả clean và q30)")
+                        choices=["clean", "q30", "jpeg_q30", "q50", "q75", "webp40", "blur15", "downup05", "all", "all_variants"],
+                        help="Điều kiện ảnh: clean, q30, q50, q75, webp40, blur15, downup05, all, all_variants")
     parser.add_argument("--save_logits_npz", action="store_true", default=True,
                         help="Tự động xuất tệp NPZ chứa logits [N,2] và targets [N]")
     parser.add_argument("--no_save_logits_npz", dest="save_logits_npz", action="store_false")
@@ -835,17 +871,19 @@ def main():
     # Xác định danh sách điều kiện cần đánh giá
     if args.condition == "all":
         conditions_to_run = ["clean", "q30"]
+    elif args.condition == "all_variants":
+        conditions_to_run = ["q75", "q50", "q30", "webp40", "blur15", "downup05"]
     elif args.condition in ["q30", "jpeg_q30"]:
         conditions_to_run = ["q30"]
     else:
-        conditions_to_run = ["clean"]
+        conditions_to_run = [args.condition]
 
     os.makedirs(args.output_dir, exist_ok=True)
     cond_overall_metrics: Dict[str, Dict[str, Any]] = {}
     all_results_for_md: Dict[str, Dict[str, Any]] = {}
 
     for cond in conditions_to_run:
-        cond_label = "ẢNH SẠCH (CLEAN CFE)" if cond == "clean" else f"NÉN JPEG Q=30 ({cond.upper()})"
+        cond_label = f"BIẾN THỂ SUY BIẾN: {cond.upper()}" if cond != "clean" else "ẢNH SẠCH (CLEAN CFE)"
         print("\n" + "=" * 88)
         print(f"BẮT ĐẦU ĐÁNH GIÁ ĐIỀU KIỆN: {cond_label} — {total_scanned} ẢNH")
         print("=" * 88)
