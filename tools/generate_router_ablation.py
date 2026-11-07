@@ -9,6 +9,7 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.models.degradation_router import DegradationRouter
+from src.models.unified_fatformer import validate_router_report
 from src.training.runtime_state import sha256_file
 from tools.fit_router import fpr_threshold, probabilities
 from tools.router_data import SUBSETS, load_cache, params_digest
@@ -38,7 +39,8 @@ def compare_subset(data, scores, subset, n_boot, rng):
         ix = np.concatenate([row_map[sid] for sid in sampled])
         for name in scores:
             draws[name].append(fake90(p[name][ix], y[ix]))
-    result = dict(n_source_images=len(unique), n_views=len(y))
+    result = dict(n_source_images=len(unique), n_views=len(y),
+                  n_real_source_images=len(real), n_fake_source_images=len(fake))
     for name in scores:
         result[name] = dict(fake_at_real90=fake90(p[name], y),
                             ci95=np.percentile(draws[name], [2.5, 97.5]).tolist(),
@@ -91,14 +93,19 @@ def generate_router_ablation(cache_path, params_path, output_dir, n_boot=1000, s
     report = dict(schema="router_ablation/v2", evidence_level="measured", status="evaluated",
                   params_digest=params_digest(params), params_file_sha256=sha256_file(params_path),
                   evaluation_cache_sha256=sha256_file(cache_path), checkpoint_sha256=meta["checkpoint_sha256"],
+                  calibration_cache_sha256=params["source"]["cache_sha256"],
+                  evaluation_split_sha256=meta["source"]["evaluation_split_sha256"],
+                  preprocess=meta["preprocess"], branch_design=meta["branch_design"],
                   protocol="Primary: pooled equal clean/Q30 views per subset; paired source-image bootstrap within labels",
                   oracle_note="Condition oracle (clean->clean calibration, Q30->forensic); not deployable, not a guaranteed mathematical upper bound",
                   metric_note="Fake@Real90 uses held-out ROC scores; deployed decisions use only val_calib thresholds",
-                  bootstrap=dict(n=n_boot, seed=seed, unit="source image, both views retained", paired=True),
+                  bootstrap=dict(n=n_boot, seed=seed, unit="source image, both views retained", paired=True,
+                                 strata="real_fake_source_images", confidence_level=.95),
                   subsets=subsets, deployed=deployed,
                   verdict=dict(wins=wins, total_subsets=5, ci_separated=separated,
                                criteria_met=won, fallback_required=not won),
                   gate_eligible=False, gate_note="Router comparison only; G7.3 packaging and latency remain separate")
+    validate_router_report(params, report)
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
     (output/"router_ablation.json").write_text(json.dumps(report, indent=2, allow_nan=False)+"\n", encoding="utf-8")

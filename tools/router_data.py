@@ -11,11 +11,11 @@ from torchvision import transforms
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.models.degradation_router import DegradationRouter, forward_with_gating
+from src.models.unified_fatformer import CFE_SUBSETS, is_sha256_digest
 from src.training.runtime_state import sha256_file
 
 FEATURES = ["blockiness", "log1p_lapvar", "lambda_bar"]
-SUBSETS = ["1_commercial", "2_latent_diffusion", "3_pixel_diffusion",
-           "4_modern_gans", "5_other_autoregressive"]
+SUBSETS = list(CFE_SUBSETS)
 PREPROCESS = "resize224_bicubic_centercrop224_jpeg30_post_resize_clip_normalize/v1"
 
 
@@ -30,8 +30,13 @@ def load_cache(path, split):
         meta = json.loads(str(archive["metadata"]))
     if (meta.get("schema") != "router-data/v2" or meta.get("evidence_level") != "measured"
             or meta.get("split") != split or meta.get("features") != FEATURES
-            or meta.get("preprocess") != PREPROCESS):
+            or meta.get("preprocess") != PREPROCESS
+            or meta.get("branch_design") != "single_logits_condition_temperature"):
         raise ValueError("Require measured router-data/v2 with correct split/features/preprocess")
+    source_key = "manifest_sha256" if split == "val_calib" else "evaluation_split_sha256"
+    source = meta.get("source")
+    if not isinstance(source, dict) or not is_sha256_digest(source.get(source_key)):
+        raise ValueError("Missing manifest/frozen evaluation partition fingerprint")
     n = len(data["targets"])
     if n == 0 or data["features"].shape != (n, 3) or data["logits"].shape != (n, 2):
         raise ValueError("Invalid feature/logit shapes")

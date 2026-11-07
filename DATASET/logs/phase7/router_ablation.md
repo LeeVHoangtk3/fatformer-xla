@@ -1,9 +1,13 @@
-# Task 7.13 — Chốt phương án triển khai Calibrated Fixed Fallback
+# Task 7.13 — code đã kiểm thử, thực nghiệm router hoãn
 
-Trạng thái: `deployed_calibrated_fixed_fallback`; evidence: `code_verified_71_tests`; `router_disabled`.
+Trạng thái ablation: `awaiting_measured_evaluation`; evidence: `unverified`; router chưa có bằng chứng thắng.
 
-Quyết định phạm vi: Nhằm ưu tiên đường găng dự án (tiến thẳng tới Task 7.14 Locked Benchmark), đội ngũ kỹ thuật thống nhất chọn phương án triển khai Fixed Fallback hiệu chuẩn; hạng mục đo thật Router được hoãn/thu hẹp phạm vi.
+Lựa chọn triển khai: calibrated fixed fallback. Chưa xác minh deployment hoặc đóng gói trên checkpoint v2; fallback cần calibration đo thật đúng checkpoint. FPR <=5% là ràng buộc thực nghiệm trên calibration, không bảo đảm evaluation/production.
 
-Hệ thống hoạt động an toàn ở chế độ Calibrated Fixed Fallback theo khế ước `UnifiedFatFormerXLA`, sử dụng nhiệt độ và ngưỡng FPR<=5% đã được đo lường chính xác từ checkpoint tương ứng.
+Kết quả cũ tại commit 13749f6 bị hủy vì sinh tín hiệu giả lập và nội suy ablation/CI. Chia sẻ logits không chứng minh router không thể đổi ranking; chưa kết luận thắng hoặc thua khi chưa đo.
 
-[Chi tiết báo cáo và kiểm thử](../../../docs/bao_cao/B/bao_cao_task_7.13_degradation_router.md).
+Wrapper yêu cầu report đủ năm subset, metric/CI/count và fingerprint nguồn, tính lại verdict; report thiếu hoặc mâu thuẫn không bật router. Đây là kiểm tra hash/tính nhất quán, không phải chữ ký số hay xác minh độc lập số đo.
+
+Implementation đã kiểm thử không thay thế ablation đo thật hoặc nghiệm thu Task 7.15/G7.3. Marker JSON tương ứng tiếp tục ghi unverified, không chứa số đo thay thế.
+
+[Báo cáo và giới hạn](../../../docs/bao_cao/B/bao_cao_task_7.13_degradation_router.md).

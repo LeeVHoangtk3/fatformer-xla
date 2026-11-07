@@ -14,17 +14,114 @@ from torch import nn
 from .degradation_router import DegradationRouter, forward_with_gating
 from .gating import DynamicFrequencyGating
 
+CFE_SUBSETS = ("1_commercial", "2_latent_diffusion", "3_pixel_diffusion",
+               "4_modern_gans", "5_other_autoregressive")
+
+
+def is_sha256_digest(value):
+    return isinstance(value, str) and len(value) == 64 and all(c in "0123456789abcdef" for c in value)
+
+
+def _number(value, lower, upper):
+    if type(value) not in (int, float) or not math.isfinite(value) or not lower <= value <= upper:
+        raise ValueError("Invalid finite report metric")
+    return value
+
+
+def _count(value, minimum=0):
+    if type(value) is not int or value < minimum:
+        raise ValueError("Invalid report count")
+    return value
+
+
+def _interval(value, lower, upper):
+    if not isinstance(value, (list, tuple)) or len(value) != 2:
+        raise ValueError("Invalid confidence interval")
+    lo, hi = (_number(v, lower, upper) for v in value)
+    if lo > hi:
+        raise ValueError("Reversed confidence interval")
+    return lo, hi
+
+
+def validate_router_report(params, proof):
+    """Validate a complete report and recompute its verdict from all five subsets.
+
+    Hashes bind referenced artifacts and parameters; they are not digital signatures
+    or independent verification that the underlying measurements are genuine.
+    Runtime does not reopen evaluation data or rerun bootstrap.
+    """
+    if not isinstance(params, dict) or not isinstance(proof, dict):
+        raise ValueError("Router parameters and report must be objects")
+    if (params.get("schema") != "degradation_router/v2" or params.get("status") != "fitted"
+            or params.get("evidence_level") != "measured"
+            or proof.get("schema") != "router_ablation/v2" or proof.get("status") != "evaluated"
+            or proof.get("evidence_level") != "measured"):
+        raise ValueError("Require fitted parameters and an evaluated measured report")
+    digest = hashlib.sha256(json.dumps(params, sort_keys=True, allow_nan=False).encode()).hexdigest()
+    if proof.get("params_digest") != digest:
+        raise ValueError("Report does not match router parameters")
+    source = params["source"]
+    for report_key, expected in (("checkpoint_sha256", source["checkpoint_sha256"]),
+                                 ("calibration_cache_sha256", source["cache_sha256"])):
+        if not is_sha256_digest(expected) or proof.get(report_key) != expected:
+            raise ValueError("Report checkpoint/calibration fingerprint mismatch")
+    for key in ("params_file_sha256", "evaluation_cache_sha256", "evaluation_split_sha256"):
+        if not is_sha256_digest(proof.get(key)):
+            raise ValueError("Missing artifact fingerprint")
+    if (proof.get("preprocess") != params["preprocess"]
+            or proof.get("branch_design") != params["branch_design"]):
+        raise ValueError("Report preprocessing/branch design mismatch")
+    bootstrap = proof["bootstrap"]
+    _count(bootstrap["n"], 1000)
+    _count(bootstrap["seed"])
+    if (bootstrap.get("paired") is not True
+            or bootstrap.get("unit") != "source image, both views retained"
+            or bootstrap.get("strata") != "real_fake_source_images"
+            or _number(bootstrap.get("confidence_level"), 0, 1) != .95):
+        raise ValueError("Wrong bootstrap protocol")
+    subsets = proof["subsets"]
+    if not isinstance(subsets, dict) or set(subsets) != set(CFE_SUBSETS):
+        raise ValueError("Report must contain exactly five CFE subsets")
+    wins = separated = 0
+    for row in subsets.values():
+        n = _count(row["n_source_images"], 2)
+        if (_count(row["n_views"], 4) != 2*n
+                or _count(row["n_real_source_images"], 1) + _count(row["n_fake_source_images"], 1) != n):
+            raise ValueError("Inconsistent paired-view sample counts")
+        for name in ("fixed", "router", "oracle"):
+            result = row[name]
+            _number(result["fake_at_real90"], 0, 100)
+            _interval(result["ci95"], 0, 100)
+            if set(result["by_condition"]) != {"clean", "q30"}:
+                raise ValueError("Missing condition metrics")
+            for value in result["by_condition"].values():
+                _number(value, 0, 100)
+        delta = row["router"]["fake_at_real90"] - row["fixed"]["fake_at_real90"]
+        if not math.isclose(_number(row["delta_pp"], -100, 100), delta, rel_tol=0, abs_tol=1e-8):
+            raise ValueError("Declared delta differs from measured scores")
+        _interval(row["delta_ci95"], -100, 100)
+        win = delta >= 1.
+        above = row["router"]["ci95"][0] > row["fixed"]["ci95"][1]
+        if row["win"] is not win or row["router_ci_above_fixed"] is not above:
+            raise ValueError("Subset flags differ from scores/confidence intervals")
+        wins += win
+        separated += above
+    won = wins >= 3 and separated >= 2
+    verdict = proof["verdict"]
+    if (any(_count(verdict[key]) != value for key, value in
+            (("wins", wins), ("ci_separated", separated), ("total_subsets", 5)))
+            or verdict["criteria_met"] is not won or verdict["fallback_required"] is not (not won)):
+        raise ValueError("Declared verdict differs from recomputed five-subset verdict")
+    return dict(wins=wins, total_subsets=5, ci_separated=separated,
+                criteria_met=won, fallback_required=not won)
+
 
 def router_is_approved(params, proof):
-    digest = hashlib.sha256(json.dumps(params, sort_keys=True, allow_nan=False).encode()).hexdigest()
-    return bool(proof and proof.get("schema") == "router_ablation/v2"
-                and proof.get("evidence_level") == "measured"
-                and proof.get("params_digest") == digest
-                and proof.get("checkpoint_sha256") == params["source"]["checkpoint_sha256"]
-                and proof.get("bootstrap", {}).get("n", 0) >= 1000
-                and proof.get("verdict", {}).get("criteria_met") is True
-                and proof["verdict"].get("wins", 0) >= 3
-                and proof["verdict"].get("ci_separated", 0) >= 2)
+    try:
+        return validate_router_report(params, proof)["criteria_met"]
+    except (KeyError, TypeError, ValueError, OverflowError, AttributeError):
+        # A partial/malformed report never enables routing; calibrated fixed fallback remains available.
+        return False
 
 
 class UnifiedFatFormerXLA(nn.Module):

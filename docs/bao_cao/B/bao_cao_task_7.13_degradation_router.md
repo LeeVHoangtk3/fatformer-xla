@@ -1,6 +1,6 @@
 # Task 7.13 — hậu kiểm và sửa DegradationRouter
 
-Ngày cập nhật: 2026-11-08. Trạng thái: **đã nghiệm thu implementation & chốt Calibrated Fixed Fallback (hoãn đo thật để ưu tiên đường găng Task 7.14)**.
+Ngày cập nhật: 2026-11-08. Trạng thái: **code đã kiểm thử; chọn calibrated fixed fallback; hoãn thực nghiệm router; chưa nghiệm thu toàn bộ Task 7.13 hoặc đóng gói Task 7.15**.
 
 ## 1. Hủy bằng chứng không hợp lệ
 
@@ -13,7 +13,7 @@ Chưa xác định router thắng hoặc thua. Không dùng các số cũ để 
 - [router_data.py](../../../tools/router_data.py): đọc ảnh thật, kiểm tra SHA-256, resize/crop 224 và tạo clean/Q30 post-resize. Một forward mỗi view lấy logits và hook DynamicFrequencyGating. Trung bình qua adapter, không qua batch; dọn hook trong finally. Ảnh thiếu/lỗi hoặc không có gating làm collector dừng, không thay bằng ảnh giả hay lambda=1.
 - [degradation_router.py](../../../src/models/degradation_router.py): blockiness, log1p Laplacian variance và lambda thật; tra ngưỡng theo ảnh; fallback riêng cho mẫu có tín hiệu lỗi. Thiếu lambda không được xem là tín hiệu hằng. state_dict giữ cả intercept, ngưỡng và chế độ fallback.
 - [fit_router.py](../../../tools/fit_router.py): chỉ nhận cache measured val_calib; scaler và logistic; 5-fold CV nhóm theo hash ảnh gốc để clean/Q30 cùng ảnh không lọt qua hai fold. AUC lưu theo thang 0–1. Có histogram w và AUC từng tín hiệu; AUC dưới 0.5 có thể biểu thị tương quan ngược.
-- Fit ngưỡng trên Real calibration tại FPR <=5%, comparator >= và float32 như suy luận. Bin theo quantile w; gộp bin dưới 50 Real views và ghi log. Tổng Real views dưới 50 thì dừng. Không làm tròn ngưỡng; ties bảo thủ; có thể dùng ngưỡng lớn hơn 1 một ULP để từ chối score bão hòa.
+- Fit ngưỡng để FPR thực nghiệm trên Real calibration <=5%, comparator >= và float32 như suy luận. Đây không phải bảo đảm FPR trên evaluation/production; cần đo riêng sau khi khóa ngưỡng. Tạo tối đa ba bin theo quantile w; có thể gộp còn hai hoặc một bin nếu dưới 50 Real views. Tổng Real views dưới 50 thì dừng. Không làm tròn ngưỡng; ties bảo thủ; có thể dùng ngưỡng lớn hơn 1 một ULP để từ chối score bão hòa.
 - [unified_fatformer.py](../../../src/models/unified_fatformer.py): một backbone, một forward. Clean/forensic **chia sẻ logits**, khác temperature fit riêng trên clean/Q30 cùng checkpoint. Không có hai nhánh feature độc lập, chưa khẳng định thiết kế có lợi. Fixed branch chọn bằng fake recall tại FPR5 trên pooled val_calib; hòa chọn clean. Oracle có ngưỡng riêng fit theo condition.
 - [generate_router_ablation.py](../../../tools/generate_router_ablation.py): đọc evaluation cùng checkpoint/preprocess; từ chối hash ảnh giao calibration; so sánh fixed/router/condition-oracle trên đủ 5 subset. Bootstrap >=1.000 lần, phân tầng Real/Fake theo ảnh gốc, giữ hai view cùng lần lấy mẫu và ghép cặp ba phương án. Xuất CI từng phương án và CI chênh lệch.
 - Helper compute_unified_router_predictions_v3 đã bỏ heuristic cũ; cần tín hiệu/params và đúng checkpoint. Không có params thì caller phải truyền ngưỡng đã hiệu chuẩn. Pipeline một backbone dùng wrapper mới.
@@ -27,6 +27,10 @@ Condition-oracle dùng clean calibration khi biết ảnh clean và forensic cal
 Thắng khi delta >=1 pp ở >=3/5 subset **và** CI95 router nằm trên CI95 fixed ở >=2 subset. Không đạt thì fixed fallback. Chưa đo hợp lệ thì “chưa xác định”, không gọi là thua.
 
 Wrapper chỉ bật router khi ablation measured v2 thắng và fingerprint params/checkpoint khớp. Không có bằng chứng thắng thì dùng fixed branch và ngưỡng đúng checkpoint. Params v1 hoặc marker chờ đo không được dùng như fitted params. Không router vẫn chạy được với calibration/v1 measured đúng SHA-256 checkpoint. Thiếu calibration hợp lệ thì dừng, không tự đặt 0.50.
+
+`validate_router_report` yêu cầu đủ đúng năm subset, chỉ số/CI hữu hạn và đúng miền, số ảnh Real/Fake và cặp view nhất quán, đủ clean/Q30, cùng protocol bootstrap phân tầng/ghép cặp >=1.000 lần với CI95. Hàm tính lại delta, số subset tăng >=1 pp và số CI tách rời, rồi đối chiếu toàn bộ verdict. Báo cáo thiếu, sai kiểu hoặc mâu thuẫn không bật router; wrapper vẫn dùng calibration fixed hợp lệ.
+
+Báo cáo phải tham chiếu hash checkpoint, params file, cache calibration/evaluation và frozen evaluation split; canonical digest params phải khớp nội dung đang nạp. Đây là **kiểm tra hash và tính nhất quán**, không phải chữ ký số/xác thực người phát hành. Runtime không mở lại cache hoặc chạy lại bootstrap; số đo vẫn cần kiểm chứng bằng pipeline và artifacts gốc. Không gọi cơ chế này là bảo đảm an toàn tuyệt đối hoặc bằng chứng tự xác thực dữ liệu thật.
 
 ### 3.1. Đính chính lập luận về thứ hạng và kết quả âm
 
@@ -63,16 +67,18 @@ Unit/regression tests kiểm tra batch lẫn nhiều ảnh, gating thật trên 
 
 Lần xác minh implementation trước đính chính lập luận: **68 tests PASS** trên tests/test_router.py, tests/test_router_pipeline.py, tests/test_phase7_acceptance.py, tests/test_ablation_v2.py và tests/test_canonical_loader.py. Đây là tổng kiểm thử nhiều thành phần, không phải 68 phép đo hiệu quả router và không bảo đảm chương trình không còn lỗi. CLI --help và Python compilation chạy được; git diff --check không có lỗi whitespace. Pytest dùng thư mục basetemp mới trong scratch vì thư mục pytest mặc định của máy bị hạn chế quyền.
 
-Sau khi thêm ba ca kiểm thử tham số hóa về ranking ở §3.1, chạy lại cùng năm tệp: **71 tests PASS**. Không thay đổi logic suy luận hoặc số đo nghiệm thu; ba ca mới chỉ xác minh tính chất toán học và phản ví dụ.
+Mốc trước sửa kiểm tra báo cáo: **71 tests PASS**, gồm router/pipeline 25, ablation 25, acceptance 8, canonical loader 13. Ba ca ranking trong số đó chỉ là phản ví dụ toán học. Kiểm thử không bảo đảm toàn bộ mã nguồn không lỗi hoặc thay thế số đo trên checkpoint thật.
+
+Sau sửa kiểm tra kích hoạt: **107 tests PASS** trên cùng năm tệp, bổ sung 36 ca hồi quy cho report thiếu/mâu thuẫn, metric/CI/count sai, protocol/fingerprint sai và fallback tương ứng. Python compilation và git diff --check đạt. Report v2 cũ thiếu các trường bắt buộc mới phải được sinh lại bằng tools/generate_router_ablation.py; không kích hoạt chỉ bằng cờ tổng kết.
 
 Preflight local xác nhận **0/1.080 ảnh val_calib có mặt** tại đường dẫn manifest và thiếu checkpoint đích fatformer_anchored_v2_best.pth. Collector dừng ở file thiếu, không tạo cache. Chưa chạy collect/fit/evaluation thật, chưa benchmark GPU/overhead <5ms hoặc đóng gói Task 7.15.
 
 Theo [báo cáo 7.12 hiện tại](../C/bao_cao_task_7.12_ablation.md), A3 tốt nhất theo worst-group validation trong seed đã chạy, A4 không vượt trội; không kế thừa tuyên bố A4 tốt nhất của bản cũ.
 
-## 6. Quyết định triển khai và nghiệm thu
+## 6. Phạm vi hoàn thành và phần còn mở
 
-Theo thống nhất kỹ thuật ngày 08/11/2026:
-- Nhằm tối ưu tài nguyên tính toán và giữ đúng tiến độ đường găng Phase 7 (tập trung cho Task 7.14 Locked Benchmark và Task 7.15 Đóng gói), đội ngũ quyết định **chọn phương án triển khai Calibrated Fixed Fallback**; hoãn thực nghiệm đo thật router trên GPU.
-- Toàn bộ cơ chế an toàn trong `UnifiedFatFormerXLA` và `DegradationRouter` đã vượt qua 71 unit/regression tests. Khi không có bằng chứng thắng hợp lệ từ ablation đo thật, wrapper tự động khóa router và vận hành an toàn ở chế độ nhánh cố định kèm nhiệt độ và ngưỡng đã được hiệu chuẩn chặt chẽ theo từng checkpoint.
-- Nghiệm thu Task 7.13 ở mức **hoàn thành mã nguồn & cơ chế phòng vệ an toàn**, sẵn sàng tích hợp vào Task 7.15.
+- **Implementation:** đã có collector, fit, ablation, wrapper và regression tests; kiểm tra cấu trúc/nhất quán báo cáo kích hoạt đã được bổ sung. Có thể tiếp tục tích hợp API vào Task 7.15.
+- **Lựa chọn triển khai:** ưu tiên calibrated fixed fallback, hoãn thực nghiệm router. Đây là quyết định phạm vi/tiến độ, chưa phải kết quả âm hoặc bằng chứng router không có lợi.
+- **Calibration/ablation thật:** chưa có params router fitted hoặc kết quả evaluation hợp lệ; marker JSON vẫn unverified. Fallback cho v2 chỉ chạy khi được cung cấp calibration đo thật đúng checkpoint; không kế thừa trực tiếp các số baseline.
+- **Đóng gói:** chưa xác minh artifact .pth hoàn chỉnh, end-to-end trên checkpoint thật hoặc latency GPU. Không ghi deployed hoặc hoàn thành toàn bộ DoD ban đầu.
 

@@ -1,4 +1,5 @@
 """Regression fixtures are synthetic unit inputs, never scientific handoff artifacts."""
+import copy
 import json
 from types import SimpleNamespace
 
@@ -9,7 +10,7 @@ from torch import nn
 
 from src.models.degradation_router import DegradationRouter, blockiness, forward_with_gating, fuse, threshold_for
 from src.models.gating import DynamicFrequencyGating
-from src.models.unified_fatformer import UnifiedFatFormerXLA
+from src.models.unified_fatformer import UnifiedFatFormerXLA, router_is_approved, validate_router_report
 from tools.fit_router import fit_router_calibration, fit_table, fpr_threshold
 from tools.generate_router_ablation import generate_router_ablation
 from tools.router_data import FEATURES, PREPROCESS, SUBSETS, collect, load_cache, params_digest
@@ -46,8 +47,10 @@ def cache_fixture(path, split="val_calib", offset=0, evidence="measured"):
     features = np.stack([t+condition, .1+t*.2-condition*.05, 1.5-condition*.9+t*.1], -1).astype(np.float32)
     score = (labels*2-1)*2+t
     logits = np.stack([-score, score], -1).astype(np.float32)
+    source = {"manifest_sha256": "d"*64} if split == "val_calib" else {"evaluation_split_sha256": "e"*64}
     meta = dict(schema="router-data/v2", evidence_level=evidence, split=split, features=FEATURES,
-                preprocess=PREPROCESS, checkpoint_sha256="a"*64, source={"fixture": True})
+                preprocess=PREPROCESS, checkpoint_sha256="a"*64, source=source,
+                branch_design="single_logits_condition_temperature")
     np.savez_compressed(path, features=features, logits=logits, targets=labels, sample_ids=np.tile(ids, 2),
                         is_degraded=condition, subsets=np.tile(np.asarray(SUBSETS)[np.arange(n)//24], 2),
                         metadata=json.dumps(meta))
@@ -62,6 +65,30 @@ def fitted(tmp_path, monkeypatch):
     cache = cache_fixture(tmp_path/"calib.npz")
     path = tmp_path/"params.json"
     return fit_router_calibration(cache, path), path
+
+
+def complete_proof_fixture(params):
+    """Structural activation fixture only: no claim these numbers were measured."""
+    subsets = {}
+    for i, subset in enumerate(SUBSETS):
+        fixed, routed = 60., 62. if i < 3 else 60.
+        router_ci = [61.5, 62.5] if i < 2 else [routed-2, routed+2]
+        row = dict(n_source_images=24, n_real_source_images=12, n_fake_source_images=12, n_views=48,
+                   delta_pp=routed-fixed, delta_ci95=[0., 4.] if i < 3 else [-2., 2.],
+                   win=i < 3, router_ci_above_fixed=i < 2)
+        for name, point, ci in (("fixed", fixed, [59., 61.]), ("router", routed, router_ci),
+                                 ("oracle", 63., [62., 64.])):
+            row[name] = dict(fake_at_real90=point, ci95=ci, by_condition={"clean": point, "q30": point})
+        subsets[subset] = row
+    return dict(schema="router_ablation/v2", status="evaluated", evidence_level="measured",
+                params_digest=params_digest(params), checkpoint_sha256=params["source"]["checkpoint_sha256"],
+                calibration_cache_sha256=params["source"]["cache_sha256"], params_file_sha256="b"*64,
+                evaluation_cache_sha256="c"*64, evaluation_split_sha256="e"*64,
+                preprocess=params["preprocess"], branch_design=params["branch_design"],
+                bootstrap=dict(n=1000, seed=42, paired=True, unit="source image, both views retained",
+                               strata="real_fake_source_images", confidence_level=.95),
+                subsets=subsets, verdict=dict(criteria_met=True, fallback_required=False,
+                                             wins=3, total_subsets=5, ci_separated=2))
 
 
 def test_missing_gate_is_not_constant():
@@ -139,6 +166,20 @@ def test_cache_rejects_wrong_split_and_synthetic(tmp_path):
     assert not (tmp_path/"not_written.json").exists()
 
 
+def test_cache_rejects_missing_partition_fingerprint_before_bootstrap(tmp_path, fitted):
+    _, params_path = fitted
+    path = cache_fixture(tmp_path/"incomplete_eval.npz", split="evaluation", offset=1000)
+    with np.load(path, allow_pickle=False) as archive:
+        arrays = {key: archive[key].copy() for key in archive.files}
+    metadata = json.loads(str(arrays["metadata"]))
+    metadata["source"] = {}
+    arrays["metadata"] = json.dumps(metadata)
+    np.savez_compressed(path, **arrays)
+    with pytest.raises(ValueError, match="partition fingerprint"):
+        generate_router_ablation(path, params_path, tmp_path/"not_written")
+    assert not (tmp_path/"not_written").exists()
+
+
 def test_fit_provenance_and_fpr(fitted):
     params, _ = fitted
     assert params["n_calib"]==120 and params["n_views"]==240
@@ -159,6 +200,8 @@ def test_ablation_real_resampling_and_no_automatic_win(tmp_path,fitted):
     assert all(abs(row["delta_pp"]) < 1e-10 for row in report["subsets"].values())
     assert all(row["delta_ci95"]==[0.,0.] for row in report["subsets"].values())
     assert report["params_digest"]==params_digest(params)
+    assert validate_router_report(params, report) == report["verdict"]
+    assert not router_is_approved(params, report)
 
 
 def test_ablation_rejects_overlap_and_insufficient_bootstrap(tmp_path,fitted):
@@ -214,9 +257,7 @@ def test_wrapper_fallback_calibration_binding_and_state(fitted):
 
 def test_wrapper_requires_matching_win_proof(fitted):
     params,_=fitted
-    proof=dict(schema="router_ablation/v2",evidence_level="measured",params_digest=params_digest(params),
-               checkpoint_sha256="a"*64,bootstrap={"n":1000},
-               verdict=dict(criteria_met=True,wins=3,ci_separated=2))
+    proof=complete_proof_fixture(params)
     wrapper=UnifiedFatFormerXLA(ToyBackbone(),router_params=params,router_ablation=proof,checkpoint_sha256="a"*64).eval()
     assert wrapper.router_enabled
     x=torch.rand(2,3,16,16)
@@ -229,6 +270,81 @@ def test_wrapper_requires_matching_win_proof(fitted):
     with pytest.warns(RuntimeWarning):
         rejected=UnifiedFatFormerXLA(ToyBackbone(),router_params=params,router_ablation=proof,checkpoint_sha256="a"*64)
     assert not rejected.router_enabled
+
+
+@pytest.mark.parametrize("path,value", [
+    (("status",), "pending"),
+    (("evidence_level",), "synthetic"),
+    (("subsets",), {}),
+    (("subsets", SUBSETS[0]), None),
+    (("subsets", "unexpected"), {}),
+    (("evaluation_cache_sha256",), None),
+    (("evaluation_split_sha256",), "not-a-hash"),
+    (("params_file_sha256",), "x"*64),
+    (("calibration_cache_sha256",), "b"*64),
+    (("checkpoint_sha256",), "b"*64),
+    (("preprocess",), "another-pipeline"),
+    (("branch_design",), "another-model"),
+    (("bootstrap", "n"), "1000"),
+    (("bootstrap", "n"), 999),
+    (("bootstrap", "seed"), True),
+    (("bootstrap", "paired"), False),
+    (("bootstrap", "confidence_level"), .90),
+    (("bootstrap", "strata"), "individual-views"),
+    (("verdict", "wins"), 5),
+    (("verdict", "total_subsets"), 4),
+    (("verdict", "ci_separated"), 5),
+    (("verdict", "criteria_met"), False),
+    (("verdict", "fallback_required"), True),
+    (("subsets", SUBSETS[0], "delta_pp"), 20.),
+    (("subsets", SUBSETS[0], "win"), False),
+    (("subsets", SUBSETS[0], "router_ci_above_fixed"), False),
+    (("subsets", SUBSETS[0], "router", "fake_at_real90"), float("nan")),
+    (("subsets", SUBSETS[0], "router", "ci95"), [70., 60.]),
+    (("subsets", SUBSETS[0], "oracle", "ci95"), [0., float("inf")]),
+    (("subsets", SUBSETS[0], "router", "by_condition"), {"clean": 62.}),
+    (("subsets", SUBSETS[0], "delta_ci95"), [-101., 1.]),
+    (("subsets", SUBSETS[0], "n_views"), 47),
+    (("subsets", SUBSETS[0], "n_real_source_images"), 0),
+])
+def test_malformed_or_inconsistent_proof_keeps_wrapper_on_fallback(fitted, path, value):
+    params, _ = fitted
+    proof = complete_proof_fixture(params)
+    target = proof
+    for key in path[:-1]:
+        target = target[key]
+    if value is None:
+        target.pop(path[-1])
+    else:
+        target[path[-1]] = value
+    assert not router_is_approved(params, proof)
+    with pytest.warns(RuntimeWarning, match="router disabled"):
+        wrapper = UnifiedFatFormerXLA(ToyBackbone(), router_params=params, router_ablation=proof,
+                                     checkpoint_sha256="a"*64).eval()
+    assert not wrapper.router_enabled and wrapper.router.fallback_mode
+    output = wrapper(torch.rand(2, 3, 16, 16))
+    assert torch.isfinite(output["prob_fake"]).all()
+    torch.testing.assert_close(output["threshold"], torch.full((2,), params["fixed"]["threshold"]))
+
+
+def test_summary_only_proof_is_rejected(fitted):
+    params, _ = fitted
+    full = complete_proof_fixture(params)
+    summary = {key: copy.deepcopy(full[key]) for key in
+               ("schema", "evidence_level", "params_digest", "checkpoint_sha256", "bootstrap", "verdict")}
+    assert not router_is_approved(params, summary)
+
+
+def test_consistent_losing_report_does_not_enable_router(fitted):
+    params, _ = fitted
+    report = complete_proof_fixture(params)
+    # Three gains remain, but no separated intervals: the second criterion is mandatory.
+    for row in report["subsets"].values():
+        row["router"]["ci95"] = [55., 65.]
+        row["router_ci_above_fixed"] = False
+    report["verdict"].update(ci_separated=0, criteria_met=False, fallback_required=True)
+    assert validate_router_report(params, report) == report["verdict"]
+    assert not router_is_approved(params, report)
 
 
 def test_legacy_artifacts_and_unfitted_defaults_rejected():

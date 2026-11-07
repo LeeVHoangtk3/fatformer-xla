@@ -15,7 +15,7 @@
 | **7.2** | [	ask_7.2_canonical_loader.md](task_7.2_canonical_loader.md) | canonical_loader + adapter-index tường minh + test | D1–D3 | 8 h | **G7.0** | [x] Đã hoàn thành |
 | **7.9** | [	ask_7.9_loss_v2_realguard.md](task_7.9_loss_v2_realguard.md) | Loss v2: RealGuardLoss + FeatureConsistencyLoss | D4–D5 | 7 h | — (nạp cho G7.2) | [x] Đã hoàn thành |
 | **7.10** | [`task_7.10_selection_metric_v2.md`](task_7.10_selection_metric_v2.md) | Selection metric v2: worst-group + ràng buộc Real ACC | D5–D6 | 4 h | — (nạp cho G7.2) | `[ ] Sẵn sàng` |
-| **7.13** | [`task_7.13_degradation_router.md`](task_7.13_degradation_router.md) | `DegradationRouter` + fusion xác suất đã hiệu chuẩn | D6–D9 | 8 h | — (nạp cho G7.3) | `[ ] Đã sửa code — chờ đo thật` |
+| **7.13** | [`task_7.13_degradation_router.md`](task_7.13_degradation_router.md) | `DegradationRouter` + fusion xác suất đã hiệu chuẩn | D6–D9 | 8 h | — (nạp cho G7.3) | `[~] Code đã kiểm thử; chọn fixed fallback; thực nghiệm hoãn; đóng gói chưa nghiệm thu` |
 
 **Tổng**: 27 giờ công. Phần chốt chặn cứng của `7.2` đã đạt trên các run đo thật: Baseline, M4 và Anchored đều nạp `0/0`, còn Gen 1 bị từ chối đúng thiết kế. Task vẫn chưa đóng hành chính vì còn hai DoD repo-wide/smoke ở đặc tả.
 

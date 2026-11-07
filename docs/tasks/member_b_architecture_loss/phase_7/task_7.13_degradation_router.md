@@ -1,7 +1,7 @@
 # TASK 7.13 — DegradationRouter và fusion đã hiệu chuẩn
 
 - Phụ trách: thành viên B; phối hợp C.
-- Trạng thái: `[ ] ĐÃ SỬA CODE — CHỜ ĐO THẬT`.
+- Trạng thái: `[~] CODE ĐÃ KIỂM THỬ; CHỌN FIXED FALLBACK; THỰC NGHIỆM ROUTER HOÃN; CHƯA NGHIỆM THU ĐÓNG GÓI`.
 - [Báo cáo, giới hạn và lệnh chạy lại](../../../bao_cao/B/bao_cao_task_7.13_degradation_router.md).
 - [Kế hoạch Phase 7](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md), §IV.2.
 
@@ -11,7 +11,7 @@ Từng ảnh tự quyết định trọng số suy biến, không cần ảnh th
 
 `P(fake|x) = (1-w)*p_clean + w*p_forensic`, với `w = sigmoid(beta0 + beta*standardized_signals)`.
 
-Ba tín hiệu: blockiness, log1p Laplacian variance trên RGB [0,1], lambda thật từ adapter DynamicFrequencyGating. Trung bình lambda qua adapter, không qua batch.
+Hai tín hiệu ảnh là blockiness, log1p Laplacian variance trên RGB [0,1]; tín hiệu thứ ba là lambda học từ adapter DynamicFrequencyGating. Trung bình lambda qua adapter, không qua batch. Chưa có phép đo xác nhận khả năng phân biệt trên ảnh bất kỳ ngoài điều kiện clean/Q30 dự kiến.
 
 Kết quả tại commit 13749f6 bị hủy vì fit Gaussian giả lập, đặt tay ngưỡng và nội suy ablation/CI. Không dùng AUC 100% hoặc thắng 5/5 để nghiệm thu. Chưa xác định router thắng hay thua.
 
@@ -37,7 +37,7 @@ tools/fit_router.py chỉ nhận cache measured val_calib:
 3. Fit temperature riêng trên clean và Q30 logits của cùng checkpoint.
 4. Chọn fixed branch theo fake recall tại ngưỡng FPR5 trên pooled calibration views; hòa chọn clean. Oracle có ngưỡng riêng theo condition.
 5. Chia tối đa ba bin theo quantile w, gộp bin dưới 50 Real views với bin bên cạnh và ghi log. Tổng Real views dưới 50 thì dừng.
-6. Fit ngưỡng từng bin FPR <=5% bằng float32 và comparator >= như inference. Không làm tròn; ties bảo thủ; có thể dùng ngưỡng lớn hơn 1 một ULP để từ chối score bão hòa.
+6. Fit ngưỡng để FPR thực nghiệm từng bin trên calibration <=5%, bằng float32/comparator >= như inference. Không bảo đảm FPR evaluation/production; phải đo riêng. Không làm tròn; ties bảo thủ; có thể dùng ngưỡng lớn hơn 1 một ULP để từ chối score bão hòa.
 7. Lưu histogram w, AUC từng tín hiệu, scaler/coef/intercept, thresholds, số ảnh/views, CV, calibration và hashes trong degradation_router/v2. Fitted params chưa tự bật deployment.
 
 ## 4. Fusion, fallback và wrapper
@@ -45,6 +45,7 @@ tools/fit_router.py chỉ nhận cache measured val_calib:
 - src/models/degradation_router.py: tín hiệu, tra bảng từng w, fusion và fallback từng ảnh; không dùng thống kê batch. Missing lambda báo lỗi khi extract/predict; forward dùng calibrated fixed fallback.
 - src/models/unified_fatformer.py: UnifiedFatFormerXLA(...).eval()(normalized_x) trả prob_fake, label, w_deg, threshold; một backbone/một forward. Hook dọn trong finally; state_dict giữ tham số và metadata.
 - Chỉ bật khi ablation measured v2 thắng, params fingerprint/checkpoint khớp. Chưa đo/không thắng/thiếu proof thì fixed fallback.
+- Report phải đủ năm subset, các metric/CI/count hợp lệ, protocol bootstrap ghép cặp/phân tầng CI95 và fingerprint nguồn. Tính lại delta, wins, số CI tách rời từ từng subset; không tin riêng cờ criteria_met. Báo cáo thiếu/mâu thuẫn/sai kiểu bị từ chối kích hoạt. Hash không phải chữ ký số; runtime không tái tính số đo từ cache.
 - Không có fitted params vẫn chạy được với calibration/v1 measured đúng SHA-256 backbone. Thiếu calibration hợp lệ thì dừng, không tự gán 0.50.
 - Helper compute_unified_router_predictions_v3 không còn heuristic; routing cần tín hiệu thật, đúng checkpoint và proof. Không có params thì caller phải truyền ngưỡng đã hiệu chuẩn.
 - Đóng gói .pth hoàn chỉnh và latency thuộc Task 7.15, chưa nghiệm thu.
@@ -71,9 +72,10 @@ Chọn fixed fallback để ưu tiên tiến độ không phải nghiệm thu k�
 - [x] Collector đo thật, CLI fit không tạo đặc trưng giả lập; ngưỡng fit theo FPR.
 - [x] Ablation từ dự đoán, kiểm tra overlap, bootstrap và luật kết luận.
 - [x] Wrapper một backbone; từ chối artifact cũ; chỉ bật khi proof khớp.
+- [x] Kiểm tra đầy đủ năm subset, tính lại verdict và giữ fallback cho report thiếu/mâu thuẫn.
 - [x] Unit/regression tests cho hook, batch lẫn nhiều ảnh, FPR/ties, provenance, overlap, bootstrap, fallback, state và wrapper.
 - [ ] Khôi phục ảnh/checkpoint, collect/fit để có router_params measured.
 - [ ] Chạy held-out ablation thật, kết luận thắng/không thắng với CI.
 - [ ] Nhúng metadata checkpoint, kiểm chứng latency và G7.3 ở Task 7.15/7.14.
 
-Artifacts DATASET/logs/phase7/router_params.json và router_ablation.{json,md} hiện chỉ là marker chờ đo, không phải model deployable. Xem báo cáo để biết lệnh chạy lại và giới hạn local.
+Artifacts DATASET/logs/phase7/router_params.json và router_ablation.{json,md} hiện chỉ là marker chưa đo (thực nghiệm hoãn), không phải model deployable. Phần code đã kiểm thử không đồng nghĩa hoàn thành DoD thực nghiệm/đóng gói; xem báo cáo để biết lệnh chạy lại và giới hạn local.

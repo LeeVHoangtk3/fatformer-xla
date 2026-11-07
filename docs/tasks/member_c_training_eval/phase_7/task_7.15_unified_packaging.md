@@ -27,7 +27,7 @@ Biến kết quả nghiên cứu thành **một artifact dùng được**: một
 
 - Metadata (calibration, router, phiên bản) **nằm trong** file `.pth`, không phụ thuộc file ngoài.
 - CLI **không** cần biết gì về kiến trúc — chỉ nhận ảnh và in kết quả.
-- Nếu router không thắng (Task 7.13), wrapper **tự** dùng ngưỡng cố định — không crash, không cần cờ đặc biệt.
+- Nếu router không thắng hoặc báo cáo thiếu/không nhất quán (Task 7.13), wrapper **tự** dùng calibrated fixed fallback khi có calibration hợp lệ đúng checkpoint. Thiếu calibration phải báo lỗi rõ ràng; không tự gán ngưỡng.
 
 ---
 
@@ -90,6 +90,8 @@ outputs = unified(x)                  # CLIP-normalized input
 ```
 
 > **Implementation 7.13:** một backbone; hai xác suất từ cùng logits, temperature clean/Q30 riêng fit trên cùng checkpoint. Chỉ bật router với proof thắng hợp lệ. Thiếu fitted params cần calibration/v1 measured đúng checkpoint; thiếu calibration không tự đặt ngưỡng. Khung đã có không thay thế việc đóng gói và đo latency <5 ms ở task này.
+
+Report nhúng trong metadata cần đủ năm subset, metric/CI/count, protocol bootstrap CI95 và fingerprint cache/partition. Wrapper tính lại verdict từ từng subset; báo cáo chỉ có cờ criteria_met không đủ để bật router. Hash phục vụ đối chiếu và tính nhất quán, không phải chữ ký số; đóng gói vẫn cần kiểm chứng artifacts gốc. Không cần mở cache evaluation trong mỗi lần suy luận.
 
 ### Bước 2 — Đóng gói checkpoint (D11, ~0,5 h)
 

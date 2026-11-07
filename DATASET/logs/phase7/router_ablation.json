@@ -15,5 +15,9 @@
     "original_commit": "13749f6",
     "reason": "Invalidated after code review: v1 fitted random synthetic features, assigned thresholds, and interpolated router scores/CI instead of measuring predictions."
   },
-  "next_step": "Run held-out image-level evaluation and paired bootstrap after measured calibration. No measured router win or loss is established."
+  "next_step": "Run held-out image-level evaluation and paired bootstrap after measured calibration. No measured router win or loss is established.",
+  "implementation_status": "regression_tested",
+  "experiment_status": "deferred",
+  "deployment_plan": "calibrated_fixed_fallback",
+  "deployment_verified": false
 }
