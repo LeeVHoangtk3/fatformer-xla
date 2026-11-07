@@ -46,10 +46,10 @@ class TestDegradationRouter(unittest.TestCase):
     def test_t2_batch_size_invariance(self):
         """T2: w phải hoàn toàn bất biến theo batch size (batch=1 vs batch=32 cho cùng w với max|Δw| < 1e-6)."""
         x_single = torch.rand(1, 3, 64, 64)
-        x_batch = x_single.repeat(32, 1, 1, 1)
+        x_batch = torch.cat([x_single, torch.rand(31, 3, 64, 64)])
         
-        w_single = self.router.predict_w(x_single)
-        w_batch = self.router.predict_w(x_batch)
+        w_single = self.router.predict_w(x_single, torch.tensor([.4]))
+        w_batch = self.router.predict_w(x_batch, torch.cat([torch.tensor([.4]), torch.rand(31)*2]))[:1]
         
         max_diff = (w_batch - w_single).abs().max().item()
         self.assertLess(max_diff, 1e-6, f"Batch size invariance vi phạm! Lệch max: {max_diff}")
@@ -61,7 +61,12 @@ class TestDegradationRouter(unittest.TestCase):
         p_clean = torch.tensor([0.2, 0.8, 0.4, 0.7])
         p_forensic = torch.tensor([0.1, 0.9, 0.5, 0.6])
         
-        p_fused, pred, w_deg, applied_thr = self.router(x, p_clean, p_forensic)
+        lam = torch.tensor([.2, .7, 1.1, 1.8])
+        p_fused, pred, w_deg, applied_thr = self.router(x, p_clean, p_forensic, lam)
+        for i in range(b_size):
+            single = self.router(x[i:i+1], p_clean[i:i+1], p_forensic[i:i+1], lam[i:i+1])
+            for whole, part in zip((p_fused, pred, w_deg, applied_thr), single):
+                self.assertTrue(torch.allclose(whole[i:i+1], part, atol=1e-6))
         
         # Đảo vị trí các mẫu: [3, 2, 1, 0]
         perm = [3, 2, 1, 0]
@@ -70,7 +75,7 @@ class TestDegradationRouter(unittest.TestCase):
         p_forensic_perm = p_forensic[perm]
         
         p_fused_perm, pred_perm, w_deg_perm, applied_thr_perm = self.router(
-            x_perm, p_clean_perm, p_forensic_perm
+            x_perm, p_clean_perm, p_forensic_perm, lam[perm]
         )
         
         self.assertTrue(torch.allclose(p_fused[perm], p_fused_perm, atol=1e-6))

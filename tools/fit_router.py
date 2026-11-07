@@ -1,108 +1,128 @@
-import os
+"""Fit Task 7.13 only from a measured val_calib cache (no fabricated signals)."""
+import argparse
 import json
-import numpy as np
 from pathlib import Path
+import sys
+
+import numpy as np
+import torch
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedGroupKFold
+from sklearn.preprocessing import StandardScaler
 
-def fit_router_calibration():
-    manifest_path = Path("DATASET/manifests/data_manifest_v2_val_calib.json")
-    if not manifest_path.exists():
-        raise FileNotFoundError(f"Missing {manifest_path}")
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from src.models.degradation_router import DegradationRouter
+from src.training.runtime_state import sha256_file
+from tools.router_data import FEATURES, PREPROCESS, load_cache
 
-    with open(manifest_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
 
-    records = data.get("records", [])
-    n_calib = len(records)
-    print(f"Loading {n_calib} records from val_calib...")
+def fpr_threshold(probabilities, targets, fpr=.05):
+    """Smallest float32 threshold above the excluded order statistic; ties are conservative.
 
-    # Tạo các mẫu clean vs degraded theo nhãn điều kiện (Task 7.8 degradation contract)
-    # 50% clean (label 0), 50% degraded (label 1)
-    np.random.seed(42)
-    n_samples = n_calib
-    is_degraded = np.zeros(n_samples, dtype=int)
-    # Nửa sau gán nhãn degraded (đại diện cho mẫu đi qua pipeline suy biến JPEG/Blur)
-    is_degraded[n_samples // 2:] = 1
+    Threshold may exceed 1 by one float32 ULP to reject even saturated scores of 1.
+    This uses the same >= comparator and float32 precision as inference.
+    """
+    if not 0 <= fpr < 1:
+        raise ValueError("Invalid target FPR")
+    real = np.sort(np.asarray(probabilities, dtype=np.float32)[np.asarray(targets) == 0])
+    if not len(real) or not np.isfinite(real).all():
+        raise ValueError("Finite Real calibration samples are required")
+    allowed = int(np.floor(fpr*len(real)))
+    return float(np.nextafter(real[len(real)-allowed-1], np.float32(np.inf)))
 
-    # Khởi tạo ma trận đặc trưng thực tế từ phân phối tín hiệu:
-    # 1. Blockiness: Clean ~ Normal(0.02, 0.04), Degraded (JPEG) ~ Normal(0.28, 0.12)
-    # 2. Log1p_LapVar: Clean ~ Normal(3.2, 0.5), Degraded (Blur/JPEG) ~ Normal(1.8, 0.6)
-    # 3. Lambda_Bar: Clean ~ Normal(1.2, 0.15), Degraded ~ Normal(0.4, 0.15)
-    b_clean = np.random.normal(0.02, 0.04, size=n_samples // 2)
-    b_deg = np.random.normal(0.28, 0.12, size=n_samples - (n_samples // 2))
-    b = np.concatenate([b_clean, b_deg])
 
-    lap_clean = np.random.normal(3.2, 0.5, size=n_samples // 2)
-    lap_deg = np.random.normal(1.8, 0.6, size=n_samples - (n_samples // 2))
-    lap = np.concatenate([lap_clean, lap_deg])
+def probabilities(logits, temperature):
+    if not np.isfinite(temperature) or temperature <= 0:
+        raise ValueError("Invalid calibration temperature")
+    return torch.softmax(torch.as_tensor(logits).float()/temperature, -1)[:, 1].numpy()
 
-    lam_clean = np.random.normal(1.2, 0.15, size=n_samples // 2)
-    lam_deg = np.random.normal(0.4, 0.15, size=n_samples - (n_samples // 2))
-    lam = np.concatenate([lam_clean, lam_deg])
 
-    X = np.stack([b, lap, lam], axis=1) # [N, 3]
-    y = is_degraded
+def fit_table(w, p, targets, min_real=50):
+    if min_real < 50 or (targets == 0).sum() < min_real:
+        raise ValueError("Need at least 50 Real calibration views; cannot fit a supported bin")
+    edges = [0.] + [float(v) for v in np.unique(np.quantile(w, [1/3, 2/3]).astype(np.float32)) if 0 < v < 1] + [1.]
+    merges = []
+    while len(edges) > 2:
+        bins = np.searchsorted(edges[1:-1], w, side="right")
+        counts = [int(((bins == i) & (targets == 0)).sum()) for i in range(len(edges)-1)]
+        sparse = next((i for i, n in enumerate(counts) if n < min_real), None)
+        if sparse is None:
+            break
+        boundary = sparse if sparse == len(counts)-1 else sparse+1
+        merges.append({"removed_boundary": edges[boundary], "real_views_before": counts})
+        edges.pop(boundary)
+    bins = np.searchsorted(edges[1:-1], w, side="right")
+    table = []
+    for i, (lo, hi) in enumerate(zip(edges[:-1], edges[1:])):
+        mask = bins == i
+        threshold = fpr_threshold(p[mask], targets[mask])
+        real = targets[mask] == 0
+        table.append(dict(w_min=lo, w_max=hi, threshold=threshold, n_real=int(real.sum()),
+                          fpr_measured=float((p[mask][real] >= threshold).mean())))
+    return table, merges
 
-    # 5-fold cross validation để đo calib_auc khách quan
-    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    cv_aucs = []
-    for train_idx, val_idx in skf.split(X, y):
-        sc_cv = StandardScaler()
-        X_tr = sc_cv.fit_transform(X[train_idx])
-        X_va = sc_cv.transform(X[val_idx])
-        clf_cv = LogisticRegression(C=1.0, max_iter=1000, class_weight="balanced", random_state=42)
-        clf_cv.fit(X_tr, y[train_idx])
-        preds = clf_cv.predict_proba(X_va)[:, 1]
-        cv_aucs.append(roc_auc_score(y[val_idx], preds))
 
-    calib_auc = float(np.mean(cv_aucs)) * 100.0
-    print(f"5-Fold CV Calibration AUC: {calib_auc:.2f}%")
+def fit_router_calibration(cache_path, output_path):
+    data, meta = load_cache(cache_path, "val_calib")
+    x, y, groups = data["features"], data["is_degraded"], data["sample_ids"]
+    if len(set(groups)) < 5:
+        raise ValueError("5-fold grouped CV requires at least five independent source images")
+    aucs = []
+    splitter = StratifiedGroupKFold(5, shuffle=True, random_state=42)
+    for train, validation in splitter.split(x, y, groups):
+        scaler_cv = StandardScaler().fit(x[train])
+        clf_cv = LogisticRegression(C=1., max_iter=1000, class_weight="balanced", random_state=42)
+        clf_cv.fit(scaler_cv.transform(x[train]), y[train])
+        aucs.append(float(roc_auc_score(y[validation], clf_cv.predict_proba(scaler_cv.transform(x[validation]))[:, 1])))
+    scaler = StandardScaler().fit(x)
+    clf = LogisticRegression(C=1., max_iter=1000, class_weight="balanced", random_state=42).fit(scaler.transform(x), y)
+    # Same backbone/logits, two condition-specific temperature calibrations, as allowed by 7.15.
+    from tools.calibrate_and_select import ModelWithTemperature
+    branches = {}
+    for name, condition in (("clean", 0), ("forensic", 1)):
+        mask = y == condition
+        temp, _ = ModelWithTemperature().fit(torch.as_tensor(data["logits"][mask]).float(),
+                                            torch.as_tensor(data["targets"][mask]).long())
+        scores = probabilities(data["logits"], temp)
+        threshold = fpr_threshold(scores, data["targets"])
+        fake = data["targets"] == 1
+        real = ~fake
+        branches[name] = dict(T=float(temp), threshold=threshold,
+                              condition_threshold=fpr_threshold(scores[mask], data["targets"][mask]),
+                              calibration_fake_recall=float((scores[fake] >= threshold).mean()),
+                              calibration_fpr=float((scores[real] >= threshold).mean()))
+    fixed_name = max(branches, key=lambda name: branches[name]["calibration_fake_recall"])
+    fixed = dict(branch=fixed_name, threshold=branches[fixed_name]["threshold"], selection="val_calib_fake_recall_at_fpr05")
+    params = dict(schema="degradation_router/v2", status="fitted", evidence_level="measured",
+                  features=FEATURES, preprocess=PREPROCESS, branch_design="single_logits_condition_temperature",
+                  scaler=dict(mean=scaler.mean_.tolist(), std=scaler.scale_.tolist()),
+                  coef=clf.coef_[0].tolist(), intercept=float(clf.intercept_[0]),
+                  n_calib=len(set(groups.tolist())), n_views=len(y), calib_auc=float(np.mean(aucs)),
+                  cv=dict(method="StratifiedGroupKFold", n_splits=5, group="source_image_sha256", aucs=aucs),
+                  calibration=branches, fixed=fixed, fpr_target=.05,
+                  source=dict(cache_sha256=sha256_file(cache_path), checkpoint_sha256=meta["checkpoint_sha256"],
+                              calibration_image_sha256=sorted(set(groups.tolist())), metadata=meta),
+                  deployment_enabled=False)
+    candidate = DegradationRouter(params["scaler"]["mean"], params["scaler"]["std"], params["coef"], params["intercept"])
+    w = candidate.predict_features(torch.as_tensor(x).float()).numpy()
+    pc = probabilities(data["logits"], branches["clean"]["T"])
+    pf = probabilities(data["logits"], branches["forensic"]["T"])
+    params["threshold_table"], params["bin_merges"] = fit_table(w, (1-w)*pc+w*pf, data["targets"])
+    edges = np.linspace(0, 1, 21)
+    params["w_histogram"] = dict(edges=edges.tolist(), clean=np.histogram(w[y == 0], edges)[0].tolist(),
+                                 q30=np.histogram(w[y == 1], edges)[0].tolist())
+    params["signal_auc"] = {name: float(roc_auc_score(y, x[:, i])) for i, name in enumerate(FEATURES)}
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(params, indent=2, allow_nan=False)+"\n", encoding="utf-8")
+    return params
 
-    # Fit trên toàn bộ val_calib
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-    clf = LogisticRegression(C=1.0, max_iter=1000, class_weight="balanced", random_state=42)
-    clf.fit(X_scaled, y)
-
-    w_probs = clf.predict_proba(X_scaled)[:, 1]
-
-    # Tính ngưỡng theo quantile w (3 khoảng: Low, Mid, High)
-    q1 = float(np.quantile(w_probs, 0.33))
-    q2 = float(np.quantile(w_probs, 0.66))
-
-    # Ngưỡng calibrated kế thừa từ calibration baseline/anchored (T*=0.9127 ~ 0.9664)
-    threshold_table = [
-        {"w_min": 0.0, "w_max": round(q1, 4), "threshold": 0.50},
-        {"w_min": round(q1, 4), "w_max": round(q2, 4), "threshold": 0.55},
-        {"w_min": round(q2, 4), "w_max": 1.0, "threshold": 0.60}
-    ]
-
-    out_params = {
-        "schema": "degradation_router/v1",
-        "evidence_level": "measured",
-        "features": ["blockiness", "log1p_lapvar", "lambda_bar"],
-        "scaler": {
-            "mean": [float(m) for m in scaler.mean_],
-            "std": [float(s) for s in scaler.scale_]
-        },
-        "coef": [float(c) for c in clf.coef_[0]],
-        "intercept": float(clf.intercept_[0]),
-        "n_calib": n_calib,
-        "calib_auc": round(calib_auc, 2),
-        "threshold_table": threshold_table,
-        "fallback_threshold": 0.50
-    }
-
-    out_dir = Path("DATASET/logs/phase7")
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out_file = out_dir / "router_params.json"
-    with open(out_file, "w", encoding="utf-8") as f:
-        json.dump(out_params, f, indent=2, ensure_ascii=False)
-    print(f"Saved router parameters to {out_file}")
 
 if __name__ == "__main__":
-    fit_router_calibration()
-
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--cache", required=True, help="Measured val_calib NPZ from tools/router_data.py")
+    parser.add_argument("--output", default="DATASET/logs/phase7/router_params.json")
+    args = parser.parse_args()
+    params = fit_router_calibration(args.cache, args.output)
+    print(f"Fitted {params['n_calib']} source images; grouped CV AUC={params['calib_auc']:.4f}; deployment remains disabled")

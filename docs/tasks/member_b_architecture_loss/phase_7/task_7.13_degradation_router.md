@@ -1,204 +1,79 @@
-# TASK 7.13 — `DegradationRouter` + FUSION XÁC SUẤT ĐÃ HIỆU CHUẨN
+# TASK 7.13 — DegradationRouter và fusion đã hiệu chuẩn
 
-- **Mã nhiệm vụ**: `Task 7.13` *(Phase 7 — D6–D9)*
-- **Người thực hiện**: **Thành viên B (Architecture & Loss Lead)**
-- **Người phối hợp**: **Thành viên C (Training Lead)** — cung cấp `val_calib`, logits, ngưỡng từ Task 7.4
-- **Môi trường thực thi**: 🖥️ **Local CPU**
-- **Độ ưu tiên**: 🟠 Cao — điều kiện của G7.3 (một checkpoint, tự định tuyến)
-- **Cổng liên quan**: nạp cho **G7.3** (D10)
-- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH` ([Báo cáo](../../../bao_cao/B/bao_cao_task_7.13_degradation_router.md))
-- **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.13
+- Phụ trách: thành viên B; phối hợp C.
+- Trạng thái: `[ ] ĐÃ SỬA CODE — CHỜ ĐO THẬT`.
+- [Báo cáo, giới hạn và lệnh chạy lại](../../../bao_cao/B/bao_cao_task_7.13_degradation_router.md).
+- [Kế hoạch Phase 7](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md), §IV.2.
 
----
+## 1. Mục tiêu và đính chính
 
-## 1. Mục tiêu
+Từng ảnh tự quyết định trọng số suy biến, không cần ảnh tham chiếu hoặc metadata điều kiện:
 
-Xây dựng **một** checkpoint tự quyết định "nên tin nhánh sạch hay nhánh forensic" cho từng ảnh, dựa trên **tín hiệu đo được từ chính ảnh** — thay cho việc đặt tay hằng số `mean_w` của cả lô (lỗi E4).
+`P(fake|x) = (1-w)*p_clean + w*p_forensic`, với `w = sigmoid(beta0 + beta*standardized_signals)`.
 
-**Kiến trúc fusion**
+Ba tín hiệu: blockiness, log1p Laplacian variance trên RGB [0,1], lambda thật từ adapter DynamicFrequencyGating. Trung bình lambda qua adapter, không qua batch.
 
-$$P(\text{fake}\mid x) = (1 - w)\,p_{clean}(x) + w\,p_{forensic}(x), \qquad w = w_{deg}(x) \in [0,1]$$
+Kết quả tại commit 13749f6 bị hủy vì fit Gaussian giả lập, đặt tay ngưỡng và nội suy ablation/CI. Không dùng AUC 100% hoặc thắng 5/5 để nghiệm thu. Chưa xác định router thắng hay thua.
 
-- `p_clean`, `p_forensic` = xác suất **đã hiệu chuẩn** (Task 7.4), **không** dùng logit thô.
-- `w_deg(x)` = xác suất ảnh bị suy biến, fit bằng **logistic regression 3 biến** trên `val_calib`.
-- Ngưỡng quyết định là **hàm của `w`** (bảng 2–3 mức fit trên calibration), **không** phải hằng số và **không** phải trung bình của batch.
+Theo lựa chọn được cho phép ở Task 7.15: một backbone, hai xác suất chia sẻ logits, temperature riêng fit trên clean/Q30 cùng checkpoint. Không có hai chuyên gia feature độc lập hoặc mặc định tốt hơn fixed.
 
-**Vì sao "không tham chiếu"?** Router phải chạy được trên **một ảnh đơn lẻ** trong production. Mọi tín hiệu dùng ảnh gốc làm tham chiếu (ví dụ so sánh với ảnh clean) đều không hợp lệ.
+Temperature cố định giữ ranking của từng nhánh; tổ hợp với w cố định cũng giữ ranking. Tuy nhiên w(x) thay đổi theo ảnh có thể đảo ranking dù chia sẻ logits. Không dùng tính đơn điệu của từng nhánh hoặc độ rộng CI ở Task 7.12 để khẳng định router “100% không thể thắng”. Phản ví dụ và giới hạn suy luận có trong báo cáo §3.1; chưa có bằng chứng router cải thiện hoặc thất bại trên dữ liệu thật.
 
----
+## 2. Dữ liệu và provenance
 
-## 2. Đầu vào
+- Chỉ fit trên DATASET/manifests/data_manifest_v2_val_calib.json, split val_calib.
+- tools/router_data.py đọc/xác minh hash ảnh, resize/crop 224, tạo clean và JPEG Q30 post-resize, chạy canonical model eval và lấy gating qua hook. Không thay ảnh lỗi/gating thiếu bằng hằng số.
+- Cache router-data/v2: features[N,3], logits[N,2], targets[N], is_degraded[N], sample_ids[N] là hash ảnh gốc, subsets[N], metadata checkpoint/source/preprocess/Git.
+- Mỗi ảnh gốc có một clean và một Q30 view, cùng nhãn thật/giả. Condition từ biến đổi thực thi, không từ model hoặc vị trí record.
+- Evaluation dùng frozen CFE partition 1.600 ảnh của Task 7.4/7.12; không đưa lại 400 ảnh calibration vào evaluation. Cập nhật so với kế hoạch ban đầu 2.000 ảnh.
+- Ablation từ chối cache khác checkpoint/preprocess hoặc hash ảnh gốc giao calibration. Không fit/chọn lại trên evaluation.
 
-| # | Đầu vào | Đường dẫn | Vai trò |
-| :---: | :--- | :--- | :--- |
-| I1 | `DynamicFrequencyGating` | [`src/models/gating.py`](../../../../src/models/gating.py) | Nguồn `λ̄(x)` — trả `[1,B,1]`, lấy trung bình |
-| I2 | `val_calib` | Task 7.7 — `data_manifest_v2.json` split `val_calib` | Tập **duy nhất** được fit router |
-| I3 | `calibration.json` | Task 7.4 — `logs/phase7/calibration/<model>.json` | `T`, `T*`, ngưỡng theo FPR |
-| I4 | Logits 2 nhánh | Task 7.6 — ma trận baseline | Fit và đánh giá |
-| I5 | Chia subset CFE | `DATASET/test_communityforensics` (600/600/400/200/200) | Đo "thắng ≥ 1 pp ở 3/5 subset" |
-| I6 | Checkpoint | `DATASET/checkpoints/phase7/fatformer_anchored_v2_best.pth` | Model để trích `λ̄` |
+## 3. Fit và ngưỡng
 
----
+tools/fit_router.py chỉ nhận cache measured val_calib:
 
-## 3. Đầu ra
+1. 5-fold StratifiedGroupKFold theo hash ảnh gốc; clean/Q30 cùng ảnh trong một fold; scaler fit riêng trong fold. AUC thang 0–1.
+2. Fit scaler và LogisticRegression(C=1, max_iter=1000, class_weight=balanced) cuối cùng trên toàn val_calib.
+3. Fit temperature riêng trên clean và Q30 logits của cùng checkpoint.
+4. Chọn fixed branch theo fake recall tại ngưỡng FPR5 trên pooled calibration views; hòa chọn clean. Oracle có ngưỡng riêng theo condition.
+5. Chia tối đa ba bin theo quantile w, gộp bin dưới 50 Real views với bin bên cạnh và ghi log. Tổng Real views dưới 50 thì dừng.
+6. Fit ngưỡng từng bin FPR <=5% bằng float32 và comparator >= như inference. Không làm tròn; ties bảo thủ; có thể dùng ngưỡng lớn hơn 1 một ULP để từ chối score bão hòa.
+7. Lưu histogram w, AUC từng tín hiệu, scaler/coef/intercept, thresholds, số ảnh/views, CV, calibration và hashes trong degradation_router/v2. Fitted params chưa tự bật deployment.
 
-| # | Artifact | Đường dẫn | Nội dung |
-| :---: | :--- | :--- | :--- |
-| O1 | Module router | `src/models/degradation_router.py` | `blockiness()`, `laplacian_var()`, `extract_signals()`, `DegradationRouter` |
-| O2 | Tham số | `logs/phase7/router_params.json` | Hệ số + ngưỡng + `n_calib` + `schema` |
-| O3 | Fusion | `src/models/unified_fatformer.py` (khung) | `fuse()` dùng `w_deg`, không dùng `mean_w` |
-| O4 | Ablation | `logs/phase7/router_ablation.{json,md}` | 3 dòng: fixed / router / oracle, kèm CI |
-| O5 | Test | `tests/test_router.py` | 4 test (xem §5.5) |
-| O6 | Báo cáo | `docs/bao_cao/B/bao_cao_task_7.13_degradation_router.md` | Kết luận thắng/thua **trung thực** |
+## 4. Fusion, fallback và wrapper
 
----
+- src/models/degradation_router.py: tín hiệu, tra bảng từng w, fusion và fallback từng ảnh; không dùng thống kê batch. Missing lambda báo lỗi khi extract/predict; forward dùng calibrated fixed fallback.
+- src/models/unified_fatformer.py: UnifiedFatFormerXLA(...).eval()(normalized_x) trả prob_fake, label, w_deg, threshold; một backbone/một forward. Hook dọn trong finally; state_dict giữ tham số và metadata.
+- Chỉ bật khi ablation measured v2 thắng, params fingerprint/checkpoint khớp. Chưa đo/không thắng/thiếu proof thì fixed fallback.
+- Không có fitted params vẫn chạy được với calibration/v1 measured đúng SHA-256 backbone. Thiếu calibration hợp lệ thì dừng, không tự gán 0.50.
+- Helper compute_unified_router_predictions_v3 không còn heuristic; routing cần tín hiệu thật, đúng checkpoint và proof. Không có params thì caller phải truyền ngưỡng đã hiệu chuẩn.
+- Đóng gói .pth hoàn chỉnh và latency thuộc Task 7.15, chưa nghiệm thu.
 
-## 4. Ràng buộc
+## 5. Ablation và luật kết luận
 
-1. **Không đặt tay hằng số**: mọi hệ số `β₀..β₃` và mọi ngưỡng phải sinh từ fit trên `val_calib`.
-2. **Không fit trên test**: `val_calib` và 5 subset CFE là hai tập rời. Nếu vi phạm ⇒ huỷ kết quả (theo kế hoạch §VI).
-3. **Không dùng `mean_w` của batch** trong bất kỳ đường suy luận nào.
-4. **Tín hiệu phải bất biến với batch size**: chạy 1 ảnh và chạy 32 ảnh phải cho cùng `w` (sai số `1e-6`).
-5. **Fallback bắt buộc**: nếu router không thắng, hệ thống phải chạy được với ngưỡng cố định — không được để G7.3 phụ thuộc vào một module "có thể thắng".
-6. Chỉ sửa `src/models/`, `tools/`, `configs/`, `tests/` — không sửa `src/datasets/`.
+tools/generate_router_ablation.py chạy từ dự đoán từng ảnh:
 
----
+- Fixed: branch/ngưỡng toàn cục chọn trên val_calib.
+- Router: w theo ảnh và bảng ngưỡng fit trên val_calib.
+- Condition-oracle: biết condition để chọn calibration; không triển khai được, không lấy max hai chỉ số tổng hợp và không bảo đảm là cận trên toán học.
 
-## 5. Các bước thực hiện
+Chỉ số chính: Fake@Real90 trên pooled clean/Q30 từng subset, hai view cân bằng mỗi ảnh; báo clean/Q30 riêng. Đây là ROC diagnostic trên held-out scores; Real/Fake ACC triển khai báo riêng tại ngưỡng val_calib.
 
-### Bước 1 — Ba tín hiệu không tham chiếu (D6–D7, ~2,5 h)
+Bootstrap >=1.000 lần, seed mặc định 42; phân tầng Real/Fake theo ảnh gốc, giữ clean/Q30 cùng lần lấy mẫu, ba phương án cùng resample. CI95 cho fixed/router/oracle và chênh lệch.
 
-**S1. Blockiness `B(x)`** — dấu vết JPEG 8×8:
+Thắng khi delta >=1 pp ở >=3/5 subset **và** CI95 router nằm trên CI95 fixed ở >=2 subset. Không đạt thì KHÔNG THẮNG/fixed fallback. Chưa đo hợp lệ thì CHƯA XÁC ĐỊNH. Thắng router chưa tự chứng minh toàn bộ G7.3 đạt.
 
-```python
-def blockiness(x):  # x: [B,3,H,W] in [0,1]
-    g = 0.299*x[:,0] + 0.587*x[:,1] + 0.114*x[:,2]          # [B,H,W]
-    dh = (g[:,:,8::8] - g[:,:,7:-1:8]).abs().mean(dim=(1,2)) # biên khối dọc
-    dv = (g[:,8::8,:] - g[:,7:-1:8,:]).abs().mean(dim=(1,2)) # biên khối ngang
-    nh = (g[:,:,1:] - g[:,:,:-1]).abs().mean(dim=(1,2))      # toàn ảnh dọc
-    nv = (g[:,1:,:] - g[:,:-1,:]).abs().mean(dim=(1,2))
-    return ((dh + dv) / 2) / ((nh + nv) / 2 + 1e-6) - 1.0    # ~0 nếu không có block
-```
-
-**S2. Phương sai Laplacian `V_Lap(x)`** — độ "sắc nét":
-
-```python
-lap = torch.tensor([[0,1,0],[1,-4,1],[0,1,0]], dtype=x.dtype).view(1,1,3,3).repeat(3,1,1,1)
-v = F.conv2d(g.unsqueeze(1), lap, padding=1, groups=1).var(dim=(1,2,3))
-return torch.log1p(v)     # log để ổn định thang đo
-```
-
-**S3. `λ̄(x)`** — đầu ra gating đã học:
-
-```python
-lam = model.gating(feat)            # [1,B,1]
-lam_bar = lam.mean(dim=0).squeeze(-1)   # [B]
-```
-
-> Lưu ý: `λ̄` cần **forward một phần** (đến gating). Nếu kiến trúc không cho lấy rẻ, chấp nhận forward đầy đủ và lấy `λ̄` từ hook — nhưng **không** được thay bằng hằng số.
-
-**Chuẩn hoá**: fit `StandardScaler` **trên `val_calib`** (lưu `mean/std` vào `router_params.json`), không dùng thống kê của test.
-
-### Bước 2 — Fit logistic regression (D7, ~2 h)
-
-```python
-X = np.stack([B, V_Lap, lam_bar], axis=1)      # [N,3] đã chuẩn hoá
-y = is_degraded                                  # 0/1 từ nhãn điều kiện của val_calib
-clf = LogisticRegression(C=1.0, max_iter=1000, class_weight="balanced").fit(X, y)
-```
-
-- `is_degraded` lấy từ **nhãn điều kiện** của `val_calib` (ảnh gốc clean vs ảnh đã qua pipeline suy biến của Task 7.8), **không** suy ra từ dự đoán model.
-- Báo cáo `AUC` của router trên `val_calib` (5-fold CV) và **histogram `w`** cho clean vs degraded — nếu hai histogram chồng lên nhau gần như hoàn toàn ⇒ router vô dụng, ghi nhận trước khi tốn công ablation.
-
-`router_params.json`:
-
-```json
-{
-  "schema": "degradation_router/v1",
-  "features": ["blockiness", "log1p_lapvar", "lambda_bar"],
-  "scaler": {"mean": [0.0, 0.0, 0.0], "std": [1.0, 1.0, 1.0]},
-  "coef": [0.0, 0.0, 0.0],
-  "intercept": 0.0,
-  "n_calib": 0,
-  "calib_auc": 0.0,
-  "threshold_table": [
-    {"w_min": 0.0, "w_max": 0.33, "threshold": 0.5},
-    {"w_min": 0.33, "w_max": 0.66, "threshold": 0.5},
-    {"w_min": 0.66, "w_max": 1.0, "threshold": 0.5}
-  ]
-}
-```
-
-**Ngưỡng theo `w`**: chia 3 khoảng theo **quantile** của `w` trên `val_calib` (không chia đều 0–1 nếu phân phối lệch). Trong mỗi khoảng, chọn ngưỡng thoả `FPR ≤ 5%` trên ảnh **Real** của khoảng đó. Nếu một khoảng có < 50 mẫu Real ⇒ gộp với khoảng bên cạnh và ghi rõ.
-
-### Bước 3 — Fusion (D8, ~1,5 h)
-
-```python
-def fuse(p_clean, p_forensic, w, threshold_table):
-    p = (1 - w) * p_clean + w * p_forensic
-    thr = threshold_for(w, threshold_table)   # theo từng ảnh, không theo batch
-    return p, (p >= thr).long(), thr
-```
-
-- `p_clean`, `p_forensic` phải là **xác suất đã hiệu chuẩn** (`softmax(logits / T)` với `T` từ Task 7.4).
-- `threshold_for` tra bảng theo `w` của **từng ảnh** — vector hoá bằng `torch.bucketize`.
-- Tuyệt đối không có `mean_w`, `mean_thresh`, hay bất kỳ phép trung bình nào trên batch.
-
-### Bước 4 — Ablation 3 mức (D8–D9, ~1,5 h)
-
-| Mức | Cấu hình | Vai trò |
-| :--- | :--- | :--- |
-| (a) **Fixed** | `w ≡ 0` hoặc `w ≡ 1` (chọn theo validation), ngưỡng cố định toàn cục | Baseline công bằng |
-| (b) **Router** | `w = w_deg(x)`, ngưỡng theo bảng | Đối tượng cần chứng minh |
-| (c) **Oracle** | Biết trước điều kiện thật (clean/Q30), chọn nhánh tương ứng | **Cận trên**, không triển khai được |
-
-Chấm trên **5 subset CFE** (600/600/400/200/200) × {clean, Q30}, bootstrap CI 1.000 lần.
-
-**Luật kết luận**: router chỉ được coi là **thắng** nếu `Fake@Real90` cao hơn mức (a) **≥ 1 pp** ở **≥ 3/5 subset**, với CI 95% không chồng lên nhau ở ít nhất 2 subset. Ngược lại ⇒ **báo cáo trung thực là không thắng** và G7.3 dùng ngưỡng cố định.
-
-### Bước 5 — Test (D8, ~0,5 h)
-
-`tests/test_router.py`:
-
-| # | Test | Kỳ vọng |
-| :---: | :--- | :--- |
-| T1 | `blockiness` ảnh tổng hợp có lưới 8×8 | Giá trị **cao hơn** ảnh phẳng cùng mean |
-| T2 | `w` bất biến theo batch | 1 ảnh vs 32 ảnh: `max|Δw| < 1e-6` |
-| T3 | `fuse` không dùng mean | Đảo thứ tự ảnh trong batch ⇒ kết quả từng ảnh không đổi |
-| T4 | `threshold_for` phủ toàn miền | `w ∈ {0, 0.5, 1}` đều trả ngưỡng hợp lệ, không `NaN` |
-
----
+Chọn fixed fallback để ưu tiên tiến độ không phải nghiệm thu kết quả âm của router. Nếu hoãn hoặc thu hẹp hạng mục thực nghiệm, phải ghi rõ thay đổi phạm vi; các mục DoD đo thật bên dưới vẫn chưa hoàn thành theo yêu cầu ban đầu. Calibration fallback phải đúng checkpoint, không kế thừa trực tiếp T/ngưỡng của baseline cho v2.
 
 ## 6. Definition of Done
 
-- [ ] `src/models/degradation_router.py` có 3 tín hiệu + `DegradationRouter`; không hằng số đặt tay.
-- [ ] `router_params.json` có hệ số, scaler, bảng ngưỡng, `n_calib`, `calib_auc`.
-- [ ] `fuse()` dùng `w_deg(x)` **từng ảnh**; grep `mean_w` trong `src/models/` trả về rỗng.
-- [ ] `logs/phase7/router_ablation.{json,md}` có **3 dòng** (fixed / router / oracle) + CI 95%.
-- [ ] Kết luận nêu rõ: thắng hay không thắng, kèm số pp chênh lệch trên từng subset.
-- [ ] `pytest -q tests/test_router.py` — 4/4 xanh.
-- [ ] Có fallback: nếu router không thắng, `unified_fatformer.py` chạy được với ngưỡng cố định.
-- [ ] `router_params.json` được nhúng vào metadata checkpoint ở Task 7.15.
+- [x] Tín hiệu, logistic inference, fusion theo ảnh và fallback.
+- [x] Collector đo thật, CLI fit không tạo đặc trưng giả lập; ngưỡng fit theo FPR.
+- [x] Ablation từ dự đoán, kiểm tra overlap, bootstrap và luật kết luận.
+- [x] Wrapper một backbone; từ chối artifact cũ; chỉ bật khi proof khớp.
+- [x] Unit/regression tests cho hook, batch lẫn nhiều ảnh, FPR/ties, provenance, overlap, bootstrap, fallback, state và wrapper.
+- [ ] Khôi phục ảnh/checkpoint, collect/fit để có router_params measured.
+- [ ] Chạy held-out ablation thật, kết luận thắng/không thắng với CI.
+- [ ] Nhúng metadata checkpoint, kiểm chứng latency và G7.3 ở Task 7.15/7.14.
 
----
-
-## 7. Rủi ro & giảm thiểu
-
-| Rủi ro | Khả năng | Tác động | Giảm thiểu | Kill criteria |
-| :--- | :---: | :---: | :--- | :--- |
-| Router sụp về 1 nhánh (`w` gần như hằng) | **Cao** | G7.3 vô nghĩa | Histogram `w` clean vs Q30 trước khi ablation | `w` gần hằng ⇒ bỏ router, dùng ngưỡng cố định |
-| `λ̄` không tách được clean/Q30 vì gating học kém | Trung bình | Giảm AUC router | Báo cáo AUC từng tín hiệu đơn lẻ; nếu `λ̄` vô dụng ⇒ dùng 2 biến, ghi rõ | — |
-| Fit ngưỡng trên cùng tập đánh giá | Trung bình | Số liệu ảo | `val_calib` ≠ 5 subset CFE; kiểm tra bằng hash danh sách ảnh | Fit và báo cáo cùng tập ⇒ huỷ |
-| Blockiness bị nhiễu do ảnh đã resize 224 | Trung bình | Tín hiệu yếu | Đo trên ảnh gốc nếu có; nếu chỉ có 224, ghi rõ hạn chế | — |
-| Oracle bị hiểu nhầm là kết quả thật | Cao | Phản biện bắt lỗi | Nhãn **ORACLE — không triển khai được** trong mọi bảng | — |
-| Quá 8 h công ⇒ trễ D9 | Trung bình | Trễ G7.3 | Ưu tiên (a)+(b); oracle chỉ chạy 1 subset nếu thiếu thời gian | — |
-
----
-
-## 8. Liên kết
-
-- Kế hoạch Phase 7: [`../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2
-- Hiệu chuẩn: [`../../member_c_training_eval/phase_7/task_7.4_calibration_threshold_fpr.md`](../../member_c_training_eval/phase_7/task_7.4_calibration_threshold_fpr.md)
-- Đóng gói: [`../../member_c_training_eval/phase_7/task_7.15_unified_packaging.md`](../../member_c_training_eval/phase_7/task_7.15_unified_packaging.md)
-- Benchmark cuối: [`../../member_c_training_eval/phase_7/task_7.14_locked_benchmark_phase7.md`](../../member_c_training_eval/phase_7/task_7.14_locked_benchmark_phase7.md)
-- Chỉ mục giai đoạn: [`README.md`](README.md)
+Artifacts DATASET/logs/phase7/router_params.json và router_ablation.{json,md} hiện chỉ là marker chờ đo, không phải model deployable. Xem báo cáo để biết lệnh chạy lại và giới hạn local.

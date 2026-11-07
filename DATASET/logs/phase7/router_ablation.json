@@ -1,69 +1,19 @@
 {
-  "schema": "router_ablation/v1",
-  "evidence_level": "measured",
-  "note": "So sánh 3 mức Fixed vs Router vs Oracle trên 5 subsets CommunityForensics",
-  "summary": "Router THẮNG theo luật DoD: vượt ngưỡng cố định >= 1.0 pp ở 5/5 subsets CFE.",
-  "subsets": {
-    "1_commercial": {
-      "fixed": 56.96,
-      "router": 61.63,
-      "oracle": 64.14,
-      "delta_pp": 4.67,
-      "win": true,
-      "ci95_router": [
-        58.83,
-        64.43
-      ]
-    },
-    "2_latent_diffusion": {
-      "fixed": 34.02,
-      "router": 54.52,
-      "oracle": 65.56,
-      "delta_pp": 20.5,
-      "win": true,
-      "ci95_router": [
-        51.72,
-        57.32
-      ]
-    },
-    "3_pixel_diffusion": {
-      "fixed": 40.51,
-      "router": 61.08,
-      "oracle": 72.15,
-      "delta_pp": 20.57,
-      "win": true,
-      "ci95_router": [
-        58.28,
-        63.88
-      ]
-    },
-    "4_modern_gans": {
-      "fixed": 75.9,
-      "router": 91.56,
-      "oracle": 100.0,
-      "delta_pp": 15.66,
-      "win": true,
-      "ci95_router": [
-        88.76,
-        94.36
-      ]
-    },
-    "5_other_autoregressive": {
-      "fixed": 9.88,
-      "router": 24.32,
-      "oracle": 32.1,
-      "delta_pp": 14.44,
-      "win": true,
-      "ci95_router": [
-        21.52,
-        27.12
-      ]
-    }
-  },
+  "schema": "router_ablation/v2",
+  "status": "awaiting_measured_evaluation",
+  "evidence_level": "unverified",
+  "gate_eligible": false,
+  "subsets": {},
   "verdict": {
-    "wins": 5,
+    "wins": null,
     "total_subsets": 5,
-    "criteria_met": true,
-    "fallback_required": false
-  }
+    "ci_separated": null,
+    "criteria_met": false,
+    "fallback_required": true
+  },
+  "invalidation": {
+    "original_commit": "13749f6",
+    "reason": "Invalidated after code review: v1 fitted random synthetic features, assigned thresholds, and interpolated router scores/CI instead of measuring predictions."
+  },
+  "next_step": "Run held-out image-level evaluation and paired bootstrap after measured calibration. No measured router win or loss is established."
 }

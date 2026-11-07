@@ -74,37 +74,22 @@ Biến kết quả nghiên cứu thành **một artifact dùng được**: một
 ### Bước 1 — Wrapper `UnifiedFatFormerXLA` (D11, ~1,5 h)
 
 ```python
-class UnifiedFatFormerXLA(nn.Module):
-    def __init__(self, backbone, router=None, calibration=None, router_enabled=False):
-        super().__init__()
-        self.backbone = backbone
-        self.router = router
-        self.calibration = calibration or {}
-        self.router_enabled = router_enabled
+# Reuse the implementation delivered by Task 7.13.
+from src.models.unified_fatformer import UnifiedFatFormerXLA
 
-    @torch.no_grad()
-    def predict(self, x: torch.Tensor) -> dict:
-        """x: [B,3,224,224] đã normalize. Trả dict:
-        prob_fake [B], label [B], w_deg [B] | None, threshold [B]"""
-        logits, feats = self.backbone(x, return_features=True)
-        T = self.calibration.get("T", 1.0)
-        p_clean = torch.softmax(logits / T, dim=-1)[:, 1]
+unified = UnifiedFatFormerXLA(
+    backbone=backbone,                 # canonical-loaded model
+    checkpoint_sha256=load_report["sha256"],
+    calibration=calibration,            # measured calibration for this checkpoint
+    router_params=router_params,        # fitted v2 parameters, or None
+    router_ablation=router_ablation,    # matching measured win proof, or None
+).eval()
+outputs = unified(x)                  # CLIP-normalized input
+# Per-image outputs: prob_fake, label, w_deg, threshold.
 
-        if self.router_enabled and self.router is not None:
-            w = self.router(feats, x)                       # [B] từng ảnh
-            p_forensic = p_clean                            # cùng backbone, khác nhánh gating
-            p = (1 - w) * p_clean + w * p_forensic
-            thr = self.router.threshold_for(w)              # vector [B]
-        else:
-            w = None
-            p = p_clean
-            thr = torch.full_like(p, self.calibration["T_star"]["0.05"])
-
-        return {"prob_fake": p, "label": (p >= thr).long(),
-                "w_deg": w, "threshold": thr}
 ```
 
-> **Ghi chú thiết kế**: vì chỉ có **một** backbone, `p_clean` và `p_forensic` chia sẻ logits; router điều chỉnh **ngưỡng** và **trọng số** chứ không chạy 2 model. Nếu B quyết định dùng 2 nhánh thật (ví dụ gating mở/tắt SRM), phải chứng minh độ trễ < 5 ms — nếu không, giữ thiết kế một nhánh và ghi rõ.
+> **Implementation 7.13:** một backbone; hai xác suất từ cùng logits, temperature clean/Q30 riêng fit trên cùng checkpoint. Chỉ bật router với proof thắng hợp lệ. Thiếu fitted params cần calibration/v1 measured đúng checkpoint; thiếu calibration không tự đặt ngưỡng. Khung đã có không thay thế việc đóng gói và đo latency <5 ms ở task này.
 
 ### Bước 2 — Đóng gói checkpoint (D11, ~0,5 h)
 

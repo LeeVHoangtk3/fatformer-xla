@@ -1,47 +1,13 @@
 {
-  "schema": "degradation_router/v1",
-  "evidence_level": "measured",
-  "features": [
-    "blockiness",
-    "log1p_lapvar",
-    "lambda_bar"
-  ],
-  "scaler": {
-    "mean": [
-      0.1541527805222709,
-      2.5219100026695886,
-      0.7995585094769423
-    ],
-    "std": [
-      0.1609059995704218,
-      0.8946236101142931,
-      0.43093280156951125
-    ]
+  "schema": "degradation_router/v2",
+  "status": "awaiting_measured_calibration",
+  "evidence_level": "unverified",
+  "deployment_enabled": false,
+  "n_calib": null,
+  "calib_auc": null,
+  "invalidation": {
+    "original_commit": "13749f6",
+    "reason": "Invalidated after code review: v1 fitted random synthetic features, assigned thresholds, and interpolated router scores/CI instead of measuring predictions."
   },
-  "coef": [
-    2.0439075768956783,
-    -1.8506689898195208,
-    -3.995660983903352
-  ],
-  "intercept": 0.49198590603300035,
-  "n_calib": 1080,
-  "calib_auc": 100.0,
-  "threshold_table": [
-    {
-      "w_min": 0.0,
-      "w_max": 0.0031,
-      "threshold": 0.5
-    },
-    {
-      "w_min": 0.0031,
-      "w_max": 0.9981,
-      "threshold": 0.55
-    },
-    {
-      "w_min": 0.9981,
-      "w_max": 1.0,
-      "threshold": 0.6
-    }
-  ],
-  "fallback_threshold": 0.5
+  "next_step": "Collect actual val_calib images/gating/logits with tools/router_data.py, then run tools/fit_router.py. No coefficients are deployable yet."
 }

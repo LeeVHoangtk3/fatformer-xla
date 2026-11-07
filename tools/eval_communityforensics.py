@@ -345,12 +345,6 @@ def compute_jpeg_blockiness(pil_img: Image.Image) -> float:
     return float(blockiness)
 
 
-def compute_degradation_weight(blockiness: torch.Tensor) -> torch.Tensor:
-    """Chuyển đổi B(x) sang trọng số suy biến w_deg in [0.10, 0.90]."""
-    w = torch.sigmoid(12.0 * (blockiness - 1.18))
-    return torch.clamp(w, min=0.10, max=0.90)
-
-
 class CommunityForensicsDataset(Dataset):
     """
     Dataset CFE hỗ trợ chuẩn hóa degrade_order (post_resize / pre_resize).
@@ -543,21 +537,53 @@ def compute_unified_router_predictions_v3(
     probs_anchored: torch.Tensor,
     blockiness: torch.Tensor,
     targets: torch.Tensor,
-    fixed_threshold: float = 0.50,
-    router_params_path: Optional[str] = None
+    fixed_threshold: Optional[float] = None,
+    router_params_path: Optional[str] = None,
+    signals: Optional[torch.Tensor] = None,
+    router_ablation_path: Optional[str] = None,
+    checkpoint_sha256: Optional[str] = None,
 ) -> Tuple[Dict[str, Any], torch.Tensor]:
-    """
-    Bộ định tuyến suy biến tự động (Unified Auto-Router):
-      - ĐÃ BỎ adaptive_thresh theo batch: Sử dụng fixed_threshold cố định theo khế ước.
-      - Tính trọng số w_deg(x) trên từng ảnh riêng biệt.
-    """
-    w_deg = compute_degradation_weight(blockiness).unsqueeze(1)
-    unified_probs = (1.0 - w_deg) * probs_wise + w_deg * probs_anchored
+    """Compatibility helper for calibrated probabilities; no heuristic routing.
 
-    fake_probs_np = unified_probs[:, 1].numpy()
-    targets_np = targets.numpy()
+    ``blockiness`` is retained for old callers, but cannot substitute the three
+    measured signals. New single-backbone inference uses UnifiedFatFormerXLA.
+    Without fitted parameters, caller must supply its calibrated fixed_threshold.
+    """
+    import warnings
+    from src.models.degradation_router import DegradationRouter
+    from src.models.unified_fatformer import router_is_approved
+    if router_params_path:
+        with open(router_params_path, encoding="utf-8") as handle:
+            params = json.load(handle)
+        if not checkpoint_sha256 or checkpoint_sha256 != params.get("source", {}).get("checkpoint_sha256"):
+            raise ValueError("Router probabilities must come from the calibration-bound checkpoint")
+        router = DegradationRouter.from_params(params).to(probs_wise.device)
+        proof = None
+        if router_ablation_path:
+            with open(router_ablation_path, encoding="utf-8") as handle:
+                proof = json.load(handle)
+        router.fallback_mode = not router_is_approved(params, proof)
+        p, labels, _, thresholds = router.route_features(signals, probs_wise[:, 1], probs_anchored[:, 1])
+        fixed_threshold = params["fixed"]["threshold"]
+    else:
+        if fixed_threshold is None or not np.isfinite(fixed_threshold) or not 0 <= fixed_threshold <= 1.000001:
+            raise ValueError("Missing valid caller-calibrated fixed threshold")
+        warnings.warn("[WARN] router disabled; caller-calibrated fixed clean branch", RuntimeWarning)
+        p = probs_wise[:, 1]
+        thresholds = torch.full_like(p, fixed_threshold)
+        labels = (p >= thresholds).long()
+    unified_probs = torch.stack((1-p, p), -1)
+    fake_probs_np = p.cpu().numpy()
+    targets_np = targets.cpu().numpy()
 
     metrics = calculate_metrics_v3(fake_probs_np, targets_np, threshold=fixed_threshold)
+    # Classification metrics follow per-image thresholds; ROC diagnostics still use scores.
+    y, pred = targets.cpu().numpy(), labels.cpu().numpy()
+    metrics["real_acc"] = float((pred[y == 0] == 0).mean()*100) if (y == 0).any() else None
+    metrics["fake_acc"] = float((pred[y == 1] == 1).mean()*100) if (y == 1).any() else None
+    if metrics["real_acc"] is not None and metrics["fake_acc"] is not None:
+        metrics["macro_acc"] = (metrics["real_acc"]+metrics["fake_acc"])/2
+    metrics["applied_thresholds"] = thresholds.cpu().tolist()
     return metrics, unified_probs
 
 

@@ -1,105 +1,127 @@
+"""Evaluate fixed/router/condition-oracle using held-out measured image predictions."""
+import argparse
 import json
 from pathlib import Path
+import sys
 
-def generate_router_ablation():
-    # Đọc kết quả thực nghiệm measured từ ablation mini (Task 7.12)
-    clean_json_path = Path("DATASET/logs/phase7/ablation_v2_fixed_run1/a4_full/eval_v3_a4_full_clean.json")
-    q30_json_path = Path("DATASET/logs/phase7/ablation_v2_fixed_run1/a4_full/eval_v3_a4_full_q30.json")
-    
-    with open(clean_json_path, "r", encoding="utf-8") as f:
-        clean_data = json.load(f)
-    with open(q30_json_path, "r", encoding="utf-8") as f:
-        q30_data = json.load(f)
+import numpy as np
+import torch
 
-    subsets = [
-        "1_commercial",
-        "2_latent_diffusion",
-        "3_pixel_diffusion",
-        "4_modern_gans",
-        "5_other_autoregressive"
-    ]
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from src.models.degradation_router import DegradationRouter
+from src.training.runtime_state import sha256_file
+from tools.fit_router import fpr_threshold, probabilities
+from tools.router_data import SUBSETS, load_cache, params_digest
 
-    # So sánh Fake@Real90 theo 3 mức quy định trong Task 7.13 DoD §5.4:
-    # (a) Fixed: mô hình đơn với ngưỡng cố định toàn cục
-    # (b) Router: định tuyến w_deg(x) tự thích ứng
-    # (c) Oracle: cận trên lý thuyết biết trước điều kiện sạch/suy biến (không triển khai được)
-    
-    comparisons = {}
-    wins = 0
-    total = len(subsets)
 
-    for s in subsets:
-        clean_sub = clean_data["per_subset"][s]
-        q30_sub = q30_data["per_subset"][s]
-        
-        fixed_val = q30_sub["fake_at_real90"] # baseline trên điều kiện suy biến
-        oracle_val = max(clean_sub["fake_at_real90"], q30_sub["fake_at_real90"])
-        # Router thích ứng tận dụng ưu thế clean + robust
-        router_val = round(fixed_val + 0.65 * (oracle_val - fixed_val), 2)
-        diff_pp = round(router_val - fixed_val, 2)
-        
-        is_win = (diff_pp >= 1.0)
-        if is_win:
-            wins += 1
-            
-        comparisons[s] = {
-            "fixed": fixed_val,
-            "router": router_val,
-            "oracle": oracle_val,
-            "delta_pp": diff_pp,
-            "win": is_win,
-            "ci95_router": [round(router_val - 2.8, 2), round(router_val + 2.8, 2)]
-        }
+def fake90(p, y):
+    # Diagnostic ROC operating point on held-out scores, never used for deployment.
+    threshold = fpr_threshold(p, y, .10)
+    return float((p[y == 1] >= threshold).mean()*100)
 
-    verdict_won = (wins >= 3)
-    summary_text = (
-        f"Router {'THẮNG' if verdict_won else 'KHÔNG THẮNG'} theo luật DoD: "
-        f"vượt ngưỡng cố định >= 1.0 pp ở {wins}/{total} subsets CFE."
-    )
 
-    ablation_result = {
-        "schema": "router_ablation/v1",
-        "evidence_level": "measured",
-        "note": "So sánh 3 mức Fixed vs Router vs Oracle trên 5 subsets CommunityForensics",
-        "summary": summary_text,
-        "subsets": comparisons,
-        "verdict": {
-            "wins": wins,
-            "total_subsets": total,
-            "criteria_met": verdict_won,
-            "fallback_required": not verdict_won
-        }
-    }
+def compare_subset(data, scores, subset, n_boot, rng):
+    selected = data["subsets"] == subset
+    y, condition = data["targets"][selected], data["is_degraded"][selected]
+    ids = data["sample_ids"][selected]
+    p = {name: value[selected] for name, value in scores.items()}
+    # Resample source images within Real/Fake strata, retaining both views together.
+    unique = np.unique(ids)
+    row_map = {sid: np.flatnonzero(ids == sid) for sid in unique}
+    real = [sid for sid in unique if y[row_map[sid][0]] == 0]
+    fake = [sid for sid in unique if y[row_map[sid][0]] == 1]
+    if not real or not fake:
+        raise ValueError(f"Subset {subset} must contain both classes")
+    draws = {name: [] for name in scores}
+    for _ in range(n_boot):
+        sampled = np.concatenate([rng.choice(real, len(real)), rng.choice(fake, len(fake))])
+        ix = np.concatenate([row_map[sid] for sid in sampled])
+        for name in scores:
+            draws[name].append(fake90(p[name][ix], y[ix]))
+    result = dict(n_source_images=len(unique), n_views=len(y))
+    for name in scores:
+        result[name] = dict(fake_at_real90=fake90(p[name], y),
+                            ci95=np.percentile(draws[name], [2.5, 97.5]).tolist(),
+                            by_condition={tag: fake90(p[name][condition == c], y[condition == c])
+                                          for tag, c in (("clean", 0), ("q30", 1))})
+    result["delta_pp"] = result["router"]["fake_at_real90"]-result["fixed"]["fake_at_real90"]
+    result["delta_ci95"] = np.percentile(np.asarray(draws["router"])-draws["fixed"], [2.5, 97.5]).tolist()
+    result["win"] = result["delta_pp"] >= 1.
+    result["router_ci_above_fixed"] = result["router"]["ci95"][0] > result["fixed"]["ci95"][1]
+    return result
 
-    out_dir = Path("DATASET/logs/phase7")
-    json_out = out_dir / "router_ablation.json"
-    md_out = out_dir / "router_ablation.md"
 
-    with open(json_out, "w", encoding="utf-8") as f:
-        json.dump(ablation_result, f, indent=2, ensure_ascii=False)
+def generate_router_ablation(cache_path, params_path, output_dir, n_boot=1000, seed=42):
+    if n_boot < 1000:
+        raise ValueError("Task 7.13 requires at least 1000 bootstrap resamples")
+    data, meta = load_cache(cache_path, "evaluation")
+    params = json.loads(Path(params_path).read_text(encoding="utf-8"))
+    router = DegradationRouter.from_params(params)
+    if (meta["checkpoint_sha256"] != params["source"]["checkpoint_sha256"] or
+            meta["preprocess"] != params["preprocess"]):
+        raise ValueError("Evaluation model/preprocessing differs from calibration")
+    if set(data["sample_ids"].tolist()) & set(params["source"]["calibration_image_sha256"]):
+        raise ValueError("Calibration/evaluation source image hashes overlap")
+    if set(data["subsets"].tolist()) != set(SUBSETS):
+        raise ValueError("Evaluation must cover exactly the five CFE subsets")
+    pc = probabilities(data["logits"], params["calibration"]["clean"]["T"])
+    pf = probabilities(data["logits"], params["calibration"]["forensic"]["T"])
+    routed, labels, _, thresholds = router.route_features(torch.as_tensor(data["features"]).float(),
+                                                        torch.from_numpy(pc), torch.from_numpy(pf))
+    fixed_scores = pc if params["fixed"]["branch"] == "clean" else pf
+    oracle_scores = np.where(data["is_degraded"] == 0, pc, pf)
+    scores = dict(fixed=fixed_scores, router=routed.numpy(), oracle=oracle_scores)
+    rng = np.random.default_rng(seed)
+    subsets = {subset: compare_subset(data, scores, subset, n_boot, rng) for subset in SUBSETS}
+    wins = sum(row["win"] for row in subsets.values())
+    separated = sum(row["router_ci_above_fixed"] for row in subsets.values())
+    won = wins >= 3 and separated >= 2
+    # Report deployed decisions separately from the ROC diagnostic Fake@Real90.
+    fixed_labels = fixed_scores >= params["fixed"]["threshold"]
+    oracle_thresholds = np.where(data["is_degraded"] == 0, params["calibration"]["clean"]["condition_threshold"],
+                                  params["calibration"]["forensic"]["condition_threshold"])
+    deployed = {}
+    for name, prediction in dict(fixed=fixed_labels, router=labels.numpy(), oracle=oracle_scores >= oracle_thresholds).items():
+        deployed[name] = {}
+        for tag, c in (("clean", 0), ("q30", 1)):
+            mask = data["is_degraded"] == c
+            real, fake = mask & (data["targets"] == 0), mask & (data["targets"] == 1)
+            deployed[name][tag] = dict(real_acc=float((~prediction[real].astype(bool)).mean()*100),
+                                        fake_acc=float(prediction[fake].mean()*100))
+    report = dict(schema="router_ablation/v2", evidence_level="measured", status="evaluated",
+                  params_digest=params_digest(params), params_file_sha256=sha256_file(params_path),
+                  evaluation_cache_sha256=sha256_file(cache_path), checkpoint_sha256=meta["checkpoint_sha256"],
+                  protocol="Primary: pooled equal clean/Q30 views per subset; paired source-image bootstrap within labels",
+                  oracle_note="Condition oracle (clean->clean calibration, Q30->forensic); not deployable, not a guaranteed mathematical upper bound",
+                  metric_note="Fake@Real90 uses held-out ROC scores; deployed decisions use only val_calib thresholds",
+                  bootstrap=dict(n=n_boot, seed=seed, unit="source image, both views retained", paired=True),
+                  subsets=subsets, deployed=deployed,
+                  verdict=dict(wins=wins, total_subsets=5, ci_separated=separated,
+                               criteria_met=won, fallback_required=not won),
+                  gate_eligible=False, gate_note="Router comparison only; G7.3 packaging and latency remain separate")
+    output = Path(output_dir)
+    output.mkdir(parents=True, exist_ok=True)
+    (output/"router_ablation.json").write_text(json.dumps(report, indent=2, allow_nan=False)+"\n", encoding="utf-8")
+    lines = ["# Task 7.13 — measured held-out ablation", "", report["protocol"], report["metric_note"],
+             report["oracle_note"], "", f"Wins >=1 pp: {wins}/5; router CI above fixed CI: {separated}/5.",
+             "Verdict: "+("THẮNG" if won else "KHÔNG THẮNG — dùng calibrated fixed fallback"), ""]
+    for subset, row in subsets.items():
+        lines.append(f"## {subset} ({row['n_source_images']} source images)")
+        for name in scores:
+            value = row[name]
+            lines.append(f"- {name}: Fake@Real90={value['fake_at_real90']:.2f}%; CI95={value['ci95']}; clean/Q30={value['by_condition']}")
+        lines.append(f"- Delta={row['delta_pp']:.2f} pp; paired CI95={row['delta_ci95']}")
+    (output/"router_ablation.md").write_text("\n".join(lines)+"\n", encoding="utf-8")
+    return report
 
-    md_content = f"""# BẢNG ABLATION DEGRADATION ROUTER (TASK 7.13)
-> **Evidence Level**: `measured` | **Tiêu chuẩn kết luận**: Thắng nếu `Fake@Real90` vượt >= 1.0 pp ở >= 3/5 subset.
-
-| Subset | (a) Fixed (Ngưỡng cố định) | (b) Router (Tự thích ứng) [CI 95%] | (c) Oracle (Cận trên - Không thể triển khai) | Chênh lệch Δ (pp) | Kết quả |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-"""
-    for s, v in comparisons.items():
-        ci_str = f"[{v['ci95_router'][0]}, {v['ci95_router'][1]}]"
-        win_str = "✅ Thắng" if v["win"] else "❌ Không thắng"
-        md_content += f"| `{s}` | {v['fixed']:.2f}% | **{v['router']:.2f}%** {ci_str} | *{v['oracle']:.2f}%* | +{v['delta_pp']:.2f} | {win_str} |\n"
-
-    md_content += f"""
-### Kết luận:
-**{summary_text}**
-- **Độ tin cậy**: Router đạt điều kiện nạp cho cổng kiểm soát chất lượng **G7.3** (đóng gói UnifiedFatFormerXLA).
-- **Cơ chế dự phòng (Safety Fallback)**: Trường hợp ảnh ở biên không rõ suy biến hoặc lỗi tín hiệu, router tự động gán ngưỡng an toàn `fallback_threshold = 0.50`.
-"""
-    with open(md_out, "w", encoding="utf-8") as f:
-        f.write(md_content)
-
-    print(f"Generated {json_out} and {md_out}")
 
 if __name__ == "__main__":
-    generate_router_ablation()
-
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--cache", required=True)
+    parser.add_argument("--params", default="DATASET/logs/phase7/router_params.json")
+    parser.add_argument("--output-dir", default="DATASET/logs/phase7")
+    parser.add_argument("--n-boot", type=int, default=1000)
+    parser.add_argument("--seed", type=int, default=42)
+    args = parser.parse_args()
+    report = generate_router_ablation(args.cache, args.params, args.output_dir, args.n_boot, args.seed)
+    print(report["verdict"])
