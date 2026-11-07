@@ -409,16 +409,13 @@ def build_locked_model(checkpoint_path: str, clip_path: str, device: torch.devic
     )
 
     if use_canonical and checkpoint_path and os.path.exists(checkpoint_path):
-        try:
-            from src.models.canonical_loader import load_canonical
-            print(f"[*] Dang nap checkpoint theo chuan Canonical Loader (strict=True): {checkpoint_path}")
-            model, load_report = load_canonical(checkpoint_path, model_args)
-            print(f"[✓] Nap Canonical Loader thanh cong: layout={load_report.get('layout')}, missing={load_report.get('missing')}, unexpected={load_report.get('unexpected')}")
-            model = model.to(device)
-            model.eval()
-            return model
-        except Exception as e:
-            print(f"[!] Loi khi nap qua Canonical Loader ({e}). Chuyen sang fallback.")
+        from src.models.canonical_loader import load_canonical
+        print(f"[*] Dang nap checkpoint theo chuan Canonical Loader (strict=True): {checkpoint_path}")
+        model, load_report = load_canonical(checkpoint_path, model_args)
+        print(f"[✓] Nap Canonical Loader thanh cong: layout={load_report.get('layout')}, missing={load_report.get('missing')}, unexpected={load_report.get('unexpected')}")
+        model = model.to(device)
+        model.eval()
+        return model
 
     from src.models import build_model
     print(f"[*] Dang khoi dung kien truc FatFormer-XLA (SRM 3-Kernels + Gating)...")
@@ -1173,13 +1170,15 @@ def main():
     print(f"[✓] Da xuat bao cao JSON tong hop che do kep ra: {report_json}")
 
     if args.export_phase7:
+        from src.training.runtime_state import sha256_file
+        ckpt_sha = sha256_file(resolved_ckpt) if resolved_ckpt and os.path.exists(resolved_ckpt) else "N/A"
         phase7_json = os.path.join(args.output_dir, "indist_phase7.json")
         indist_payload = {
             "report_schema": "v3",
             "task": "7.14",
             "checkpoint": {
                 "path": resolved_ckpt or "N/A",
-                "sha256": "N/A"
+                "sha256": ckpt_sha
             },
             "calibration": {
                 "source": args.calibration or "default",

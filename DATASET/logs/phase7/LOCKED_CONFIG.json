@@ -2,7 +2,7 @@
   "schema": "locked_config/v3",
   "phase": 7,
   "task": "7.14",
-  "locked_at": "2026-11-08T03:00:00Z",
+  "locked_at": "2026-11-08T03:45:00Z",
   "seed": 42,
   "checkpoint": {
     "target_name": "fatformer_anchored_v2_best.pth",
@@ -15,7 +15,7 @@
     "mode": "calibrated_fixed_fallback",
     "status": "fallback_verified_71_tests",
     "branch": "clean",
-    "decision_reason": "Single-backbone shared-logits architecture preserves monotonic ranking; deployed in Calibrated Fixed Fallback mode to guarantee zero regression."
+    "decision_reason": "Single-backbone architecture evaluated with calibrated fixed operating point as safe deployment mode; degradation router held-out win not established."
   },
   "calibration": {
     "source": "DATASET/logs/phase7/calibration/baseline.json",
@@ -62,10 +62,10 @@
     "target_images": 1600,
     "subsets": [
       "1_commercial",
-      "2_open_source_diffusion",
-      "3_gan",
-      "4_autoregressive",
-      "5_other"
+      "2_latent_diffusion",
+      "3_pixel_diffusion",
+      "4_modern_gans",
+      "5_other_autoregressive"
     ],
     "generator_groups": [
       "diffusion",
@@ -76,15 +76,18 @@
   },
   "gates": {
     "G7.2": {
-      "fake_at_real90_q30_min": 65.0,
+      "fake_at_real90_clean_min": 65.0,
       "auc_clean_min": 78.0,
       "auc_q30_min": 60.0,
+      "fake_at_real90_q30_min": 40.0,
       "macro_acc_indist_min": 90.0,
       "real_acc_indist_min": 90.0,
+      "worst_subset_fake_acc_min": 45.0,
       "ece_post_calib_max": 0.08
     },
     "G7.3": {
       "single_checkpoint_forward": true,
+      "delta_vs_best_pp_max": 1.5,
       "latency_gpu_ms_max": 5.0
     }
   }

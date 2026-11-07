@@ -735,9 +735,9 @@ def generate_markdown_report_v3(
 
 def parse_args():
     parser = argparse.ArgumentParser(description="FatFormer-XLA CommunityForensics-Eval Benchmark Pipeline v3.0")
-    parser.add_argument("--data_dir", type=str, default="/content/dataset_local/test_communityforensics")
+    parser.add_argument("--data_dir", "--data_root", "--cfe_dir", type=str, default="/content/dataset_local/test_communityforensics")
     parser.add_argument("--clip_path", type=str, default="")
-    parser.add_argument("--checkpoint", "-c", type=str, default="")
+    parser.add_argument("--checkpoint", "--checkpoint_path", "-c", type=str, default="")
     parser.add_argument("--baseline_ckpt", type=str, default="")
     parser.add_argument("--wise_ckpt", type=str, default="")
     parser.add_argument("--anchored_ckpt", type=str, default="")
