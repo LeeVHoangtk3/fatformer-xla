@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU**
 - **Độ ưu tiên**: 🟠 Cao — điều kiện của G7.3 (một checkpoint, tự định tuyến)
 - **Cổng liên quan**: nạp cho **G7.3** (D10)
-- **Trạng thái**: `[ ] Sẵn sàng`
+- **Trạng thái**: `[x] ĐÃ HOÀN THÀNH` ([Báo cáo](../../../bao_cao/B/bao_cao_task_7.13_degradation_router.md))
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.13
 
 ---
