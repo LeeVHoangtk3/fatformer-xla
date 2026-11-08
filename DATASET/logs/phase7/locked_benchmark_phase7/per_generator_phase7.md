@@ -1,0 +1,24 @@
+# PHÂN TÍCH HIỆU NĂNG PER-GENERATOR (5 SUBSETS × 4 NHÓM KIẾN TRÚC)
+
+| Subset | Nhóm Generator | Số Real | Số Fake | AUC Clean (%) | Fake@Real90 Clean (%) | AUC Q30 (%) | Fake@Real90 Q30 (%) | Ghi chú |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| `1_commercial` | `diffusion` | 237 | 237 | 88.17 | 65.4 | 85.21 | 56.96 | Hợp lệ |
+| `1_commercial` | `gan` | 237 | 0 | — | — | — | — | Không có mẫu fake/real |
+| `1_commercial` | `autoregressive` | 237 | 0 | — | — | — | — | Không có mẫu fake/real |
+| `1_commercial` | `other` | 237 | 0 | — | — | — | — | Không có mẫu fake/real |
+| `2_latent_diffusion` | `diffusion` | 251 | 241 | 87.45 | 60.17 | 75.7 | 34.02 | Hợp lệ |
+| `2_latent_diffusion` | `gan` | 251 | 0 | — | — | — | — | Không có mẫu fake/real |
+| `2_latent_diffusion` | `autoregressive` | 251 | 0 | — | — | — | — | Không có mẫu fake/real |
+| `2_latent_diffusion` | `other` | 251 | 0 | — | — | — | — | Không có mẫu fake/real |
+| `3_pixel_diffusion` | `diffusion` | 160 | 158 | 88.28 | 53.8 | 78.95 | 30.38 | Hợp lệ |
+| `3_pixel_diffusion` | `gan` | 160 | 0 | — | — | — | — | Không có mẫu fake/real |
+| `3_pixel_diffusion` | `autoregressive` | 160 | 0 | — | — | — | — | Không có mẫu fake/real |
+| `3_pixel_diffusion` | `other` | 160 | 0 | — | — | — | — | Không có mẫu fake/real |
+| `4_modern_gans` | `diffusion` | 78 | 0 | — | — | — | — | Không có mẫu fake/real |
+| `4_modern_gans` | `gan` | 78 | 83 | 99.94 | 100.0 | 92.17 | 71.08 | Hợp lệ |
+| `4_modern_gans` | `autoregressive` | 78 | 0 | — | — | — | — | Không có mẫu fake/real |
+| `4_modern_gans` | `other` | 78 | 0 | — | — | — | — | Không có mẫu fake/real |
+| `5_other_autoregressive` | `diffusion` | 74 | 0 | — | — | — | — | Không có mẫu fake/real |
+| `5_other_autoregressive` | `gan` | 74 | 0 | — | — | — | — | Không có mẫu fake/real |
+| `5_other_autoregressive` | `autoregressive` | 74 | 81 | 75.76 | 55.56 | 61.19 | 20.99 | Hợp lệ |
+| `5_other_autoregressive` | `other` | 74 | 0 | — | — | — | — | Không có mẫu fake/real |

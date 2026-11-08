@@ -1,0 +1,523 @@
+{
+  "metadata": {
+    "task": "Task 6.6-R Final Locked Benchmark (Phase 6-R Single-Pass Dual-Mode)",
+    "timestamp": "2026-11-08 08:58:46",
+    "checkpoint": "fatformer_anchored_v2_best.pth",
+    "temperature_calibrated": 1.6402,
+    "threshold_mode1": 0.9127,
+    "threshold_mode2": 0.4,
+    "bootstrap_replicates": 1000,
+    "is_dummy_mode": false
+  },
+  "mode1_standard_balanced": {
+    "threshold": 0.9127,
+    "description": "Standard Balanced Mode for international CVPR 2024 academic comparison",
+    "summary": {
+      "mean_gans": {
+        "group": "GANs",
+        "subset": "MEAN_GANS",
+        "num_samples": 62003,
+        "macro_acc": 94.72953765722212,
+        "real_acc": 91.16870855909747,
+        "fake_acc": 98.29036675534675,
+        "auc": 98.90315342933872,
+        "ap": 98.88036846467432,
+        "elapsed_sec": 677.49
+      },
+      "mean_diffusion": {
+        "group": "Diffusion",
+        "subset": "MEAN_DIFFUSION",
+        "num_samples": 20000,
+        "macro_acc": 87.045,
+        "real_acc": 83.48,
+        "fake_acc": 90.61000000000001,
+        "auc": 95.02841000000001,
+        "ap": 96.09921221129478,
+        "elapsed_sec": 219.75
+      },
+      "mean_overall": {
+        "group": "Overall",
+        "subset": "MEAN_OVERALL",
+        "num_samples": 82003,
+        "macro_acc": 90.4603500698765,
+        "real_acc": 86.89720380404333,
+        "fake_acc": 94.02349633570967,
+        "auc": 96.7505181908172,
+        "ap": 97.33528165724124,
+        "elapsed_sec": 897.24
+      },
+      "pooled_overall": {
+        "macro_acc": 93.43346987805322,
+        "overall_acc": 93.4331670792532,
+        "real_acc": 90.67453543383895,
+        "fake_acc": 96.19240432226749,
+        "auc": 98.2809355228956,
+        "ap": 98.52840343791136,
+        "mode2": {
+          "macro_acc": 80.65878073874312,
+          "overall_acc": 80.65680523883273,
+          "real_acc": 62.65912305516266,
+          "fake_acc": 98.65843842232358,
+          "auc": 98.2809355228956,
+          "ap": 98.52840343791136
+        }
+      },
+      "cluster_macro_acc_95_ci": [
+        87.09,
+        93.6
+      ],
+      "cluster_auc_95_ci": [
+        94.46,
+        98.62
+      ],
+      "cluster_ap_95_ci": [
+        95.46,
+        98.85
+      ]
+    },
+    "subsets": [
+      {
+        "group": "GANs",
+        "subset": "progan",
+        "num_samples": 8000,
+        "macro_acc": 95.5625,
+        "real_acc": 91.125,
+        "fake_acc": 100.0,
+        "auc": 99.9555625,
+        "ap": 99.94216968440804,
+        "elapsed_sec": 88.89
+      },
+      {
+        "group": "GANs",
+        "subset": "stylegan",
+        "num_samples": 11982,
+        "macro_acc": 97.2124853947588,
+        "real_acc": 94.89233850776164,
+        "fake_acc": 99.53263228175598,
+        "auc": 99.77806525066072,
+        "ap": 99.75148880613268,
+        "elapsed_sec": 130.49
+      },
+      {
+        "group": "GANs",
+        "subset": "stylegan2",
+        "num_samples": 15976,
+        "macro_acc": 95.72483725588381,
+        "real_acc": 95.99399098647972,
+        "fake_acc": 95.45568352528792,
+        "auc": 98.76666840521172,
+        "ap": 98.85470724997674,
+        "elapsed_sec": 173.65
+      },
+      {
+        "group": "GANs",
+        "subset": "biggan",
+        "num_samples": 4000,
+        "macro_acc": 97.0,
+        "real_acc": 94.39999999999999,
+        "fake_acc": 99.6,
+        "auc": 99.561025,
+        "ap": 99.50969836834327,
+        "elapsed_sec": 43.9
+      },
+      {
+        "group": "GANs",
+        "subset": "cyclegan",
+        "num_samples": 2642,
+        "macro_acc": 96.32853898561696,
+        "real_acc": 92.65707797123392,
+        "fake_acc": 100.0,
+        "auc": 99.19182414625215,
+        "ap": 99.07329035744115,
+        "elapsed_sec": 29.04
+      },
+      {
+        "group": "GANs",
+        "subset": "stargan",
+        "num_samples": 3998,
+        "macro_acc": 90.24512256128064,
+        "real_acc": 80.49024512256128,
+        "fake_acc": 100.0,
+        "auc": 99.75307813987033,
+        "ap": 99.74482170331251,
+        "elapsed_sec": 43.76
+      },
+      {
+        "group": "GANs",
+        "subset": "gaugan",
+        "num_samples": 10000,
+        "macro_acc": 99.02000000000001,
+        "real_acc": 98.04,
+        "fake_acc": 100.0,
+        "auc": 99.894376,
+        "ap": 99.80364141552575,
+        "elapsed_sec": 108.89
+      },
+      {
+        "group": "GANs",
+        "subset": "deepfake",
+        "num_samples": 5405,
+        "macro_acc": 86.74281706023672,
+        "real_acc": 81.75101588474327,
+        "fake_acc": 91.73461823573017,
+        "auc": 94.32462799271471,
+        "ap": 94.3631301322545,
+        "elapsed_sec": 58.87
+      },
+      {
+        "group": "Diffusion",
+        "subset": "guided",
+        "num_samples": 2000,
+        "macro_acc": 73.3,
+        "real_acc": 94.3,
+        "fake_acc": 52.300000000000004,
+        "auc": 82.9287,
+        "ap": 85.03965415146058,
+        "elapsed_sec": 22.13
+      },
+      {
+        "group": "Diffusion",
+        "subset": "ldm_200",
+        "num_samples": 2000,
+        "macro_acc": 88.6,
+        "real_acc": 78.3,
+        "fake_acc": 98.9,
+        "auc": 99.04039999999999,
+        "ap": 99.2649305906974,
+        "elapsed_sec": 21.94
+      },
+      {
+        "group": "Diffusion",
+        "subset": "ldm_200_cfg",
+        "num_samples": 2000,
+        "macro_acc": 87.25,
+        "real_acc": 78.3,
+        "fake_acc": 96.2,
+        "auc": 97.1153,
+        "ap": 97.80928820275055,
+        "elapsed_sec": 21.97
+      },
+      {
+        "group": "Diffusion",
+        "subset": "ldm_100",
+        "num_samples": 2000,
+        "macro_acc": 88.6,
+        "real_acc": 78.3,
+        "fake_acc": 98.9,
+        "auc": 98.9222,
+        "ap": 99.18261809807348,
+        "elapsed_sec": 21.96
+      },
+      {
+        "group": "Diffusion",
+        "subset": "glide_50_27",
+        "num_samples": 2000,
+        "macro_acc": 82.65,
+        "real_acc": 78.3,
+        "fake_acc": 87.0,
+        "auc": 90.9697,
+        "ap": 93.48347750250244,
+        "elapsed_sec": 21.91
+      },
+      {
+        "group": "Diffusion",
+        "subset": "glide_100_10",
+        "num_samples": 2000,
+        "macro_acc": 82.6,
+        "real_acc": 78.3,
+        "fake_acc": 86.9,
+        "auc": 90.8898,
+        "ap": 93.46275576748397,
+        "elapsed_sec": 21.95
+      },
+      {
+        "group": "Diffusion",
+        "subset": "glide_100_27",
+        "num_samples": 2000,
+        "macro_acc": 83.1,
+        "real_acc": 78.3,
+        "fake_acc": 87.9,
+        "auc": 92.1599,
+        "ap": 94.21757468488029,
+        "elapsed_sec": 21.95
+      },
+      {
+        "group": "Diffusion",
+        "subset": "dalle",
+        "num_samples": 2000,
+        "macro_acc": 88.5,
+        "real_acc": 78.3,
+        "fake_acc": 98.7,
+        "auc": 98.5006,
+        "ap": 98.7781331974846,
+        "elapsed_sec": 21.97
+      },
+      {
+        "group": "Diffusion",
+        "subset": "pndm",
+        "num_samples": 2000,
+        "macro_acc": 97.95,
+        "real_acc": 96.2,
+        "fake_acc": 99.7,
+        "auc": 99.9067,
+        "ap": 99.90784917172097,
+        "elapsed_sec": 21.99
+      },
+      {
+        "group": "Diffusion",
+        "subset": "vqdiffusion",
+        "num_samples": 2000,
+        "macro_acc": 97.9,
+        "real_acc": 96.2,
+        "fake_acc": 99.6,
+        "auc": 99.85079999999999,
+        "ap": 99.8458407458935,
+        "elapsed_sec": 21.98
+      }
+    ],
+    "degraded_summary_by_variant": {},
+    "degraded_subsets": []
+  },
+  "mode2_high_recall_forensic": {
+    "threshold": 0.4,
+    "description": "High-Recall Forensic Mode prioritizing Fake ACC on deep compression (Q=30)",
+    "summary": {
+      "mean_gans": {
+        "group": "GANs",
+        "subset": "MEAN_GANS",
+        "num_samples": 62003,
+        "macro_acc": 83.37503063660577,
+        "real_acc": 67.15205909868091,
+        "fake_acc": 99.59800217453063,
+        "auc": 98.90315342933872,
+        "ap": 98.88036846467432,
+        "elapsed_sec": 677.49
+      },
+      "mean_diffusion": {
+        "group": "Diffusion",
+        "subset": "MEAN_DIFFUSION",
+        "num_samples": 20000,
+        "macro_acc": 67.75500000000001,
+        "real_acc": 39.36,
+        "fake_acc": 96.15,
+        "auc": 95.02841000000001,
+        "ap": 96.09921221129478,
+        "elapsed_sec": 219.75
+      },
+      "mean_overall": {
+        "group": "Overall",
+        "subset": "MEAN_OVERALL",
+        "num_samples": 82003,
+        "macro_acc": 74.69723583849145,
+        "real_acc": 51.71202626608041,
+        "fake_acc": 97.6824454109025,
+        "auc": 96.7505181908172,
+        "ap": 97.33528165724124,
+        "elapsed_sec": 897.24
+      }
+    },
+    "subsets": [
+      {
+        "group": "GANs",
+        "subset": "progan",
+        "num_samples": 8000,
+        "macro_acc": 79.4625,
+        "real_acc": 58.925000000000004,
+        "fake_acc": 100.0,
+        "auc": 99.9555625,
+        "ap": 99.94216968440804,
+        "elapsed_sec": 88.89
+      },
+      {
+        "group": "GANs",
+        "subset": "stylegan",
+        "num_samples": 11982,
+        "macro_acc": 85.98731430479052,
+        "real_acc": 72.00801201802705,
+        "fake_acc": 99.966616591554,
+        "auc": 99.77806525066072,
+        "ap": 99.75148880613268,
+        "elapsed_sec": 130.49
+      },
+      {
+        "group": "GANs",
+        "subset": "stylegan2",
+        "num_samples": 15976,
+        "macro_acc": 86.76765147721582,
+        "real_acc": 75.0,
+        "fake_acc": 98.53530295443164,
+        "auc": 98.76666840521172,
+        "ap": 98.85470724997674,
+        "elapsed_sec": 173.65
+      },
+      {
+        "group": "GANs",
+        "subset": "biggan",
+        "num_samples": 4000,
+        "macro_acc": 85.025,
+        "real_acc": 70.1,
+        "fake_acc": 99.95,
+        "auc": 99.561025,
+        "ap": 99.50969836834327,
+        "elapsed_sec": 43.9
+      },
+      {
+        "group": "GANs",
+        "subset": "cyclegan",
+        "num_samples": 2642,
+        "macro_acc": 87.09311127933384,
+        "real_acc": 74.18622255866768,
+        "fake_acc": 100.0,
+        "auc": 99.19182414625215,
+        "ap": 99.07329035744115,
+        "elapsed_sec": 29.04
+      },
+      {
+        "group": "GANs",
+        "subset": "stargan",
+        "num_samples": 3998,
+        "macro_acc": 74.41220610305152,
+        "real_acc": 48.82441220610305,
+        "fake_acc": 100.0,
+        "auc": 99.75307813987033,
+        "ap": 99.74482170331251,
+        "elapsed_sec": 43.76
+      },
+      {
+        "group": "GANs",
+        "subset": "gaugan",
+        "num_samples": 10000,
+        "macro_acc": 93.56,
+        "real_acc": 87.12,
+        "fake_acc": 100.0,
+        "auc": 99.894376,
+        "ap": 99.80364141552575,
+        "elapsed_sec": 108.89
+      },
+      {
+        "group": "GANs",
+        "subset": "deepfake",
+        "num_samples": 5405,
+        "macro_acc": 74.69246192845443,
+        "real_acc": 51.05282600664943,
+        "fake_acc": 98.33209785025944,
+        "auc": 94.32462799271471,
+        "ap": 94.3631301322545,
+        "elapsed_sec": 58.87
+      },
+      {
+        "group": "Diffusion",
+        "subset": "guided",
+        "num_samples": 2000,
+        "macro_acc": 72.9,
+        "real_acc": 71.3,
+        "fake_acc": 74.5,
+        "auc": 82.9287,
+        "ap": 85.03965415146058,
+        "elapsed_sec": 22.13
+      },
+      {
+        "group": "Diffusion",
+        "subset": "ldm_200",
+        "num_samples": 2000,
+        "macro_acc": 62.800000000000004,
+        "real_acc": 25.900000000000002,
+        "fake_acc": 99.7,
+        "auc": 99.04039999999999,
+        "ap": 99.2649305906974,
+        "elapsed_sec": 21.94
+      },
+      {
+        "group": "Diffusion",
+        "subset": "ldm_200_cfg",
+        "num_samples": 2000,
+        "macro_acc": 62.5,
+        "real_acc": 25.900000000000002,
+        "fake_acc": 99.1,
+        "auc": 97.1153,
+        "ap": 97.80928820275055,
+        "elapsed_sec": 21.97
+      },
+      {
+        "group": "Diffusion",
+        "subset": "ldm_100",
+        "num_samples": 2000,
+        "macro_acc": 62.7,
+        "real_acc": 25.900000000000002,
+        "fake_acc": 99.5,
+        "auc": 98.9222,
+        "ap": 99.18261809807348,
+        "elapsed_sec": 21.96
+      },
+      {
+        "group": "Diffusion",
+        "subset": "glide_50_27",
+        "num_samples": 2000,
+        "macro_acc": 61.050000000000004,
+        "real_acc": 25.900000000000002,
+        "fake_acc": 96.2,
+        "auc": 90.9697,
+        "ap": 93.48347750250244,
+        "elapsed_sec": 21.91
+      },
+      {
+        "group": "Diffusion",
+        "subset": "glide_100_10",
+        "num_samples": 2000,
+        "macro_acc": 61.050000000000004,
+        "real_acc": 25.900000000000002,
+        "fake_acc": 96.2,
+        "auc": 90.8898,
+        "ap": 93.46275576748397,
+        "elapsed_sec": 21.95
+      },
+      {
+        "group": "Diffusion",
+        "subset": "glide_100_27",
+        "num_samples": 2000,
+        "macro_acc": 61.35,
+        "real_acc": 25.900000000000002,
+        "fake_acc": 96.8,
+        "auc": 92.1599,
+        "ap": 94.21757468488029,
+        "elapsed_sec": 21.95
+      },
+      {
+        "group": "Diffusion",
+        "subset": "dalle",
+        "num_samples": 2000,
+        "macro_acc": 62.7,
+        "real_acc": 25.900000000000002,
+        "fake_acc": 99.5,
+        "auc": 98.5006,
+        "ap": 98.7781331974846,
+        "elapsed_sec": 21.97
+      },
+      {
+        "group": "Diffusion",
+        "subset": "pndm",
+        "num_samples": 2000,
+        "macro_acc": 85.25,
+        "real_acc": 70.5,
+        "fake_acc": 100.0,
+        "auc": 99.9067,
+        "ap": 99.90784917172097,
+        "elapsed_sec": 21.99
+      },
+      {
+        "group": "Diffusion",
+        "subset": "vqdiffusion",
+        "num_samples": 2000,
+        "macro_acc": 85.25,
+        "real_acc": 70.5,
+        "fake_acc": 100.0,
+        "auc": 99.85079999999999,
+        "ap": 99.8458407458935,
+        "elapsed_sec": 21.98
+      }
+    ],
+    "degraded_summary_by_variant": {},
+    "degraded_subsets": []
+  },
+  "selection_heldout_evaluation": null
+}
