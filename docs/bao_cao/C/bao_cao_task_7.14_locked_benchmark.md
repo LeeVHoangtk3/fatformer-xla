@@ -1,4 +1,4 @@
-# BÁO CÁO NGHIỆM THU KỸ THUẬT: TASK 7.14
+# BÁO CÁO KỸ THUẬT: TASK 7.14
 ## KIỂM CHUẨN KHÓA SỔ TOÀN DIỆN PHASE 7 (FINAL LOCKED BENCHMARK)
 
 > **Người thực hiện**: Thành viên C (Training & Evaluation Lead)  
@@ -6,7 +6,7 @@
 > **Phiên bản báo cáo**: `report_schema: v3` (Evidence Level: `measured`)  
 > **Commit hash**: `dfd3c4afc802e910670e7b79dc8df6eaa10ce9bc`  
 > **Thời điểm khóa sổ**: `2026-11-08T09:11:42 UTC`  
-> **Trạng thái nghiệm thu**: **HOÀN THÀNH (Nghiệm thu đo đạc thực tế — Áp dụng Điều khoản kết quả âm §II.3 của Kế hoạch tổng thể Master Plan)**
+> **Trạng thái**: `[~] ĐÃ CÓ SỐ ĐO THẬT (Chờ hậu kiểm calibration v2, ROC & logic gate)` — Áp dụng Điều khoản kết quả âm §II.3 của Kế hoạch tổng thể
 
 ---
 
@@ -24,28 +24,27 @@ Toàn bộ các con số trong báo cáo này được trích xuất trực ti�
 | **G7.2** | CFE Clean: ROC-AUC | $\ge 78.0\%$ | **88.67%** (CI95: $[87.12, 90.16]\%$) | ✅ **PASS** | Vượt +10.67 pp |
 | **G7.2** | CFE Q30: ROC-AUC | $\ge 60.0\%$ | **79.87%** (CI95: $[77.64, 82.06]\%$) | ✅ **PASS** | Vượt +19.87 pp |
 | **G7.2** | CFE Q30: Fake @ Real = 90% | $\ge 40.0\%$ | **42.62%** (CI95: $[37.80, 47.75]\%$) | ✅ **PASS** | Vượt +2.62 pp |
-| **G7.2** | In-Distribution: Macro ACC (18 tập) | $\ge 90.0\%$ | **90.46%** | ✅ **PASS** | Vượt +0.46 pp |
+| **G7.2** | In-Distribution: Macro ACC (18 tập) | $\ge 90.0\%$ | **90.46%** (90,46035%) | ✅ **PASS** | Vượt +0.46 pp |
 | **G7.2** | In-Distribution: Real ACC (Ràng buộc cứng) | $\ge 90.0\%$ | **90.67%** | ✅ **PASS** | Bảo vệ mốc sàn chống báo oan |
 | **G7.2** | Worst-Subset Fake ACC (CFE) | $\ge 45.0\%$ | **28.40%** | ❌ FAIL | Miền autoregressive/pixel khó |
 | **G7.2** | ECE sau hiệu chuẩn (Q30) | $\le 0.08$ | **0.1349** (13.49%) | ❌ FAIL | Lệch phân phối nén sâu |
 | **G7.3** | Single Checkpoint Forward Pass | Bắt buộc | **ĐẠT (1 Checkpoint, 1 `forward()`)** | ✅ **PASS** | Không rẽ nhánh runtime |
-| **G7.3** | GPU Latency per image (Batch size 1) | $< 5.0$ ms | **44.79 ms** | ⚠️ Chờ 7.15 | Đo unbatched; chuyển giao đo batched |
+| **G7.3** | GPU Latency overhead per image | $< 5.0$ ms | **44.79 ms (Backbone forward B=1)** | ⚠️ Chờ 7.15 | Chưa đo overhead wrapper $\Delta T$ |
+| **G7.3** | Delta vs Best Condition Model | $\le 1.5$ pp | **Chưa đánh giá** | ⚠️ Chờ 7.15 | Cần đối đầu trực tiếp trên cùng tập |
 
 ### 1.2. Phán Quyết Chính Thức
 
 1. **Cổng G7.2 (Năng Lực Thật & Độ Bền Ngoại Vi)**:
    - Kết quả: Đạt **5/8** chỉ tiêu.
-   - Phán quyết: **FAIL (Nghiệm thu hợp lệ theo Điều khoản kết quả âm §II.3)**.
+   - Phán quyết: **FAIL (Ghi nhận trung thực theo Điều khoản kết quả âm §II.3 của Kế hoạch tổng thể Master Plan)**.
    - Căn cứ pháp lý đồ án: Khoản II.3 Kế hoạch tổng thể quy định: *"Một kết quả không đạt mục tiêu nhưng được chứng minh bằng thực nghiệm trung thực, chặt chẽ và có giá trị khoa học sẽ được nghiệm thu đầy đủ dưới dạng negative result, không được làm tròn khống hay gọt giũa dữ liệu"*.
 2. **Cổng G7.3 (Hợp Nhất Kiến Trúc & Vận Hành)**:
-   - Đạt trọn vẹn yêu cầu cấu trúc: Mô hình được nạp qua Canonical Loader từ một tệp trọng số duy nhất, thực hiện đúng 1 lượt `forward()` không cần điều kiện ngoại vi.
-   - Tiêu chí độ trễ $< 5.0$ ms/ảnh sẽ được hoàn tất kiểm chứng ở chế độ phân tầng batched ($B=8, 16, 32$) trong Task 7.15.
+   - Đạt tiêu chuẩn cấu trúc: Mô hình vận hành từ một checkpoint duy nhất, một lượt `forward()` không cần metadata ngoại vi.
+   - Chưa đạt tiêu chuẩn độ trễ và chênh lệch: Con số 44.79 ms hiện tại là thời gian forward của toàn bộ backbone CLIP tại batch 1, chưa đo phần overhead do wrapper thêm vào. Tiêu chí chênh lệch $\le 1.5$ pp chưa được đối đầu trực tiếp. Cả hai tiêu chí này được chuyển giao hoàn tất trong Task 7.15.
 
 ---
 
 ## 2. THÔNG SỐ KẾ THỪA & ĐỐI TƯỢNG KIỂM CHUẨN
-
-Tuân thủ nghiêm ngặt **Nguyên Tắc 4** (đối chiếu và kế thừa thông số đã được nghiệm thu), toàn bộ các thông số cấu hình của lần chấm này kế thừa từ các mốc kỹ thuật trước:
 
 * **Checkpoint mục tiêu**: `fatformer_anchored_v2_best.pth` (Epoch 4 từ Task 7.11)
   - Vị trí nguồn Drive: `/content/drive/MyDrive/Fatformer/checkpoint/phase7/anchored_v2_run1/fatformer_anchored_v2_best.pth`
@@ -54,25 +53,25 @@ Tuân thủ nghiêm ngặt **Nguyên Tắc 4** (đối chiếu và kế thừa t
 * **Kiến trúc mạng**: `FatFormer-XLA`
   - Backbone: `CLIP:ViT-L/14` (OpenAI pretrained).
   - Tần số: `SRM 3-Kernels` (Horizontal, Vertical, Diagonal High-pass).
-  - Điều phối: `Dynamic Frequency Gating` + `3 Bottleneck Adapters` tại các block $\{7, 15, 23\}$.
-* **Hiệu chuẩn xác suất (Calibration)**:
-  - Nguồn hiệu chuẩn: Kế thừa từ Task 7.4 (`baseline.json`).
-  - Nhiệt độ tối ưu ($T$): `1.6402`.
-  - Ngưỡng quyết định tối ưu ($T^*$): `0.9127` (Khóa chặt, không nới lỏng sau khi chạy).
+  - Điều phối: `Dynamic Frequency Gating` + `3 Bottleneck Adapters` tại các block $\{7, 15, 23\}$ ($n=3$).
+* **Lưu ý Quan Trọng Về Hiệu Chuẩn Xác Suất (Calibration)**:
+  - Lần chạy này sử dụng cặp thông số tham chiếu của Baseline: $T = 1.6402, T^* = 0.9127$ (kế thừa từ `baseline.json` có SHA-256: `3b9044...`).
+  - **Minh bạch học thuật**: Đây **chưa phải** là calibration tối ưu được fit riêng cho checkpoint v2 (`5cd492...`). Ở Task 7.15, checkpoint v2 sẽ được chạy fit calibration độc lập trên `val_calib` để tạo file `anchored_v2.json` chính danh, không giả mạo hash hay áp đặt số liệu cũ.
 
 ---
 
 ## 3. KẾT QUẢ KIỂM CHUẨN 18 TẬP IN-DISTRIBUTION (82.003 ẢNH)
 
-Phép đo thực hiện quét qua toàn bộ 82.003 ảnh phòng lab tiêu chuẩn của bài báo gốc nhằm chứng minh mô hình **không bị hiện tượng quên thảm khốc (Catastrophic Forgetting)** sau quá trình huấn luyện tăng cường chống suy biến ở Phase 7.
+Phép đo quét qua toàn bộ 82.003 ảnh phòng lab tiêu chuẩn của bài báo gốc chứng minh mô hình giữ vững năng lực trên miền dữ liệu huấn luyện, không bị quên thảm khốc (Catastrophic Forgetting).
 
 ### 3.1. Tổng Quan Chỉ Số In-Distribution
 * **Tổng số lượng mẫu**: 82.003 ảnh.
-* **Macro Accuracy**: **90.46%** (Vượt mốc sàn 90.0%).
-* **Real Accuracy (Mốc sàn bảo vệ)**: **90.67%** (Vượt mốc sàn 90.0%, triệt tiêu nguy cơ báo oan trên ảnh thật).
+* **Macro Accuracy**: **90.46%** (Tính toán lại chính xác: `90.46035%`).
+* **Real Accuracy (Mốc sàn bảo vệ)**: **90.67%** (Đạt mục tiêu $\ge 90.0\%$, khống chế nguy cơ báo oan).
 * **Micro Accuracy**: **93.43%**.
 * **Fake Accuracy**: **96.19%**.
-* **ROC-AUC Toàn Cục**: **98.28%**.
+* **ROC-AUC Toàn Cục**: **98.28%** (Đo từ dự đoán tổng hợp).  
+  *(Lưu ý: Không dựng đường cong ROC mô phỏng bằng công thức hàm mũ; biểu đồ ROC chỉ biểu diễn các tập có mảng logits từng mẫu thực tế).*
 
 ### 3.2. Bảng Phân Tách Chi Tiết 18 Tập Dữ Liệu
 
@@ -103,7 +102,7 @@ Phép đo thực hiện quét qua toàn bộ 82.003 ảnh phòng lab tiêu chu�
 
 ## 4. KẾT QUẢ NGOẠI MIỀN CFE HELD-OUT & 6 BIẾN THỂ SUY BIẾN VẬT LÝ
 
-Kiểm chuẩn ngoại miền được thực hiện trên phân vùng độc lập 1.600 ảnh CFE Held-Out (5 Subsets: Commercial, Latent Diffusion, Pixel Diffusion, Modern GANs, Autoregressive) qua 7 điều kiện vật lý (Clean + 6 biến thể suy biến `post_resize`).
+Kiểm chuẩn ngoại miền được thực hiện trên phân vùng độc lập 1.600 ảnh CFE Held-Out (5 Subsets) qua 7 điều kiện vật lý (Clean + 6 biến thể suy biến `post_resize`). Cả 7 file NPZ đều khớp mã băm và kích thước mảng.
 
 ### 4.1. Ma Trận Đa Điều Kiện Suy Biến Vật Lý
 
@@ -118,14 +117,14 @@ Kiểm chuẩn ngoại miền được thực hiện trên phân vùng độc l�
 | `webp40` | Nén WebP Quality 40 | **79.00** | $[76.70, 81.25]$ | **41.88** | $[36.48, 47.84]$ | 65.94 | 14.94 | 0.6894 |
 
 ### 4.2. Nhận Xét Quy Luật Suy Biến (Robustness Insights)
-1. **Phân cấp suy biến thực tế**: Hiện tượng suy giảm tín hiệu giả mạo diễn ra nghiêm trọng nhất ở các phép nén chuyển đổi khối (Block-transform compression như JPEG Q30 và WebP Q40). Ngược lại, biến dạng không gian liên tục (DownUp0.5, Gaussian Blur 1.5) giữ lại được đặc trưng tần số tốt hơn đáng kể (AUC vẫn đạt $84\% - 87\%$).
-2. **Khoảng tin cậy Bootstrap 95%**: Khoảng tin cậy cho AUC trên cả 7 điều kiện đều hẹp ($\pm 1.5$ pp), khẳng định tính ổn định cao và không có hiện tượng ngoại lai bất thường trong mẫu thử.
+1. **Phân cấp suy biến thực tế**: Hiện tượng suy giảm tín hiệu giả mạo diễn ra nghiêm trọng nhất ở các phép nén chuyển đổi khối (Block-transform compression như JPEG Q30 và WebP Q40). Biến dạng không gian liên tục (DownUp0.5, Gaussian Blur 1.5) giữ lại được đặc trưng tần số tốt hơn đáng kể (AUC vẫn đạt $84\% - 87\%$).
+2. **Khoảng tin cậy Bootstrap 95%**: Khoảng tin cậy hẹp ($\pm 1.5$ pp), khẳng định sự ổn định của phép đo trên 1.600 mẫu held-out.
 
 ---
 
 ## 5. PHÂN TÍCH PER-GENERATOR (5 SUBSETS × 4 NHÓM KIẾN TRÚC)
 
-Được trích xuất từ [`per_generator_phase7.csv`](../../../DATASET/logs/phase7/locked_benchmark_phase7/per_generator_phase7.csv), phân tích cho thấy sự phân hóa rõ nét giữa các họ mô hình sinh:
+Được trích xuất từ [`per_generator_phase7.csv`](../../../DATASET/logs/phase7/locked_benchmark_phase7/per_generator_phase7.csv):
 
 | Phân Vùng CFE | Họ Kiến Trúc Generator | Số Real | Số Fake | AUC Clean (%) | Fake@Real90 Clean (%) | AUC Q30 (%) | Fake@Real90 Q30 (%) |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -135,31 +134,28 @@ Kiểm chuẩn ngoại miền được thực hiện trên phân vùng độc l�
 | `4_modern_gans` | Modern GANs (StyleGAN-XL, ProGAN) | 78 | 83 | **99.94** | **100.00** | **92.17** | **71.08** |
 | `5_other_autoregressive`| Autoregressive (Parti, Muse) | 74 | 81 | **75.76** | **55.56** | **61.19** | **20.99** |
 
-* **Điểm mạnh tuyệt đối**: Nhóm Modern GANs đạt AUC 99.94% (Clean) và 92.17% (Q30) — bộ lọc SRM khai thác triệt để vết lưới bàn cờ (checkerboard artifacts).
-* **Vùng rủi ro cao nhất (Gót chân Achilles)**: Nhóm Autoregressive (Parti/Muse) và Pixel Diffusion chịu tổn thất nặng nề khi bị nén sâu ($Q=30$), Fake@Real90 rơi xuống mức $20.99\% - 30.38\%$. Đây chính là nguyên nhân trực tiếp khiến chỉ số `Worst-subset Fake ACC` không đạt ngưỡng 45.0%.
+* Nhóm Modern GANs đạt kết quả vượt trội (AUC 99.94% Clean, 92.17% Q30).
+* Nhóm Autoregressive và Pixel Diffusion là vùng suy giảm mạnh nhất dưới nén JPEG sâu, dẫn đến chỉ số `Worst-subset Fake ACC` dừng ở 28.40%.
 
 ---
 
-## 6. LUẬN GIẢI HỌC THUẬT THEO ĐIỀU KHOẢN KẾT QUẢ ÂM (MASTER PLAN §II.3)
-
-Trong nghiên cứu khoa học và bảo vệ đồ án tốt nghiệp, **kết quả âm (Negative Result) khi được kiểm chứng độc lập và minh bạch có giá trị học thuật tương đương với kết quả dương**:
+## 6. LUẬN GIẢI HỌC THUẬT & TRÁCH NHIỆM PHƯƠNG PHÁP LUẬN
 
 1. **Liêm chính số liệu (Scientific Integrity)**:
    - Chỉ số Clean Fake@Real90 thực tế đạt **64.12%**, thiếu hụt **0.88 pp** so với mục tiêu đặt ra ($\ge 65.0\%$).
-   - Nhóm nghiên cứu **tuyệt đối không áp dụng kỹ thuật làm tròn (rounding-up) khống thành 65%**, không cherry-pick dữ liệu hay điều chỉnh nhiệt độ/ngưỡng sau khi chạy.
-2. **Đóng góp học thuật thực tế**:
-   - Khẳng định ranh giới tự nhiên của các bộ phát hiện giả mạo dựa trên tần số: Khi ảnh bị nén JPEG xuống $Q \le 30$, các hệ số biến đổi cosin rời rạc (DCT) cao tần bị lượng tử hóa về 0, làm mờ ranh giới quang phổ giữa ảnh thật và ảnh sinh bởi mô hình Autoregressive.
-   - Chiến lược bảo tồn ảnh thật (**Real ACC $\ge 90.0\%$**) được chứng minh là khả thi trong thực tế mà không cần hy sinh năng lực phân loại tổng thể (In-Dist Macro ACC đạt 90.46%, In-Dist AUC đạt 98.28%).
-3. **Cơ sở nghiệm thu**: Checkpoint `fatformer_anchored_v2_best.pth` chính thức được công nhận là **Điểm tối ưu Pareto xuất sắc nhất của đề tài**, làm hạt nhân cho bước đóng gói sản phẩm.
+   - Báo cáo không làm tròn khống lên 65%, không cherry-pick mẫu, không chỉnh sửa ngưỡng để ép kết quả PASS.
+2. **Giá trị của Điều khoản kết quả âm (§II.3)**:
+   - Điều khoản kết quả âm ghi nhận tính trung thực của kết quả thực nghiệm, nhưng **không thay thế cho việc kiểm chứng phương pháp luận**.
+   - Việc tách biệt calibration của baseline và calibration riêng của v2 là bắt buộc để đảm bảo tính khách quan khoa học.
+3. **Ứng viên cốt lõi cho bước đóng gói**: Checkpoint `fatformer_anchored_v2_best.pth` là ứng viên có năng lực tổng quát ổn định nhất hiện có (bảo tồn Real ACC >90% trên 82k ảnh); các đánh giá so sánh Pareto sẽ được tiếp tục đối chiếu khi có thêm bảng đo độc lập.
 
 ---
 
-## 7. KẾ HOẠCH HÀNH ĐỘNG TIẾP THEO (TRANSITION TO TASK 7.15)
+## 7. KẾ HOẠCH HÀNH ĐỘNG CHUYỂN TIẾP (LỘ TRÌNH 6 BƯỚC)
 
-Khép lại Task 7.14, Thành viên C chuyển giao toàn bộ kết quả sang **Task 7.15 (Unified Packaging)**:
-1. **Triển khai Wrapper & CLI**:
-   - Hoàn thiện `src/models/unified_fatformer.py` và `tools/infer_unified.py`.
-   - Đóng gói checkpoint tích hợp `unified_fatformer_v2.pth` nhúng trực tiếp metadata kiểm chuẩn và thông số hiệu chuẩn ($T=1.6402, T^*=0.9127$).
-2. **Kiểm chuẩn độ trễ phân tầng (Throughput Benchmarking)**:
-   - Đo đạc chi tiết độ trễ suy luận trên GPU với các batch size $B \in \{1, 8, 16, 32\}$ để xác lập thông số throughput phục vụ vận hành thực tế.
-3. **Biên soạn Báo cáo nghiệm thu Task 7.15** để sẵn sàng cho buổi bảo vệ đồ án.
+1. **Vá lỗi runner & báo cáo**: Sửa lỗi falsy Python tại `run_locked_benchmark_phase7.py`, bỏ pass cứng G7.3, bỏ ROC mô phỏng. *(Đã hoàn thành)*
+2. **Xây dựng công cụ đóng gói & CLI**: Viết `tools/package_unified_fatformer.py` và `tools/infer_unified.py`, kiểm thử local bằng unit test fixture.
+3. **Thực thi trên Colab GPU**: Chạy checkpoint v2 trên `val_calib` độc lập để tạo `anchored_v2.json`, đóng gói artifact `unified_fatformer_v2.pth`.
+4. **Đối chiếu hành vi**: So sánh dự đoán giữa checkpoint gốc và package trên cùng mẫu thử để chứng minh đóng gói không làm thay đổi hành vi suy luận.
+5. **Kiểm thử môi trường độc lập**: Đảm bảo package chạy không cần nạp thêm file rời.
+6. **Đo đạc Latency overhead**: Đo thời gian backbone gốc, thời gian qua wrapper, xác định overhead $\Delta T$ (< 5 ms) trên các batch size $1, 8, 32$.

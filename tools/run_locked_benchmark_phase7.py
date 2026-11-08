@@ -121,12 +121,8 @@ def compute_true_roc_curve(clean_npz: str, q30_npz: str, output_png: str, indist
     ind_auc = 0.0
     if indist_data:
         ind_auc = indist_data.get("indist", {}).get("auc", 0.0)
-        if ind_auc > 0:
-            # Ước lượng thực tế từ AUC in-dist
-            fpr_grid = np.linspace(0, 1, 100)
-            p = max(0.05, (100 - ind_auc) / max(ind_auc, 1e-4))
-            tpr_ind = 1.0 - (1.0 - fpr_grid) ** (1.0 / p)
-            ax.plot(fpr_grid, tpr_ind, label=f"In-Distribution 18 Sets (AUC = {ind_auc:.2f}%)", color="#1f77b4", lw=2)
+        # Lưu ý: Không vẽ đường cong mô phỏng từ số vô hướng AUC khi thiếu mảng logits thô 82.003 ảnh.
+        # Đường ROC chỉ được dựng từ logits và nhãn thực tế của từng ảnh (như Clean và Q30).
 
     ax.plot([0, 1], [0, 1], "k--", alpha=0.4, label="Random Guess (AUC = 50.0%)")
     ax.set_xlim([0.0, 1.0])
@@ -268,14 +264,16 @@ def evaluate_master_gates(
     # Chuẩn hóa ECE (nếu evaluator xuất 10.79% -> 0.1079)
     ece_val = ece_raw / 100.0 if ece_raw > 1.0 else ece_raw
 
-    # Tìm worst-subset fake acc trên CFE Clean
+    # Tìm worst-subset fake acc trên CFE Clean (Tránh lỗi Python falsy: 0.0 or 100.0 -> 100.0)
     worst_subset_fake_acc = 100.0
     for sub, m in cfe_subsets_clean.items():
-        fk_acc = float(m.get("fake_acc") or 100.0)
+        val = m.get("fake_acc")
+        fk_acc = float(val) if val is not None else 100.0
         if fk_acc < worst_subset_fake_acc:
             worst_subset_fake_acc = fk_acc
     if not cfe_subsets_clean:
-        worst_subset_fake_acc = float(cfe_clean_metrics.get("fake_acc") or 0.0)
+        val = cfe_clean_metrics.get("fake_acc")
+        worst_subset_fake_acc = float(val) if val is not None else 0.0
 
     # 8 tiêu chuẩn G7.2 (Master Plan §II.3)
     c1 = fake_at_real90_clean >= g72_cfg.get("fake_at_real90_clean_min", 65.0)
@@ -289,9 +287,10 @@ def evaluate_master_gates(
 
     g72_pass = bool(c1 and c2 and c3 and c4 and c5 and c6 and c7 and c8)
 
-    # G7.3 tiêu chuẩn
+    # G7.3 tiêu chuẩn (Không viết cứng pass=True khi chưa đo overhead và đối đầu delta)
     lat_pass = gpu_latency_ms < g73_cfg.get("latency_gpu_ms_max", 5.0) if gpu_latency_ms > 0 else False
-    g73_pass = bool(lat_pass and g73_cfg.get("single_checkpoint_forward", True))
+    delta_pass = False  # Chưa đo đối đầu trực tiếp trên cùng tập dữ liệu
+    g73_pass = bool(lat_pass and delta_pass and g73_cfg.get("single_checkpoint_forward", True))
 
     return {
         "G7.2": {
@@ -310,11 +309,11 @@ def evaluate_master_gates(
         },
         "G7.3": {
             "pass": g73_pass,
-            "verdict": "PASS" if g73_pass else "CHƯA ĐẠT (Độ trễ hoặc delta chưa được kiểm chứng đầy đủ)",
+            "verdict": "PASS" if g73_pass else "CHƯA ĐẠT (Độ trễ overhead và delta chưa được kiểm chứng đầy đủ)",
             "criteria": {
                 "Single_Checkpoint_Forward": {"value": True, "target": "True", "pass": True},
                 "GPU_Latency_ms_per_image": {"value": round(gpu_latency_ms, 2) if gpu_latency_ms > 0 else "Chưa đo GPU", "target": "<5.0 ms", "pass": bool(lat_pass)},
-                "Delta_vs_Best_Condition": {"value": "<=1.5 pp", "pass": True}
+                "Delta_vs_Best_Condition": {"value": "Chưa đánh giá (cần đối đầu trực tiếp)", "target": "<=1.5 pp", "pass": False}
             }
         }
     }
@@ -576,9 +575,9 @@ def main():
 ---
 
 ## 4. Ba Câu Kết Luận Chung Cuộc
-1. **Mô hình có tốt hơn Baseline có ý nghĩa thống kê không?** Mô hình giữ vững độ chính xác xuất sắc trên miền ảnh sạch in-distribution phòng lab và kiểm soát tỷ lệ báo oan tốt dưới ngưỡng hiệu chuẩn khắt khe.
+1. **Mô hình có tốt hơn Baseline có ý nghĩa thống kê không?** Mô hình giữ vững độ chính xác xuất sắc trên miền ảnh sạch in-distribution phòng lab (Macro ACC 90.46%, Real ACC 90.67%) và kiểm soát tỷ lệ báo oan tốt dưới ngưỡng hiệu chuẩn tham chiếu baseline.
 2. **Miền dữ liệu nào còn yếu nhất?** Nén JPEG sâu chất lượng thấp ($Q=30$) và các mô hình sinh hình ảnh khuếch tán mới lạ ngoài miền huấn luyện (OOD) vẫn là thử thách lớn nhất.
-3. **Có đạt chuẩn G7.2 / G7.3 không?** Cổng G7.3 đạt trọn vẹn nhờ kiến trúc suy luận một lượt tối ưu. Cổng G7.2 tuân thủ chặt chẽ nguyên tắc liêm chính học thuật (Điều khoản kết quả âm: không làm tròn số, không ngụy tạo kết quả).
+3. **Có đạt chuẩn G7.2 / G7.3 không?** Cổng G7.2 tuân thủ chặt chẽ nguyên tắc liêm chính học thuật (Điều khoản kết quả âm: ghi nhận trung thực các chỉ tiêu chưa đạt). Cổng G7.3 đạt về cấu trúc suy luận một lượt; độ trễ overhead và chênh lệch delta được chuyển giao kiểm chứng trong Task 7.15.
 """
     with open(final_report_md, "w", encoding="utf-8") as f:
         f.write(md_content)
