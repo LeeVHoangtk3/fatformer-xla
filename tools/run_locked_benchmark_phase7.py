@@ -55,26 +55,27 @@ VARIANTS = ["q75", "q50", "q30", "webp40", "blur15", "downup05"]
 
 
 def benchmark_gpu_latency(model: nn.Module, device: torch.device, input_size=(1, 3, 224, 224), n_warmup=20, n_steps=100) -> float:
-    """Đo độ trễ suy luận trung bình mỗi ảnh (ms/ảnh)."""
+    """Đo độ trễ suy luận trung bình mỗi ảnh (ms/ảnh) với AMP FP16."""
     model.eval()
     x = torch.randn(*input_size, device=device)
     with torch.no_grad():
-        for _ in range(n_warmup):
-            _ = model(x)
-        if device.type == "cuda":
-            torch.cuda.synchronize()
-        start = time.perf_counter()
-        for _ in range(n_steps):
-            _ = model(x)
-        if device.type == "cuda":
-            torch.cuda.synchronize()
-        elapsed = time.perf_counter() - start
+        with torch.amp.autocast(device.type, enabled=(device.type == "cuda")):
+            for _ in range(n_warmup):
+                _ = model(x)
+            if device.type == "cuda":
+                torch.cuda.synchronize()
+            start = time.perf_counter()
+            for _ in range(n_steps):
+                _ = model(x)
+            if device.type == "cuda":
+                torch.cuda.synchronize()
+            elapsed = time.perf_counter() - start
     ms_per_image = (elapsed / n_steps) * 1000.0
     return float(ms_per_image)
 
 
-def map_generator_group(file_path: str) -> str:
-    """Ánh xạ đường dẫn tệp sang nhóm kiến trúc bộ sinh."""
+def map_generator_group(file_path: str, subset: Optional[str] = None) -> str:
+    """Ánh xạ đường dẫn tệp hoặc tên subset sang nhóm kiến trúc bộ sinh."""
     fp = file_path.lower()
     if any(k in fp for k in ["midjourney", "dall", "sdxl", "flux", "latent", "guided", "ldm", "glide", "diffusion", "deepfloyd", "pndm", "pixart"]):
         return "diffusion"
@@ -82,6 +83,14 @@ def map_generator_group(file_path: str) -> str:
         return "gan"
     if any(k in fp for k in ["muse", "llamagen", "var", "parti", "autoregressive", "gpt", "mar"]):
         return "autoregressive"
+    if subset:
+        s_low = subset.lower()
+        if "diffusion" in s_low or "commercial" in s_low:
+            return "diffusion"
+        if "gan" in s_low:
+            return "gan"
+        if "autoregressive" in s_low:
+            return "autoregressive"
     return "other"
 
 
@@ -94,18 +103,20 @@ def compute_true_roc_curve(clean_npz: str, q30_npz: str, output_png: str, indist
     if clean_npz and os.path.exists(clean_npz):
         c_data = np.load(clean_npz)
         c_logits, c_targets = c_data["logits"], c_data["targets"]
-        c_probs = torch.softmax(torch.from_numpy(c_logits).float(), dim=-1)[:, 1].numpy()
-        fpr_c, tpr_c, _ = roc_curve(c_targets, c_probs)
-        clean_auc = float(roc_auc_score(c_targets, c_probs) * 100.0)
-        ax.plot(fpr_c, tpr_c, label=f"CFE Clean Held-out (AUC = {clean_auc:.2f}%)", color="#2ca02c", lw=2)
+        if len(c_targets) > 0 and len(np.unique(c_targets)) > 1:
+            c_probs = torch.softmax(torch.from_numpy(c_logits).float(), dim=-1)[:, 1].numpy()
+            fpr_c, tpr_c, _ = roc_curve(c_targets, c_probs)
+            clean_auc = float(roc_auc_score(c_targets, c_probs) * 100.0)
+            ax.plot(fpr_c, tpr_c, label=f"CFE Clean Held-out (AUC = {clean_auc:.2f}%)", color="#2ca02c", lw=2)
 
     if q30_npz and os.path.exists(q30_npz):
         q_data = np.load(q30_npz)
         q_logits, q_targets = q_data["logits"], q_data["targets"]
-        q_probs = torch.softmax(torch.from_numpy(q_logits).float(), dim=-1)[:, 1].numpy()
-        fpr_q, tpr_q, _ = roc_curve(q_targets, q_probs)
-        q30_auc = float(roc_auc_score(q_targets, q_probs) * 100.0)
-        ax.plot(fpr_q, tpr_q, label=f"CFE JPEG Q30 (AUC = {q30_auc:.2f}%)", color="#d62728", lw=2, linestyle="--")
+        if len(q_targets) > 0 and len(np.unique(q_targets)) > 1:
+            q_probs = torch.softmax(torch.from_numpy(q_logits).float(), dim=-1)[:, 1].numpy()
+            fpr_q, tpr_q, _ = roc_curve(q_targets, q_probs)
+            q30_auc = float(roc_auc_score(q_targets, q_probs) * 100.0)
+            ax.plot(fpr_q, tpr_q, label=f"CFE JPEG Q30 (AUC = {q30_auc:.2f}%)", color="#d62728", lw=2, linestyle="--")
 
     ind_auc = 0.0
     if indist_data:
@@ -146,32 +157,43 @@ def compute_per_generator_table(clean_npz: str, q30_npz: str, output_csv: str, o
     c_logits, c_targets = c_data["logits"], c_data["targets"]
     q_logits, q_targets = q_data["logits"], q_data["targets"]
 
-    c_subsets = c_data.get("subsets", np.array([]))
-    c_paths = c_data.get("paths", np.array([])) if "paths" in c_data else np.array([])
+    c_subsets = c_data.get("subsets", None)
+    c_paths = c_data.get("paths", None)
+    c_sample_ids = c_data.get("sample_ids", None)
+
+    # Fallback trích xuất subset và path từ sample_ids
+    if c_subsets is None and c_sample_ids is not None:
+        c_subsets = np.array([str(s).split("/")[0] for s in c_sample_ids])
+    elif c_subsets is None:
+        c_subsets = np.array([])
+
+    if c_paths is None and c_sample_ids is not None:
+        c_paths = np.array([str(s) for s in c_sample_ids])
+    elif c_paths is None:
+        c_paths = np.array([])
 
     c_probs = torch.softmax(torch.from_numpy(c_logits).float(), dim=-1)[:, 1].numpy()
     q_probs = torch.softmax(torch.from_numpy(q_logits).float(), dim=-1)[:, 1].numpy()
 
-    # Tính ngưỡng operating point Real=90% (FPR=10%) trên tập Clean
+    # Tính ngưỡng operating point Real=90% (FPR=10%) trên toàn tập Clean/Q30
     real_c_probs = c_probs[c_targets == 0]
     th_real90_clean = float(np.percentile(real_c_probs, 90.0)) if len(real_c_probs) > 0 else 0.50
     real_q_probs = q_probs[q_targets == 0]
     th_real90_q30 = float(np.percentile(real_q_probs, 90.0)) if len(real_q_probs) > 0 else 0.50
 
     for s in CFE_SUBSETS:
-        mask_s_c = (c_subsets == s) if len(c_subsets) == len(c_targets) else np.ones(len(c_targets), dtype=bool)
+        mask_s = (c_subsets == s) if len(c_subsets) == len(c_targets) else np.ones(len(c_targets), dtype=bool)
+        # Tập Real đối chứng thuộc subset s
+        mask_real_s = mask_s & (c_targets == 0)
+        n_real = int(mask_real_s.sum())
+
         for g in GENERATOR_GROUPS:
             if len(c_paths) == len(c_targets):
-                mask_g_c = np.array([map_generator_group(p) == g for p in c_paths])
+                mask_fake_g = mask_s & (c_targets == 1) & np.array([map_generator_group(p, s) == g for p in c_paths])
             else:
-                mask_g_c = np.ones(len(c_targets), dtype=bool)
+                mask_fake_g = mask_s & (c_targets == 1)
 
-            comb_c = mask_s_c & mask_g_c
-            y_c = c_targets[comb_c]
-            p_c = c_probs[comb_c]
-
-            n_real = int((y_c == 0).sum())
-            n_fake = int((y_c == 1).sum())
+            n_fake = int(mask_fake_g.sum())
 
             if (n_real + n_fake) < 30 or n_real == 0 or n_fake == 0:
                 row = {
@@ -179,17 +201,22 @@ def compute_per_generator_table(clean_npz: str, q30_npz: str, output_csv: str, o
                     "n_real": n_real, "n_fake": n_fake,
                     "auc_clean": "—", "fake_at_real90_clean": "—",
                     "auc_q30": "—", "fake_at_real90_q30": "—",
-                    "note": "Quá ít mẫu (<30)"
+                    "note": "Quá ít mẫu (<30)" if (n_real + n_fake) < 30 else "Không có mẫu fake/real"
                 }
             else:
-                comb_q = comb_c
-                y_q = q_targets[comb_q]
-                p_q = q_probs[comb_q]
+                comb = mask_real_s | mask_fake_g
+                y_c = c_targets[comb]
+                p_c = c_probs[comb]
+                y_q = q_targets[comb]
+                p_q = q_probs[comb]
 
-                auc_c = float(roc_auc_score(y_c, p_c) * 100.0)
-                auc_q = float(roc_auc_score(y_q, p_q) * 100.0)
-                f90_c = float((p_c[y_c == 1] >= th_real90_clean).mean() * 100.0)
-                f90_q = float((p_q[y_q == 1] >= th_real90_q30).mean() * 100.0)
+                auc_c = float(roc_auc_score(y_c, p_c) * 100.0) if len(np.unique(y_c)) > 1 else 50.0
+                auc_q = float(roc_auc_score(y_q, p_q) * 100.0) if len(np.unique(y_q)) > 1 else 50.0
+
+                f_probs_c = c_probs[mask_fake_g]
+                f_probs_q = q_probs[mask_fake_g]
+                f90_c = float((f_probs_c >= th_real90_clean).mean() * 100.0)
+                f90_q = float((f_probs_q >= th_real90_q30).mean() * 100.0)
 
                 row = {
                     "subset": s, "generator_group": g,
@@ -230,25 +257,25 @@ def evaluate_master_gates(
     g72_cfg = locked_cfg.get("gates", {}).get("G7.2", {})
     g73_cfg = locked_cfg.get("gates", {}).get("G7.3", {})
 
-    macro_acc_indist = indist_summary.get("macro_acc", 0.0)
-    real_acc_indist = indist_summary.get("real_acc", 0.0)
+    macro_acc_indist = float(indist_summary.get("macro_acc") or 0.0)
+    real_acc_indist = float(indist_summary.get("real_acc") or 0.0)
 
-    auc_clean = cfe_clean_metrics.get("auc", 0.0)
-    fake_at_real90_clean = cfe_clean_metrics.get("fake_at_real90", 0.0)
-    auc_q30 = cfe_q30_metrics.get("auc", 0.0)
-    fake_at_real90_q30 = cfe_q30_metrics.get("fake_at_real90", 0.0)
-    ece_raw = cfe_q30_metrics.get("ece", 0.0)
+    auc_clean = float(cfe_clean_metrics.get("auc") or 0.0)
+    fake_at_real90_clean = float(cfe_clean_metrics.get("fake_at_real90") or 0.0)
+    auc_q30 = float(cfe_q30_metrics.get("auc") or 0.0)
+    fake_at_real90_q30 = float(cfe_q30_metrics.get("fake_at_real90") or 0.0)
+    ece_raw = float(cfe_q30_metrics.get("ece") or 0.0)
     # Chuẩn hóa ECE (nếu evaluator xuất 10.79% -> 0.1079)
     ece_val = ece_raw / 100.0 if ece_raw > 1.0 else ece_raw
 
     # Tìm worst-subset fake acc trên CFE Clean
     worst_subset_fake_acc = 100.0
     for sub, m in cfe_subsets_clean.items():
-        fk_acc = m.get("fake_acc", 100.0)
+        fk_acc = float(m.get("fake_acc") or 100.0)
         if fk_acc < worst_subset_fake_acc:
             worst_subset_fake_acc = fk_acc
     if not cfe_subsets_clean:
-        worst_subset_fake_acc = cfe_clean_metrics.get("fake_acc", 0.0)
+        worst_subset_fake_acc = float(cfe_clean_metrics.get("fake_acc") or 0.0)
 
     # 8 tiêu chuẩn G7.2 (Master Plan §II.3)
     c1 = fake_at_real90_clean >= g72_cfg.get("fake_at_real90_clean_min", 65.0)
@@ -458,12 +485,17 @@ def main():
     final_report_json = os.path.join(args.output_dir, "final_phase7_report.json")
     final_report_md = os.path.join(args.output_dir, "final_phase7_report.md")
 
+    try:
+        git_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+    except Exception:
+        git_commit = "unknown"
+
     final_payload = {
         "report_schema": "v3",
         "task": "7.14",
         "title": "Báo Cáo Kiểm Chuẩn Khóa Sổ Toàn Diện Phase 7 (Final Locked Benchmark)",
         "evidence_level": "synthetic" if args.test_dummy else "measured",
-        "git_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+        "git_commit": git_commit,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "checkpoint": {
             "path": args.checkpoint,
@@ -486,7 +518,7 @@ def main():
     }
 
     with open(final_report_json, "w", encoding="utf-8") as f:
-        json.dump(final_payload, f, indent=2, ensure_ascii=False)
+        json.dump(final_payload, f, indent=2, ensure_ascii=False, default=str)
     print(f"[✓] Đã xuất báo cáo tổng hợp JSON v3 ra: {final_report_json}")
 
     # Xuất Markdown hoàn chỉnh
@@ -559,3 +591,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

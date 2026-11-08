@@ -893,6 +893,8 @@ def main():
         pooled_targets_list = []
         pooled_logits_list = []
         pooled_sample_ids: List[str] = []
+        pooled_subsets: List[str] = []
+        pooled_paths: List[str] = []
 
         for sub in CFE_SUBSETS:
             recs = records_by_subset.get(sub, [])
@@ -915,6 +917,8 @@ def main():
                 pooled_sample_ids.extend(
                     f"{rec['subset']}/{rec['label']}/{rec['fname']}" for rec in recs
                 )
+                pooled_subsets.extend(rec['subset'] for rec in recs)
+                pooled_paths.extend(rec['path'] for rec in recs)
 
             tpr1 = m_sub.get("tpr_at_fpr", {}).get("0.01", "—")
             tpr5 = m_sub.get("tpr_at_fpr", {}).get("0.05", "—")
@@ -957,6 +961,8 @@ def main():
                 logits=all_logits_cat.numpy(),
                 targets=all_targets_cat.numpy(),
                 sample_ids=all_sample_ids,
+                subsets=np.asarray(pooled_subsets, dtype=str),
+                paths=np.asarray(pooled_paths, dtype=str),
                 model=model_name,
                 condition=cond,
                 temperature=temp_val,
