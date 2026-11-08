@@ -67,7 +67,8 @@ def package_checkpoint(
     router_path: Optional[str] = None,
     router_ablation_path: Optional[str] = None,
     metadata_json_path: Optional[str] = None,
-    allow_unverified_calibration: bool = False
+    allow_partial: bool = False,
+    allow_uncalibrated_debug: bool = False
 ) -> Dict[str, Any]:
     """Đóng gói checkpoint và metadata thành file .pth thống nhất."""
     if not os.path.exists(checkpoint_path):
@@ -79,28 +80,38 @@ def package_checkpoint(
     ckpt_sha = compute_file_sha256(checkpoint_path)
     print(f"[✓] Checkpoint SHA-256: {ckpt_sha}")
 
-    # Nhận diện layout adapter
+    # Nhận diện layout adapter và kiểm tra tính hoàn chỉnh
     blocks = infer_adapter_blocks(src_sd)
     layout_info = resolve_layout(blocks)
-    print(f"[✓] Layout adapter nhận diện: n={layout_info.get('n')}, indices={layout_info.get('indices')}")
+    print(f"[✓] Layout adapter nhận diện: n={layout_info.get('n')}, indices={layout_info.get('indices')}, partial={layout_info.get('partial')}")
+    if layout_info.get("partial", False) and not allow_partial:
+        raise ValueError(
+            f"[!] Lỗi nghiêm trọng: Checkpoint adapter layout không đầy đủ (partial=True): "
+            f"blocks={sorted(blocks)}, nearest_n={layout_info.get('n')}, dropped={layout_info.get('dropped')}. "
+            f"Bị từ chối đóng gói artifact chính thức (chỉ cho phép nếu bật cờ --allow_partial trong forensic analysis)!"
+        )
 
-    # Đọc và xác thực calibration
+    # Đọc và xác thực calibration: BẮT BUỘC có calibration hợp lệ khớp SHA-256
     calib_dict = None
-    if calibration_path and os.path.exists(calibration_path):
+    if not calibration_path or not os.path.exists(calibration_path):
+        if not allow_uncalibrated_debug:
+            raise ValueError(
+                "[!] Lỗi nghiêm trọng: Đóng gói artifact chính thức bắt buộc phải truyền --calibration <file.json> "
+                "khớp SHA-256 với checkpoint nguồn. (Chỉ bỏ qua nếu bật --allow_uncalibrated_debug)."
+            )
+        else:
+            print("[!] CẢNH BÁO: Đang đóng gói không kèm calibration (--allow_uncalibrated_debug)!")
+    else:
         print(f"[*] Đang nạp calibration: {calibration_path}")
         with open(calibration_path, "r", encoding="utf-8") as f:
             calib_dict = json.load(f)
         
-        if not allow_unverified_calibration:
-            validate_calibration_against_checkpoint(calib_dict, ckpt_sha)
-            print("[✓] Xác thực calibration chính chủ: Khớp SHA-256 100%.")
-        else:
-            print("[!] CẢNH BÁO: Đang đóng gói với cờ allow_unverified_calibration!")
-    else:
-        print("[!] Cảnh báo: Không truyền file calibration. Metadata sẽ để trống phần calibration.")
+        validate_calibration_against_checkpoint(calib_dict, ckpt_sha)
+        print("[✓] Xác thực calibration chính chủ: Khớp SHA-256 100%.")
 
     # Đọc và xác thực router (nếu có)
     router_dict = None
+    router_proof = None
     router_enabled = False
     if router_path and os.path.exists(router_path):
         print(f"[*] Đang nạp router params: {router_path}")
@@ -109,8 +120,8 @@ def package_checkpoint(
         if router_ablation_path and os.path.exists(router_ablation_path):
             from src.models.unified_fatformer import router_is_approved
             with open(router_ablation_path, "r", encoding="utf-8") as f:
-                proof = json.load(f)
-            router_enabled = router_is_approved(router_dict, proof)
+                router_proof = json.load(f)
+            router_enabled = router_is_approved(router_dict, router_proof)
             print(f"[✓] Trạng thái router: router_enabled={router_enabled}")
 
     git_commit = get_git_commit()
@@ -121,6 +132,7 @@ def package_checkpoint(
         "layout": layout_info,
         "calibration": calib_dict,
         "router": router_dict,
+        "router_ablation": router_proof,
         "router_enabled": router_enabled,
         "git_commit": git_commit,
         "source_checkpoint_sha256": ckpt_sha,
@@ -164,7 +176,8 @@ def main():
     parser.add_argument("--router_params", type=str, default=None, help="Đường dẫn file router_params.json")
     parser.add_argument("--router_ablation", type=str, default=None, help="Đường dẫn file router_ablation.json")
     parser.add_argument("--metadata_out", type=str, default=None, help="Đường dẫn file metadata JSON độc lập")
-    parser.add_argument("--allow_unverified_calibration", action="store_true", help="Bỏ qua kiểm tra hash calibration (Chỉ dùng cho test)")
+    parser.add_argument("--allow_partial", action="store_true", help="Cho phép layout adapter không đầy đủ (chỉ dùng cho forensic analysis)")
+    parser.add_argument("--allow_uncalibrated_debug", action="store_true", help="Bỏ qua bắt buộc calibration (chỉ dùng cho debug nội bộ)")
     args = parser.parse_args()
 
     try:
@@ -175,7 +188,8 @@ def main():
             router_path=args.router_params,
             router_ablation_path=args.router_ablation,
             metadata_json_path=args.metadata_out,
-            allow_unverified_calibration=args.allow_unverified_calibration
+            allow_partial=args.allow_partial,
+            allow_uncalibrated_debug=args.allow_uncalibrated_debug
         )
     except Exception as e:
         print(f"[!] Thất bại trong quá trình đóng gói: {e}", file=sys.stderr)

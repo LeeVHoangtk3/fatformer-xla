@@ -115,6 +115,13 @@ def safe_torch_load(f, map_location="cpu"):
 
 def load(name: str, device: Union[str, torch.device] = "cuda" if torch.cuda.is_available() else "cpu", jit: bool = False, download_root: str = None, args=None):
     """Nạp mô hình CLIP, đã vá lỗi hardcode đường dẫn và tương thích PyTorch 2.x."""
+    # Khởi tạo trực tiếp từ state_dict nếu được truyền qua args (phục vụ package self-contained)
+    if args and hasattr(args, "clip_state_dict") and isinstance(args.clip_state_dict, dict) and args.clip_state_dict:
+        model = build_model(args.clip_state_dict, args).to(device)
+        if str(device) == "cpu":
+            model.float()
+        return model, _transform(model.visual.input_resolution)
+
     if name in _MODELS:
         model_path = _resolve_clip_path(name, args)
     elif os.path.isfile(name):

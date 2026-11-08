@@ -301,7 +301,20 @@ def load_canonical(
             report={"layout": layout, "adapter_blocks": sorted(blocks), "adapter_index": adapter_index},
         )
 
-    model = build_model(_clone_model_args(model_args, layout["indices"]))
+    cloned_args = _clone_model_args(model_args, layout["indices"])
+    clip_path = getattr(model_args, "clip_path", None)
+    if not clip_path or not os.path.isfile(str(clip_path)):
+        # Trích xuất các tensor CLIP có sẵn trong state_dict để khởi tạo độc lập không cần file ViT-L-14.pt ngoài
+        c_sd = {}
+        for k, v in state_dict.items():
+            if k.startswith("clip_model."):
+                c_sd[k[len("clip_model."):]] = v
+            elif k.startswith("image_encoder."):
+                c_sd["visual." + k[len("image_encoder."):]] = v
+        if "visual.conv1.weight" in c_sd and "text_projection" in c_sd:
+            cloned_args.clip_state_dict = c_sd
+
+    model = build_model(cloned_args)
     clean_sd, report = canonicalize(state_dict, model.state_dict())
     missing_keys = report["missing_keys"]
     unexpected_keys = report["unexpected_keys"]

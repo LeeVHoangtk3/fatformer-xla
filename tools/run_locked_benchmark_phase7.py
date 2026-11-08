@@ -264,16 +264,17 @@ def evaluate_master_gates(
     # Chuẩn hóa ECE (nếu evaluator xuất 10.79% -> 0.1079)
     ece_val = ece_raw / 100.0 if ece_raw > 1.0 else ece_raw
 
-    # Tìm worst-subset fake acc trên CFE Clean (Tránh lỗi Python falsy: 0.0 or 100.0 -> 100.0)
-    worst_subset_fake_acc = 100.0
-    for sub, m in cfe_subsets_clean.items():
-        val = m.get("fake_acc")
-        fk_acc = float(val) if val is not None else 100.0
-        if fk_acc < worst_subset_fake_acc:
-            worst_subset_fake_acc = fk_acc
-    if not cfe_subsets_clean:
-        val = cfe_clean_metrics.get("fake_acc")
-        worst_subset_fake_acc = float(val) if val is not None else 0.0
+    # Tìm worst-subset fake acc trên CFE Clean (chỉ xét các subset có mẫu fake hợp lệ)
+    valid_fake_accs = [
+        float(m["fake_acc"]) for m in cfe_subsets_clean.values()
+        if m.get("fake_acc") is not None
+    ]
+    if valid_fake_accs:
+        worst_subset_fake_acc = min(valid_fake_accs)
+    elif cfe_clean_metrics.get("fake_acc") is not None:
+        worst_subset_fake_acc = float(cfe_clean_metrics["fake_acc"])
+    else:
+        worst_subset_fake_acc = 0.0
 
     # 8 tiêu chuẩn G7.2 (Master Plan §II.3)
     c1 = fake_at_real90_clean >= g72_cfg.get("fake_at_real90_clean_min", 65.0)

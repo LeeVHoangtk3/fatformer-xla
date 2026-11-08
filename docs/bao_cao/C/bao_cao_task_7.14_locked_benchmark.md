@@ -118,7 +118,7 @@ Kiểm chuẩn ngoại miền được thực hiện trên phân vùng độc l�
 
 ### 4.2. Nhận Xét Quy Luật Suy Biến (Robustness Insights)
 1. **Phân cấp suy biến thực tế**: Hiện tượng suy giảm tín hiệu giả mạo diễn ra nghiêm trọng nhất ở các phép nén chuyển đổi khối (Block-transform compression như JPEG Q30 và WebP Q40). Biến dạng không gian liên tục (DownUp0.5, Gaussian Blur 1.5) giữ lại được đặc trưng tần số tốt hơn đáng kể (AUC vẫn đạt $84\% - 87\%$).
-2. **Khoảng tin cậy Bootstrap 95%**: Khoảng tin cậy hẹp ($\pm 1.5$ pp), khẳng định sự ổn định của phép đo trên 1.600 mẫu held-out.
+2. **Khoảng tin cậy Bootstrap 95%**: Khoảng tin cậy đạt mức $\pm 1.5$ pp trên tập Clean ($[87.12, 90.16]\%$) và dao động đến $\pm 2.21$ pp trên tập nén sâu Q30 ($[77.64, 82.06]\%$), phản ánh sự phân tán lớn hơn khi ảnh chịu suy biến nặng.
 
 ---
 
@@ -147,7 +147,7 @@ Kiểm chuẩn ngoại miền được thực hiện trên phân vùng độc l�
 2. **Giá trị của Điều khoản kết quả âm (§II.3)**:
    - Điều khoản kết quả âm ghi nhận tính trung thực của kết quả thực nghiệm, nhưng **không thay thế cho việc kiểm chứng phương pháp luận**.
    - Việc tách biệt calibration của baseline và calibration riêng của v2 là bắt buộc để đảm bảo tính khách quan khoa học.
-3. **Ứng viên cốt lõi cho bước đóng gói**: Checkpoint `fatformer_anchored_v2_best.pth` là ứng viên có năng lực tổng quát ổn định nhất hiện có (bảo tồn Real ACC >90% trên 82k ảnh); các đánh giá so sánh Pareto sẽ được tiếp tục đối chiếu khi có thêm bảng đo độc lập.
+3. **Ứng viên cho bước đóng gói**: Checkpoint `fatformer_anchored_v2_best.pth` là ứng viên triển vọng nhất hiện có của Phase 7 nhờ giữ vững Real ACC >90% trên 82k ảnh. Tuy nhiên, việc khẳng định tính tối ưu Pareto và mức độ tổng quát toàn diện đòi hỏi phải đối chiếu trực tiếp với các biến thể khác trên cùng tập kiểm thử trong các nghiên cứu tiếp theo.
 
 ---
 
