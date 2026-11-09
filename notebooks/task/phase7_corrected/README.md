@@ -10,7 +10,7 @@ Mở `phase7_corrected_rerun_colab.ipynb`, dùng gói `phase7_corrected_colab_bu
    python -m tools.build_phase7_colab_bundle
    ```
 
-2. ZIP nằm tại `DATASET/logs/phase7/task_7.15_recovery/colab/phase7_corrected_colab_bundle.zip`; có tệp SHA-256 đi kèm. Gói chứa code hiện có, BPE tokenizer và các input 400/1.600 đã kiểm tra; không chứa model 2 GB hay dataset.
+2. ZIP nằm tại `DATASET/logs/phase7/task_7.15/current/colab/phase7_corrected_colab_bundle.zip`; có tệp SHA-256 đi kèm. Gói chứa code hiện có, BPE tokenizer và các input 400/1.600 đã kiểm tra; không chứa model 2 GB hay dataset.
 3. Đưa ZIP **v2 mới** vào `MyDrive/Fatformer/logs/phase7/`, thay ZIP v1 nếu đã có; hoặc chọn ZIP local khi cell upload hỏi. Mở notebook mới trên Colab, chọn một GPU CUDA tương thích còn đủ VRAM, Run all. Không bắt buộc T4.
 
 Không cần commit/push để Colab nhận bản sửa. Notebook không clone/pull GitHub và không giải nén artifact cũ đè lên code. Từng tệp code/input được đối chiếu SHA-256 theo manifest trước khi chạy.

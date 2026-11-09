@@ -1,0 +1,12 @@
+{
+  "schema": "task715_tensor_comparison/v1",
+  "n_tensors": 1200,
+  "keys_equal": true,
+  "tensors_equal": true,
+  "dtype_equal": true,
+  "changed_tensors": [],
+  "package_sha256": "8ddcb401f1e160776c653a3d073d2512cbafa1e08e5d39510201be83ab097dd8",
+  "reference_path": "DATASET/logs/phase7/task_7.15_original_68cd0a8/unified_fatformer_v2.pth",
+  "reference_sha256": "3d0c880ff57e8dfcb0024b0c02952db2f879b95ca4f95d4d18ad32dbfe2927a9",
+  "limitation": "Reference is the earlier archived package; the original training checkpoint on Drive was not supplied locally."
+}

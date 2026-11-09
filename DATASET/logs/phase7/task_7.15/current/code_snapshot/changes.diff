@@ -1,0 +1,192 @@
+diff --git a/tools/build_phase7_colab_bundle.py b/tools/build_phase7_colab_bundle.py
+index 314c492..505dfdc 100644
+--- a/tools/build_phase7_colab_bundle.py
++++ b/tools/build_phase7_colab_bundle.py
+@@ -11,7 +11,7 @@ from tools.calibration_data import sha256_file,validate_partitions
+ from tools.phase7_corrected import CONTRACT,TRAINING_SHA
+ 
+ 
+-def build(root,output):
++def build(root,output,calibration_logits=None,calibration=None,partition_audit=None):
+     root=Path(root).resolve()
+     sources={}
+     for folder in ['src','tools','tests','configs']:
+@@ -19,11 +19,11 @@ def build(root,output):
+             if path.is_file() and '__pycache__' not in path.parts and path.suffix in {'.py','.yaml','.yml','.json','.gz'}:
+                 sources[path.relative_to(root).as_posix()]=path
+     inputs={
+-      'inputs/calibration_400.npz':'DATASET/logs/phase7/task_7.15_recovery/logits_anchored_v2_calibration_400.npz',
++      'inputs/calibration_400.npz':calibration_logits or 'DATASET/logs/phase7/task_7.15_recovery/logits_anchored_v2_calibration_400.npz',
+       'inputs/calibration_split.npz':'DATASET/logs/phase7/wise_ft_sweep/logits_baseline_clean_calib_split.npz',
+       'inputs/evaluation_split.npz':'DATASET/logs/phase7/wise_ft_sweep/logits_baseline_clean_eval_split.npz',
+-      'inputs/anchored_v2.json':'DATASET/logs/phase7/calibration/anchored_v2.json',
+-      'inputs/partition_audit.json':'DATASET/logs/phase7/task_7.15_recovery/partition_audit.json',
++      'inputs/anchored_v2.json':calibration or 'DATASET/logs/phase7/calibration/anchored_v2.json',
++      'inputs/partition_audit.json':partition_audit or 'DATASET/logs/phase7/task_7.15_recovery/partition_audit.json',
+     }
+     for name,path in inputs.items():
+         sources[name]=root/path
+@@ -66,6 +66,9 @@ def main():
+     parser=argparse.ArgumentParser(description=__doc__)
+     parser.add_argument('--root',default=str(Path(__file__).resolve().parents[1]))
+     parser.add_argument('--output',default='DATASET/logs/phase7/task_7.15_recovery/colab/phase7_corrected_colab_bundle.zip')
++    parser.add_argument('--calibration_logits',help='Verified measured 400-image NPZ to include')
++    parser.add_argument('--calibration',help='Calibration JSON fitted from that exact NPZ')
++    parser.add_argument('--partition_audit',help='Audit JSON corresponding to these inputs')
+     print(json.dumps(build(**vars(parser.parse_args())),indent=2))
+ 
+ 
+diff --git a/tools/calibrate_and_select.py b/tools/calibrate_and_select.py
+index 9bc3f83..846e1a0 100644
+--- a/tools/calibrate_and_select.py
++++ b/tools/calibrate_and_select.py
+@@ -3,7 +3,7 @@
+ FatFormer-XLA: Công Cụ Hiệu Chuẩn Nhiệt Độ & Ngưỡng Ràng Buộc FPR + ECE (Task 7.4)
+ ==================================================================================
+ Đáp ứng 100% yêu cầu Kế hoạch Phase 7 v3.0 và Khế ước CFE (Phụ lục A.2):
+-  1. FIT NHIỆT ĐỘ T: Tối ưu hóa Negative Log-Likelihood (NLL) qua L-BFGS, kẹp [0.05, 10.0].
++  1. FIT NHIỆT ĐỘ T: Tối ưu NLL lồi theo nghịch đảo nhiệt độ, ràng buộc T trong [0.05, 10.0].
+   2. FIT NGƯỠNG T*: Quét ngưỡng phân vị Real scores tương ứng FPR mục tiêu in {0.01, 0.05, 0.10}.
+   3. ĐO LƯỜNG ĐỘ TIN CẬY ECE: Tính Expected Calibration Error 10 bins trước và sau hiệu chuẩn.
+   4. BIỂU ĐỒ RELIABILITY: Trực quan hóa đường cong độ tin cậy trước và sau khi làm mượt xác suất.
+@@ -26,7 +26,6 @@ import matplotlib.pyplot as plt
+ 
+ import torch
+ import torch.nn as nn
+-import torch.optim as optim
+ import torch.nn.functional as F
+ from torch.utils.data import DataLoader, TensorDataset
+ 
+@@ -46,45 +45,91 @@ if hasattr(sys.stdout, "reconfigure"):
+ 
+ 
+ # ================================================================================
+-# MODULE NHIỆT ĐỘ VÀ TỐI ƯU HÓA L-BFGS
++# MODULE NHIỆT ĐỘ VÀ TỐI ƯU NLL CÓ KIỂM TRA HỘI TỤ
+ # ================================================================================
+ 
+ class ModelWithTemperature(nn.Module):
+     """
+     Module co giãn nhiệt độ (Temperature Scaling) theo Guo et al. (ICML 2017).
+-    Tối ưu tham số nhiệt độ T > 0 độc lập bằng cách cực tiểu hóa NLL qua L-BFGS.
++    Tối ưu NLL lồi theo beta=1/T trên một khoảng đóng, có kiểm tra hội tụ.
+     """
+     def __init__(self, init_temp: float = 1.0):
+         super().__init__()
+         self.temperature = nn.Parameter(torch.ones(1) * init_temp)
++        self.fit_diagnostics = None
+ 
+     def forward(self, logits: torch.Tensor) -> torch.Tensor:
+         temp = torch.clamp(self.temperature, min=0.05, max=10.0)
+         return logits / temp
+ 
+-    def fit(self, logits: torch.Tensor, targets: torch.Tensor, max_iter: int = 100, lr: float = 0.01) -> Tuple[float, float]:
+-        """
+-        Tối ưu nhiệt độ T bằng L-BFGS.
+-        Trả về: (T_optimal, T_raw_before_clamp).
+-        """
+-        nll_criterion = nn.CrossEntropyLoss()
+-        optimizer = optim.LBFGS([self.temperature], lr=lr, max_iter=max_iter)
+-
+-        def eval_loss():
+-            optimizer.zero_grad()
+-            t_val = torch.clamp(self.temperature, min=1e-3)
+-            loss = nll_criterion(logits / t_val, targets)
+-            loss.backward()
+-            return loss
+-
+-        optimizer.step(eval_loss)
+-        raw_t = float(self.temperature.item())
+-        clamped_t = float(torch.clamp(self.temperature, min=0.05, max=10.0).item())
++    def fit(self, logits: torch.Tensor, targets: torch.Tensor, max_iter: int = 100,
++            lr: Optional[float] = None) -> Tuple[float, float]:
++        """Solve binary NLL on T in [0.05, 10], or fail before exporting a fit.
+ 
+-        if raw_t < 0.05 or raw_t > 10.0:
+-            print(f"  ⚠️ [CẢNH BÁO] Nhiệt độ T={raw_t:.4f} chạm biên kẹp! Gán lại T={clamped_t:.4f}")
+-
+-        return clamped_t, raw_t
++        NLL is convex in beta=1/T. Its monotone derivative brackets an interior
++        minimum, or identifies a constrained endpoint minimum. ``lr`` remains
++        accepted for old callers; this root solver has no learning rate.
++        The second return value equals T: no unconstrained fit is clipped later.
++        """
++        self.fit_diagnostics = None
++        values = logits.detach().to(device="cpu", dtype=torch.float64).numpy()
++        labels = targets.detach().cpu().numpy()
++        if (values.ndim != 2 or values.shape[1] != 2 or not len(values)
++                or labels.shape != (len(values),) or labels.dtype.kind not in "iu"
++                or not np.isin(labels, [0, 1]).all() or not np.isfinite(values).all()):
++            raise ValueError("Temperature fit requires finite [N,2] logits and integer 0/1 targets")
++        if not isinstance(max_iter, int) or max_iter < 1:
++            raise ValueError("max_iter must be a positive integer")
++        delta = values[:, 1] - values[:, 0]
++        scale = max(1., float(np.mean(np.abs(delta))))
++
++        def gradient(beta):
++            probability = np.exp(-np.logaddexp(0., -beta * delta))
++            return float(np.mean(delta * (probability - labels)))
++
++        def nll(temperature):
++            margin = delta / temperature
++            return float(np.mean(np.logaddexp(0., margin) - labels * margin))
++
++        lower, upper = .1, 20.  # beta bounds, corresponding to T=10 and T=.05
++        iterations = 0
++        if not np.any(delta):
++            temperature, status = 1., "flat_objective"
++        elif gradient(lower) >= 0:
++            temperature, status = 10., "upper_temperature_bound"
++        elif gradient(upper) <= 0:
++            temperature, status = .05, "lower_temperature_bound"
++        else:
++            for iterations in range(1, max_iter + 1):
++                beta = (lower + upper) / 2.
++                slope = gradient(beta)
++                if abs(slope) <= 1e-10 * scale or upper - lower <= 1e-12 * max(1., abs(beta)):
++                    break
++                if slope > 0:
++                    upper = beta
++                else:
++                    lower = beta
++            else:
++                raise RuntimeError("Temperature optimization did not converge; calibration was not exported")
++            temperature, status = 1. / beta, "interior_converged"
++
++        # Validate the actual float32 temperature used by the existing forward API.
++        fitted = float(np.float32(temperature))
++        slope = gradient(1. / fitted)
++        violation = (max(0., -slope) if status == "upper_temperature_bound" else
++                     max(0., slope) if status == "lower_temperature_bound" else abs(slope))
++        if violation > 1e-6 * scale or nll(fitted) > nll(1.) + 1e-10:
++            raise RuntimeError("Temperature optimum failed stationarity/NLL checks; calibration was not exported")
++        with torch.no_grad():
++            self.temperature.fill_(fitted)
++        self.fit_diagnostics = dict(
++            method="bounded_inverse_temperature_bisection/v1", converged=True,
++            status=status, iterations=iterations, temperature_bounds=[.05, 10.],
++            gradient_beta=slope, scaled_kkt_residual=violation / scale,
++            nll_at_T1=nll(1.), nll_at_fitted_T=nll(fitted),
++            objective_dtype="float64", deployed_temperature_dtype="float32",
++        )
++        return fitted, fitted
+ 
+ 
+ # ================================================================================
+@@ -341,7 +386,7 @@ def run_dummy_verification_v3(output_dir: str = "DATASET/logs/phase7/dummy/calib
+ 
+     print(f"[*] Đã sinh 540 mẫu logit giả lập cân bằng: {n_per_class} Real, {n_per_class} Fake.")
+ 
+-    # 2. Fit nhiệt độ T qua L-BFGS
++    # 2. Fit nhiệt độ T bằng bộ giải có kiểm tra hội tụ
+     calibrator = ModelWithTemperature(init_temp=1.0)
+     opt_t, raw_t = calibrator.fit(logits, targets)
+     print(f"[*] Nhiệt độ tối ưu (Temperature): T = {opt_t:.4f} (Raw: {raw_t:.4f})")
+@@ -604,6 +649,7 @@ def run_measured_calibration(
+         "class_balance": {"real": int(real_mask.sum()), "fake": int(fake_mask.sum())},
+         "T": opt_t,
+         "T_raw": raw_t,
++        "temperature_optimization": calibrator.fit_diagnostics,
+         "T_star": t_stars,
+         "T_star_default": threshold,
+         "fpr_target": fpr_target,

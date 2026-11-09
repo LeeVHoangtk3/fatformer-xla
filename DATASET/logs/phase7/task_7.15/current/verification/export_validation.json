@@ -1,0 +1,11 @@
+{
+  "schema": "phase7_bundle_export_validation/v1",
+  "bundle_sha256": "3cd63cd9f5e07d6a70348e3d23809a8216c633b0d45224e815651378923ce657",
+  "manifest_files_verified": 140,
+  "exported_tests_passed": 38,
+  "test_report": "verification/export_tests.xml",
+  "contract": "phase7-corrected-20261109-v2",
+  "GPU_run_performed": false,
+  "layout": "task_7.15/current",
+  "note": "Refreshed and retested after path consolidation; previous export preserved in archive."
+}

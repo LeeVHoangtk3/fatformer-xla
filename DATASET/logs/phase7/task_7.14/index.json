@@ -1,0 +1,19 @@
+{
+  "schema": "task714_run_registry/v1",
+  "runs": [
+    {
+      "run_id": "locked_benchmark_phase7_20261109_074134",
+      "path": "runs/locked_benchmark_phase7_20261109_074134",
+      "classification": "frozen_reference_operating_point",
+      "status": "verified_reference_result",
+      "final_package_evaluation": false,
+      "source_commit": "bb43fd90dc65df67707de2eee0c41b5a63eec335",
+      "source_report_sha256": "74ddb79cc57a71a1808e74d406884da9047350afb590cfb309c3cf3732444b87",
+      "G72_passed": 5,
+      "G72_total": 8,
+      "G73_status": "pending"
+    }
+  ],
+  "latest_imported_run": "locked_benchmark_phase7_20261109_074134",
+  "latest_verified_final_package_run": null
+}

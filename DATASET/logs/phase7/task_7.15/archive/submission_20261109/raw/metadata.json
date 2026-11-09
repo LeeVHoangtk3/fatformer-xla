@@ -1,0 +1,95 @@
+{
+  "schema": "unified_fatformer/v1",
+  "layout": {
+    "n": 3,
+    "indices": [
+      7,
+      15,
+      23
+    ],
+    "dropped": [],
+    "missing": [],
+    "partial": false,
+    "expressible": true
+  },
+  "calibration": {
+    "schema": "calibration/v1",
+    "evidence_level": "measured",
+    "model": "anchored_v2",
+    "checkpoint": {
+      "path": "/content/drive/MyDrive/Fatformer/checkpoint/phase7/anchored_v2_run1/fatformer_anchored_v2_best.pth",
+      "sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c",
+      "verification": "hashed_source_file"
+    },
+    "calibration_source": "/content/fatformer-xla/DATASET/logs/phase7/logits_anchored_v2_clean_calib.npz",
+    "calibration_source_sha256": "3b0f66dfdc7c4655df6aa7fcab7346f0315d2663927559b66005bafa2c657942",
+    "n_calib": 400,
+    "class_balance": {
+      "real": 200,
+      "fake": 200
+    },
+    "T": 1.4675993919372559,
+    "T_raw": 1.4675993919372559,
+    "T_star": {
+      "0.01": 0.972784161567688,
+      "0.05": 0.9293636083602905,
+      "0.10": 0.8831893801689148
+    },
+    "T_star_default": 0.9293636083602905,
+    "fpr_target": 0.05,
+    "probability_device": "cpu",
+    "probability_batch_size": 32,
+    "fpr_measured": {
+      "0.01": 0.01,
+      "0.05": 0.05,
+      "0.10": 0.1
+    },
+    "real_acc": 95.0,
+    "fake_acc": 59.0,
+    "ece_before": 14.72,
+    "ece_after": 11.7,
+    "nll_before": 0.6453,
+    "nll_after": 0.5013,
+    "cv": null,
+    "partition_validation": {
+      "status": "verified_disjoint_ids",
+      "identity_unit": "subset/class/filename; content duplicates not audited",
+      "n_calibration": 400,
+      "n_evaluation": 1600,
+      "overlap": 0,
+      "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+      "evaluation_split_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+      "sample_ids_sha256": "5ae613da819d065b93225b901a7d06d3309ad27e8cdbb9a441cf4df43d7552fb"
+    },
+    "inference_precision": "fp32",
+    "extraction_batch_size": 32,
+    "extraction_torch_version": "2.14.1+cu130"
+  },
+  "router": {
+    "schema": "degradation_router/v2",
+    "status": "awaiting_measured_calibration",
+    "evidence_level": "unverified",
+    "deployment_enabled": false,
+    "n_calib": null,
+    "calib_auc": null,
+    "invalidation": {
+      "original_commit": "13749f6",
+      "reason": "Invalidated after code review: v1 fitted random synthetic features, assigned thresholds, and interpolated router scores/CI instead of measuring predictions."
+    },
+    "next_step": "Collect actual val_calib images/gating/logits with tools/router_data.py, then run tools/fit_router.py. No coefficients are deployable yet.",
+    "implementation_status": "regression_tested",
+    "experiment_status": "deferred",
+    "deployment_plan": "calibrated_fixed_fallback",
+    "deployment_verified": false
+  },
+  "router_ablation": null,
+  "router_enabled": false,
+  "git_commit": "bb43fd90dc65df67707de2eee0c41b5a63eec335",
+  "source_checkpoint_sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c",
+  "created_at": "2026-11-09T08:38:21.943125+00:00",
+  "validation_status": "pending_real_prediction_equivalence_and_G7.3",
+  "build": {
+    "git_commit": "bb43fd90dc65df67707de2eee0c41b5a63eec335",
+    "dirty": true
+  }
+}

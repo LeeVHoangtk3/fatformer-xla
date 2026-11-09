@@ -1,0 +1,35 @@
+{
+  "notebook_sha256": "16d476d4afbe789bb76ce8130b43f032729209c4c0400af4b9916240e9ab2abf",
+  "cells": [
+    {
+      "cell": 1,
+      "execution_count": 1,
+      "source_sha256": "fbf7077574ec18fd263c0615bc3f138908de6de5da8d50177672dcb983654dc5",
+      "outputs": 1
+    },
+    {
+      "cell": 2,
+      "execution_count": 2,
+      "source_sha256": "82663b7bd2873a118082ef5c536cb9ed089d12d5b540a0051685ad2be0e3edee",
+      "outputs": 1
+    },
+    {
+      "cell": 3,
+      "execution_count": 3,
+      "source_sha256": "aee719c3ad1b0358042081d82dab67c55eb64124b5f7277229400172b740178f",
+      "outputs": 3
+    },
+    {
+      "cell": 4,
+      "execution_count": 4,
+      "source_sha256": "b89f74714defadee01a42f70ca3909819789b7a43fd699307b3f9b3c947370e0",
+      "outputs": 1
+    },
+    {
+      "cell": 5,
+      "execution_count": 5,
+      "source_sha256": "a2aff4f769a2078208d6ff02d9d9f23576320c592d3bd87baddb53183f700dfe",
+      "outputs": 7
+    }
+  ]
+}

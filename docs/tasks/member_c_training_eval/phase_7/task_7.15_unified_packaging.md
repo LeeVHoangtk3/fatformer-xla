@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU** + ☁️ GPU (đo độ trễ)
 - **Độ ưu tiên**: 🟠 Cao — điều kiện cuối của **G7.3**
 - **Cổng liên quan**: **G7.3**
-- **Trạng thái**: `[~] Đã khôi phục calibration 400 ảnh, đóng gói lại và kiểm chứng tensor/standalone smoke; chờ ảnh thật, so sánh điều kiện và T4.`
+- **Trạng thái**: `[~] Đã sửa hội tụ calibration 400 ảnh, đóng gói và kiểm chứng local; bản hiện hành ở DATASET/logs/phase7/task_7.15/current, chờ ảnh thật, so sánh điều kiện và đo GPU cho package hiện hành.`
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.15
 
 ---
@@ -52,7 +52,7 @@ Biến kết quả nghiên cứu thành **một artifact dùng được**: một
 | O2 | CLI | `tools/infer_unified.py` | Ảnh → `{prob_fake, label, w_deg, threshold}` |
 | O3 | Checkpoint hợp nhất | `DATASET/checkpoints/phase7/unified_fatformer_v2.pth` | Trọng số + metadata |
 | O4 | Metadata ngoài | `..._metadata.json` | Bản sao đọc được bằng mắt |
-| O5 | Báo cáo độ trễ | `logs/phase7/latency_phase7.json` | trung vị, p95, batch 1/8/32 |
+| O5 | Báo cáo độ trễ | `DATASET/logs/phase7/task_7.15/current/verification/latency_phase7.json` | trung vị, p95, batch 1/8/32 |
 | O6 | Báo cáo | `docs/bao_cao/C/bao_cao_task_7.15_unified_packaging.md` | Nghiệm thu G7.3 |
 
 ---
@@ -147,14 +147,14 @@ Yêu cầu CLI:
 ```python
 # Batch 1/8/32, warmup 20, 200 cặp đo xen kẽ backbone/package.
 # Đồng bộ CUDA trước/sau mỗi phép đo; lưu GPU, precision, hash package và mẫu thô.
-# Ghi riêng thời gian batch, throughput và overhead có dấu; chỉ nghiệm thu phần cứng T4.
+# Ghi riêng thời gian batch, throughput và overhead có dấu trên GPU CUDA thực tế.
 ```
 
 Ghi `latency_phase7.json`:
 
 ```json
 {
-  "device": "T4",
+  "device": "GPU CUDA thực tế (ví dụ minh họa, không phải số đo)",
   "batch": {"1": {"median_ms": 0.0, "p95_ms": 0.0},
             "8": {}, "32": {}},
   "per_image_ms_batch1": 0.0,

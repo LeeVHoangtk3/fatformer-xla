@@ -1,0 +1,462 @@
+{
+  "schema": "task715_path_consolidation/v1",
+  "reason": "One Task 7.15 log root; current holds the selected local candidate, archive preserves history.",
+  "all_moved_files_byte_verified": true,
+  "moves": [
+    {
+      "source": "task_7.15/runs/temperature_converged_20261109_local",
+      "destination": "task_7.15/current"
+    },
+    {
+      "source": "task_7.15/runs/unified_packaging_20261109_083821_8ddcb401",
+      "destination": "task_7.15/archive/submission_20261109"
+    },
+    {
+      "source": "task_7.15_original_68cd0a8",
+      "destination": "task_7.15/archive/original_68cd0a8"
+    },
+    {
+      "source": "task_7.15_recovery",
+      "destination": "task_7.15/archive/recovery_legacy"
+    },
+    {
+      "source": "logits_anchored_v2_clean_calib.npz",
+      "destination": "task_7.15/archive/shared_paths_before_consolidation/logits_anchored_v2_clean_calib.npz"
+    },
+    {
+      "source": "latency_phase7.json",
+      "destination": "task_7.15/archive/shared_paths_before_consolidation/latency_phase7.json"
+    },
+    {
+      "source": "calibration/anchored_v2.json",
+      "destination": "task_7.15/archive/shared_paths_before_consolidation/calibration/anchored_v2.json"
+    },
+    {
+      "source": "calibration/anchored_v2_reliability.png",
+      "destination": "task_7.15/archive/shared_paths_before_consolidation/calibration/anchored_v2_reliability.png"
+    }
+  ],
+  "files": [
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/artifact_manifest.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/artifact_manifest.json",
+      "bytes": 3378,
+      "sha256": "455c177b5f85c3faa1c0ea96e7326d8e3bcc1b02dadddf83bc0b648c269f6ea7",
+      "preserved_original_path": "DATASET/logs/phase7/task_7.15/archive/export_before_consolidation/artifact_manifest.json"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/artifacts/metadata.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/artifacts/metadata.json",
+      "bytes": 4329,
+      "sha256": "a0a42462c64442190765b70bc9b350324898e43b5575767c77a2309288482571"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/artifacts/unified_fatformer_v2.pth",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/artifacts/unified_fatformer_v2.pth",
+      "bytes": 1972729455,
+      "sha256": "16606e16c89901f39ab78c29951c1f83d9412f98f27ab55853c2e2dd13ee5f74"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/calibration/anchored_v2.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json",
+      "bytes": 2358,
+      "sha256": "367c33869d4f41c087f8f5272fd16d2e2ca801515d0dd445302c98a7b254eb65"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/calibration/anchored_v2_reliability.png",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2_reliability.png",
+      "bytes": 101801,
+      "sha256": "7a1570e6272ed07a2901449c324d1eb0a1346369e530f785c381bd6510ceecf5"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/calibration/summary.md",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/calibration/summary.md",
+      "bytes": 641,
+      "sha256": "9fbc19684904b2ce337bf176ce0c377b1436d435ebafa1cb44dd56215cd3f84b"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/code_snapshot/changes.diff",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/code_snapshot/changes.diff",
+      "bytes": 10365,
+      "sha256": "45485df220b4aa1e96e23bd08975a4de4bef90b00937082572ce286d2b3540cc"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/code_snapshot/tests/test_temperature_convergence.py",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/code_snapshot/tests/test_temperature_convergence.py",
+      "bytes": 3176,
+      "sha256": "7405589f6af7d7a6c8f06302d83dc70d757c2512e29364b61184711808615bff"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/code_snapshot/tools/build_phase7_colab_bundle.py",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/code_snapshot/tools/build_phase7_colab_bundle.py",
+      "bytes": 4749,
+      "sha256": "2d0e29722ef765a354e684a28849cd3a286a42d2b44a99368a13d280708fa895"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/code_snapshot/tools/calibrate_and_select.py",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/code_snapshot/tools/calibrate_and_select.py",
+      "bytes": 34498,
+      "sha256": "0e1359042fbafdd4d3abd9e81a96b27522d5fb9bae62d8474da8c9bbca361fe9"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/colab/phase7_corrected_colab_bundle.zip",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/colab/phase7_corrected_colab_bundle.zip",
+      "bytes": 1933417,
+      "sha256": "aa904760ae0fccf2a4fa8a20ca58290906dac40f0b3289ceeb191dcd3892032d",
+      "preserved_original_path": "DATASET/logs/phase7/task_7.15/archive/export_before_consolidation/colab/phase7_corrected_colab_bundle.zip"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/colab/phase7_corrected_colab_bundle.zip.sha256",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/colab/phase7_corrected_colab_bundle.zip.sha256",
+      "bytes": 101,
+      "sha256": "d3ceea944e3e9c027148576e662afe57a6dfe34eaec68ee752a8c35b56e2694b",
+      "preserved_original_path": "DATASET/logs/phase7/task_7.15/archive/export_before_consolidation/colab/phase7_corrected_colab_bundle.zip.sha256"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/README.md",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/README.md",
+      "bytes": 7010,
+      "sha256": "f874c22095ea02a872cc08a0a09743e04e3d2416dcd15d9bd8a69971bd8035a1",
+      "preserved_original_path": "DATASET/logs/phase7/task_7.15/archive/export_before_consolidation/README.md"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/verification/export_tests.xml",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/verification/export_tests.xml",
+      "bytes": 5377,
+      "sha256": "f994bd45282b8cc2c51943618a8d2cd8f4ee555e4348d4cabedbd3f0d7eedf91",
+      "preserved_original_path": "DATASET/logs/phase7/task_7.15/archive/export_before_consolidation/verification/export_tests.xml"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/verification/export_validation.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/verification/export_validation.json",
+      "bytes": 340,
+      "sha256": "851cb36b40580ebead02aefef93439375a0cb90bb6482f734c0515d9eaaf74a1",
+      "preserved_original_path": "DATASET/logs/phase7/task_7.15/archive/export_before_consolidation/verification/export_validation.json"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/verification/historical_logits_rescore.csv",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/verification/historical_logits_rescore.csv",
+      "bytes": 1613,
+      "sha256": "ed61bb6fa366bf898e9232673bbb60bd160eb37e1ae233804597bdd835e7a0d7"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/verification/package_verification.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/verification/package_verification.json",
+      "bytes": 610,
+      "sha256": "ab37e6112456e3ad16acd4a8e5f276d6fee296e0377b16d4030c769bdb5e7cdc"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/verification/partition_audit.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/verification/partition_audit.json",
+      "bytes": 840,
+      "sha256": "94d098805dc85c06b5a6f616f549289c914e340abc6f9a8eff66aae746b3215c"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/verification/repair_validation.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/verification/repair_validation.json",
+      "bytes": 3249,
+      "sha256": "d1030e2c7b29f5721f7dee39fee6d6447fde74fe96555d7612ac2b7a43786f6f"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/verification/tests.xml",
+      "new_path": "DATASET/logs/phase7/task_7.15/current/verification/tests.xml",
+      "bytes": 16047,
+      "sha256": "c3d1db641f64cd29ba2cbb66a8e42abbf5aea4ffae888953949dab6ffe036d5b"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/analysis/calibration_thresholds.csv",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/analysis/calibration_thresholds.csv",
+      "bytes": 168,
+      "sha256": "315c838e33768992c7d5e55ac013859e4afece603d7f51cc7861c15ac1557922"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/analysis/effective_config.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/analysis/effective_config.json",
+      "bytes": 846,
+      "sha256": "8c1772ca2328fac6543569a78285ed153ced6b843eda3b468ce7fc1585b9ad46"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/analysis/execution_metadata.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/analysis/execution_metadata.json",
+      "bytes": 2503,
+      "sha256": "b9ddf8ed7f23d561906bf8163413f57046d098d6468d20a3a5cc38e54f0468a8"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/analysis/historical_logits_rescore.csv",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/analysis/historical_logits_rescore.csv",
+      "bytes": 1414,
+      "sha256": "7732ecd67a453a0c1a274d3f30559022a39b10e5be089e6a2e4d57467cd53938"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/analysis/latency_summary.csv",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/analysis/latency_summary.csv",
+      "bytes": 557,
+      "sha256": "f1044d5b8a2dd38bbb2933b68708ad1ed8c56e61bec581d644ed1bf123692eb5"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/analysis/notebook_stdout.txt",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/analysis/notebook_stdout.txt",
+      "bytes": 9462,
+      "sha256": "7a019d9e37cc617de795ea357e523b3b6abaa79a7ef8a54dd32c3b2f9cd910e8"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/analysis/optimizer_convergence_diagnostic.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/analysis/optimizer_convergence_diagnostic.json",
+      "bytes": 806,
+      "sha256": "8d75d82ca76b4a05f63486f1c7d254fd46c8bc2ee6e858865ba0e36674518fc4"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/analysis/README.md",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/analysis/README.md",
+      "bytes": 11566,
+      "sha256": "ab9936f4a19fc52d5ec5f952110573d56205fec5d631808127cf3e0dd03fc1c5"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/analysis/standalone_cpu_smoke.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/analysis/standalone_cpu_smoke.json",
+      "bytes": 482,
+      "sha256": "b8b19cfcd6313bfc6b5392a2af17946c5b645b31b67779ffbc6f87354cd0a40d"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/analysis/tensor_comparison.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/analysis/tensor_comparison.json",
+      "bytes": 578,
+      "sha256": "7851243d6ad3906e8febe138ad932ef2ef0ecf2899983931d8cdf4382b33de94"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/analysis/verification.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/analysis/verification.json",
+      "bytes": 18492,
+      "sha256": "96cf51add4a5d0d57d79627f171a0e5cb23dac598b2388319396eb3b9ebfae10"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/evidence/logits_baseline_clean_calib_split.npz",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/evidence/logits_baseline_clean_calib_split.npz",
+      "bytes": 6471,
+      "sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/evidence/logits_baseline_clean_eval_split.npz",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/evidence/logits_baseline_clean_eval_split.npz",
+      "bytes": 18199,
+      "sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/import_manifest.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/import_manifest.json",
+      "bytes": 3680,
+      "sha256": "a1513049d2e46469dae33bb2507687b96d0199ba42e7adf370403c18b500c701"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/raw/anchored_v2.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/raw/anchored_v2.json",
+      "bytes": 1770,
+      "sha256": "9ec8c09e0869cdf053ea85c5f6bc7196f9009ea2ee13662c183423a81cf47fea"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/raw/anchored_v2_reliability.png",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/raw/anchored_v2_reliability.png",
+      "bytes": 113868,
+      "sha256": "ee9a404f1728f6639e92e201d53a2fa77750d02ad249879571d977320e4c20e4"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/raw/latency_phase7.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/raw/latency_phase7.json",
+      "bytes": 52716,
+      "sha256": "2b5dac95c103d8802abdc530213f83a2f53119d4710cc2fca8cc93f1bf111778"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/raw/logits_anchored_v2_clean_calib.npz",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/raw/logits_anchored_v2_clean_calib.npz",
+      "bytes": 11657,
+      "sha256": "3b0f66dfdc7c4655df6aa7fcab7346f0315d2663927559b66005bafa2c657942"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/raw/metadata.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/raw/metadata.json",
+      "bytes": 3320,
+      "sha256": "f91bb2da705817b06b43c37ee57231457f142a31585184e62356630ccedf6295"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401/raw/unified_fatformer_v2.pth",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/submission_20261109/raw/unified_fatformer_v2.pth",
+      "bytes": 1972728623,
+      "sha256": "8ddcb401f1e160776c653a3d073d2512cbafa1e08e5d39510201be83ab097dd8"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_original_68cd0a8/anchored_v2.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/original_68cd0a8/anchored_v2.json",
+      "bytes": 975,
+      "sha256": "c2ec1a3f986220cd5f2a1dfed6499dd8067acb810011e6a34b2bf760985b4bd3"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_original_68cd0a8/anchored_v2_reliability.png",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/original_68cd0a8/anchored_v2_reliability.png",
+      "bytes": 107492,
+      "sha256": "ca5502c1309aa4b398e98b0dd91226615599056e72985dd10d195eb94a7c077b"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_original_68cd0a8/archive_manifest.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/original_68cd0a8/archive_manifest.json",
+      "bytes": 2905,
+      "sha256": "b02ec76fb6a06235840b914fe2dea70566c98ee8c90d467c4893af575c37b8d8"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_original_68cd0a8/bao_cao_task_7.15_unified_packaging.md",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/original_68cd0a8/bao_cao_task_7.15_unified_packaging.md",
+      "bytes": 14438,
+      "sha256": "7c037943271b75674d936ca285186c5d5774037af9fd4a427e50610a7a2dd38b"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_original_68cd0a8/latency_phase7.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/original_68cd0a8/latency_phase7.json",
+      "bytes": 966,
+      "sha256": "44ab46ee216d3ba2e1976076379d548cfa9669ee301de780ca68285b6446df72"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_original_68cd0a8/logits_anchored_v2_clean_calib.npz",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/original_68cd0a8/logits_anchored_v2_clean_calib.npz",
+      "bytes": 34409,
+      "sha256": "7714859ef4f763adf33abbfca6acb313e2a525510fec90302913149eae8a767c"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_original_68cd0a8/metadata.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/original_68cd0a8/metadata.json",
+      "bytes": 2324,
+      "sha256": "e8f3f3bd54acb8f55ddf2fc413c79935f27827ed58d3182341b162be82955f5c"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_original_68cd0a8/summary.md",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/original_68cd0a8/summary.md",
+      "bytes": 820,
+      "sha256": "7b1032bb5eb9e2f5cab9b5ee97ff5af8ded6e00c499bdafe4c728d2dca8f6510"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_original_68cd0a8/unified_fatformer_v2.pth",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/original_68cd0a8/unified_fatformer_v2.pth",
+      "bytes": 1972727663,
+      "sha256": "3d0c880ff57e8dfcb0024b0c02952db2f879b95ca4f95d4d18ad32dbfe2927a9"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_recovery/artifact_manifest.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/recovery_legacy/artifact_manifest.json",
+      "bytes": 3555,
+      "sha256": "51a420b6e298767d79bf99891b48eee166a2c7617c797577b046a48fa7ea13a5"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_recovery/calibration/anchored_v2.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/recovery_legacy/calibration/anchored_v2.json",
+      "bytes": 2781,
+      "sha256": "7d9a41a1ab626e648d672d95d11394133d0585a2526a98870b4d4f8b413674eb"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_recovery/calibration/anchored_v2_reliability.png",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/recovery_legacy/calibration/anchored_v2_reliability.png",
+      "bytes": 96192,
+      "sha256": "e746624c1c0ae2a702a95329dca6607248da2f83b84e02e78d731b0c264191b8"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_recovery/calibration/summary.md",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/recovery_legacy/calibration/summary.md",
+      "bytes": 646,
+      "sha256": "9e229f9c00dc9e452cc1738d3f3d82a22dc6b68a49a29aa0853a1cdeb59d4ba7"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_recovery/colab/export_validation.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/recovery_legacy/colab/export_validation.json",
+      "bytes": 1609,
+      "sha256": "29f85f5e5fa1ad1b4379a31cda098b165812fb78c6b0b90be90be6ac29bf3844"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_recovery/colab/export_validation_v1.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/recovery_legacy/colab/export_validation_v1.json",
+      "bytes": 2232,
+      "sha256": "45a1975643eea42cd07697d426757ce6929930979835cabded4f1bd0e52419c5"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_recovery/colab/phase7_corrected_colab_bundle.zip",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/recovery_legacy/colab/phase7_corrected_colab_bundle.zip",
+      "bytes": 1931429,
+      "sha256": "a73ac4845f631b901395236c3401ed26db1247d860b86813d6482c32118db082"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_recovery/colab/phase7_corrected_colab_bundle.zip.sha256",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/recovery_legacy/colab/phase7_corrected_colab_bundle.zip.sha256",
+      "bytes": 101,
+      "sha256": "24723fbd1ab489680d0a3ff1cb1d2970bc2d9c7434051d024ca91427db618179"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_recovery/colab/phase7_corrected_colab_bundle_v1.zip",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/recovery_legacy/colab/phase7_corrected_colab_bundle_v1.zip",
+      "bytes": 1927940,
+      "sha256": "3e0d438a2c842cc10a97d178c21cbb984a17811128ec5f71e9fc87af1b9ea874"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_recovery/local_validation.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/recovery_legacy/local_validation.json",
+      "bytes": 1123,
+      "sha256": "0d3d236ed1a5807bcaa7034f8cf7800fdd6fbce4fe5cbc85fe6c71ed8338d3df"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_recovery/logits_anchored_v2_calibration_400.npz",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/recovery_legacy/logits_anchored_v2_calibration_400.npz",
+      "bytes": 11448,
+      "sha256": "9b7651fe88dd5d7a07dfbc39a55870bb981049c978d71ef817f8bf4944da89ad"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_recovery/package_verification.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/recovery_legacy/package_verification.json",
+      "bytes": 601,
+      "sha256": "86ee1516ec2ed2b52ff46de81498fbcbd420692752a28f1f17b5547e27920169"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_recovery/partition_audit.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/recovery_legacy/partition_audit.json",
+      "bytes": 1283,
+      "sha256": "cc7b370fa0a6689846394dee5e312b1f0ae001f23b84b55c58e72425c0e680dc"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_recovery/README.md",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/recovery_legacy/README.md",
+      "bytes": 5452,
+      "sha256": "cf8bfe3037940a3471df9d5bdfb5c8ba614bef93cd602b3ea3e593efcd50ea33"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/task_7.15_recovery/rerun_9d798f5_audit.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/recovery_legacy/rerun_9d798f5_audit.json",
+      "bytes": 7519,
+      "sha256": "713d4e1ac4138bd50b295452ace7e08fd02e58e31a9389f092a8df9b97dc1d27"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/logits_anchored_v2_clean_calib.npz",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/shared_paths_before_consolidation/logits_anchored_v2_clean_calib.npz",
+      "bytes": 34409,
+      "sha256": "7714859ef4f763adf33abbfca6acb313e2a525510fec90302913149eae8a767c"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/latency_phase7.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/shared_paths_before_consolidation/latency_phase7.json",
+      "bytes": 1213,
+      "sha256": "e7fe4b5610a5a714f66f220dc1d30765f2f992df9da35bf16f1a79fad0978012"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/calibration/anchored_v2.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/shared_paths_before_consolidation/calibration/anchored_v2.json",
+      "bytes": 2781,
+      "sha256": "7d9a41a1ab626e648d672d95d11394133d0585a2526a98870b4d4f8b413674eb"
+    },
+    {
+      "old_path": "DATASET/logs/phase7/calibration/anchored_v2_reliability.png",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/shared_paths_before_consolidation/calibration/anchored_v2_reliability.png",
+      "bytes": 96192,
+      "sha256": "e746624c1c0ae2a702a95329dca6607248da2f83b84e02e78d731b0c264191b8"
+    }
+  ],
+  "notebooks": {
+    "notebooks/task/task_7.14/task_7.14_locked_benchmark_colab.ipynb": "16d476d4afbe789bb76ce8130b43f032729209c4c0400af4b9916240e9ab2abf",
+    "notebooks/task/task_7.15/task_7.15_unified_packaging_colab.ipynb": "f7ce2159b014aecacf6aa90926fde791dc09db1db62969087978039232053660",
+    "notebooks/task/phase7_corrected/phase7_corrected_rerun_colab.ipynb": "07790dd6e397bf531cc2d40acf67da051e1f39a118209327400b53c4578f8a68"
+  },
+  "verified_at": "2026-11-09T10:12:18.337681+00:00",
+  "preservation_note": "All 68 pre-move files preserved byte-for-byte. Refreshed current navigation/manifests/ZIP have their original bytes backed up under archive/export_before_consolidation; historical provenance paths are not rewritten."
+}

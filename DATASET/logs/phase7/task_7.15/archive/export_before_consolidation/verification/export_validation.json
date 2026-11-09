@@ -1,0 +1,9 @@
+{
+  "schema": "phase7_bundle_export_validation/v1",
+  "bundle_sha256": "aa904760ae0fccf2a4fa8a20ca58290906dac40f0b3289ceeb191dcd3892032d",
+  "manifest_files_verified": 140,
+  "exported_tests_passed": 38,
+  "test_report": "verification/export_tests.xml",
+  "contract": "phase7-corrected-20261109-v2",
+  "GPU_run_performed": false
+}

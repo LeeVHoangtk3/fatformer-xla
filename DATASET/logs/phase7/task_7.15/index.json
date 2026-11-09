@@ -1,0 +1,41 @@
+{
+  "schema": "task715_run_registry/v1",
+  "runs": [
+    {
+      "run_id": "unified_packaging_20261109_083821_8ddcb401",
+      "path": "archive/submission_20261109",
+      "package_sha256": "8ddcb401f1e160776c653a3d073d2512cbafa1e08e5d39510201be83ab097dd8",
+      "source_commit": "bb43fd90dc65df67707de2eee0c41b5a63eec335",
+      "status": "partially_verified_not_final_acceptance",
+      "calibration_partition": "verified_400_disjoint_from_1600_evaluation",
+      "calibration_optimizer": "not_converged",
+      "package_structure": "verified",
+      "gpu_overhead": "passed_on_NVIDIA_L4_FP16",
+      "real20_prediction_equivalence": "missing",
+      "condition_best_reference_comparison": "missing",
+      "G73_status": "pending"
+    },
+    {
+      "run_id": "temperature_converged_20261109_local",
+      "path": "current",
+      "run_type": "local_posthoc_calibration_repair",
+      "package_sha256": "16606e16c89901f39ab78c29951c1f83d9412f98f27ab55853c2e2dd13ee5f74",
+      "status": "local_verified_pending_real_images_GPU_and_evaluation",
+      "calibration_optimizer": "verified_converged",
+      "regression_tests_passed": 116,
+      "exported_tests_passed": 38,
+      "GPU_overhead": "pending_for_new_package_hash",
+      "G73_status": "pending"
+    }
+  ],
+  "latest_imported_run": "unified_packaging_20261109_083821_8ddcb401",
+  "latest_accepted_final_package_run": null,
+  "latest_repaired_candidate_run": "temperature_converged_20261109_local",
+  "current_directory": "current",
+  "current_inputs": "current/inputs/calibration_400.npz",
+  "current_calibration": "current/calibration/anchored_v2.json",
+  "current_package": "current/artifacts/unified_fatformer_v2.pth",
+  "current_colab_bundle": "current/colab/phase7_corrected_colab_bundle.zip",
+  "archive_directory": "archive",
+  "path_migration": "PATH_MIGRATION.json"
+}

@@ -33,7 +33,7 @@ Bảo đảm **không còn một câu nào trong dự án** nói sai về kết 
 | I2 | Kết quả Gen 2 | `logs/phase7/wise_ft_v2_sweep.csv` | Số cho Gen 2 |
 | I3 | Re-baseline | `logs/phase7/cfe_v3_baseline_matrix.{json,md}` | Số cho G7.1 |
 | I4 | Kết quả cuối | `logs/phase7/final_phase7_report.{json,md}` | Số cho G7.2/G7.3 |
-| I5 | Đóng gói | `logs/phase7/latency_phase7.json` | Số độ trễ |
+| I5 | Đóng gói | `DATASET/logs/phase7/task_7.15/current/verification/latency_phase7.json` | Số độ trễ |
 | I6 | 11 file mục tiêu | xem §3 | Đối tượng cập nhật |
 
 ---

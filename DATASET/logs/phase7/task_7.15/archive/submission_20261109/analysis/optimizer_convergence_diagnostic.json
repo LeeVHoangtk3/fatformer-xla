@@ -1,0 +1,15 @@
+{
+  "status": "optimizer_not_converged",
+  "deployed_T": 1.4675993919372559,
+  "current_optimizer_reproduced_T": 1.4675993919372559,
+  "diagnostic_minimizer_T": 2.7863594526851108,
+  "inverse_temperature_root_T": 2.7863594931234643,
+  "current_stable_nll": 0.5012625457991081,
+  "diagnostic_minimum_nll": 0.4229638974672379,
+  "avoidable_calibration_nll_gap": 0.07829864833187022,
+  "gradient_at_deployed_T": -0.18211966694083262,
+  "source": "same 400 calibration logits only; no evaluation data used to optimize",
+  "implementation": "ModelWithTemperature.fit: LBFGS lr=0.01, max_iter=100; no convergence acceptance check",
+  "interpretation": "Reproducible code output, but not the claimed NLL optimum; does not itself establish held-out gains",
+  "modifies_submitted_artifacts": false
+}

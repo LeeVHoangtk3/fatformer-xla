@@ -1,0 +1,397 @@
+[*] Đang kết nối Google Drive 5TB...
+Mounted at /content/drive
+[✓] Thư mục Drive chính: /content/drive/MyDrive/Fatformer
+[*] Clone nhánh hoang từ GitHub...
+[✓] Commit hiện tại: bb43fd90dc65df67707de2eee0c41b5a63eec335
+
+[*] Đang cài đặt các thư viện cần thiết...
+======================================================================
+[✓] GPU khả dụng: NVIDIA L4 (22.03 GiB VRAM)
+======================================================================
+
+[*] 1. Định vị Checkpoint mục tiêu và Backbone ViT-L/14...
+[✓] Target Checkpoint: /content/drive/MyDrive/Fatformer/checkpoint/phase7/anchored_v2_run1/fatformer_anchored_v2_best.pth (SHA-256: 5cd49252ae941897...)
+[✓] CLIP Backbone: /content/drive/MyDrive/Fatformer/pretrained/ViT-L-14.pt
+
+[*] 2. Nạp Artifacts đo lường Phase 7 (Calibration & Held-out Split)...
+[*] Đang giải nén phase7_measured_artifacts.zip sang /content/fatformer-xla...
+[✓] Đã giải nén phase7_measured_artifacts.zip thành công.
+[✓] Calibration Config: /content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json
+[✓] Evaluation Split: /content/fatformer-xla/DATASET/logs/phase7/logits_baseline_clean_eval_split.npz
+[✓] Calibration Split: /content/fatformer-xla/DATASET/logs/phase7/logits_baseline_clean_calib_split.npz
+
+[*] 3. Định vị và giải nén các tập dữ liệu kiểm chuẩn...
+[*] Đang giải nén test_benchmark_gans.tar sang /content/dataset_local/test_indist...
+
+/tmp/ipykernel_12607/232980233.py:84: DeprecationWarning: Python 3.14 will, by default, filter extracted tar archives and reject files or modify their metadata. Use the filter argument to control this behavior.
+  tf.extractall(target_dir)
+
+[✓] Giải nén xong: test_benchmark_gans.tar
+[*] Đang giải nén test_benchmark_diffusion.tar sang /content/dataset_local/test_indist...
+[✓] Giải nén xong: test_benchmark_diffusion.tar
+[*] Đang giải nén test_communityforensics.tar sang /content/dataset_local/cfe...
+[✓] Giải nén xong: test_communityforensics.tar
+[✓] Thư mục In-Dist: /content/dataset_local/test_indist
+[✓] Thư mục CFE: /content/dataset_local/cfe/test_communityforensics
+[✓] Xác nhận đầy đủ 5/5 subset CFE hợp lệ!
+
+================================================================================================
+BẮT ĐẦU CHẠY MASTER BENCHMARK TASK 7.14 | OUTPUT: /content/benchmark_phase7_20261109_074134
+================================================================================================
+================================================================================================
+FATFORMER-XLA: MASTER RUNNER KHÓA SỔ CHUNG CUỘC PHASE 7 (TASK 7.14)
+Thiết bị: cuda | Checkpoint: /content/drive/MyDrive/Fatformer/checkpoint/phase7/anchored_v2_run1/fatformer_anchored_v2_best.pth | Dummy Mode: False
+================================================================================================
+[✓] Checkpoint SHA-256 xác nhận: 5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c
+
+[*] Đang benchmark độ trễ suy luận trên GPU cho Cổng G7.3...
+/usr/local/lib/python3.13/dist-packages/torch/jit/_serialization.py:176: FutureWarning: `torch.jit.load` is deprecated. Please switch to `torch.export`.
+  warnings.warn(
+[✓] Độ trễ đo đạc thực tế: 44.40 ms/ảnh (Mục tiêu G7.3: < 5.0 ms)
+
+========================================================================================
+BƯỚC 1: ĐO ĐẠC 18 TẬP TEST IN-DISTRIBUTION (82.003 ẢNH)...
+========================================================================================
+/usr/local/lib/python3.13/dist-packages/torch/jit/_serialization.py:176: FutureWarning: `torch.jit.load` is deprecated. Please switch to `torch.export`.
+  warnings.warn(
+[*] Dang nap tham so hieu chuan Phase 7 tu: /content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json
+[✓] Da nap Phase 7 Calibration: T = 1.6402, T* (FPR<=5%) = 0.9127
+================================================================================================
+FATFORMER-XLA: FINAL LOCKED BENCHMARK & SINGLE-PASS DUAL-MODE VERIFICATION (TASK 6.6-R)
+Tham so hieu chuan dong bang: Temperature T = 1.6402
+  -> Mode 1 (Standard Balanced) : Threshold T* = 0.9127
+  -> Mode 2 (High-Recall Q30)   : Threshold T* = 0.4000
+Thiet bi: cuda | Che do gia lap (Dummy): False
+================================================================================================
+[*] Dang nap checkpoint theo chuan Canonical Loader (strict=True): /content/drive/MyDrive/Fatformer/checkpoint/phase7/anchored_v2_run1/fatformer_anchored_v2_best.pth
+[✓] Nap Canonical Loader thanh cong: layout={'n': 3, 'indices': [7, 15, 23], 'dropped': [], 'missing': [], 'partial': False, 'expressible': True}, missing=0, unexpected=0
+
+================================================================================================
+CHIỀU 1: ĐO ĐẠC 18 TẬP TEST CLEAN BENCHMARK (GANs + DIFFUSION)
+================================================================================================
+[*] Dang quet tim 18 tap test Clean ben trong: /content/dataset_local/test_indist...
+[✓] Tim thay tong cong 82,003 anh tren 18/18 tap test: ['progan', 'stylegan', 'stylegan2', 'biggan', 'cyclegan', 'stargan', 'gaugan', 'deepfake', 'guided', 'ldm_200', 'ldm_200_cfg', 'ldm_100', 'glide_50_27', 'glide_100_10', 'glide_100_27', 'dalle', 'pndm', 'vqdiffusion']
+  -> [GANs     ] progan          (8,000 anh) | [M1 T*=0.91] ACC: 95.56% | Real: 91.12% | Fake: 100.00% | AUC: 99.96% | AP: 99.94% | [M2 T*=0.40] ACC: 79.46% (90.94s)
+  -> [GANs     ] stylegan        (11,982 anh) | [M1 T*=0.91] ACC: 97.21% | Real: 94.89% | Fake: 99.53% | AUC: 99.78% | AP: 99.75% | [M2 T*=0.40] ACC: 85.99% (133.98s)
+  -> [GANs     ] stylegan2       (15,976 anh) | [M1 T*=0.91] ACC: 95.72% | Real: 95.99% | Fake: 95.46% | AUC: 98.77% | AP: 98.85% | [M2 T*=0.40] ACC: 86.77% (178.94s)
+  -> [GANs     ] biggan          (4,000 anh) | [M1 T*=0.91] ACC: 97.00% | Real: 94.40% | Fake: 99.60% | AUC: 99.56% | AP: 99.51% | [M2 T*=0.40] ACC: 85.03% (45.04s)
+  -> [GANs     ] cyclegan        (2,642 anh) | [M1 T*=0.91] ACC: 96.33% | Real: 92.66% | Fake: 100.00% | AUC: 99.19% | AP: 99.07% | [M2 T*=0.40] ACC: 87.09% (29.85s)
+  -> [GANs     ] stargan         (3,998 anh) | [M1 T*=0.91] ACC: 90.25% | Real: 80.49% | Fake: 100.00% | AUC: 99.75% | AP: 99.74% | [M2 T*=0.40] ACC: 74.41% (44.90s)
+  -> [GANs     ] gaugan          (10,000 anh) | [M1 T*=0.91] ACC: 99.02% | Real: 98.04% | Fake: 100.00% | AUC: 99.89% | AP: 99.80% | [M2 T*=0.40] ACC: 93.56% (112.35s)
+  -> [GANs     ] deepfake        (5,405 anh) | [M1 T*=0.91] ACC: 86.74% | Real: 81.75% | Fake: 91.73% | AUC: 94.33% | AP: 94.36% | [M2 T*=0.40] ACC: 74.69% (60.63s)
+  -> [Diffusion] guided          (2,000 anh) | [M1 T*=0.91] ACC: 73.30% | Real: 94.30% | Fake: 52.30% | AUC: 82.93% | AP: 85.04% | [M2 T*=0.40] ACC: 72.90% (22.68s)
+  -> [Diffusion] ldm_200         (2,000 anh) | [M1 T*=0.91] ACC: 88.60% | Real: 78.30% | Fake: 98.90% | AUC: 99.04% | AP: 99.26% | [M2 T*=0.40] ACC: 62.80% (22.48s)
+  -> [Diffusion] ldm_200_cfg     (2,000 anh) | [M1 T*=0.91] ACC: 87.25% | Real: 78.30% | Fake: 96.20% | AUC: 97.12% | AP: 97.81% | [M2 T*=0.40] ACC: 62.50% (22.59s)
+  -> [Diffusion] ldm_100         (2,000 anh) | [M1 T*=0.91] ACC: 88.60% | Real: 78.30% | Fake: 98.90% | AUC: 98.92% | AP: 99.18% | [M2 T*=0.40] ACC: 62.70% (22.57s)
+  -> [Diffusion] glide_50_27     (2,000 anh) | [M1 T*=0.91] ACC: 82.65% | Real: 78.30% | Fake: 87.00% | AUC: 90.97% | AP: 93.48% | [M2 T*=0.40] ACC: 61.05% (22.52s)
+  -> [Diffusion] glide_100_10    (2,000 anh) | [M1 T*=0.91] ACC: 82.60% | Real: 78.30% | Fake: 86.90% | AUC: 90.89% | AP: 93.46% | [M2 T*=0.40] ACC: 61.05% (22.55s)
+  -> [Diffusion] glide_100_27    (2,000 anh) | [M1 T*=0.91] ACC: 83.10% | Real: 78.30% | Fake: 87.90% | AUC: 92.16% | AP: 94.21% | [M2 T*=0.40] ACC: 61.35% (22.53s)
+  -> [Diffusion] dalle           (2,000 anh) | [M1 T*=0.91] ACC: 88.50% | Real: 78.30% | Fake: 98.70% | AUC: 98.50% | AP: 98.78% | [M2 T*=0.40] ACC: 62.70% (22.54s)
+  -> [Diffusion] pndm            (2,000 anh) | [M1 T*=0.91] ACC: 97.95% | Real: 96.20% | Fake: 99.70% | AUC: 99.91% | AP: 99.91% | [M2 T*=0.40] ACC: 85.25% (22.58s)
+  -> [Diffusion] vqdiffusion     (2,000 anh) | [M1 T*=0.91] ACC: 97.90% | Real: 96.20% | Fake: 99.60% | AUC: 99.85% | AP: 99.85% | [M2 T*=0.40] ACC: 85.25% (22.59s)
+
+------------------------------------------------------------------------------------------------
+[*] [MODE 1 - STANDARD BALANCED (T*=0.91)]:
+    GANs Mean (8 subsets)      : Macro ACC = 94.73% | AUC = 98.90% | AP = 98.88%
+    Diffusion Mean (10 subsets): Macro ACC = 87.05% | AUC = 95.03% | AP = 96.10%
+    SUBSET-MACRO MEAN (18/18)  : Macro ACC = 90.46% (95% CI: [87.09%, 93.60%]) | Real: 86.90% | Fake: 94.02% | AUC = 96.75% | AP = 97.34%
+
+[*] [MODE 2 - HIGH-RECALL FORENSIC (T*=0.40)]:
+    GANs Mean (8 subsets)      : Macro ACC = 83.38% | Real: 67.15% | Fake: 99.60%
+    Diffusion Mean (10 subsets): Macro ACC = 67.76% | Real: 39.36% | Fake: 96.15%
+    SUBSET-MACRO MEAN (18/18)  : Macro ACC = 74.70% | Real: 51.71% | Fake: 97.68%
+------------------------------------------------------------------------------------------------
+
+[!] Khong phat hien --degraded_root. Bo qua danh gia chieu 2 (Degraded).
+
+[✓] Da xuat ma tran kiem chuan Clean Mode 1 (T*=0.91) ra: /content/benchmark_phase7_20261109_074134/final_posthoc_benchmark_matrix.csv
+[✓] Da xuat ma tran kiem chuan Clean Mode 2 (T*=0.40) ra: /content/benchmark_phase7_20261109_074134/final_posthoc_benchmark_matrix_mode2.csv
+[✓] Da xuat bao cao JSON tong hop che do kep ra: /content/benchmark_phase7_20261109_074134/final_locked_benchmark_report.json
+[✓] Da xuat bao cao Phase 7 In-Dist chuan schema v3 ra: /content/benchmark_phase7_20261109_074134/indist_phase7.json
+
+========================================================================================================
+BẢNG TỔNG HỢP KIỂM CHUẨN KHÓA SỔ CHUNG CUỘC FATFORMER-XLA (CHẾ ĐỘ KÉP PHASE 6-R)
+========================================================================================================
+[*] MODE 1 (T*=0.91) - CLEAN 18 TẬP : Macro ACC = 90.46% | Real: 86.90% | Fake: 94.02% | AUC: 96.75% | AP: 97.34%
+[*] MODE 2 (T*=0.40) - CLEAN 18 TẬP : Macro ACC = 74.70% | Real: 51.71% | Fake: 97.68% | AUC: 96.75% | AP: 97.34%
+========================================================================================================
+
+========================================================================================
+BƯỚC 2: ĐO ĐẠC CFE HELD-OUT (CLEAN VÀ 6 BIẾN THỂ SUY BIẾN VẬT LÝ)...
+========================================================================================
+
+[*] Đang chạy đánh giá điều kiện: CLEAN...
+========================================================================================
+FATFORMER-XLA: PIPELINE KIỂM CHUẨN NGOẠI VI COMMUNITYFORENSICS-EVAL (CHUẨN HÓA v3.0)
+========================================================================================
+• Mô hình đánh giá   : anchored_v2 (Kiến trúc: anchored)
+• Thiết bị tính toán : CUDA (NVIDIA L4)
+• Git Commit         : bb43fd90dc65df67707de2eee0c41b5a63eec335 (CLEAN)
+• Thứ tự nén         : post_resize
+• Random Seed        : 42
+[*] Đang thực thi kiểm thử 3 ca mảng giả (§5.4)...
+  [✓] Test mảng giả toán học: 3/3 ca kiểm thử ĐẠT 100%!
+[*] Đã nạp cấu hình hiệu chuẩn: T=1.6402, T*=0.9127
+• Ngưỡng phán quyết  : T* = 0.9127 (Nguồn: calibration.json (/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json))
+/usr/local/lib/python3.13/dist-packages/torch/jit/_serialization.py:176: FutureWarning: `torch.jit.load` is deprecated. Please switch to `torch.export`.
+  warnings.warn(
+
+========================================================================================
+BẮT ĐẦU ĐÁNH GIÁ ĐIỀU KIỆN: ẢNH SẠCH (CLEAN CFE) — 1600 ẢNH
+========================================================================================
+  • 1_commercial           : ACC=73.84% | Real=94.94% | Fake=52.74% | AUC=88.17% | TPR@5%=52.68% | TPR@10%= 61.6%
+  • 2_latent_diffusion     : ACC=71.75% | Real=96.41% | Fake=46.06% | AUC=87.45% | TPR@5%=47.53% | TPR@10%=58.92%
+  • 3_pixel_diffusion      : ACC=72.64% | Real=98.75% | Fake= 46.2% | AUC=88.28% | TPR@5%=63.29% | TPR@10%=72.15%
+  • 4_modern_gans          : ACC=98.76% | Real=98.72% | Fake= 98.8% | AUC=99.94% | TPR@5%=100.0% | TPR@10%=100.0%
+  • 5_other_autoregressive : ACC=56.13% | Real=86.49% | Fake= 28.4% | AUC=75.76% | TPR@5%=17.28% | TPR@10%=20.99%
+
+  🏆 OVERALL POOLED (clean): ACC=73.75% | Real=95.75% | Fake=51.75% | Fake@Real90=64.12% | AUC=88.67% | ECE=9.56%
+     Khoảng tin cậy 95% CI: AUC=[87.12, 90.16] | AP=[87.34, 90.84] | TPR@5%=[46.94, 60.62]
+  [✓] Logits NPZ: /content/benchmark_phase7_20261109_074134/logits_anchored_v2_clean.npz
+  [✓] JSON v3   : /content/benchmark_phase7_20261109_074134/eval_v3_anchored_v2_clean.json
+  [✓] MD v3     : /content/benchmark_phase7_20261109_074134/eval_v3_anchored_v2_clean.md
+
+========================================================================================
+HOÀN TẤT THỰC THI EVALUATION v3 THEO ĐÚNG KHẾ ƯỚC PHỤ LỤC A!
+========================================================================================
+
+[*] Đang chạy đánh giá điều kiện: Q30...
+========================================================================================
+FATFORMER-XLA: PIPELINE KIỂM CHUẨN NGOẠI VI COMMUNITYFORENSICS-EVAL (CHUẨN HÓA v3.0)
+========================================================================================
+• Mô hình đánh giá   : anchored_v2 (Kiến trúc: anchored)
+• Thiết bị tính toán : CUDA (NVIDIA L4)
+• Git Commit         : bb43fd90dc65df67707de2eee0c41b5a63eec335 (CLEAN)
+• Thứ tự nén         : post_resize
+• Random Seed        : 42
+[*] Đang thực thi kiểm thử 3 ca mảng giả (§5.4)...
+  [✓] Test mảng giả toán học: 3/3 ca kiểm thử ĐẠT 100%!
+[*] Đã nạp cấu hình hiệu chuẩn: T=1.6402, T*=0.9127
+• Ngưỡng phán quyết  : T* = 0.9127 (Nguồn: calibration.json (/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json))
+/usr/local/lib/python3.13/dist-packages/torch/jit/_serialization.py:176: FutureWarning: `torch.jit.load` is deprecated. Please switch to `torch.export`.
+  warnings.warn(
+
+========================================================================================
+BẮT ĐẦU ĐÁNH GIÁ ĐIỀU KIỆN: BIẾN THỂ SUY BIẾN: Q30 — 1600 ẢNH
+========================================================================================
+  • 1_commercial           : ACC=72.57% | Real=91.56% | Fake=53.59% | AUC=85.21% | TPR@5%=35.38% | TPR@10%=55.57%
+  • 2_latent_diffusion     : ACC=60.98% | Real=91.63% | Fake=29.05% | AUC= 75.7% | TPR@5%=22.41% | TPR@10%=34.02%
+  • 3_pixel_diffusion      : ACC=61.01% | Real=94.38% | Fake=27.22% | AUC=78.95% | TPR@5%=23.42% | TPR@10%=52.53%
+  • 4_modern_gans          : ACC=81.99% | Real=98.72% | Fake=66.27% | AUC=92.17% | TPR@5%= 75.9% | TPR@10%=78.31%
+  • 5_other_autoregressive : ACC=48.39% | Real=82.43% | Fake=17.28% | AUC=61.19% | TPR@5%= 1.23% | TPR@10%=12.35%
+
+  🏆 OVERALL POOLED (q30): ACC=65.31% | Real=92.0% | Fake=38.62% | Fake@Real90=42.62% | AUC=79.87% | ECE=13.49%
+     Khoảng tin cậy 95% CI: AUC=[77.64, 82.06] | AP=[75.34, 81.5] | TPR@5%=[23.1, 35.95]
+  [✓] Logits NPZ: /content/benchmark_phase7_20261109_074134/logits_anchored_v2_q30.npz
+  [✓] JSON v3   : /content/benchmark_phase7_20261109_074134/eval_v3_anchored_v2_q30.json
+  [✓] MD v3     : /content/benchmark_phase7_20261109_074134/eval_v3_anchored_v2_q30.md
+
+========================================================================================
+HOÀN TẤT THỰC THI EVALUATION v3 THEO ĐÚNG KHẾ ƯỚC PHỤ LỤC A!
+========================================================================================
+
+[*] Đang chạy đánh giá điều kiện: Q75...
+========================================================================================
+FATFORMER-XLA: PIPELINE KIỂM CHUẨN NGOẠI VI COMMUNITYFORENSICS-EVAL (CHUẨN HÓA v3.0)
+========================================================================================
+• Mô hình đánh giá   : anchored_v2 (Kiến trúc: anchored)
+• Thiết bị tính toán : CUDA (NVIDIA L4)
+• Git Commit         : bb43fd90dc65df67707de2eee0c41b5a63eec335 (CLEAN)
+• Thứ tự nén         : post_resize
+• Random Seed        : 42
+[*] Đang thực thi kiểm thử 3 ca mảng giả (§5.4)...
+  [✓] Test mảng giả toán học: 3/3 ca kiểm thử ĐẠT 100%!
+[*] Đã nạp cấu hình hiệu chuẩn: T=1.6402, T*=0.9127
+• Ngưỡng phán quyết  : T* = 0.9127 (Nguồn: calibration.json (/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json))
+/usr/local/lib/python3.13/dist-packages/torch/jit/_serialization.py:176: FutureWarning: `torch.jit.load` is deprecated. Please switch to `torch.export`.
+  warnings.warn(
+
+========================================================================================
+BẮT ĐẦU ĐÁNH GIÁ ĐIỀU KIỆN: BIẾN THỂ SUY BIẾN: Q75 — 1600 ẢNH
+========================================================================================
+  • 1_commercial           : ACC=71.10% | Real=94.09% | Fake= 48.1% | AUC= 86.4% | TPR@5%= 44.3% | TPR@10%=56.96%
+  • 2_latent_diffusion     : ACC=61.18% | Real=93.63% | Fake=27.39% | AUC= 79.3% | TPR@5%=23.24% | TPR@10%= 39.0%
+  • 3_pixel_diffusion      : ACC=61.32% | Real= 97.5% | Fake=24.68% | AUC= 82.4% | TPR@5%=39.87% | TPR@10%=54.43%
+  • 4_modern_gans          : ACC=90.68% | Real=100.0% | Fake=81.93% | AUC=97.85% | TPR@5%=89.16% | TPR@10%=91.57%
+  • 5_other_autoregressive : ACC=51.61% | Real=87.84% | Fake=18.52% | AUC=67.17% | TPR@5%= 1.23% | TPR@10%= 9.88%
+
+  🏆 OVERALL POOLED (q75): ACC=66.19% | Real=94.62% | Fake=37.75% | Fake@Real90=48.75% | AUC=83.31% | ECE=12.80%
+     Khoảng tin cậy 95% CI: AUC=[81.34, 85.22] | AP=[80.29, 85.37] | TPR@5%=[30.21, 42.19]
+  [✓] Logits NPZ: /content/benchmark_phase7_20261109_074134/logits_anchored_v2_q75.npz
+  [✓] JSON v3   : /content/benchmark_phase7_20261109_074134/eval_v3_anchored_v2_q75.json
+  [✓] MD v3     : /content/benchmark_phase7_20261109_074134/eval_v3_anchored_v2_q75.md
+
+========================================================================================
+HOÀN TẤT THỰC THI EVALUATION v3 THEO ĐÚNG KHẾ ƯỚC PHỤ LỤC A!
+========================================================================================
+
+[*] Đang chạy đánh giá điều kiện: Q50...
+========================================================================================
+FATFORMER-XLA: PIPELINE KIỂM CHUẨN NGOẠI VI COMMUNITYFORENSICS-EVAL (CHUẨN HÓA v3.0)
+========================================================================================
+• Mô hình đánh giá   : anchored_v2 (Kiến trúc: anchored)
+• Thiết bị tính toán : CUDA (NVIDIA L4)
+• Git Commit         : bb43fd90dc65df67707de2eee0c41b5a63eec335 (CLEAN)
+• Thứ tự nén         : post_resize
+• Random Seed        : 42
+[*] Đang thực thi kiểm thử 3 ca mảng giả (§5.4)...
+  [✓] Test mảng giả toán học: 3/3 ca kiểm thử ĐẠT 100%!
+[*] Đã nạp cấu hình hiệu chuẩn: T=1.6402, T*=0.9127
+• Ngưỡng phán quyết  : T* = 0.9127 (Nguồn: calibration.json (/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json))
+/usr/local/lib/python3.13/dist-packages/torch/jit/_serialization.py:176: FutureWarning: `torch.jit.load` is deprecated. Please switch to `torch.export`.
+  warnings.warn(
+
+========================================================================================
+BẮT ĐẦU ĐÁNH GIÁ ĐIỀU KIỆN: BIẾN THỂ SUY BIẾN: Q50 — 1600 ẢNH
+========================================================================================
+  • 1_commercial           : ACC=71.73% | Real=92.41% | Fake=51.05% | AUC=86.23% | TPR@5%=46.41% | TPR@10%=63.29%
+  • 2_latent_diffusion     : ACC=63.01% | Real=94.02% | Fake=30.71% | AUC=77.83% | TPR@5%=26.97% | TPR@10%=37.76%
+  • 3_pixel_diffusion      : ACC=61.32% | Real=95.62% | Fake=26.58% | AUC=79.17% | TPR@5%=27.85% | TPR@10%=47.47%
+  • 4_modern_gans          : ACC=85.09% | Real=98.72% | Fake=72.29% | AUC=94.56% | TPR@5%=81.93% | TPR@10%=81.93%
+  • 5_other_autoregressive : ACC=50.97% | Real=85.14% | Fake=19.75% | AUC= 66.0% | TPR@5%= 7.41% | TPR@10%=14.81%
+
+  🏆 OVERALL POOLED (q50): ACC=66.31% | Real=93.5% | Fake=39.12% | Fake@Real90=47.62% | AUC=81.55% | ECE=13.04%
+     Khoảng tin cậy 95% CI: AUC=[79.41, 83.5] | AP=[77.66, 83.36] | TPR@5%=[28.16, 40.93]
+  [✓] Logits NPZ: /content/benchmark_phase7_20261109_074134/logits_anchored_v2_q50.npz
+  [✓] JSON v3   : /content/benchmark_phase7_20261109_074134/eval_v3_anchored_v2_q50.json
+  [✓] MD v3     : /content/benchmark_phase7_20261109_074134/eval_v3_anchored_v2_q50.md
+
+========================================================================================
+HOÀN TẤT THỰC THI EVALUATION v3 THEO ĐÚNG KHẾ ƯỚC PHỤ LỤC A!
+========================================================================================
+
+[*] Đang chạy đánh giá điều kiện: WEBP40...
+========================================================================================
+FATFORMER-XLA: PIPELINE KIỂM CHUẨN NGOẠI VI COMMUNITYFORENSICS-EVAL (CHUẨN HÓA v3.0)
+========================================================================================
+• Mô hình đánh giá   : anchored_v2 (Kiến trúc: anchored)
+• Thiết bị tính toán : CUDA (NVIDIA L4)
+• Git Commit         : bb43fd90dc65df67707de2eee0c41b5a63eec335 (CLEAN)
+• Thứ tự nén         : post_resize
+• Random Seed        : 42
+[*] Đang thực thi kiểm thử 3 ca mảng giả (§5.4)...
+  [✓] Test mảng giả toán học: 3/3 ca kiểm thử ĐẠT 100%!
+[*] Đã nạp cấu hình hiệu chuẩn: T=1.6402, T*=0.9127
+• Ngưỡng phán quyết  : T* = 0.9127 (Nguồn: calibration.json (/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json))
+/usr/local/lib/python3.13/dist-packages/torch/jit/_serialization.py:176: FutureWarning: `torch.jit.load` is deprecated. Please switch to `torch.export`.
+  warnings.warn(
+
+========================================================================================
+BẮT ĐẦU ĐÁNH GIÁ ĐIỀU KIỆN: BIẾN THỂ SUY BIẾN: WEBP40 — 1600 ẢNH
+========================================================================================
+  • 1_commercial           : ACC=71.73% | Real=88.19% | Fake=55.27% | AUC=83.29% | TPR@5%=29.05% | TPR@10%=53.59%
+  • 2_latent_diffusion     : ACC=60.98% | Real=89.64% | Fake=31.12% | AUC=73.62% | TPR@5%=17.01% | TPR@10%=31.12%
+  • 3_pixel_diffusion      : ACC=63.84% | Real=93.75% | Fake=33.54% | AUC=77.69% | TPR@5%=29.75% | TPR@10%= 44.3%
+  • 4_modern_gans          : ACC=83.85% | Real=98.72% | Fake=69.88% | AUC=93.62% | TPR@5%=73.49% | TPR@10%=81.93%
+  • 5_other_autoregressive : ACC=49.68% | Real=77.03% | Fake=24.69% | AUC=63.06% | TPR@5%= 1.23% | TPR@10%= 2.47%
+
+  🏆 OVERALL POOLED (webp40): ACC=65.94% | Real=89.75% | Fake=42.12% | Fake@Real90=41.88% | AUC=79.0% | ECE=14.94%
+     Khoảng tin cậy 95% CI: AUC=[76.7, 81.25] | AP=[74.06, 80.45] | TPR@5%=[19.53, 33.24]
+  [✓] Logits NPZ: /content/benchmark_phase7_20261109_074134/logits_anchored_v2_webp40.npz
+  [✓] JSON v3   : /content/benchmark_phase7_20261109_074134/eval_v3_anchored_v2_webp40.json
+  [✓] MD v3     : /content/benchmark_phase7_20261109_074134/eval_v3_anchored_v2_webp40.md
+
+========================================================================================
+HOÀN TẤT THỰC THI EVALUATION v3 THEO ĐÚNG KHẾ ƯỚC PHỤ LỤC A!
+========================================================================================
+
+[*] Đang chạy đánh giá điều kiện: BLUR15...
+========================================================================================
+FATFORMER-XLA: PIPELINE KIỂM CHUẨN NGOẠI VI COMMUNITYFORENSICS-EVAL (CHUẨN HÓA v3.0)
+========================================================================================
+• Mô hình đánh giá   : anchored_v2 (Kiến trúc: anchored)
+• Thiết bị tính toán : CUDA (NVIDIA L4)
+• Git Commit         : bb43fd90dc65df67707de2eee0c41b5a63eec335 (CLEAN)
+• Thứ tự nén         : post_resize
+• Random Seed        : 42
+[*] Đang thực thi kiểm thử 3 ca mảng giả (§5.4)...
+  [✓] Test mảng giả toán học: 3/3 ca kiểm thử ĐẠT 100%!
+[*] Đã nạp cấu hình hiệu chuẩn: T=1.6402, T*=0.9127
+• Ngưỡng phán quyết  : T* = 0.9127 (Nguồn: calibration.json (/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json))
+/usr/local/lib/python3.13/dist-packages/torch/jit/_serialization.py:176: FutureWarning: `torch.jit.load` is deprecated. Please switch to `torch.export`.
+  warnings.warn(
+
+========================================================================================
+BẮT ĐẦU ĐÁNH GIÁ ĐIỀU KIỆN: BIẾN THỂ SUY BIẾN: BLUR15 — 1600 ẢNH
+========================================================================================
+  • 1_commercial           : ACC=74.89% | Real=87.34% | Fake=62.45% | AUC=86.04% | TPR@5%=39.66% | TPR@10%=56.96%
+  • 2_latent_diffusion     : ACC=68.29% | Real=90.04% | Fake=45.64% | AUC= 82.9% | TPR@5%=31.54% | TPR@10%=46.47%
+  • 3_pixel_diffusion      : ACC=67.30% | Real=91.88% | Fake=42.41% | AUC=81.77% | TPR@5%=32.91% | TPR@10%=42.41%
+  • 4_modern_gans          : ACC=89.44% | Real=98.72% | Fake=80.72% | AUC=97.13% | TPR@5%=86.75% | TPR@10%=91.57%
+  • 5_other_autoregressive : ACC=56.13% | Real=74.32% | Fake=39.51% | AUC=70.22% | TPR@5%=13.58% | TPR@10%=17.28%
+
+  🏆 OVERALL POOLED (blur15): ACC=71.00% | Real=89.0% | Fake=53.0% | Fake@Real90=50.62% | AUC=84.22% | ECE=10.09%
+     Khoảng tin cậy 95% CI: AUC=[82.35, 86.02] | AP=[80.42, 85.74] | TPR@5%=[32.17, 44.62]
+  [✓] Logits NPZ: /content/benchmark_phase7_20261109_074134/logits_anchored_v2_blur15.npz
+  [✓] JSON v3   : /content/benchmark_phase7_20261109_074134/eval_v3_anchored_v2_blur15.json
+  [✓] MD v3     : /content/benchmark_phase7_20261109_074134/eval_v3_anchored_v2_blur15.md
+
+========================================================================================
+HOÀN TẤT THỰC THI EVALUATION v3 THEO ĐÚNG KHẾ ƯỚC PHỤ LỤC A!
+========================================================================================
+
+[*] Đang chạy đánh giá điều kiện: DOWNUP05...
+========================================================================================
+FATFORMER-XLA: PIPELINE KIỂM CHUẨN NGOẠI VI COMMUNITYFORENSICS-EVAL (CHUẨN HÓA v3.0)
+========================================================================================
+• Mô hình đánh giá   : anchored_v2 (Kiến trúc: anchored)
+• Thiết bị tính toán : CUDA (NVIDIA L4)
+• Git Commit         : bb43fd90dc65df67707de2eee0c41b5a63eec335 (CLEAN)
+• Thứ tự nén         : post_resize
+• Random Seed        : 42
+[*] Đang thực thi kiểm thử 3 ca mảng giả (§5.4)...
+  [✓] Test mảng giả toán học: 3/3 ca kiểm thử ĐẠT 100%!
+[*] Đã nạp cấu hình hiệu chuẩn: T=1.6402, T*=0.9127
+• Ngưỡng phán quyết  : T* = 0.9127 (Nguồn: calibration.json (/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json))
+/usr/local/lib/python3.13/dist-packages/torch/jit/_serialization.py:176: FutureWarning: `torch.jit.load` is deprecated. Please switch to `torch.export`.
+  warnings.warn(
+
+========================================================================================
+BẮT ĐẦU ĐÁNH GIÁ ĐIỀU KIỆN: BIẾN THỂ SUY BIẾN: DOWNUP05 — 1600 ẢNH
+========================================================================================
+  • 1_commercial           : ACC=81.65% | Real=88.61% | Fake=74.68% | AUC= 88.4% | TPR@5%=54.01% | TPR@10%=73.71%
+  • 2_latent_diffusion     : ACC=74.19% | Real=88.84% | Fake=58.92% | AUC=86.46% | TPR@5%= 47.3% | TPR@10%=57.26%
+  • 3_pixel_diffusion      : ACC=75.79% | Real=88.75% | Fake=62.66% | AUC=84.69% | TPR@5%=52.53% | TPR@10%=62.03%
+  • 4_modern_gans          : ACC=94.41% | Real=98.72% | Fake=90.36% | AUC=97.97% | TPR@5%=91.57% | TPR@10%=92.77%
+  • 5_other_autoregressive : ACC=60.00% | Real=75.68% | Fake=45.68% | AUC=71.45% | TPR@5%=12.35% | TPR@10%=30.86%
+
+  🏆 OVERALL POOLED (downup05): ACC=77.38% | Real=88.5% | Fake=66.25% | Fake@Real90=64.75% | AUC=87.0% | ECE=11.47%
+     Khoảng tin cậy 95% CI: AUC=[85.35, 88.76] | AP=[84.53, 89.34] | TPR@5%=[44.84, 58.54]
+  [✓] Logits NPZ: /content/benchmark_phase7_20261109_074134/logits_anchored_v2_downup05.npz
+  [✓] JSON v3   : /content/benchmark_phase7_20261109_074134/eval_v3_anchored_v2_downup05.json
+  [✓] MD v3     : /content/benchmark_phase7_20261109_074134/eval_v3_anchored_v2_downup05.md
+
+========================================================================================
+HOÀN TẤT THỰC THI EVALUATION v3 THEO ĐÚNG KHẾ ƯỚC PHỤ LỤC A!
+========================================================================================
+
+========================================================================================
+BƯỚC 3: DỰNG ĐƯỜNG CONG ROC VÀ PHÂN TÍCH PER-GENERATOR THẬT...
+========================================================================================
+[✓] Đã xuất biểu đồ ROC thực tế ra: /content/benchmark_phase7_20261109_074134/roc_phase7.png
+[✓] Đã xuất bảng Per-Generator ra: /content/benchmark_phase7_20261109_074134/per_generator_phase7.csv
+[✓] Đã xuất báo cáo tổng hợp JSON v3 ra: /content/benchmark_phase7_20261109_074134/final_phase7_report.json
+[✓] Đã xuất báo cáo Markdown hoàn chỉnh ra: /content/benchmark_phase7_20261109_074134/final_phase7_report.md
+
+================================================================================================
+ĐÃ XUẤT BÁO CÁO TASK 7.14; XEM TỪNG GATE VÀ CÁC KIỂM CHỨNG CÒN THIẾU.
+================================================================================================
+
+[✓] HOÀN TẤT TOÀN DIỆN MASTER BENCHMARK TASK 7.14!
+
+[*] Đang đóng gói toàn bộ thư mục /content/benchmark_phase7_20261109_074134 vào locked_benchmark_phase7_20261109_074134.zip...
+[*] Đang đồng bộ các tệp kết quả sang Google Drive: /content/drive/MyDrive/Fatformer/logs/phase7/locked_benchmark_20261109_074134...
+[✓] ĐÃ LƯU TRỰC TIẾP FILE ZIP VÀO DRIVE: /content/drive/MyDrive/Fatformer/logs/phase7/locked_benchmark_phase7_20261109_074134.zip
+
+================================================================================================
+XEM TRƯỚC BÁO CÁO NGHIỆM THU PHASE 7:
+================================================================================================
+
+
+
+
+[*] Đang khởi động tải file ZIP về máy cá nhân...
+
+
+
+[✓] Đã tạo lệnh tải về trình duyệt!

@@ -1,0 +1,76 @@
+{
+  "schema": "task715_temperature_repair/v1",
+  "audited_at": "2026-11-09T09:55:52.171024+00:00",
+  "status": "local_repair_verified_GPU_and_real_evaluation_pending",
+  "scientific_status": "post_hoc_calibration_repair; not a fresh blinded evaluation",
+  "original_run": "DATASET/logs/phase7/task_7.15/runs/unified_packaging_20261109_083821_8ddcb401",
+  "package_sha256": "16606e16c89901f39ab78c29951c1f83d9412f98f27ab55853c2e2dd13ee5f74",
+  "optimizer": "bounded_inverse_temperature_bisection/v1",
+  "independent_oracle_T": 2.7863594526851108,
+  "independent_oracle_nll": 0.4229638974672379,
+  "deployed_T": 2.7863595485687256,
+  "deployed_threshold": 0.7953211069107056,
+  "calibration_metrics_before_repair": {
+    "T": 1.4675993919372559,
+    "T_star_default": 0.9293636083602905,
+    "nll_after": 0.5013,
+    "ece_after": 11.7,
+    "real_acc": 95.0,
+    "fake_acc": 59.0
+  },
+  "calibration_metrics_after_repair": {
+    "T": 2.7863595485687256,
+    "T_star_default": 0.7953211069107056,
+    "nll_after": 0.423,
+    "ece_after": 6.06,
+    "real_acc": 95.0,
+    "fake_acc": 59.0
+  },
+  "nll_calibration_recomputed": 0.4229638870231629,
+  "ece_calibration_recomputed": 6.056451484560968,
+  "partition": {
+    "status": "verified_disjoint_ids",
+    "identity_unit": "subset/class/filename; content duplicates not audited",
+    "n_calibration": 400,
+    "n_evaluation": 1600,
+    "overlap": 0,
+    "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+    "evaluation_split_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+    "sample_ids_sha256": "5ae613da819d065b93225b901a7d06d3309ad27e8cdbb9a441cf4df43d7552fb"
+  },
+  "thresholds": [
+    {
+      "target": 0.01,
+      "measured": 0.01,
+      "threshold": 0.868035614490509
+    },
+    {
+      "target": 0.05,
+      "measured": 0.05,
+      "threshold": 0.7953211069107056
+    },
+    {
+      "target": 0.1,
+      "measured": 0.1,
+      "threshold": 0.7437446713447571
+    }
+  ],
+  "regression_tests_passed": 116,
+  "source_sha256": {
+    "tools/calibrate_and_select.py": "0e1359042fbafdd4d3abd9e81a96b27522d5fb9bae62d8474da8c9bbca361fe9",
+    "tools/build_phase7_colab_bundle.py": "2d0e29722ef765a354e684a28849cd3a286a42d2b44a99368a13d280708fa895",
+    "tests/test_temperature_convergence.py": "7405589f6af7d7a6c8f06302d83dc70d757c2512e29364b61184711808615bff"
+  },
+  "preserved_notebook_sha256": {
+    "notebooks/task/task_7.14/task_7.14_locked_benchmark_colab.ipynb": "16d476d4afbe789bb76ce8130b43f032729209c4c0400af4b9916240e9ab2abf",
+    "notebooks/task/task_7.15/task_7.15_unified_packaging_colab.ipynb": "f7ce2159b014aecacf6aa90926fde791dc09db1db62969087978039232053660",
+    "notebooks/task/phase7_corrected/phase7_corrected_rerun_colab.ipynb": "07790dd6e397bf531cc2d40acf67da051e1f39a118209327400b53c4578f8a68"
+  },
+  "G73": {
+    "status": "pending",
+    "real20": "not_run_locally",
+    "latency": "not_remeasured_for_new_hash",
+    "condition_best_reference": "not_measured"
+  },
+  "note": "Original submitted files preserved. Synthetic CPU smoke is not 20-real-image acceptance. Previous L4 timings belong to the previous package hash."
+}

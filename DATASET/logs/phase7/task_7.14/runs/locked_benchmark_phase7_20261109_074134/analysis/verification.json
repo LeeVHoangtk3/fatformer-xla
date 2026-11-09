@@ -1,0 +1,1820 @@
+{
+  "schema": "task714_run_audit/v1",
+  "audited_on": "2026-11-09",
+  "method": "Local arithmetic/cache verification, no model/GPU rerun",
+  "run_id": "locked_benchmark_phase7_20261109_074134",
+  "status": "verified_reference_operating_point_result",
+  "classification": "frozen_reference_operating_point",
+  "final_package_evaluation": false,
+  "source_folder": "wait/task7-14/locked_benchmark_phase7_20261109_074134",
+  "notebook": {
+    "path": "notebooks/task/task_7.14/task_7.14_locked_benchmark_colab.ipynb",
+    "sha256": "16d476d4afbe789bb76ce8130b43f032729209c4c0400af4b9916240e9ab2abf",
+    "modified_by_import": false
+  },
+  "gpu": {
+    "name": "NVIDIA L4",
+    "vram_gib_reported": 22.03,
+    "evidence": "notebook saved stdout"
+  },
+  "checks": [
+    {
+      "check": "frozen 400/1600 ID partitions disjoint",
+      "passed": true
+    },
+    {
+      "check": "reported baseline calibration hash",
+      "passed": true
+    },
+    {
+      "check": "baseline calibration source hash",
+      "passed": true
+    },
+    {
+      "check": "declared reference operating point",
+      "passed": true
+    },
+    {
+      "check": "reported T and threshold match calibration",
+      "passed": true
+    },
+    {
+      "check": "notebook commit agrees with run",
+      "passed": true
+    },
+    {
+      "check": "notebook stdout identifies this run",
+      "passed": true
+    },
+    {
+      "check": "GPU identified in notebook",
+      "passed": true
+    },
+    {
+      "check": "notebook has no error output blocks",
+      "passed": true
+    },
+    {
+      "check": "notebook reports completed subprocess",
+      "passed": true
+    },
+    {
+      "check": "not dummy mode",
+      "passed": true
+    },
+    {
+      "check": "clean: predictions file hash",
+      "passed": true
+    },
+    {
+      "check": "clean: finite logits and balanced 1600 labels",
+      "passed": true
+    },
+    {
+      "check": "clean: exact frozen evaluation membership",
+      "passed": true
+    },
+    {
+      "check": "clean: paths agree with canonical sample IDs",
+      "passed": true
+    },
+    {
+      "check": "clean: metadata condition",
+      "passed": true
+    },
+    {
+      "check": "clean: checkpoint/calibration fingerprints",
+      "passed": true
+    },
+    {
+      "check": "clean: recorded canonical loader status",
+      "passed": true
+    },
+    {
+      "check": "clean: T and threshold recorded in NPZ",
+      "passed": true
+    },
+    {
+      "check": "clean: paired sample order/labels identical",
+      "passed": true
+    },
+    {
+      "check": "clean: all main metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "clean: NLL reproduced to serialization precision",
+      "passed": true
+    },
+    {
+      "check": "clean: bootstrap CI95 reproduced",
+      "passed": true
+    },
+    {
+      "check": "clean/1_commercial: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "clean/1_commercial: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "clean/2_latent_diffusion: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "clean/2_latent_diffusion: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "clean/3_pixel_diffusion: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "clean/3_pixel_diffusion: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "clean/4_modern_gans: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "clean/4_modern_gans: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "clean/5_other_autoregressive: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "clean/5_other_autoregressive: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "q30: predictions file hash",
+      "passed": true
+    },
+    {
+      "check": "q30: finite logits and balanced 1600 labels",
+      "passed": true
+    },
+    {
+      "check": "q30: exact frozen evaluation membership",
+      "passed": true
+    },
+    {
+      "check": "q30: paths agree with canonical sample IDs",
+      "passed": true
+    },
+    {
+      "check": "q30: metadata condition",
+      "passed": true
+    },
+    {
+      "check": "q30: checkpoint/calibration fingerprints",
+      "passed": true
+    },
+    {
+      "check": "q30: recorded canonical loader status",
+      "passed": true
+    },
+    {
+      "check": "q30: T and threshold recorded in NPZ",
+      "passed": true
+    },
+    {
+      "check": "q30: paired sample order/labels identical",
+      "passed": true
+    },
+    {
+      "check": "q30: all main metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q30: NLL reproduced to serialization precision",
+      "passed": true
+    },
+    {
+      "check": "q30: bootstrap CI95 reproduced",
+      "passed": true
+    },
+    {
+      "check": "q30/1_commercial: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q30/1_commercial: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "q30/2_latent_diffusion: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q30/2_latent_diffusion: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "q30/3_pixel_diffusion: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q30/3_pixel_diffusion: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "q30/4_modern_gans: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q30/4_modern_gans: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "q30/5_other_autoregressive: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q30/5_other_autoregressive: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "q50: predictions file hash",
+      "passed": true
+    },
+    {
+      "check": "q50: finite logits and balanced 1600 labels",
+      "passed": true
+    },
+    {
+      "check": "q50: exact frozen evaluation membership",
+      "passed": true
+    },
+    {
+      "check": "q50: paths agree with canonical sample IDs",
+      "passed": true
+    },
+    {
+      "check": "q50: metadata condition",
+      "passed": true
+    },
+    {
+      "check": "q50: checkpoint/calibration fingerprints",
+      "passed": true
+    },
+    {
+      "check": "q50: recorded canonical loader status",
+      "passed": true
+    },
+    {
+      "check": "q50: T and threshold recorded in NPZ",
+      "passed": true
+    },
+    {
+      "check": "q50: paired sample order/labels identical",
+      "passed": true
+    },
+    {
+      "check": "q50: all main metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q50: NLL reproduced to serialization precision",
+      "passed": true
+    },
+    {
+      "check": "q50: bootstrap CI95 reproduced",
+      "passed": true
+    },
+    {
+      "check": "q50/1_commercial: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q50/1_commercial: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "q50/2_latent_diffusion: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q50/2_latent_diffusion: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "q50/3_pixel_diffusion: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q50/3_pixel_diffusion: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "q50/4_modern_gans: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q50/4_modern_gans: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "q50/5_other_autoregressive: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q50/5_other_autoregressive: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "q75: predictions file hash",
+      "passed": true
+    },
+    {
+      "check": "q75: finite logits and balanced 1600 labels",
+      "passed": true
+    },
+    {
+      "check": "q75: exact frozen evaluation membership",
+      "passed": true
+    },
+    {
+      "check": "q75: paths agree with canonical sample IDs",
+      "passed": true
+    },
+    {
+      "check": "q75: metadata condition",
+      "passed": true
+    },
+    {
+      "check": "q75: checkpoint/calibration fingerprints",
+      "passed": true
+    },
+    {
+      "check": "q75: recorded canonical loader status",
+      "passed": true
+    },
+    {
+      "check": "q75: T and threshold recorded in NPZ",
+      "passed": true
+    },
+    {
+      "check": "q75: paired sample order/labels identical",
+      "passed": true
+    },
+    {
+      "check": "q75: all main metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q75: NLL reproduced to serialization precision",
+      "passed": true
+    },
+    {
+      "check": "q75: bootstrap CI95 reproduced",
+      "passed": true
+    },
+    {
+      "check": "q75/1_commercial: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q75/1_commercial: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "q75/2_latent_diffusion: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q75/2_latent_diffusion: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "q75/3_pixel_diffusion: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q75/3_pixel_diffusion: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "q75/4_modern_gans: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q75/4_modern_gans: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "q75/5_other_autoregressive: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "q75/5_other_autoregressive: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "webp40: predictions file hash",
+      "passed": true
+    },
+    {
+      "check": "webp40: finite logits and balanced 1600 labels",
+      "passed": true
+    },
+    {
+      "check": "webp40: exact frozen evaluation membership",
+      "passed": true
+    },
+    {
+      "check": "webp40: paths agree with canonical sample IDs",
+      "passed": true
+    },
+    {
+      "check": "webp40: metadata condition",
+      "passed": true
+    },
+    {
+      "check": "webp40: checkpoint/calibration fingerprints",
+      "passed": true
+    },
+    {
+      "check": "webp40: recorded canonical loader status",
+      "passed": true
+    },
+    {
+      "check": "webp40: T and threshold recorded in NPZ",
+      "passed": true
+    },
+    {
+      "check": "webp40: paired sample order/labels identical",
+      "passed": true
+    },
+    {
+      "check": "webp40: all main metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "webp40: NLL reproduced to serialization precision",
+      "passed": true
+    },
+    {
+      "check": "webp40: bootstrap CI95 reproduced",
+      "passed": true
+    },
+    {
+      "check": "webp40/1_commercial: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "webp40/1_commercial: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "webp40/2_latent_diffusion: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "webp40/2_latent_diffusion: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "webp40/3_pixel_diffusion: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "webp40/3_pixel_diffusion: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "webp40/4_modern_gans: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "webp40/4_modern_gans: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "webp40/5_other_autoregressive: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "webp40/5_other_autoregressive: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "blur15: predictions file hash",
+      "passed": true
+    },
+    {
+      "check": "blur15: finite logits and balanced 1600 labels",
+      "passed": true
+    },
+    {
+      "check": "blur15: exact frozen evaluation membership",
+      "passed": true
+    },
+    {
+      "check": "blur15: paths agree with canonical sample IDs",
+      "passed": true
+    },
+    {
+      "check": "blur15: metadata condition",
+      "passed": true
+    },
+    {
+      "check": "blur15: checkpoint/calibration fingerprints",
+      "passed": true
+    },
+    {
+      "check": "blur15: recorded canonical loader status",
+      "passed": true
+    },
+    {
+      "check": "blur15: T and threshold recorded in NPZ",
+      "passed": true
+    },
+    {
+      "check": "blur15: paired sample order/labels identical",
+      "passed": true
+    },
+    {
+      "check": "blur15: all main metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "blur15: NLL reproduced to serialization precision",
+      "passed": true
+    },
+    {
+      "check": "blur15: bootstrap CI95 reproduced",
+      "passed": true
+    },
+    {
+      "check": "blur15/1_commercial: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "blur15/1_commercial: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "blur15/2_latent_diffusion: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "blur15/2_latent_diffusion: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "blur15/3_pixel_diffusion: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "blur15/3_pixel_diffusion: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "blur15/4_modern_gans: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "blur15/4_modern_gans: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "blur15/5_other_autoregressive: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "blur15/5_other_autoregressive: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "downup05: predictions file hash",
+      "passed": true
+    },
+    {
+      "check": "downup05: finite logits and balanced 1600 labels",
+      "passed": true
+    },
+    {
+      "check": "downup05: exact frozen evaluation membership",
+      "passed": true
+    },
+    {
+      "check": "downup05: paths agree with canonical sample IDs",
+      "passed": true
+    },
+    {
+      "check": "downup05: metadata condition",
+      "passed": true
+    },
+    {
+      "check": "downup05: checkpoint/calibration fingerprints",
+      "passed": true
+    },
+    {
+      "check": "downup05: recorded canonical loader status",
+      "passed": true
+    },
+    {
+      "check": "downup05: T and threshold recorded in NPZ",
+      "passed": true
+    },
+    {
+      "check": "downup05: paired sample order/labels identical",
+      "passed": true
+    },
+    {
+      "check": "downup05: all main metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "downup05: NLL reproduced to serialization precision",
+      "passed": true
+    },
+    {
+      "check": "downup05: bootstrap CI95 reproduced",
+      "passed": true
+    },
+    {
+      "check": "downup05/1_commercial: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "downup05/1_commercial: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "downup05/2_latent_diffusion: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "downup05/2_latent_diffusion: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "downup05/3_pixel_diffusion: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "downup05/3_pixel_diffusion: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "downup05/4_modern_gans: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "downup05/4_modern_gans: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "downup05/5_other_autoregressive: metrics reproduced",
+      "passed": true
+    },
+    {
+      "check": "downup05/5_other_autoregressive: NLL reproduced",
+      "passed": true
+    },
+    {
+      "check": "18 in-dist subsets and 82003 samples",
+      "passed": true
+    },
+    {
+      "check": "in-dist mean of 18 balanced accuracies",
+      "passed": true
+    },
+    {
+      "check": "in-dist final summary consistent",
+      "passed": true
+    },
+    {
+      "check": "in-dist rows consistent across JSONs",
+      "passed": true
+    },
+    {
+      "check": "in-dist pooled real/fake ACC consistent",
+      "passed": true
+    },
+    {
+      "check": "in-dist subset bootstrap cluster_macro_acc_ci_95",
+      "passed": true
+    },
+    {
+      "check": "in-dist subset bootstrap cluster_auc_ci_95",
+      "passed": true
+    },
+    {
+      "check": "in-dist subset bootstrap cluster_ap_ci_95",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV progan",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV stylegan",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV stylegan2",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV biggan",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV cyclegan",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV stargan",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV gaugan",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV deepfake",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV guided",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV ldm_200",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV ldm_200_cfg",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV ldm_100",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV glide_50_27",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV glide_100_10",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV glide_100_27",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV dalle",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV pndm",
+      "passed": true
+    },
+    {
+      "check": "in-dist CSV vqdiffusion",
+      "passed": true
+    },
+    {
+      "check": "G7.2 all flags recomputed",
+      "passed": true
+    },
+    {
+      "check": "G7.3 reported pending, no overhead value",
+      "passed": true
+    },
+    {
+      "check": "per-generator table has 20 template rows",
+      "passed": true
+    },
+    {
+      "check": "per-generator table has 5 nonempty groups",
+      "passed": true
+    },
+    {
+      "check": "per-generator 1_commercial/clean",
+      "passed": true
+    },
+    {
+      "check": "per-generator 1_commercial/q30",
+      "passed": true
+    },
+    {
+      "check": "per-generator 2_latent_diffusion/clean",
+      "passed": true
+    },
+    {
+      "check": "per-generator 2_latent_diffusion/q30",
+      "passed": true
+    },
+    {
+      "check": "per-generator 3_pixel_diffusion/clean",
+      "passed": true
+    },
+    {
+      "check": "per-generator 3_pixel_diffusion/q30",
+      "passed": true
+    },
+    {
+      "check": "per-generator 4_modern_gans/clean",
+      "passed": true
+    },
+    {
+      "check": "per-generator 4_modern_gans/q30",
+      "passed": true
+    },
+    {
+      "check": "per-generator 5_other_autoregressive/clean",
+      "passed": true
+    },
+    {
+      "check": "per-generator 5_other_autoregressive/q30",
+      "passed": true
+    },
+    {
+      "check": "notebook bytes preserved",
+      "passed": true
+    },
+    {
+      "check": "wait source files preserved",
+      "passed": true
+    }
+  ],
+  "n_checks_passed": 207,
+  "conditions": {
+    "clean": {
+      "metrics": {
+        "macro_acc": 73.75,
+        "real_acc": 95.75,
+        "fake_acc": 51.75,
+        "fake_at_real90": 64.12,
+        "auc": 88.67,
+        "ap": 89.08,
+        "tpr_at_fpr": {
+          "0.01": 35.62,
+          "0.05": 54.12,
+          "0.10": 64.25
+        },
+        "ece": 9.56,
+        "nll": 0.4816,
+        "total_samples": 1600
+      },
+      "ci95": {
+        "auc": [
+          87.12,
+          90.16
+        ],
+        "ap": [
+          87.34,
+          90.84
+        ],
+        "tpr_at_fpr_0.05": [
+          46.94,
+          60.62
+        ],
+        "fake_at_real90": [
+          59.34,
+          69.77
+        ]
+      },
+      "per_subset": {
+        "1_commercial": {
+          "macro_acc": 73.84,
+          "real_acc": 94.94,
+          "fake_acc": 52.74,
+          "fake_at_real90": 62.03,
+          "auc": 88.17,
+          "ap": 87.55,
+          "tpr_at_fpr": {
+            "0.01": 20.68,
+            "0.05": 52.68,
+            "0.10": 61.6
+          },
+          "ece": 9.98,
+          "nll": 0.4813,
+          "total_samples": 474
+        },
+        "2_latent_diffusion": {
+          "macro_acc": 71.75,
+          "real_acc": 96.41,
+          "fake_acc": 46.06,
+          "fake_at_real90": 58.92,
+          "auc": 87.45,
+          "ap": 87.44,
+          "tpr_at_fpr": {
+            "0.01": 31.95,
+            "0.05": 47.53,
+            "0.10": 58.92
+          },
+          "ece": 10.48,
+          "nll": 0.5061,
+          "total_samples": 492
+        },
+        "3_pixel_diffusion": {
+          "macro_acc": 72.64,
+          "real_acc": 98.75,
+          "fake_acc": 46.2,
+          "fake_at_real90": 72.15,
+          "auc": 88.28,
+          "ap": 89.78,
+          "tpr_at_fpr": {
+            "0.01": 43.42,
+            "0.05": 63.29,
+            "0.10": 72.15
+          },
+          "ece": 9.76,
+          "nll": 0.5189,
+          "total_samples": 318
+        },
+        "4_modern_gans": {
+          "macro_acc": 98.76,
+          "real_acc": 98.72,
+          "fake_acc": 98.8,
+          "fake_at_real90": 100.0,
+          "auc": 99.94,
+          "ap": 99.94,
+          "tpr_at_fpr": {
+            "0.01": 95.18,
+            "0.05": 100.0,
+            "0.10": 100.0
+          },
+          "ece": 2.89,
+          "nll": 0.1024,
+          "total_samples": 161
+        },
+        "5_other_autoregressive": {
+          "macro_acc": 56.13,
+          "real_acc": 86.49,
+          "fake_acc": 28.4,
+          "fake_at_real90": 22.22,
+          "auc": 75.76,
+          "ap": 74.84,
+          "tpr_at_fpr": {
+            "0.01": 12.35,
+            "0.05": 17.28,
+            "0.10": 20.99
+          },
+          "ece": 17.31,
+          "nll": 0.7218,
+          "total_samples": 155
+        }
+      },
+      "fpr_percent": 4.25,
+      "source_npz_sha256": "fa6328ba72a2278a983f8ef4c882e9224fa4f76599bdec17d73705fc8bc84c83",
+      "main_metrics_match": true,
+      "ci_match": true
+    },
+    "q30": {
+      "metrics": {
+        "macro_acc": 65.31,
+        "real_acc": 92.0,
+        "fake_acc": 38.62,
+        "fake_at_real90": 42.62,
+        "auc": 79.87,
+        "ap": 78.47,
+        "tpr_at_fpr": {
+          "0.01": 12.38,
+          "0.05": 28.25,
+          "0.10": 42.62
+        },
+        "ece": 13.49,
+        "nll": 0.6368,
+        "total_samples": 1600
+      },
+      "ci95": {
+        "auc": [
+          77.64,
+          82.06
+        ],
+        "ap": [
+          75.34,
+          81.5
+        ],
+        "tpr_at_fpr_0.05": [
+          23.1,
+          35.95
+        ],
+        "fake_at_real90": [
+          37.8,
+          47.75
+        ]
+      },
+      "per_subset": {
+        "1_commercial": {
+          "macro_acc": 72.57,
+          "real_acc": 91.56,
+          "fake_acc": 53.59,
+          "fake_at_real90": 55.7,
+          "auc": 85.21,
+          "ap": 83.12,
+          "tpr_at_fpr": {
+            "0.01": 18.57,
+            "0.05": 35.38,
+            "0.10": 55.57
+          },
+          "ece": 10.64,
+          "nll": 0.5352,
+          "total_samples": 474
+        },
+        "2_latent_diffusion": {
+          "macro_acc": 60.98,
+          "real_acc": 91.63,
+          "fake_acc": 29.05,
+          "fake_at_real90": 34.02,
+          "auc": 75.7,
+          "ap": 72.59,
+          "tpr_at_fpr": {
+            "0.01": 7.88,
+            "0.05": 22.41,
+            "0.10": 34.02
+          },
+          "ece": 16.12,
+          "nll": 0.6964,
+          "total_samples": 492
+        },
+        "3_pixel_diffusion": {
+          "macro_acc": 61.01,
+          "real_acc": 94.38,
+          "fake_acc": 27.22,
+          "fake_at_real90": 52.53,
+          "auc": 78.95,
+          "ap": 76.31,
+          "tpr_at_fpr": {
+            "0.01": 5.7,
+            "0.05": 23.42,
+            "0.10": 52.53
+          },
+          "ece": 14.18,
+          "nll": 0.6763,
+          "total_samples": 318
+        },
+        "4_modern_gans": {
+          "macro_acc": 81.99,
+          "real_acc": 98.72,
+          "fake_acc": 66.27,
+          "fake_at_real90": 78.31,
+          "auc": 92.17,
+          "ap": 93.94,
+          "tpr_at_fpr": {
+            "0.01": 54.22,
+            "0.05": 75.9,
+            "0.10": 78.31
+          },
+          "ece": 7.46,
+          "nll": 0.371,
+          "total_samples": 161
+        },
+        "5_other_autoregressive": {
+          "macro_acc": 48.39,
+          "real_acc": 82.43,
+          "fake_acc": 17.28,
+          "fake_at_real90": 12.35,
+          "auc": 61.19,
+          "ap": 56.84,
+          "tpr_at_fpr": {
+            "0.01": 0.0,
+            "0.05": 1.23,
+            "0.10": 12.35
+          },
+          "ece": 25.11,
+          "nll": 0.9531,
+          "total_samples": 155
+        }
+      },
+      "fpr_percent": 8.0,
+      "source_npz_sha256": "ecbf581a3224a4b371434553cca94bab4cd0db8d09beb548193831728f462077",
+      "main_metrics_match": true,
+      "ci_match": true
+    },
+    "q50": {
+      "metrics": {
+        "macro_acc": 66.31,
+        "real_acc": 93.5,
+        "fake_acc": 39.12,
+        "fake_at_real90": 47.62,
+        "auc": 81.55,
+        "ap": 80.63,
+        "tpr_at_fpr": {
+          "0.01": 15.62,
+          "0.05": 35.62,
+          "0.10": 47.62
+        },
+        "ece": 13.04,
+        "nll": 0.6147,
+        "total_samples": 1600
+      },
+      "ci95": {
+        "auc": [
+          79.41,
+          83.5
+        ],
+        "ap": [
+          77.66,
+          83.36
+        ],
+        "tpr_at_fpr_0.05": [
+          28.16,
+          40.93
+        ],
+        "fake_at_real90": [
+          42.1,
+          52.32
+        ]
+      },
+      "per_subset": {
+        "1_commercial": {
+          "macro_acc": 71.73,
+          "real_acc": 92.41,
+          "fake_acc": 51.05,
+          "fake_at_real90": 63.29,
+          "auc": 86.23,
+          "ap": 83.96,
+          "tpr_at_fpr": {
+            "0.01": 7.59,
+            "0.05": 46.41,
+            "0.10": 63.29
+          },
+          "ece": 10.42,
+          "nll": 0.5148,
+          "total_samples": 474
+        },
+        "2_latent_diffusion": {
+          "macro_acc": 63.01,
+          "real_acc": 94.02,
+          "fake_acc": 30.71,
+          "fake_at_real90": 37.76,
+          "auc": 77.83,
+          "ap": 75.93,
+          "tpr_at_fpr": {
+            "0.01": 9.96,
+            "0.05": 26.97,
+            "0.10": 37.76
+          },
+          "ece": 15.57,
+          "nll": 0.6729,
+          "total_samples": 492
+        },
+        "3_pixel_diffusion": {
+          "macro_acc": 61.32,
+          "real_acc": 95.62,
+          "fake_acc": 26.58,
+          "fake_at_real90": 47.47,
+          "auc": 79.17,
+          "ap": 76.87,
+          "tpr_at_fpr": {
+            "0.01": 4.81,
+            "0.05": 27.85,
+            "0.10": 47.47
+          },
+          "ece": 17.25,
+          "nll": 0.6962,
+          "total_samples": 318
+        },
+        "4_modern_gans": {
+          "macro_acc": 85.09,
+          "real_acc": 98.72,
+          "fake_acc": 72.29,
+          "fake_at_real90": 81.93,
+          "auc": 94.56,
+          "ap": 95.76,
+          "tpr_at_fpr": {
+            "0.01": 71.08,
+            "0.05": 81.93,
+            "0.10": 81.93
+          },
+          "ece": 7.64,
+          "nll": 0.3105,
+          "total_samples": 161
+        },
+        "5_other_autoregressive": {
+          "macro_acc": 50.97,
+          "real_acc": 85.14,
+          "fake_acc": 19.75,
+          "fake_at_real90": 14.81,
+          "auc": 66.0,
+          "ap": 61.78,
+          "tpr_at_fpr": {
+            "0.01": 0.0,
+            "0.05": 7.41,
+            "0.10": 14.81
+          },
+          "ece": 22.66,
+          "nll": 0.8846,
+          "total_samples": 155
+        }
+      },
+      "fpr_percent": 6.5,
+      "source_npz_sha256": "eded6b7b17584f2c3ae99247aa56913ffd8d1e80572148fd5b5e0c753914213a",
+      "main_metrics_match": true,
+      "ci_match": true
+    },
+    "q75": {
+      "metrics": {
+        "macro_acc": 66.19,
+        "real_acc": 94.62,
+        "fake_acc": 37.75,
+        "fake_at_real90": 48.75,
+        "auc": 83.31,
+        "ap": 82.83,
+        "tpr_at_fpr": {
+          "0.01": 19.75,
+          "0.05": 35.62,
+          "0.10": 48.75
+        },
+        "ece": 12.8,
+        "nll": 0.5853,
+        "total_samples": 1600
+      },
+      "ci95": {
+        "auc": [
+          81.34,
+          85.22
+        ],
+        "ap": [
+          80.29,
+          85.37
+        ],
+        "tpr_at_fpr_0.05": [
+          30.21,
+          42.19
+        ],
+        "fake_at_real90": [
+          43.11,
+          55.3
+        ]
+      },
+      "per_subset": {
+        "1_commercial": {
+          "macro_acc": 71.1,
+          "real_acc": 94.09,
+          "fake_acc": 48.1,
+          "fake_at_real90": 57.81,
+          "auc": 86.4,
+          "ap": 84.72,
+          "tpr_at_fpr": {
+            "0.01": 18.99,
+            "0.05": 44.3,
+            "0.10": 56.96
+          },
+          "ece": 10.32,
+          "nll": 0.4978,
+          "total_samples": 474
+        },
+        "2_latent_diffusion": {
+          "macro_acc": 61.18,
+          "real_acc": 93.63,
+          "fake_acc": 27.39,
+          "fake_at_real90": 39.0,
+          "auc": 79.3,
+          "ap": 77.04,
+          "tpr_at_fpr": {
+            "0.01": 14.11,
+            "0.05": 23.24,
+            "0.10": 39.0
+          },
+          "ece": 16.31,
+          "nll": 0.6646,
+          "total_samples": 492
+        },
+        "3_pixel_diffusion": {
+          "macro_acc": 61.32,
+          "real_acc": 97.5,
+          "fake_acc": 24.68,
+          "fake_at_real90": 54.43,
+          "auc": 82.4,
+          "ap": 82.43,
+          "tpr_at_fpr": {
+            "0.01": 13.29,
+            "0.05": 39.87,
+            "0.10": 54.43
+          },
+          "ece": 14.96,
+          "nll": 0.6615,
+          "total_samples": 318
+        },
+        "4_modern_gans": {
+          "macro_acc": 90.68,
+          "real_acc": 100.0,
+          "fake_acc": 81.93,
+          "fake_at_real90": 91.57,
+          "auc": 97.85,
+          "ap": 98.28,
+          "tpr_at_fpr": {
+            "0.01": 85.54,
+            "0.05": 89.16,
+            "0.10": 91.57
+          },
+          "ece": 4.39,
+          "nll": 0.1963,
+          "total_samples": 161
+        },
+        "5_other_autoregressive": {
+          "macro_acc": 51.61,
+          "real_acc": 87.84,
+          "fake_acc": 18.52,
+          "fake_at_real90": 9.88,
+          "auc": 67.17,
+          "ap": 61.03,
+          "tpr_at_fpr": {
+            "0.01": 0.0,
+            "0.05": 1.23,
+            "0.10": 9.88
+          },
+          "ece": 21.56,
+          "nll": 0.8492,
+          "total_samples": 155
+        }
+      },
+      "fpr_percent": 5.375,
+      "source_npz_sha256": "398326c353906dab68fcd57e1fa37af3d0acfa0ff9b11940d91eaad7b60e5010",
+      "main_metrics_match": true,
+      "ci_match": true
+    },
+    "webp40": {
+      "metrics": {
+        "macro_acc": 65.94,
+        "real_acc": 89.75,
+        "fake_acc": 42.12,
+        "fake_at_real90": 41.88,
+        "auc": 79.0,
+        "ap": 77.23,
+        "tpr_at_fpr": {
+          "0.01": 7.62,
+          "0.05": 26.88,
+          "0.10": 41.88
+        },
+        "ece": 14.94,
+        "nll": 0.6894,
+        "total_samples": 1600
+      },
+      "ci95": {
+        "auc": [
+          76.7,
+          81.25
+        ],
+        "ap": [
+          74.06,
+          80.45
+        ],
+        "tpr_at_fpr_0.05": [
+          19.53,
+          33.24
+        ],
+        "fake_at_real90": [
+          36.48,
+          47.84
+        ]
+      },
+      "per_subset": {
+        "1_commercial": {
+          "macro_acc": 71.73,
+          "real_acc": 88.19,
+          "fake_acc": 55.27,
+          "fake_at_real90": 54.01,
+          "auc": 83.29,
+          "ap": 77.93,
+          "tpr_at_fpr": {
+            "0.01": 0.84,
+            "0.05": 29.05,
+            "0.10": 53.59
+          },
+          "ece": 13.07,
+          "nll": 0.6032,
+          "total_samples": 474
+        },
+        "2_latent_diffusion": {
+          "macro_acc": 60.98,
+          "real_acc": 89.64,
+          "fake_acc": 31.12,
+          "fake_at_real90": 31.12,
+          "auc": 73.62,
+          "ap": 70.25,
+          "tpr_at_fpr": {
+            "0.01": 7.05,
+            "0.05": 17.01,
+            "0.10": 31.12
+          },
+          "ece": 18.55,
+          "nll": 0.7792,
+          "total_samples": 492
+        },
+        "3_pixel_diffusion": {
+          "macro_acc": 63.84,
+          "real_acc": 93.75,
+          "fake_acc": 33.54,
+          "fake_at_real90": 43.67,
+          "auc": 77.69,
+          "ap": 77.35,
+          "tpr_at_fpr": {
+            "0.01": 7.59,
+            "0.05": 29.75,
+            "0.10": 44.3
+          },
+          "ece": 15.85,
+          "nll": 0.7357,
+          "total_samples": 318
+        },
+        "4_modern_gans": {
+          "macro_acc": 83.85,
+          "real_acc": 98.72,
+          "fake_acc": 69.88,
+          "fake_at_real90": 81.93,
+          "auc": 93.62,
+          "ap": 95.05,
+          "tpr_at_fpr": {
+            "0.01": 63.86,
+            "0.05": 73.49,
+            "0.10": 81.93
+          },
+          "ece": 8.18,
+          "nll": 0.3453,
+          "total_samples": 161
+        },
+        "5_other_autoregressive": {
+          "macro_acc": 49.68,
+          "real_acc": 77.03,
+          "fake_acc": 24.69,
+          "fake_at_real90": 3.7,
+          "auc": 63.06,
+          "ap": 56.53,
+          "tpr_at_fpr": {
+            "0.01": 0.0,
+            "0.05": 1.23,
+            "0.10": 2.47
+          },
+          "ece": 23.72,
+          "nll": 0.9301,
+          "total_samples": 155
+        }
+      },
+      "fpr_percent": 10.25,
+      "source_npz_sha256": "d8698f9c2791d017cda3fc2d60f0b0af8054b0afb668f5a6f5d9f4bcf5b28493",
+      "main_metrics_match": true,
+      "ci_match": true
+    },
+    "blur15": {
+      "metrics": {
+        "macro_acc": 71.0,
+        "real_acc": 89.0,
+        "fake_acc": 53.0,
+        "fake_at_real90": 50.62,
+        "auc": 84.22,
+        "ap": 83.24,
+        "tpr_at_fpr": {
+          "0.01": 17.88,
+          "0.05": 37.75,
+          "0.10": 50.62
+        },
+        "ece": 10.09,
+        "nll": 0.5623,
+        "total_samples": 1600
+      },
+      "ci95": {
+        "auc": [
+          82.35,
+          86.02
+        ],
+        "ap": [
+          80.42,
+          85.74
+        ],
+        "tpr_at_fpr_0.05": [
+          32.17,
+          44.62
+        ],
+        "fake_at_real90": [
+          45.43,
+          56.21
+        ]
+      },
+      "per_subset": {
+        "1_commercial": {
+          "macro_acc": 74.89,
+          "real_acc": 87.34,
+          "fake_acc": 62.45,
+          "fake_at_real90": 56.96,
+          "auc": 86.04,
+          "ap": 84.4,
+          "tpr_at_fpr": {
+            "0.01": 12.24,
+            "0.05": 39.66,
+            "0.10": 56.96
+          },
+          "ece": 10.75,
+          "nll": 0.5584,
+          "total_samples": 474
+        },
+        "2_latent_diffusion": {
+          "macro_acc": 68.29,
+          "real_acc": 90.04,
+          "fake_acc": 45.64,
+          "fake_at_real90": 46.47,
+          "auc": 82.9,
+          "ap": 79.82,
+          "tpr_at_fpr": {
+            "0.01": 12.03,
+            "0.05": 31.54,
+            "0.10": 46.47
+          },
+          "ece": 10.7,
+          "nll": 0.569,
+          "total_samples": 492
+        },
+        "3_pixel_diffusion": {
+          "macro_acc": 67.3,
+          "real_acc": 91.88,
+          "fake_acc": 42.41,
+          "fake_at_real90": 42.41,
+          "auc": 81.77,
+          "ap": 80.71,
+          "tpr_at_fpr": {
+            "0.01": 17.72,
+            "0.05": 32.91,
+            "0.10": 42.41
+          },
+          "ece": 12.83,
+          "nll": 0.6064,
+          "total_samples": 318
+        },
+        "4_modern_gans": {
+          "macro_acc": 89.44,
+          "real_acc": 98.72,
+          "fake_acc": 80.72,
+          "fake_at_real90": 91.57,
+          "auc": 97.13,
+          "ap": 97.76,
+          "tpr_at_fpr": {
+            "0.01": 78.31,
+            "0.05": 86.75,
+            "0.10": 91.57
+          },
+          "ece": 6.03,
+          "nll": 0.2423,
+          "total_samples": 161
+        },
+        "5_other_autoregressive": {
+          "macro_acc": 56.13,
+          "real_acc": 74.32,
+          "fake_acc": 39.51,
+          "fake_at_real90": 17.28,
+          "auc": 70.22,
+          "ap": 68.34,
+          "tpr_at_fpr": {
+            "0.01": 4.94,
+            "0.05": 13.58,
+            "0.10": 17.28
+          },
+          "ece": 19.71,
+          "nll": 0.7946,
+          "total_samples": 155
+        }
+      },
+      "fpr_percent": 11.0,
+      "source_npz_sha256": "66412bb8ae79bf6fc5ddbe2d39d8bde9a2db521ac596a88e85348b04284a9108",
+      "main_metrics_match": true,
+      "ci_match": true
+    },
+    "downup05": {
+      "metrics": {
+        "macro_acc": 77.38,
+        "real_acc": 88.5,
+        "fake_acc": 66.25,
+        "fake_at_real90": 64.75,
+        "auc": 87.0,
+        "ap": 86.89,
+        "tpr_at_fpr": {
+          "0.01": 27.75,
+          "0.05": 52.12,
+          "0.10": 64.75
+        },
+        "ece": 11.47,
+        "nll": 0.5573,
+        "total_samples": 1600
+      },
+      "ci95": {
+        "auc": [
+          85.35,
+          88.76
+        ],
+        "ap": [
+          84.53,
+          89.34
+        ],
+        "tpr_at_fpr_0.05": [
+          44.84,
+          58.54
+        ],
+        "fake_at_real90": [
+          58.68,
+          68.89
+        ]
+      },
+      "per_subset": {
+        "1_commercial": {
+          "macro_acc": 81.65,
+          "real_acc": 88.61,
+          "fake_acc": 74.68,
+          "fake_at_real90": 73.84,
+          "auc": 88.4,
+          "ap": 88.21,
+          "tpr_at_fpr": {
+            "0.01": 26.16,
+            "0.05": 54.01,
+            "0.10": 73.71
+          },
+          "ece": 13.71,
+          "nll": 0.5686,
+          "total_samples": 474
+        },
+        "2_latent_diffusion": {
+          "macro_acc": 74.19,
+          "real_acc": 88.84,
+          "fake_acc": 58.92,
+          "fake_at_real90": 57.26,
+          "auc": 86.46,
+          "ap": 84.58,
+          "tpr_at_fpr": {
+            "0.01": 20.33,
+            "0.05": 47.3,
+            "0.10": 57.26
+          },
+          "ece": 11.34,
+          "nll": 0.5399,
+          "total_samples": 492
+        },
+        "3_pixel_diffusion": {
+          "macro_acc": 75.79,
+          "real_acc": 88.75,
+          "fake_acc": 62.66,
+          "fake_at_real90": 62.03,
+          "auc": 84.69,
+          "ap": 84.92,
+          "tpr_at_fpr": {
+            "0.01": 17.72,
+            "0.05": 52.53,
+            "0.10": 62.03
+          },
+          "ece": 12.94,
+          "nll": 0.5898,
+          "total_samples": 318
+        },
+        "4_modern_gans": {
+          "macro_acc": 94.41,
+          "real_acc": 98.72,
+          "fake_acc": 90.36,
+          "fake_at_real90": 92.77,
+          "auc": 97.97,
+          "ap": 98.42,
+          "tpr_at_fpr": {
+            "0.01": 89.16,
+            "0.05": 91.57,
+            "0.10": 92.77
+          },
+          "ece": 7.66,
+          "nll": 0.2628,
+          "total_samples": 161
+        },
+        "5_other_autoregressive": {
+          "macro_acc": 60.0,
+          "real_acc": 75.68,
+          "fake_acc": 45.68,
+          "fake_at_real90": 30.86,
+          "auc": 71.45,
+          "ap": 72.27,
+          "tpr_at_fpr": {
+            "0.01": 8.64,
+            "0.05": 12.35,
+            "0.10": 30.86
+          },
+          "ece": 20.28,
+          "nll": 0.8173,
+          "total_samples": 155
+        }
+      },
+      "fpr_percent": 11.5,
+      "source_npz_sha256": "3dbd7146535baadbc74660996281984a3264b4ce4a3b94b562365bcc516b5cc2",
+      "main_metrics_match": true,
+      "ci_match": true
+    }
+  },
+  "indist": {
+    "n_total": 82003,
+    "n_subsets": 18,
+    "macro_acc_recomputed": 90.4603500698765,
+    "pooled_real_acc_reported": 90.67453543383895,
+    "mean_subset_real_acc_recomputed": 86.89720380404333,
+    "micro_acc_reported": 93.4331670792532,
+    "pooled_auc_reported": 98.28087889408201,
+    "subset_bootstrap_recomputed": {
+      "cluster_macro_acc_ci_95": [
+        87.09,
+        93.6
+      ],
+      "cluster_auc_ci_95": [
+        94.46,
+        98.62
+      ],
+      "cluster_ap_ci_95": [
+        95.46,
+        98.85
+      ]
+    },
+    "raw_image_predictions_available": false
+  },
+  "G72": {
+    "status": "fail",
+    "passed": 5,
+    "total": 8,
+    "criteria": {
+      "CFE_clean_Fake@Real90": {
+        "value": 64.12,
+        "target": ">=65.0%",
+        "pass": false
+      },
+      "CFE_clean_AUC": {
+        "value": 88.67,
+        "target": ">=78.0%",
+        "pass": true
+      },
+      "CFE_Q30_AUC": {
+        "value": 79.87,
+        "target": ">=60.0%",
+        "pass": true
+      },
+      "CFE_Q30_Fake@Real90": {
+        "value": 42.62,
+        "target": ">=40.0%",
+        "pass": true
+      },
+      "InDist_Macro_ACC": {
+        "value": 90.4603500698765,
+        "target": ">=90.0%",
+        "pass": true
+      },
+      "InDist_Real_ACC": {
+        "value": 90.67453543383895,
+        "target": ">=90.0% (cứng)",
+        "pass": true
+      },
+      "Worst_Subset_Fake_ACC": {
+        "value": 28.4,
+        "target": ">=45.0%",
+        "pass": false,
+        "complete": true
+      },
+      "ECE_Post_Calibration": {
+        "value": 0.1349,
+        "target": "<=0.08",
+        "pass": false
+      }
+    }
+  },
+  "G73": {
+    "status": "pending",
+    "backbone_total_ms_reported": 44.40351996000118,
+    "wrapper_overhead_ms": null,
+    "package_verification": null,
+    "delta_vs_best_condition": null
+  },
+  "per_generator": {
+    "total_rows": 20,
+    "nonempty_rows": 5,
+    "numeric_points_reproduced": true,
+    "assignment": "Heuristic mapping from full path/subset; not independently verified generator metadata",
+    "operating_point": "Threshold from pooled real scores; not independent Real90 within each subgroup"
+  },
+  "locked_config_threshold_differences": {
+    "0.01": {
+      "template": 0.95,
+      "actual_baseline_json": 0.999
+    },
+    "0.10": {
+      "template": 0.88,
+      "actual_baseline_json": 0.0258
+    }
+  },
+  "notebook_error_pattern_counts": {
+    "Traceback": 0,
+    "Cảnh báo đọc file lỗi": 0,
+    "Dummy Mode: True": 0,
+    "Che do gia lap (Dummy): True": 0,
+    "CUDA out of memory": 0
+  },
+  "limitations": [
+    "Checkpoint hash/strict loading confirmed by recorded metadata only; original checkpoint file not rehashed locally.",
+    "Calibration belongs to baseline, not this v2 checkpoint. Run is a fixed reference operating point experiment.",
+    "Disjointness checked by subset/class/filename IDs; image-content duplicates not audited.",
+    "No in-dist raw predictions: pooled AUC/AP and per-image decisions cannot be independently recomputed.",
+    "Legacy dataset readers can substitute grey/zero images on decode failure; absent CFE warnings is not a complete image-integrity audit.",
+    "Backbone total latency is not wrapper overhead; G7.3 remains unmeasured.",
+    "LOCKED_CONFIG has stale 1%/10% thresholds and a legacy 71-tests router string; observed 5% point matches actual calibration.",
+    "No superiority or non-forgetting claim established by a single run; evaluation has been viewed previously."
+  ]
+}

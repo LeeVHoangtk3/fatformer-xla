@@ -43,7 +43,7 @@ Tất cả áp dụng **`post_resize`** (sau khi đưa về 224) — khớp dữ
 | :---: | :--- | :--- | :--- |
 | I1 | Checkpoint cuối | `DATASET/checkpoints/phase7/fatformer_anchored_v2_best.pth` (hoặc `_best_effort.pth`) | Đối tượng chấm |
 | I2 | Router | `logs/phase7/router_params.json` (Task 7.13) | Fusion (nếu thắng) |
-| I3 | Calibration | `logs/phase7/calibration/anchored_v2.json` (Task 7.4) | `T`, `T*` |
+| I3 | Calibration | `DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json` (Task 7.4) | `T`, `T*` |
 | I4 | 18 tập in-dist | `DATASET/test_*` (82.003 ảnh) | Không quên miền cũ |
 | I5 | CFE | `DATASET/test_communityforensics` | OOD |
 | I6 | Eval v3 | [`tools/eval_communityforensics.py`](../../../../tools/eval_communityforensics.py) | Harness |
@@ -100,7 +100,7 @@ Sau khi ghi file này, **không** sửa. Mọi thay đổi ⇒ chấm lại từ
 ```bash
 python tools/eval_locked_benchmark.py \
   --checkpoint <ckpt> --data_root DATASET \
-  --datasets <18 tên> --calibration logs/phase7/calibration/anchored_v2.json \
+  --datasets <18 tên> --calibration DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json \
   --output logs/phase7/indist_phase7.json
 ```
 

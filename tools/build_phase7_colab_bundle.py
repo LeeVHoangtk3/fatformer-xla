@@ -11,7 +11,7 @@ from tools.calibration_data import sha256_file,validate_partitions
 from tools.phase7_corrected import CONTRACT,TRAINING_SHA
 
 
-def build(root,output):
+def build(root,output,calibration_logits=None,calibration=None,partition_audit=None):
     root=Path(root).resolve()
     sources={}
     for folder in ['src','tools','tests','configs']:
@@ -19,11 +19,11 @@ def build(root,output):
             if path.is_file() and '__pycache__' not in path.parts and path.suffix in {'.py','.yaml','.yml','.json','.gz'}:
                 sources[path.relative_to(root).as_posix()]=path
     inputs={
-      'inputs/calibration_400.npz':'DATASET/logs/phase7/task_7.15_recovery/logits_anchored_v2_calibration_400.npz',
+      'inputs/calibration_400.npz':calibration_logits or 'DATASET/logs/phase7/task_7.15/current/inputs/calibration_400.npz',
       'inputs/calibration_split.npz':'DATASET/logs/phase7/wise_ft_sweep/logits_baseline_clean_calib_split.npz',
       'inputs/evaluation_split.npz':'DATASET/logs/phase7/wise_ft_sweep/logits_baseline_clean_eval_split.npz',
-      'inputs/anchored_v2.json':'DATASET/logs/phase7/calibration/anchored_v2.json',
-      'inputs/partition_audit.json':'DATASET/logs/phase7/task_7.15_recovery/partition_audit.json',
+      'inputs/anchored_v2.json':calibration or 'DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json',
+      'inputs/partition_audit.json':partition_audit or 'DATASET/logs/phase7/task_7.15/current/verification/partition_audit.json',
     }
     for name,path in inputs.items():
         sources[name]=root/path
@@ -65,7 +65,10 @@ def build(root,output):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',default=str(Path(__file__).resolve().parents[1]))
-    parser.add_argument('--output',default='DATASET/logs/phase7/task_7.15_recovery/colab/phase7_corrected_colab_bundle.zip')
+    parser.add_argument('--output',default='DATASET/logs/phase7/task_7.15/current/colab/phase7_corrected_colab_bundle.zip')
+    parser.add_argument('--calibration_logits',help='Verified measured 400-image NPZ to include')
+    parser.add_argument('--calibration',help='Calibration JSON fitted from that exact NPZ')
+    parser.add_argument('--partition_audit',help='Audit JSON corresponding to these inputs')
     print(json.dumps(build(**vars(parser.parse_args())),indent=2))
 
 

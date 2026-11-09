@@ -1,0 +1,623 @@
+{
+  "schema": "task715_run_audit/v1",
+  "audited_at": "2026-11-09T09:08:11.965894+00:00",
+  "run_id": "unified_packaging_20261109_083821_8ddcb401",
+  "classification": "measured_400_calibration_and_packaging_with_optimizer_convergence_issue",
+  "status": "partially_verified_not_final_acceptance",
+  "source_folder": "wait/task7-15/task_7.15_unified_package_artifacts/task_7.15",
+  "package_sha256": "8ddcb401f1e160776c653a3d073d2512cbafa1e08e5d39510201be83ab097dd8",
+  "notebook": {
+    "path": "notebooks/task/task_7.15/task_7.15_unified_packaging_colab.ipynb",
+    "sha256": "f7ce2159b014aecacf6aa90926fde791dc09db1db62969087978039232053660",
+    "unchanged": true
+  },
+  "n_checks_passed": 95,
+  "checks": [
+    {
+      "name": "six submitted artifacts",
+      "passed": true
+    },
+    {
+      "name": "package file matches recorded CUDA latency checkpoint",
+      "passed": true
+    },
+    {
+      "name": "calibration source hash matches actual submitted NPZ",
+      "passed": true
+    },
+    {
+      "name": "metadata embeds identical calibration",
+      "passed": true
+    },
+    {
+      "name": "source checkpoint identities agree",
+      "passed": true
+    },
+    {
+      "name": "router intentionally disabled",
+      "passed": true
+    },
+    {
+      "name": "measured schema",
+      "passed": true
+    },
+    {
+      "name": "400x2 finite logits",
+      "passed": true
+    },
+    {
+      "name": "200 real and 200 fake",
+      "passed": true
+    },
+    {
+      "name": "canonical path identities agree",
+      "passed": true
+    },
+    {
+      "name": "NPZ measured calibration",
+      "passed": true
+    },
+    {
+      "name": "NPZ bound to v2",
+      "passed": true
+    },
+    {
+      "name": "NPZ frozen manifest hash",
+      "passed": true
+    },
+    {
+      "name": "FP32 batch32 extraction",
+      "passed": true
+    },
+    {
+      "name": "NPZ partition declaration matches actual files",
+      "passed": true
+    },
+    {
+      "name": "frozen 400/1600 counts",
+      "passed": true
+    },
+    {
+      "name": "no ID overlap",
+      "passed": true
+    },
+    {
+      "name": "current optimizer T reproduced",
+      "passed": true
+    },
+    {
+      "name": "calibration metric ece_before",
+      "passed": true
+    },
+    {
+      "name": "calibration metric ece_after",
+      "passed": true
+    },
+    {
+      "name": "calibration metric nll_before",
+      "passed": true
+    },
+    {
+      "name": "calibration metric nll_after",
+      "passed": true
+    },
+    {
+      "name": "calibration metric real_acc",
+      "passed": true
+    },
+    {
+      "name": "calibration metric fake_acc",
+      "passed": true
+    },
+    {
+      "name": "threshold 0.01",
+      "passed": true
+    },
+    {
+      "name": "FPR 0.01",
+      "passed": true
+    },
+    {
+      "name": "FPR cap 0.01",
+      "passed": true
+    },
+    {
+      "name": "threshold 0.05",
+      "passed": true
+    },
+    {
+      "name": "FPR 0.05",
+      "passed": true
+    },
+    {
+      "name": "FPR cap 0.05",
+      "passed": true
+    },
+    {
+      "name": "threshold 0.10",
+      "passed": true
+    },
+    {
+      "name": "FPR 0.10",
+      "passed": true
+    },
+    {
+      "name": "FPR cap 0.10",
+      "passed": true
+    },
+    {
+      "name": "independent bounded and inverse-temperature optimizers agree",
+      "passed": true
+    },
+    {
+      "name": "reported T improves NLL over T1",
+      "passed": true
+    },
+    {
+      "name": "CUDA L4 timing protocol",
+      "passed": true
+    },
+    {
+      "name": "20 warmup / 200 timing pairs",
+      "passed": true
+    },
+    {
+      "name": "all requested latency batches measured",
+      "passed": true
+    },
+    {
+      "name": "batch 1 raw positive finite timing arrays",
+      "passed": true
+    },
+    {
+      "name": "batch 1 paired samples",
+      "passed": true
+    },
+    {
+      "name": "batch 1 backbone_batch_ms",
+      "passed": true
+    },
+    {
+      "name": "batch 1 package_batch_median_ms",
+      "passed": true
+    },
+    {
+      "name": "batch 1 package_batch_p95_ms",
+      "passed": true
+    },
+    {
+      "name": "batch 1 backbone_per_image_ms",
+      "passed": true
+    },
+    {
+      "name": "batch 1 package_per_image_ms",
+      "passed": true
+    },
+    {
+      "name": "batch 1 throughput_fps",
+      "passed": true
+    },
+    {
+      "name": "batch 1 median overhead",
+      "passed": true
+    },
+    {
+      "name": "batch 1 p95 overhead",
+      "passed": true
+    },
+    {
+      "name": "batch 8 raw positive finite timing arrays",
+      "passed": true
+    },
+    {
+      "name": "batch 8 paired samples",
+      "passed": true
+    },
+    {
+      "name": "batch 8 backbone_batch_ms",
+      "passed": true
+    },
+    {
+      "name": "batch 8 package_batch_median_ms",
+      "passed": true
+    },
+    {
+      "name": "batch 8 package_batch_p95_ms",
+      "passed": true
+    },
+    {
+      "name": "batch 8 backbone_per_image_ms",
+      "passed": true
+    },
+    {
+      "name": "batch 8 package_per_image_ms",
+      "passed": true
+    },
+    {
+      "name": "batch 8 throughput_fps",
+      "passed": true
+    },
+    {
+      "name": "batch 8 median overhead",
+      "passed": true
+    },
+    {
+      "name": "batch 8 p95 overhead",
+      "passed": true
+    },
+    {
+      "name": "batch 32 raw positive finite timing arrays",
+      "passed": true
+    },
+    {
+      "name": "batch 32 paired samples",
+      "passed": true
+    },
+    {
+      "name": "batch 32 backbone_batch_ms",
+      "passed": true
+    },
+    {
+      "name": "batch 32 package_batch_median_ms",
+      "passed": true
+    },
+    {
+      "name": "batch 32 package_batch_p95_ms",
+      "passed": true
+    },
+    {
+      "name": "batch 32 backbone_per_image_ms",
+      "passed": true
+    },
+    {
+      "name": "batch 32 package_per_image_ms",
+      "passed": true
+    },
+    {
+      "name": "batch 32 throughput_fps",
+      "passed": true
+    },
+    {
+      "name": "batch 32 median overhead",
+      "passed": true
+    },
+    {
+      "name": "batch 32 p95 overhead",
+      "passed": true
+    },
+    {
+      "name": "GPU overhead acceptance consistent with raw timings",
+      "passed": true
+    },
+    {
+      "name": "package metadata matches external JSON",
+      "passed": true
+    },
+    {
+      "name": "full 1200-tensor canonical layout",
+      "passed": true
+    },
+    {
+      "name": "archived reference tensor keys unchanged",
+      "passed": true
+    },
+    {
+      "name": "all 1200 archived reference tensors bitwise equal",
+      "passed": true
+    },
+    {
+      "name": "standalone synthetic CPU smoke passes with missing CLIP path",
+      "passed": true
+    },
+    {
+      "name": "8 code cells executed without saved error outputs",
+      "passed": true
+    },
+    {
+      "name": "cell 4 matches supplied recovery source",
+      "passed": true
+    },
+    {
+      "name": "cell 5 matches supplied recovery source",
+      "passed": true
+    },
+    {
+      "name": "notebook hashes match submitted artifact hashes",
+      "passed": true
+    },
+    {
+      "name": "time sequence extraction/package/latency consistent",
+      "passed": true
+    },
+    {
+      "name": "historical rescore evaluation IDs/labels clean",
+      "passed": true
+    },
+    {
+      "name": "historical rescore evaluation IDs/labels q30",
+      "passed": true
+    },
+    {
+      "name": "historical rescore evaluation IDs/labels q50",
+      "passed": true
+    },
+    {
+      "name": "historical rescore evaluation IDs/labels q75",
+      "passed": true
+    },
+    {
+      "name": "historical rescore evaluation IDs/labels webp40",
+      "passed": true
+    },
+    {
+      "name": "historical rescore evaluation IDs/labels blur15",
+      "passed": true
+    },
+    {
+      "name": "historical rescore evaluation IDs/labels downup05",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation anchored_v2.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation anchored_v2_reliability.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation latency_phase7.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation logits_anchored_v2_clean_calib.npz",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation metadata.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation unified_fatformer_v2.pth",
+      "passed": true
+    },
+    {
+      "name": "frozen partition copy logits_baseline_clean_calib_split.npz",
+      "passed": true
+    },
+    {
+      "name": "frozen partition copy logits_baseline_clean_eval_split.npz",
+      "passed": true
+    },
+    {
+      "name": "notebook unchanged by audit/import",
+      "passed": true
+    }
+  ],
+  "partition": {
+    "status": "verified_disjoint_ids",
+    "identity_unit": "subset/class/filename; content duplicates not audited",
+    "n_calibration": 400,
+    "n_evaluation": 1600,
+    "overlap": 0,
+    "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+    "evaluation_split_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+    "sample_ids_sha256": "5ae613da819d065b93225b901a7d06d3309ad27e8cdbb9a441cf4df43d7552fb"
+  },
+  "calibration_recomputed": {
+    "ece_before": 14.716494083404541,
+    "ece_after": 11.696470350027086,
+    "nll_before": 0.6452870435729331,
+    "nll_after": 0.5012625791675176,
+    "real_acc": 95.0,
+    "fake_acc": 59.0
+  },
+  "calibration_T_reproduced": 1.4675993919372559,
+  "optimizer_diagnostic": {
+    "status": "optimizer_not_converged",
+    "deployed_T": 1.4675993919372559,
+    "current_optimizer_reproduced_T": 1.4675993919372559,
+    "diagnostic_minimizer_T": 2.7863594526851108,
+    "inverse_temperature_root_T": 2.7863594931234643,
+    "current_stable_nll": 0.5012625457991081,
+    "diagnostic_minimum_nll": 0.4229638974672379,
+    "avoidable_calibration_nll_gap": 0.07829864833187022,
+    "gradient_at_deployed_T": -0.18211966694083262,
+    "source": "same 400 calibration logits only; no evaluation data used to optimize",
+    "implementation": "ModelWithTemperature.fit: LBFGS lr=0.01, max_iter=100; no convergence acceptance check",
+    "interpretation": "Reproducible code output, but not the claimed NLL optimum; does not itself establish held-out gains",
+    "modifies_submitted_artifacts": false
+  },
+  "canonical_layout": {
+    "n": 3,
+    "indices": [
+      7,
+      15,
+      23
+    ],
+    "dropped": [],
+    "missing": [],
+    "partial": false,
+    "expressible": true
+  },
+  "tensor_comparison": {
+    "schema": "task715_tensor_comparison/v1",
+    "n_tensors": 1200,
+    "keys_equal": true,
+    "tensors_equal": true,
+    "dtype_equal": true,
+    "changed_tensors": [],
+    "package_sha256": "8ddcb401f1e160776c653a3d073d2512cbafa1e08e5d39510201be83ab097dd8",
+    "reference_path": "DATASET/logs/phase7/task_7.15_original_68cd0a8/unified_fatformer_v2.pth",
+    "reference_sha256": "3d0c880ff57e8dfcb0024b0c02952db2f879b95ca4f95d4d18ad32dbfe2927a9",
+    "limitation": "Reference is the earlier archived package; the original training checkpoint on Drive was not supplied locally."
+  },
+  "standalone_local_smoke": {
+    "schema": "task715_local_standalone_smoke/v1",
+    "input_kind": "synthetic_zero_tensor",
+    "n_images": 1,
+    "device": "cpu",
+    "precision": "fp32",
+    "standalone_clip_path": "NON_EXISTENT_TASK715_AUDIT_CLIP.pt",
+    "router_enabled": false,
+    "fixed_threshold": 0.9293636083602905,
+    "max_probability_error": 0.0,
+    "passed": true,
+    "real_image_acceptance": false,
+    "note": "This audit does not replace 20 real-image checks, GPU latency, or held-out evaluation."
+  },
+  "gpu_latency": {
+    "status": "passed_reported_L4_FP16_overhead_only",
+    "gpu": "NVIDIA L4",
+    "batch1_median_overhead_ms": 0.11895700004060927,
+    "batch1_package_ms": 44.98
+  },
+  "notebook_demo": {
+    "n_images": 4,
+    "status": "reported_completed_smoke_only",
+    "full_demo_json_submitted": false,
+    "real_prediction_equivalence": false
+  },
+  "G73": {
+    "status": "pending",
+    "single_package_structure": "verified",
+    "latency_overhead": "passed_on_L4_FP16",
+    "real20_prediction_equivalence": "missing",
+    "condition_best_reference_delta": "missing"
+  },
+  "historical_rescore": {
+    "status": "posthoc_diagnostic_only",
+    "fresh_package_predictions": false,
+    "rows": [
+      {
+        "condition": "clean",
+        "evidence": "posthoc_rescore_of_task714_backbone_logits_NOT_package_forward",
+        "n": 1600,
+        "temperature": 1.4675993919372559,
+        "threshold": 0.9293636083602905,
+        "auc_pct": 88.668203125,
+        "fake_at_real90_pct": 64.25,
+        "fixed_fpr_pct": 4.25,
+        "fixed_fake_acc_pct": 52.75,
+        "ece_pct": 10.817901391535997,
+        "nll": 0.5084125391323568
+      },
+      {
+        "condition": "q30",
+        "evidence": "posthoc_rescore_of_task714_backbone_logits_NOT_package_forward",
+        "n": 1600,
+        "temperature": 1.4675993919372559,
+        "threshold": 0.9293636083602905,
+        "auc_pct": 79.86492187500001,
+        "fake_at_real90_pct": 42.625,
+        "fixed_fpr_pct": 8.25,
+        "fixed_fake_acc_pct": 39.375,
+        "ece_pct": 15.046766594052317,
+        "nll": 0.6731893823208503
+      },
+      {
+        "condition": "q50",
+        "evidence": "posthoc_rescore_of_task714_backbone_logits_NOT_package_forward",
+        "n": 1600,
+        "temperature": 1.4675993919372559,
+        "threshold": 0.9293636083602905,
+        "auc_pct": 81.55078125,
+        "fake_at_real90_pct": 47.625,
+        "fixed_fpr_pct": 7.000000000000001,
+        "fixed_fake_acc_pct": 39.625,
+        "ece_pct": 14.363767746835943,
+        "nll": 0.6508007799920688
+      },
+      {
+        "condition": "q75",
+        "evidence": "posthoc_rescore_of_task714_backbone_logits_NOT_package_forward",
+        "n": 1600,
+        "temperature": 1.4675993919372559,
+        "threshold": 0.9293636083602905,
+        "auc_pct": 83.31570312500001,
+        "fake_at_real90_pct": 48.75,
+        "fixed_fpr_pct": 5.75,
+        "fixed_fake_acc_pct": 38.25,
+        "ece_pct": 14.086159430444242,
+        "nll": 0.6183712299982149
+      },
+      {
+        "condition": "webp40",
+        "evidence": "posthoc_rescore_of_task714_backbone_logits_NOT_package_forward",
+        "n": 1600,
+        "temperature": 1.4675993919372559,
+        "threshold": 0.9293636083602905,
+        "auc_pct": 78.999609375,
+        "fake_at_real90_pct": 41.875,
+        "fixed_fpr_pct": 10.625,
+        "fixed_fake_acc_pct": 42.875,
+        "ece_pct": 16.690144561231136,
+        "nll": 0.7353875794291386
+      },
+      {
+        "condition": "blur15",
+        "evidence": "posthoc_rescore_of_task714_backbone_logits_NOT_package_forward",
+        "n": 1600,
+        "temperature": 1.4675993919372559,
+        "threshold": 0.9293636083602905,
+        "auc_pct": 84.21625,
+        "fake_at_real90_pct": 50.625,
+        "fixed_fpr_pct": 11.25,
+        "fixed_fake_acc_pct": 53.625,
+        "ece_pct": 11.365364778786901,
+        "nll": 0.5912559494448911
+      },
+      {
+        "condition": "downup05",
+        "evidence": "posthoc_rescore_of_task714_backbone_logits_NOT_package_forward",
+        "n": 1600,
+        "temperature": 1.4675993919372559,
+        "threshold": 0.9293636083602905,
+        "auc_pct": 86.99765625,
+        "fake_at_real90_pct": 64.75,
+        "fixed_fpr_pct": 11.75,
+        "fixed_fake_acc_pct": 66.75,
+        "ece_pct": 12.491832267493013,
+        "nll": 0.5895429840641261
+      }
+    ],
+    "inputs": [
+      {
+        "path": "DATASET/logs/phase7/task_7.14/runs/locked_benchmark_phase7_20261109_074134/raw/logits_anchored_v2_clean.npz",
+        "sha256": "fa6328ba72a2278a983f8ef4c882e9224fa4f76599bdec17d73705fc8bc84c83"
+      },
+      {
+        "path": "DATASET/logs/phase7/task_7.14/runs/locked_benchmark_phase7_20261109_074134/raw/logits_anchored_v2_q30.npz",
+        "sha256": "ecbf581a3224a4b371434553cca94bab4cd0db8d09beb548193831728f462077"
+      },
+      {
+        "path": "DATASET/logs/phase7/task_7.14/runs/locked_benchmark_phase7_20261109_074134/raw/logits_anchored_v2_q50.npz",
+        "sha256": "eded6b7b17584f2c3ae99247aa56913ffd8d1e80572148fd5b5e0c753914213a"
+      },
+      {
+        "path": "DATASET/logs/phase7/task_7.14/runs/locked_benchmark_phase7_20261109_074134/raw/logits_anchored_v2_q75.npz",
+        "sha256": "398326c353906dab68fcd57e1fa37af3d0acfa0ff9b11940d91eaad7b60e5010"
+      },
+      {
+        "path": "DATASET/logs/phase7/task_7.14/runs/locked_benchmark_phase7_20261109_074134/raw/logits_anchored_v2_webp40.npz",
+        "sha256": "d8698f9c2791d017cda3fc2d60f0b0af8054b0afb668f5a6f5d9f4bcf5b28493"
+      },
+      {
+        "path": "DATASET/logs/phase7/task_7.14/runs/locked_benchmark_phase7_20261109_074134/raw/logits_anchored_v2_blur15.npz",
+        "sha256": "66412bb8ae79bf6fc5ddbe2d39d8bde9a2db521ac596a88e85348b04284a9108"
+      },
+      {
+        "path": "DATASET/logs/phase7/task_7.14/runs/locked_benchmark_phase7_20261109_074134/raw/logits_anchored_v2_downup05.npz",
+        "sha256": "3dbd7146535baadbc74660996281984a3264b4ce4a3b94b562365bcc516b5cc2"
+      }
+    ]
+  },
+  "limitations": [
+    "Original training checkpoint and original images were not supplied locally; its SHA is recorded provenance, not independently rehashed here.",
+    "ID-level independence does not establish absence of image-content duplicates.",
+    "Calibration FP32/CPU softmax differs from FP16 GPU latency; accuracy at the latency precision and CUDA threshold-boundary equivalence remain unmeasured.",
+    "Metadata build.dirty=true; complete runtime source diff was not submitted.",
+    "No 20-real-image equivalence JSON, package CFE evaluation predictions, or matched best-reference comparison was submitted.",
+    "Four demo images and calibration metrics do not establish generalization; optimizer diagnostic does not prove held-out improvement."
+  ]
+}

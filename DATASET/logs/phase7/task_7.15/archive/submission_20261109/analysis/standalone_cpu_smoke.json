@@ -1,0 +1,14 @@
+{
+  "schema": "task715_local_standalone_smoke/v1",
+  "input_kind": "synthetic_zero_tensor",
+  "n_images": 1,
+  "device": "cpu",
+  "precision": "fp32",
+  "standalone_clip_path": "NON_EXISTENT_TASK715_AUDIT_CLIP.pt",
+  "router_enabled": false,
+  "fixed_threshold": 0.9293636083602905,
+  "max_probability_error": 0.0,
+  "passed": true,
+  "real_image_acceptance": false,
+  "note": "This audit does not replace 20 real-image checks, GPU latency, or held-out evaluation."
+}

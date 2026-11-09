@@ -1,0 +1,109 @@
+{
+  "schema": "task715_import_manifest/v1",
+  "run_id": "unified_packaging_20261109_083821_8ddcb401",
+  "source": "wait/task7-15/task_7.15_unified_package_artifacts/task_7.15",
+  "notebook": {
+    "path": "notebooks/task/task_7.15/task_7.15_unified_packaging_colab.ipynb",
+    "sha256": "f7ce2159b014aecacf6aa90926fde791dc09db1db62969087978039232053660",
+    "unchanged": true
+  },
+  "raw_files": [
+    {
+      "path": "anchored_v2.json",
+      "bytes": 1770,
+      "sha256": "9ec8c09e0869cdf053ea85c5f6bc7196f9009ea2ee13662c183423a81cf47fea"
+    },
+    {
+      "path": "anchored_v2_reliability.png",
+      "bytes": 113868,
+      "sha256": "ee9a404f1728f6639e92e201d53a2fa77750d02ad249879571d977320e4c20e4"
+    },
+    {
+      "path": "latency_phase7.json",
+      "bytes": 52716,
+      "sha256": "2b5dac95c103d8802abdc530213f83a2f53119d4710cc2fca8cc93f1bf111778"
+    },
+    {
+      "path": "logits_anchored_v2_clean_calib.npz",
+      "bytes": 11657,
+      "sha256": "3b0f66dfdc7c4655df6aa7fcab7346f0315d2663927559b66005bafa2c657942"
+    },
+    {
+      "path": "metadata.json",
+      "bytes": 3320,
+      "sha256": "f91bb2da705817b06b43c37ee57231457f142a31585184e62356630ccedf6295"
+    },
+    {
+      "path": "unified_fatformer_v2.pth",
+      "bytes": 1972728623,
+      "sha256": "8ddcb401f1e160776c653a3d073d2512cbafa1e08e5d39510201be83ab097dd8"
+    }
+  ],
+  "derived_files": [
+    {
+      "path": "analysis/calibration_thresholds.csv",
+      "bytes": 168,
+      "sha256": "315c838e33768992c7d5e55ac013859e4afece603d7f51cc7861c15ac1557922"
+    },
+    {
+      "path": "analysis/effective_config.json",
+      "bytes": 846,
+      "sha256": "8c1772ca2328fac6543569a78285ed153ced6b843eda3b468ce7fc1585b9ad46"
+    },
+    {
+      "path": "analysis/execution_metadata.json",
+      "bytes": 2503,
+      "sha256": "b9ddf8ed7f23d561906bf8163413f57046d098d6468d20a3a5cc38e54f0468a8"
+    },
+    {
+      "path": "analysis/historical_logits_rescore.csv",
+      "bytes": 1414,
+      "sha256": "7732ecd67a453a0c1a274d3f30559022a39b10e5be089e6a2e4d57467cd53938"
+    },
+    {
+      "path": "analysis/latency_summary.csv",
+      "bytes": 557,
+      "sha256": "f1044d5b8a2dd38bbb2933b68708ad1ed8c56e61bec581d644ed1bf123692eb5"
+    },
+    {
+      "path": "analysis/notebook_stdout.txt",
+      "bytes": 9462,
+      "sha256": "7a019d9e37cc617de795ea357e523b3b6abaa79a7ef8a54dd32c3b2f9cd910e8"
+    },
+    {
+      "path": "analysis/optimizer_convergence_diagnostic.json",
+      "bytes": 806,
+      "sha256": "8d75d82ca76b4a05f63486f1c7d254fd46c8bc2ee6e858865ba0e36674518fc4"
+    },
+    {
+      "path": "analysis/README.md",
+      "bytes": 11566,
+      "sha256": "ab9936f4a19fc52d5ec5f952110573d56205fec5d631808127cf3e0dd03fc1c5"
+    },
+    {
+      "path": "analysis/standalone_cpu_smoke.json",
+      "bytes": 482,
+      "sha256": "b8b19cfcd6313bfc6b5392a2af17946c5b645b31b67779ffbc6f87354cd0a40d"
+    },
+    {
+      "path": "analysis/tensor_comparison.json",
+      "bytes": 578,
+      "sha256": "7851243d6ad3906e8febe138ad932ef2ef0ecf2899983931d8cdf4382b33de94"
+    },
+    {
+      "path": "analysis/verification.json",
+      "bytes": 18492,
+      "sha256": "96cf51add4a5d0d57d79627f171a0e5cb23dac598b2388319396eb3b9ebfae10"
+    },
+    {
+      "path": "evidence/logits_baseline_clean_calib_split.npz",
+      "bytes": 6471,
+      "sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c"
+    },
+    {
+      "path": "evidence/logits_baseline_clean_eval_split.npz",
+      "bytes": 18199,
+      "sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9"
+    }
+  ]
+}

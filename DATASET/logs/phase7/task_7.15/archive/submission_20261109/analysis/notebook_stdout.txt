@@ -1,0 +1,145 @@
+[CELL 1 / stdout]
+[*] Đang kết nối Google Drive 5TB...
+Mounted at /content/drive
+[✓] Thư mục Drive chính: /content/drive/MyDrive/Fatformer
+[*] Clone nhánh hoang từ GitHub...
+[✓] Commit hiện tại: bb43fd90dc65df67707de2eee0c41b5a63eec335
+
+
+[CELL 2 / stdout]
+[*] Đang cài đặt các thư viện cần thiết...
+======================================================================
+[✓] GPU khả dụng: NVIDIA L4 (22.03 GiB VRAM)
+[i] Lưu ý: Đang chạy trên NVIDIA L4. Nghiệm thu chính thức G7.3 theo đề cương quy định trên T4.
+======================================================================
+
+
+[CELL 3 / stdout]
+[*] 1. Định vị Checkpoint v2 (Anchored Run 1) mục tiêu...
+[✓] Checkpoint v2 nguồn: /content/drive/MyDrive/Fatformer/checkpoint/phase7/anchored_v2_run1/fatformer_anchored_v2_best.pth
+[✓] SHA-256 Checkpoint: 5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c
+[✓] Khớp mã băm chuẩn của Checkpoint v2 (5cd49252...)!
+
+[*] 2. Định vị Backbone ViT-L/14...
+[✓] Tìm thấy CLIP Backbone ngoài: /content/drive/MyDrive/Fatformer/pretrained/ViT-L-14.pt
+
+[*] 3. Định vị Artifacts & Phân Vùng Hiệu Chuẩn val_calib...
+[*] Đang giải nén phase7_measured_artifacts.zip sang /content/fatformer-xla...
+[✓] Đã giải nén phase7_measured_artifacts.zip thành công.
+[*] Đang giải nén test_communityforensics.tar để trích xuất ảnh hiệu chuẩn...
+
+
+[CELL 3 / stderr]
+/tmp/ipykernel_6817/222919332.py:82: DeprecationWarning: Python 3.14 will, by default, filter extracted tar archives and reject files or modify their metadata. Use the filter argument to control this behavior.
+  tf.extractall(DATA_STAGE / 'cfe')
+
+
+[CELL 3 / stdout]
+[✓] Thư mục dữ liệu hiệu chuẩn: /content/dataset_local/cfe
+[✓] Tệp chỉ định phân vùng split: /content/fatformer-xla/DATASET/logs/phase7/logits_baseline_clean_calib_split.npz
+[i] Router params: /content/fatformer-xla/DATASET/logs/phase7/router_params.json
+[i] Router ablation proof: None
+
+
+[CELL 4 / stdout]
+[calibration] /content/fatformer-xla/DATASET/logs/phase7/logits_baseline_clean_calib_split.npz | N=400
+[evaluation] /content/fatformer-xla/DATASET/logs/phase7/logits_baseline_clean_eval_split.npz | N=1600
+Partition check: {'status': 'verified_disjoint_ids', 'identity_unit': 'subset/class/filename; content duplicates not audited', 'n_calibration': 400, 'n_evaluation': 1600, 'overlap': 0, 'calibration_split_sha256': '128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c', 'evaluation_split_sha256': 'ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9', 'sample_ids_sha256': '5ae613da819d065b93225b901a7d06d3309ad27e8cdbb9a441cf4df43d7552fb'}
+GPU: NVIDIA L4
+Images: /content/dataset_local/cfe
+SUCCESS: 400 measured logits (200 real + 200 fake): /content/fatformer-xla/DATASET/logs/phase7/logits_anchored_v2_clean_calib.npz
+SHA256: 3b0f66dfdc7c4655df6aa7fcab7346f0315d2663927559b66005bafa2c657942
+Next: run cell_5_calibrate_fixed.py; do not run the old cell 5 unchanged.
+
+
+[CELL 5 / stdout]
+SUCCESS: /content/fatformer-xla/DATASET/logs/phase7/calibration/anchored_v2.json
+T: 1.4675993919372559 T*: 0.9293636083602905
+FPR on calibration: {'0.01': 0.01, '0.05': 0.05, '0.10': 0.1}
+Calibration FPR is not a guarantee of FPR on independent evaluation data.
+Next: continue with notebook cell 6 (packaging).
+
+
+[CELL 6 / stdout]
+================================================================================
+TIẾN HÀNH ĐÓNG GÓI SẢN PHẨM PHÁT HÀNH: /content/fatformer-xla/DATASET/checkpoints/phase7/unified_fatformer_v2.pth
+================================================================================
+[*] Đang đọc checkpoint nguồn: /content/drive/MyDrive/Fatformer/checkpoint/phase7/anchored_v2_run1/fatformer_anchored_v2_best.pth
+[✓] Checkpoint SHA-256: 5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c
+[✓] Layout adapter nhận diện: n=3, indices=[7, 15, 23], partial=False
+[*] Đang nạp calibration: /content/fatformer-xla/DATASET/logs/phase7/calibration/anchored_v2.json
+[✓] Xác thực calibration chính chủ: Khớp SHA-256 100%.
+[*] Đang nạp router params: /content/fatformer-xla/DATASET/logs/phase7/router_params.json
+[*] Đang lưu checkpoint đóng gói ra: /content/fatformer-xla/DATASET/checkpoints/phase7/unified_fatformer_v2.pth
+[✓] Đã xuất metadata JSON ra: /content/fatformer-xla/DATASET/checkpoints/phase7/metadata.json
+[*] Đang thực hiện tự kiểm chứng trọng số...
+[✓] TỰ KIỂM CHỨNG THÀNH CÔNG: Trọng số khớp 100% không bị thay đổi.
+
+======================================================================
+[✓] ĐÃ ĐÓNG GÓI THÀNH CÔNG: unified_fatformer_v2.pth
+[✓] Dung lượng: 1881.34 MB
+[✓] SHA-256: 8ddcb401f1e160776c653a3d073d2512cbafa1e08e5d39510201be83ab097dd8
+[✓] Metadata độc lập: /content/fatformer-xla/DATASET/checkpoints/phase7/metadata.json
+======================================================================
+
+
+[CELL 7 / stdout]
+================================================================================
+CHẠY KIỂM CHUẨN ĐỘ TRỄ PHÂN TẦNG TRÊN GPU (NVIDIA L4)
+================================================================================
+[*] Khởi tạo môi trường suy luận trên thiết bị: cuda
+/content/fatformer-xla/src/models/unified_fatformer.py:165: RuntimeWarning: [WARN] router disabled: no validated held-out win; calibrated fixed fallback
+  warnings.warn("[WARN] router disabled: no validated held-out win; calibrated fixed fallback", RuntimeWarning)
+[✓] Nạp UnifiedFatFormerXLA thành công!
+
+================================================================================
+TIẾN HÀNH ĐO ĐẠC ĐỘ TRỄ SUY LUẬN (LATENCY OVERHEAD BENCHMARK - G7.3)
+Thiết bị: cuda | Precision: FP16 | Warmup: 20 | Steps: 200
+================================================================================
+• Batch  1: Package =  44.98 ms/batch | 44.98 ms/ảnh | Overhead = 0.1190 ms |  22.2 FPS
+• Batch  8: Package =  74.41 ms/batch |  9.30 ms/ảnh | Overhead = -0.0313 ms | 107.5 FPS
+• Batch 32: Package = 336.29 ms/batch | 10.51 ms/ảnh | Overhead = 0.0027 ms |  95.2 FPS
+
+[✓] Đã xuất báo cáo độ trễ ra: /content/fatformer-xla/DATASET/logs/phase7/latency_phase7.json
+
+================================================================================
+BẢNG TỔNG HỢP ĐỘ TRỄ & HIỆU NĂNG SUY LUẬN (TASK 7.15 / G7.3):
+--------------------------------------------------------------------------------
+Batch Size   | Backbone (ms/ảnh)  | Package (ms/ảnh)   | Overhead ΔT (ms) | Throughput (FPS)
+--------------------------------------------------------------------------------
+1            | 44.86              | 44.98              | 0.1190           | 22.2            
+8            | 9.35               | 9.30               | -0.0313          | 107.5           
+32           | 10.50              | 10.51              | 0.0027           | 95.2            
+--------------------------------------------------------------------------------
+• Cổng chặn G7.3 (Overhead ΔT batch 1 < 5.0 ms/ảnh):
+  [✓] ĐẠT (PASS): ΔT = 0.1190 ms < 5.0 ms!
+================================================================================
+
+
+[CELL 8 / stdout]
+================================================================================
+1. KIỂM THỬ SUY LUẬN ĐỘC LẬP KHÔNG PHỤ THUỘC FILE CLIP NGOÀI...
+================================================================================
+[✓] Đã chạy suy luận thành công 4 ảnh trong chế độ Standalone:
+  • fake_0022_LCM_lora_sdxl.png: Dự đoán=FAKE (Prob Fake: 0.9925, Ngưỡng: 0.9294, Độ trễ: 2168.7 ms)
+  • fake_0047_LCM_lora_sdxl.png: Dự đoán=REAL (Prob Fake: 0.9129, Ngưỡng: 0.9294, Độ trễ: 41.6 ms)
+  • fake_0065_kvikontent_midjourney_v6.png: Dự đoán=FAKE (Prob Fake: 0.9834, Ngưỡng: 0.9294, Độ trễ: 41.4 ms)
+  • fake_0197_DeciDiffusionV2.png: Dự đoán=REAL (Prob Fake: 0.1788, Ngưỡng: 0.9294, Độ trễ: 41.5 ms)
+
+================================================================================
+2. ĐỒNG BỘ TOÀN BỘ ARTIFACTS TASK 7.15 SANG GOOGLE DRIVE 5TB...
+================================================================================
+[✓] Đã sao lưu sang Drive: /content/drive/MyDrive/Fatformer/checkpoint/phase7/unified_fatformer_v2.pth
+[✓] Đã sao lưu sang Drive: /content/drive/MyDrive/Fatformer/checkpoint/phase7/metadata.json
+[✓] Đã sao lưu sang Drive: /content/drive/MyDrive/Fatformer/logs/phase7/calibration/anchored_v2.json
+[✓] Đã sao lưu sang Drive: /content/drive/MyDrive/Fatformer/logs/phase7/latency_phase7.json
+[✓] Đã sao lưu sang Drive: /content/drive/MyDrive/Fatformer/logs/phase7/logits_anchored_v2_clean_calib.npz
+[✓] Đã sao lưu sang Drive: /content/drive/MyDrive/Fatformer/logs/phase7/calibration/anchored_v2_reliability.png
+
+[✓] ĐÃ LƯU GÓI PHÁT HÀNH ZIP VÀO DRIVE: /content/drive/MyDrive/Fatformer/logs/phase7/task_7.15_unified_package_artifacts.zip
+
+[*] Tự động tải file zip về trình duyệt (nếu hỗ trợ)...
+
+
+[CELL 8 / stdout]
+[✓] Đã gửi lệnh tải về trình duyệt.

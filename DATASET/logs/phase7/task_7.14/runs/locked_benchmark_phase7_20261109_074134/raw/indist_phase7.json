@@ -1,0 +1,243 @@
+{
+  "report_schema": "v3",
+  "task": "7.14",
+  "checkpoint": {
+    "path": "/content/drive/MyDrive/Fatformer/checkpoint/phase7/anchored_v2_run1/fatformer_anchored_v2_best.pth",
+    "sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c"
+  },
+  "calibration": {
+    "source": "/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json",
+    "T": 1.6402,
+    "T_star": 0.9127
+  },
+  "indist": {
+    "n_total": 82003,
+    "macro_acc": 90.4603500698765,
+    "micro_acc": 93.4331670792532,
+    "real_acc": 90.67453543383895,
+    "fake_acc": 96.19240432226749,
+    "auc": 98.28087889408201,
+    "mean_gans": {
+      "group": "GANs",
+      "subset": "MEAN_GANS",
+      "num_samples": 62003,
+      "macro_acc": 94.72953765722212,
+      "real_acc": 91.16870855909747,
+      "fake_acc": 98.29036675534675,
+      "auc": 98.9032153031334,
+      "ap": 98.8800826073944,
+      "elapsed_sec": 696.63
+    },
+    "mean_diffusion": {
+      "group": "Diffusion",
+      "subset": "MEAN_DIFFUSION",
+      "num_samples": 20000,
+      "macro_acc": 87.045,
+      "real_acc": 83.48,
+      "fake_acc": 90.61000000000001,
+      "auc": 95.02837,
+      "ap": 96.09905971376843,
+      "elapsed_sec": 225.63
+    },
+    "subsets": [
+      {
+        "group": "GANs",
+        "subset": "progan",
+        "num_samples": 8000,
+        "macro_acc": 95.5625,
+        "real_acc": 91.125,
+        "fake_acc": 100.0,
+        "auc": 99.9556625,
+        "ap": 99.94215981098542,
+        "elapsed_sec": 90.94
+      },
+      {
+        "group": "GANs",
+        "subset": "stylegan",
+        "num_samples": 11982,
+        "macro_acc": 97.2124853947588,
+        "real_acc": 94.89233850776164,
+        "fake_acc": 99.53263228175598,
+        "auc": 99.77808475357001,
+        "ap": 99.75173188188289,
+        "elapsed_sec": 133.98
+      },
+      {
+        "group": "GANs",
+        "subset": "stylegan2",
+        "num_samples": 15976,
+        "macro_acc": 95.72483725588381,
+        "real_acc": 95.99399098647972,
+        "fake_acc": 95.45568352528792,
+        "auc": 98.76675303390739,
+        "ap": 98.85498099493402,
+        "elapsed_sec": 178.94
+      },
+      {
+        "group": "GANs",
+        "subset": "biggan",
+        "num_samples": 4000,
+        "macro_acc": 97.0,
+        "real_acc": 94.39999999999999,
+        "fake_acc": 99.6,
+        "auc": 99.5612,
+        "ap": 99.50920314483926,
+        "elapsed_sec": 45.04
+      },
+      {
+        "group": "GANs",
+        "subset": "cyclegan",
+        "num_samples": 2642,
+        "macro_acc": 96.32853898561696,
+        "real_acc": 92.65707797123392,
+        "fake_acc": 100.0,
+        "auc": 99.1913657043015,
+        "ap": 99.07192327674102,
+        "elapsed_sec": 29.85
+      },
+      {
+        "group": "GANs",
+        "subset": "stargan",
+        "num_samples": 3998,
+        "macro_acc": 90.24512256128064,
+        "real_acc": 80.49024512256128,
+        "fake_acc": 100.0,
+        "auc": 99.75300306481405,
+        "ap": 99.7445532134842,
+        "elapsed_sec": 44.9
+      },
+      {
+        "group": "GANs",
+        "subset": "gaugan",
+        "num_samples": 10000,
+        "macro_acc": 99.02000000000001,
+        "real_acc": 98.04,
+        "fake_acc": 100.0,
+        "auc": 99.894464,
+        "ap": 99.80464391491307,
+        "elapsed_sec": 112.35
+      },
+      {
+        "group": "GANs",
+        "subset": "deepfake",
+        "num_samples": 5405,
+        "macro_acc": 86.74281706023672,
+        "real_acc": 81.75101588474327,
+        "fake_acc": 91.73461823573017,
+        "auc": 94.32518936847418,
+        "ap": 94.36146462137539,
+        "elapsed_sec": 60.63
+      },
+      {
+        "group": "Diffusion",
+        "subset": "guided",
+        "num_samples": 2000,
+        "macro_acc": 73.3,
+        "real_acc": 94.3,
+        "fake_acc": 52.300000000000004,
+        "auc": 82.9286,
+        "ap": 85.0407509917243,
+        "elapsed_sec": 22.68
+      },
+      {
+        "group": "Diffusion",
+        "subset": "ldm_200",
+        "num_samples": 2000,
+        "macro_acc": 88.6,
+        "real_acc": 78.3,
+        "fake_acc": 98.9,
+        "auc": 99.0402,
+        "ap": 99.26462222278516,
+        "elapsed_sec": 22.48
+      },
+      {
+        "group": "Diffusion",
+        "subset": "ldm_200_cfg",
+        "num_samples": 2000,
+        "macro_acc": 87.25,
+        "real_acc": 78.3,
+        "fake_acc": 96.2,
+        "auc": 97.1156,
+        "ap": 97.80972331454085,
+        "elapsed_sec": 22.59
+      },
+      {
+        "group": "Diffusion",
+        "subset": "ldm_100",
+        "num_samples": 2000,
+        "macro_acc": 88.6,
+        "real_acc": 78.3,
+        "fake_acc": 98.9,
+        "auc": 98.92229999999999,
+        "ap": 99.18319558815047,
+        "elapsed_sec": 22.57
+      },
+      {
+        "group": "Diffusion",
+        "subset": "glide_50_27",
+        "num_samples": 2000,
+        "macro_acc": 82.65,
+        "real_acc": 78.3,
+        "fake_acc": 87.0,
+        "auc": 90.9693,
+        "ap": 93.48366647339797,
+        "elapsed_sec": 22.52
+      },
+      {
+        "group": "Diffusion",
+        "subset": "glide_100_10",
+        "num_samples": 2000,
+        "macro_acc": 82.6,
+        "real_acc": 78.3,
+        "fake_acc": 86.9,
+        "auc": 90.89120000000001,
+        "ap": 93.4624371849393,
+        "elapsed_sec": 22.55
+      },
+      {
+        "group": "Diffusion",
+        "subset": "glide_100_27",
+        "num_samples": 2000,
+        "macro_acc": 83.1,
+        "real_acc": 78.3,
+        "fake_acc": 87.9,
+        "auc": 92.15820000000001,
+        "ap": 94.21486933610217,
+        "elapsed_sec": 22.53
+      },
+      {
+        "group": "Diffusion",
+        "subset": "dalle",
+        "num_samples": 2000,
+        "macro_acc": 88.5,
+        "real_acc": 78.3,
+        "fake_acc": 98.7,
+        "auc": 98.5003,
+        "ap": 98.77808536963204,
+        "elapsed_sec": 22.54
+      },
+      {
+        "group": "Diffusion",
+        "subset": "pndm",
+        "num_samples": 2000,
+        "macro_acc": 97.95,
+        "real_acc": 96.2,
+        "fake_acc": 99.7,
+        "auc": 99.9067,
+        "ap": 99.90761797493151,
+        "elapsed_sec": 22.58
+      },
+      {
+        "group": "Diffusion",
+        "subset": "vqdiffusion",
+        "num_samples": 2000,
+        "macro_acc": 97.9,
+        "real_acc": 96.2,
+        "fake_acc": 99.6,
+        "auc": 99.8513,
+        "ap": 99.84562868148055,
+        "elapsed_sec": 22.59
+      }
+    ]
+  }
+}

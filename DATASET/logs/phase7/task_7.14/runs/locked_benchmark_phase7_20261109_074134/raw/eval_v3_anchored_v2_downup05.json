@@ -1,0 +1,199 @@
+{
+  "report_schema": "v3",
+  "evidence_level": "measured",
+  "gate_eligible": true,
+  "git_commit": "bb43fd90dc65df67707de2eee0c41b5a63eec335",
+  "git_dirty": false,
+  "timestamp_utc": "2026-11-09T08:11:33.191752+00:00",
+  "degrade_order": "post_resize",
+  "dataset": {
+    "name": "communityforensics_eval",
+    "n": 1600,
+    "condition": "downup05"
+  },
+  "partition": {
+    "split": "evaluation",
+    "evaluation_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+    "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+    "calibration_sha256": "4ba4cf620b5b85c2534591be9391a70853845d4c0defedabee8c3aac59be8854",
+    "n": 1600
+  },
+  "predictions": {
+    "file": "logits_anchored_v2_downup05.npz",
+    "sha256": "3dbd7146535baadbc74660996281984a3264b4ce4a3b94b562365bcc516b5cc2"
+  },
+  "checkpoints": [
+    {
+      "path": "/content/drive/MyDrive/Fatformer/checkpoint/phase7/anchored_v2_run1/fatformer_anchored_v2_best.pth",
+      "load_report": {
+        "missing_keys": [],
+        "unexpected_keys": [],
+        "shape_mismatch": [],
+        "dropped_alias_keys": [],
+        "dropped_top_level_keys": [],
+        "missing": 0,
+        "unexpected": 0,
+        "adapter_blocks": [
+          7,
+          15,
+          23
+        ],
+        "adapter_index": {
+          "block_7": [
+            "clip_model.visual.transformer.resblocks.7.",
+            "image_encoder.transformer.resblocks.7."
+          ],
+          "block_15": [
+            "clip_model.visual.transformer.resblocks.15.",
+            "image_encoder.transformer.resblocks.15."
+          ],
+          "block_23": [
+            "clip_model.visual.transformer.resblocks.23.",
+            "image_encoder.transformer.resblocks.23."
+          ]
+        },
+        "layout": {
+          "n": 3,
+          "indices": [
+            7,
+            15,
+            23
+          ],
+          "dropped": [],
+          "missing": [],
+          "partial": false,
+          "expressible": true
+        },
+        "n_keys": 1200,
+        "path": "/content/drive/MyDrive/Fatformer/checkpoint/phase7/anchored_v2_run1/fatformer_anchored_v2_best.pth",
+        "sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c"
+      },
+      "status": "ok"
+    }
+  ],
+  "calibration": {
+    "source": "calibration.json (/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json)",
+    "artifact": "/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json",
+    "evidence_level": "measured",
+    "schema": "calibration/v1",
+    "T": 1.6402,
+    "T_star": 0.9127,
+    "fpr_target": 0.05
+  },
+  "metrics": {
+    "macro_acc": 77.38,
+    "real_acc": 88.5,
+    "fake_acc": 66.25,
+    "fake_at_real90": 64.75,
+    "auc": 87.0,
+    "ap": 86.89,
+    "tpr_at_fpr": {
+      "0.01": 27.75,
+      "0.05": 52.12,
+      "0.10": 64.75
+    },
+    "ece": 11.47,
+    "nll": 0.5573,
+    "total_samples": 1600,
+    "ci95": {
+      "auc": [
+        85.35,
+        88.76
+      ],
+      "ap": [
+        84.53,
+        89.34
+      ],
+      "tpr_at_fpr_0.05": [
+        44.84,
+        58.54
+      ],
+      "fake_at_real90": [
+        58.68,
+        68.89
+      ]
+    }
+  },
+  "per_subset": {
+    "1_commercial": {
+      "macro_acc": 81.65,
+      "real_acc": 88.61,
+      "fake_acc": 74.68,
+      "fake_at_real90": 73.84,
+      "auc": 88.4,
+      "ap": 88.21,
+      "tpr_at_fpr": {
+        "0.01": 26.16,
+        "0.05": 54.01,
+        "0.10": 73.71
+      },
+      "ece": 13.71,
+      "nll": 0.5686,
+      "total_samples": 474
+    },
+    "2_latent_diffusion": {
+      "macro_acc": 74.19,
+      "real_acc": 88.84,
+      "fake_acc": 58.92,
+      "fake_at_real90": 57.26,
+      "auc": 86.46,
+      "ap": 84.58,
+      "tpr_at_fpr": {
+        "0.01": 20.33,
+        "0.05": 47.3,
+        "0.10": 57.26
+      },
+      "ece": 11.34,
+      "nll": 0.5399,
+      "total_samples": 492
+    },
+    "3_pixel_diffusion": {
+      "macro_acc": 75.79,
+      "real_acc": 88.75,
+      "fake_acc": 62.66,
+      "fake_at_real90": 62.03,
+      "auc": 84.69,
+      "ap": 84.92,
+      "tpr_at_fpr": {
+        "0.01": 17.72,
+        "0.05": 52.53,
+        "0.10": 62.03
+      },
+      "ece": 12.94,
+      "nll": 0.5898,
+      "total_samples": 318
+    },
+    "4_modern_gans": {
+      "macro_acc": 94.41,
+      "real_acc": 98.72,
+      "fake_acc": 90.36,
+      "fake_at_real90": 92.77,
+      "auc": 97.97,
+      "ap": 98.42,
+      "tpr_at_fpr": {
+        "0.01": 89.16,
+        "0.05": 91.57,
+        "0.10": 92.77
+      },
+      "ece": 7.66,
+      "nll": 0.2628,
+      "total_samples": 161
+    },
+    "5_other_autoregressive": {
+      "macro_acc": 60.0,
+      "real_acc": 75.68,
+      "fake_acc": 45.68,
+      "fake_at_real90": 30.86,
+      "auc": 71.45,
+      "ap": 72.27,
+      "tpr_at_fpr": {
+        "0.01": 8.64,
+        "0.05": 12.35,
+        "0.10": 30.86
+      },
+      "ece": 20.28,
+      "nll": 0.8173,
+      "total_samples": 155
+    }
+  }
+}

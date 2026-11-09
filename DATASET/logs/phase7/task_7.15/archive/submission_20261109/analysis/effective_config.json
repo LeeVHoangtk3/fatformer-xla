@@ -1,0 +1,20 @@
+{
+  "schema": "task715_effective_config/v1",
+  "derived_after_run": true,
+  "source_git_commit": "bb43fd90dc65df67707de2eee0c41b5a63eec335",
+  "runtime_dirty": true,
+  "training_checkpoint_sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c",
+  "package_sha256": "8ddcb401f1e160776c653a3d073d2512cbafa1e08e5d39510201be83ab097dd8",
+  "extraction_precision": "fp32",
+  "extraction_batch_size": 32,
+  "calibration_scoring_device": "cpu",
+  "calibration_T": 1.4675993919372559,
+  "calibration_threshold": 0.9293636083602905,
+  "gpu": "NVIDIA L4",
+  "gpu_vram_gib": 22.0343017578125,
+  "latency_precision": "FP16",
+  "preprocessing": "Resize shorter side 224 bicubic -> CenterCrop224 -> CLIP Normalize",
+  "router_enabled": false,
+  "calibration_optimization_converged": false,
+  "final_acceptance": false
+}

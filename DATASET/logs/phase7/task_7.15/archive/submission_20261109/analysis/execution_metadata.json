@@ -1,0 +1,62 @@
+{
+  "notebook": "notebooks/task/task_7.15/task_7.15_unified_packaging_colab.ipynb",
+  "notebook_sha256": "f7ce2159b014aecacf6aa90926fde791dc09db1db62969087978039232053660",
+  "cells": [
+    {
+      "index": 1,
+      "execution_count": 1,
+      "first_line": "# CELL 1: KẾT NỐI GOOGLE DRIVE & ĐỒNG BỘ MÃ NGUỒN FATFORMER-XLA (ORIGIN/HOANG)",
+      "source_sha256": "2e0926ee454be69c9b4009fe2b5e1e2aa233788cc442215194753fcf00a7bd1d",
+      "error_outputs": 0
+    },
+    {
+      "index": 2,
+      "execution_count": 2,
+      "first_line": "# CELL 2: CÀI ĐẶT THƯ VIỆN & KIỂM TRA PHẦN CỨNG GPU",
+      "source_sha256": "b4070efab7a221e6f03a264a8ebb1f46093c4613b4b2f57a13ab308e2723cd3b",
+      "error_outputs": 0
+    },
+    {
+      "index": 3,
+      "execution_count": 3,
+      "first_line": "# CELL 3: ĐỊNH VỊ CHECKPOINT NGUỒN V2, PRETRAINED CLIP & TẬP DỮ LIỆU HIỆU CHUẨN",
+      "source_sha256": "47e222bfa6b00427f5d0a31d66c6ec42fddbcf45e2c89b457891d1a901e40eae",
+      "error_outputs": 0
+    },
+    {
+      "index": 4,
+      "execution_count": 8,
+      "first_line": "# CELL 4 THAY THE: chay sau cell 1-3 trong phien Colab hien tai.",
+      "source_sha256": "fd8f57087bab67b1f2766c517944783be7a99959a884e93ae78298291d769449",
+      "error_outputs": 0
+    },
+    {
+      "index": 5,
+      "execution_count": 9,
+      "first_line": "# CELL 5 THAY THE: chay sau cell_4_extract_fixed.py trong CUNG phien Colab.",
+      "source_sha256": "84ed0b4a31d50f878894940b41f804bd2952e1f6dde5f0911603fc71e0033a5c",
+      "error_outputs": 0
+    },
+    {
+      "index": 6,
+      "execution_count": 10,
+      "first_line": "# CELL 6: ĐÓNG GÓI CHECKPOINT HỢP NHẤT TOÀN VẸN (TASK 7.15)",
+      "source_sha256": "b134ec599a6579261e53752872579fbe28c936bbc61e548989db9158297de7dc",
+      "error_outputs": 0
+    },
+    {
+      "index": 7,
+      "execution_count": 11,
+      "first_line": "# CELL 7: ĐO ĐỘ TRỄ PHÂN TẦNG (B=1, 8, 32) & NGHIỆM THU CỔNG CHẶN G7.3 TRÊN GPU",
+      "source_sha256": "71d2a74df825e9da9f4a66ddcd61166089ae97790ea4455c2e650980ab5aa165",
+      "error_outputs": 0
+    },
+    {
+      "index": 8,
+      "execution_count": 12,
+      "first_line": "# CELL 8: KIỂM THỬ SUY LUẬN ĐỘC LẬP (STANDALONE) & ĐỒNG BỘ ARTIFACTS SANG GOOGLE DRIVE",
+      "source_sha256": "24d2a96e84a350d28bddcb9ecb8f9769ec1a66d7dc1ab8678e2d525f8ba5c59a",
+      "error_outputs": 0
+    }
+  ]
+}

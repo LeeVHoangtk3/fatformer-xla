@@ -229,7 +229,7 @@ def main():
     parser.add_argument("--checkpoint", type=str, required=True, help="Đường dẫn file .pth")
     parser.add_argument("--data_dir", type=str, default="DATASET/val_crossdomain", help="Thư mục dữ liệu validation")
     parser.add_argument("--split_file", type=str, default=None, help="File split phân vùng (NPZ/JSON)")
-    parser.add_argument("--output_npz", type=str, default="DATASET/logs/phase7/logits_anchored_v2_clean_calib.npz", help="Đường dẫn lưu tệp NPZ")
+    parser.add_argument("--output_npz", type=str, default="DATASET/logs/phase7/task_7.15/work/logits_anchored_v2_clean_calib.npz", help="Đường dẫn lưu NPZ mới; work chưa phải artifact đã nghiệm thu")
     parser.add_argument("--clip_path", type=str, default="DATASET/pretrained/ViT-L-14.pt")
     parser.add_argument("--device", type=str, default="auto")
     parser.add_argument("--batch_size", type=int, default=32)
