@@ -236,6 +236,14 @@ datasets/*
 !datasets/logs/
 progan_val.zip
 *.zip
+
+# Old ZIP delivery evidence is local-only; the current Phase 7 pilot uses Git hoang.
+DATASET/logs/phase7/improvement_round1/preparation/*.zip.sha256
+DATASET/logs/phase7/improvement_round1/preparation/bundle_manifest.json
+DATASET/logs/phase7/improvement_round1/preparation/validation/exported_bundle*
+DATASET/logs/phase7/improvement_round1/preparation/validation/pilot*.xml
+DATASET/logs/phase7/improvement_round1/preparation/validation/training_tests.xml
+DATASET/logs/phase7/improvement_round1/preparation/validation/summary.json
 scratch/
 wait/
 artifacts/

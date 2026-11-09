@@ -67,6 +67,7 @@ from src.training.runtime_state import capture_rng, restore_rng, training_contex
 from src.training.selection import OperatingPoint, build_q30_cache, checkpoint_decision, write_group_log
 from src.datasets.transforms import PairedCleanDegradedAugmentation, DegradationPipelineV2
 from src.datasets.samplers import BalancedBatchSampler, BalancedCrossDomainSampler
+from src.datasets.preprocessing import preprocessing_parts, PROFILES
 from src.models.lora_adapter import ViTLoRAAdapter
 import torchvision.transforms as transforms
 
@@ -128,10 +129,12 @@ class CrossDomainDataset(Dataset):
         crop_resolution: int = 224,
         degradation_config: Optional[Union[str, dict]] = None,
         allow_dummy: bool = False,
+        preprocessing: str = "legacy_imagenet",
     ):
         self.records = records
         self.paired = paired
         self.allow_dummy = allow_dummy
+        self.preprocessing = preprocessing
         if paired:
             if degradation_config is not None and degradation_config is not False:
                 resolution_override = {} if img_resolution is None else {"img_resolution": img_resolution}
@@ -140,11 +143,13 @@ class CrossDomainDataset(Dataset):
                     **resolution_override,
                     crop_resolution=crop_resolution,
                     return_pair=True,
+                    preprocessing=preprocessing,
                 )
             else:
                 self.paired_aug = PairedCleanDegradedAugmentation(
                     img_resolution=256 if img_resolution is None else img_resolution,
                     crop_resolution=crop_resolution,
+                    preprocessing=preprocessing,
                 )
         else:
             self.paired_aug = None
@@ -154,14 +159,9 @@ class CrossDomainDataset(Dataset):
                                else 256 if img_resolution is None else img_resolution)
         self.crop_resolution = crop_resolution
 
-        _mean = [0.485, 0.456, 0.406]
-        _std = [0.229, 0.224, 0.225]
-        self.eval_transform = transforms.Compose([
-            transforms.Resize((self.img_resolution, self.img_resolution)),
-            transforms.CenterCrop(crop_resolution),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=_mean, std=_std),
-        ])
+        self.eval_geometry, self.tensor_normalize, self.normalization_mean, self.normalization_std = preprocessing_parts(
+            preprocessing, self.img_resolution, crop_resolution)
+        self.eval_transform = transforms.Compose([self.eval_geometry, self.tensor_normalize])
 
     def __len__(self) -> int:
         return len(self.records)
@@ -430,6 +430,7 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
         crop_resolution=crop_res,
         degradation_config=deg_cfg,
         allow_dummy=getattr(args, "dry_run", False),
+        preprocessing=getattr(args, "preprocessing", "legacy_imagenet"),
     )
     val_ds = CrossDomainDataset(
         val_records,
@@ -437,6 +438,7 @@ def build_crossdomain_dataloaders(args) -> Tuple[DataLoader, DataLoader]:
         img_resolution=train_ds.img_resolution,
         crop_resolution=crop_res,
         allow_dummy=getattr(args, "dry_run", False),
+        preprocessing=getattr(args, "validation_preprocessing", None) or getattr(args, "preprocessing", "legacy_imagenet"),
     )
 
     has_real = any(r.get("label", 0) == 0 for r in train_records)
@@ -554,7 +556,31 @@ class CrossDomainTrainer:
             #     self.teacher = self.teacher.half()
             #     print("[*] Da toi uu hoa mo hinh Teacher sang kieu nua do chinh xac FP16 (tiet kiem 50% VRAM).")
 
-    def train_epoch(self, epoch: int, max_steps: Optional[int] = None, advance_scheduler=True, clear_cache=True) -> Dict[str, float]:
+    def _apply_optimizer_update(self):
+        """Count actual optimizer calls, including GradScaler skips (step returns None)."""
+        if self.scaler is not None and getattr(self.optimizer, "_step_supports_amp_scaling", False):
+            raise RuntimeError("Update tracing requires a non-fused optimizer; fused AMP may skip inside optimizer.step")
+        applied = 0
+        def after_step(optimizer, args, kwargs):
+            nonlocal applied
+            applied += 1
+        handle = self.optimizer.register_step_post_hook(after_step)
+        before = float(self.scaler.get_scale()) if self.scaler is not None else None
+        try:
+            if self.scaler is not None:
+                self.scaler.step(self.optimizer)
+                self.scaler.update()
+            else:
+                self.optimizer.step()
+        finally:
+            handle.remove()
+        if applied not in (0, 1) or (self.scaler is None and applied != 1):
+            raise RuntimeError(f"Unexpected optimizer call count: {applied}")
+        after = float(self.scaler.get_scale()) if self.scaler is not None else None
+        return applied, before, after
+
+    def train_epoch(self, epoch: int, max_steps: Optional[int] = None, advance_scheduler=True, clear_cache=True,
+                    trace_phase="training") -> Dict[str, float]:
         self.student.train()
         if self.teacher is not None:
             self.teacher.eval()
@@ -576,6 +602,8 @@ class CrossDomainTrainer:
         self.epoch_complete = False
         diagnostics = {}
         grad_norms = []
+        updates_attempted = updates_applied = nonfinite_grad_events = 0
+        scale_start = float(self.scaler.get_scale()) if self.scaler is not None else None
 
         self.optimizer.zero_grad()
 
@@ -635,32 +663,41 @@ class CrossDomainTrainer:
                 if not torch.isfinite(loss):
                     raise FloatingPointError(f"Non-finite loss at epoch {epoch}, step {step + 1}")
 
-            # Lan truyen nguoc qua GradScaler (neu la CUDA AMP) hoac truc tiep (neu khong bat AMP/CPU)
+            # Accumulation boundaries share one trace, whether AMP applies or skips.
             if self.scaler is not None:
                 self.scaler.scale(loss).backward()
-                if (step + 1) % self.grad_accum_steps == 0 or (step + 1) == num_batches:
-                    self.scaler.unscale_(self.optimizer)
-                    norm = nn.utils.clip_grad_norm_(self.student.parameters(),
-                                                     self.grad_clip_norm if self.grad_clip_norm > 0 else float("inf"))
-                    if math.isfinite(float(norm)):
-                        grad_norms.append(float(norm))
-                    if self.use_v2 and not math.isfinite(float(norm)):
-                        if self.scaler.get_scale() < 1.0:
-                            raise FloatingPointError(f"Non-finite gradient at epoch {epoch}, step {step + 1}; scale reached minimum {self.scaler.get_scale()}")
-                    self.scaler.step(self.optimizer)
-                    self.scaler.update()
-                    self.optimizer.zero_grad()
             else:
                 loss.backward()
-                if (step + 1) % self.grad_accum_steps == 0 or (step + 1) == num_batches:
-                    norm = nn.utils.clip_grad_norm_(self.student.parameters(),
-                                                     self.grad_clip_norm if self.grad_clip_norm > 0 else float("inf"))
-                    if math.isfinite(float(norm)):
-                        grad_norms.append(float(norm))
-                    if self.use_v2 and not math.isfinite(float(norm)):
-                        raise FloatingPointError(f"Non-finite gradient at epoch {epoch}, step {step + 1}")
-                    self.optimizer.step()
-                    self.optimizer.zero_grad()
+            if (step + 1) % self.grad_accum_steps == 0 or (step + 1) == num_batches:
+                if self.scaler is not None:
+                    self.scaler.unscale_(self.optimizer)
+                norm = float(nn.utils.clip_grad_norm_(self.student.parameters(),
+                                 self.grad_clip_norm if self.grad_clip_norm > 0 else float("inf")))
+                finite = math.isfinite(norm)
+                if finite:
+                    grad_norms.append(norm)
+                else:
+                    nonfinite_grad_events += 1
+                unrecoverable = self.use_v2 and not finite and (
+                    self.scaler is None or self.scaler.get_scale() < 1.0)
+                applied, before, after = (0, None, None) if unrecoverable else self._apply_optimizer_update()
+                # A finite-element gradient can still overflow its aggregate norm.
+                # If scaler did not skip it, do not publish a supposedly healthy epoch.
+                unrecoverable = unrecoverable or bool(self.use_v2 and applied and not finite)
+                updates_attempted += 1
+                updates_applied += applied
+                event = {"schema": "optimizer-update/v1", "phase": trace_phase,
+                         "epoch": epoch, "mini_batch": step + 1, "global_step": self.global_step + 1,
+                         "attempt": updates_attempted, "applied": bool(applied),
+                         "amp_skipped": bool(self.scaler is not None and not applied and not unrecoverable),
+                         "unrecoverable": unrecoverable, "grad_norm": norm if finite else None,
+                         "grad_norm_finite": finite, "amp_scale_before": before,
+                         "amp_scale_after": after, "device": str(self.device)}
+                with open(Path(self.save_dir) / "optimizer_updates.jsonl", "a", encoding="utf-8") as stream:
+                    stream.write(json.dumps(event, allow_nan=False) + "\n")
+                self.optimizer.zero_grad()
+                if unrecoverable:
+                    raise FloatingPointError(f"Non-finite gradient at epoch {epoch}, step {step + 1}; see optimizer_updates.jsonl")
 
             total_loss += loss_dict["loss_total"].item()
             self.global_step += 1
@@ -699,7 +736,17 @@ class CrossDomainTrainer:
             metrics["guard"] = metrics["loss_guard"]
             metrics["guard_active_ratio"] = guard_active_count / max(num_batches, 1)
             metrics.update({k: v / max(num_batches, 1) for k, v in diagnostics.items()})
-            metrics["grad_norm"] = (sum(grad_norms) / max(len(grad_norms), 1)) if grad_norms else 0.0
+            # Never turn an all-overflow epoch into a reassuring zero grad norm.
+            metrics["grad_norm"] = (sum(grad_norms) / len(grad_norms)) if grad_norms else float("nan")
+        metrics.update(optimizer_steps_expected=math.ceil(num_batches / self.grad_accum_steps),
+                       optimizer_steps_attempted=updates_attempted, optimizer_steps_applied=updates_applied,
+                       optimizer_steps_skipped=updates_attempted - updates_applied,
+                       nonfinite_grad_events=nonfinite_grad_events, grad_norm_finite_count=len(grad_norms),
+                       amp_scale_start=scale_start,
+                       amp_scale_end=float(self.scaler.get_scale()) if self.scaler is not None else None)
+        self.last_optimization_metrics = dict(metrics)
+        if self.use_v2 and trace_phase != "warmup" and (updates_applied == 0 or not grad_norms):
+            raise FloatingPointError(f"Epoch {epoch} has no usable optimizer updates; see optimizer_updates.jsonl")
         metrics["train_steps"] = num_batches
         self.epoch_complete = full_epoch_requested
         return metrics
@@ -797,12 +844,12 @@ class CrossDomainTrainer:
                                             pin_memory=original.pin_memory, worker_init_fn=original.worker_init_fn,
                                             generator=original.generator, persistent_workers=True)
         if warmup:
-            self.train_epoch(0, max_steps=warmup, advance_scheduler=False, clear_cache=False)
+            self.train_epoch(0, max_steps=warmup, advance_scheduler=False, clear_cache=False, trace_phase="warmup")
         if self.device.type == "cuda":
             torch.cuda.synchronize(self.device)
             torch.cuda.reset_peak_memory_stats(self.device)
         start = time.perf_counter()
-        measured = self.train_epoch(0, max_steps=steps, advance_scheduler=False, clear_cache=False)
+        measured = self.train_epoch(0, max_steps=steps, advance_scheduler=False, clear_cache=False, trace_phase="benchmark")
         if self.device.type == "cuda":
             torch.cuda.synchronize(self.device)
         elapsed = time.perf_counter() - start
@@ -965,6 +1012,8 @@ class CrossDomainTrainer:
                 "n_eval_clean": (val_metrics or {}).get("n_eval_clean"),
                 "n_eval_q30": (val_metrics or {}).get("n_eval_q30"),
                 "q30_source": "in_memory_jpeg30_post_resize",
+                "preprocessing": self.run_context.get("preprocessing", "legacy_imagenet"),
+                "validation_preprocessing": self.run_context.get("validation_preprocessing"),
                 "best_worst_group": self.best_worst_group,
                 "best_effort_worst_group": self.best_effort_worst_group,
             }
@@ -1029,7 +1078,8 @@ class CrossDomainTrainer:
             names.append(Path(self.save_dir) / self.save_name)
         if metadata.get("is_best_effort"):
             names.append(Path(self.save_dir) / "best_effort.pth")
-        names += [Path(self.save_dir) / "val_groups.csv", Path(self.history_csv)]
+        names += [Path(self.save_dir) / "val_groups.csv", Path(self.history_csv),
+                  Path(self.save_dir) / "optimizer_updates.jsonl"]
         for folder in destinations:
             folder.mkdir(parents=True, exist_ok=True)
             for source in names:
@@ -1263,7 +1313,7 @@ def run_training_pipeline(args):
         trainable_params = [p for p in student.parameters() if p.requires_grad]
         optimizer_groups.append({"params": trainable_params, "lr": lr_new, "weight_decay": 1e-4})
 
-    optimizer = torch.optim.AdamW(optimizer_groups)
+    optimizer = torch.optim.AdamW(optimizer_groups, fused=False)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-6)
 
     trainer = CrossDomainTrainer(
@@ -1411,6 +1461,8 @@ def parse_arguments():
         "degradation_config": None,
         "img_resolution": None,
         "crop_resolution": 224,
+        "preprocessing": "legacy_imagenet",
+        "validation_preprocessing": None,
         "weight_feat": 0.0,
         "weight_guard": 0.0,
         "fake_index": 1,
@@ -1480,6 +1532,8 @@ def parse_arguments():
             defaults["num_workers"] = d_cfg.get("num_workers", defaults["num_workers"])
             defaults["val_split"] = d_cfg.get("val_split", defaults["val_split"])
             defaults["data_root"] = d_cfg.get("data_root", defaults["data_root"])
+            defaults["preprocessing"] = d_cfg.get("preprocessing", defaults["preprocessing"])
+            defaults["validation_preprocessing"] = d_cfg.get("validation_preprocessing", defaults["validation_preprocessing"])
             if "degradation_config" in d_cfg:
                 defaults["degradation_config"] = d_cfg["degradation_config"]
             if "img_resolution" in d_cfg:
@@ -1544,6 +1598,8 @@ def parse_arguments():
     parser.add_argument("--backup_dir", default=defaults["backup_dir"])
     parser.add_argument("--history_csv", default=defaults["history_csv"])
     parser.add_argument("--data_root", default=defaults["data_root"])
+    parser.add_argument("--preprocessing", choices=PROFILES, default=defaults["preprocessing"])
+    parser.add_argument("--validation_preprocessing", choices=PROFILES, default=defaults["validation_preprocessing"])
     parser.add_argument("--benchmark_steps", type=int, default=0)
     parser.add_argument("--benchmark_warmup", type=int, default=5)
     parser.add_argument("--output")

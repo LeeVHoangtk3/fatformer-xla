@@ -1,0 +1,13 @@
+{
+  "status": "passed_local_only",
+  "cases": 45,
+  "test_files": 5,
+  "xml_sha256": "c1adfad601e5775f9d3eb470fc53ebe4c20d364b5236b0773ffcc040032b34bc",
+  "delivery": "git branch hoang; exact commit captured at runtime",
+  "historical_files_preserved": 87,
+  "notebooks_preserved": 32,
+  "raw_files_preserved": 55,
+  "gpu_smoke": "not_run",
+  "training": "not_run",
+  "quality_improvement": "not_measured"
+}

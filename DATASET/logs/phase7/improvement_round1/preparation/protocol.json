@@ -1,0 +1,53 @@
+{
+  "schema": "phase7-improvement-protocol/v1",
+  "round": "improvement_round1",
+  "source_delivery": {
+    "method": "git",
+    "branch": "hoang",
+    "commit": "recorded at runtime in source_identity.json"
+  },
+  "hypothesis": "Training with deployed CLIP preprocessing improves held-out val_select worst-group recall relative to legacy training preprocessing.",
+  "stage": "two-arm engineering/validation pilot; not the four-arm Task 7.12 ablation",
+  "arms": {
+    "p0_legacy_full": "legacy_imagenet",
+    "p1_clip_full": "clip"
+  },
+  "validation_preprocessing": "clip",
+  "seed": 42,
+  "epochs_each": 5,
+  "default_batch_size": 16,
+  "default_accumulation": 2,
+  "effective_batch_size": 32,
+  "frozen_loss_weights": {
+    "ce_clean": 0.3,
+    "ce_degraded": 0.3,
+    "kd": 0.7,
+    "consistency": 0.2,
+    "feature": 0.3,
+    "guard": 0.5
+  },
+  "selection": {
+    "split": "val_select",
+    "metric": "worst_group",
+    "clean_real_min": 0.9,
+    "tie_break": "p0_legacy_full",
+    "frozen_operating_point": "DATASET/logs/phase7/calibration/baseline.json"
+  },
+  "smoke": {
+    "steps": 100,
+    "warmup": 5,
+    "actual_backward": true,
+    "max_skip_fraction": 0.05,
+    "applied_nonfinite_gradient_allowed": false,
+    "all_skipped_allowed": false,
+    "policy_note": "Engineering thresholds declared before the new run; these do not modify G7.2."
+  },
+  "prohibitions": [
+    "No CFE evaluation during pilot or model selection.",
+    "No reusing old A4 as the control.",
+    "No changed data/loss/LR/epoch budget between arms.",
+    "No overwrite of historical notebooks/results.",
+    "No selecting a successful training seed from CFE test scores."
+  ],
+  "future": "Freeze the validation selection; then calibrate and evaluate it. An unseen test and multiple seeds are needed for stronger generalization claims."
+}

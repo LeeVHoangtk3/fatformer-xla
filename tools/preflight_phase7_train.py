@@ -1,6 +1,7 @@
 """Fail-closed Phase 7.11 preflight. Audit mode never declares training ready."""
 import argparse
 import json
+import math
 import os
 import re
 import subprocess
@@ -104,6 +105,9 @@ class Preflight:
 
     def check_transforms(self):
         ds = self.config["dataset"]
+        from src.datasets.preprocessing import PROFILES
+        if ds.get("preprocessing", "legacy_imagenet") not in PROFILES or ds.get("validation_preprocessing") not in (*PROFILES, None):
+            raise ValueError("Unknown training/validation preprocessing profile")
         cfg = yaml.safe_load(self.path(ds["degradation_config"]).read_text(encoding="utf-8"))
         if cfg.get("clean_prob") != .60 or ds.get("val_split") != "val_select":
             raise ValueError("Require clean_prob=.60 and val_split=val_select")
@@ -165,12 +169,14 @@ class Preflight:
         return result.stdout.strip()[-1000:]
 
 
-def check_gpu_environment():
+def check_gpu_environment(min_free_gib=14.0):
+    if not math.isfinite(min_free_gib) or min_free_gib < 0:
+        raise ValueError("GPU minimum free memory must be nonnegative")
     if not torch.cuda.is_available():
         return False, "CUDA unavailable; GPU training gate is NOT satisfied"
     free, total = torch.cuda.mem_get_info()
-    if free < 14 * 1024 ** 3:
-        return False, f"Free VRAM {free / 1024**3:.2f} GiB < 14 GiB (total {total / 1024**3:.2f})"
+    if free < min_free_gib * 1024 ** 3:
+        return False, f"Free VRAM {free / 1024**3:.2f} GiB < {min_free_gib:g} GiB (total {total / 1024**3:.2f})"
     return True, f"{torch.cuda.get_device_name()}: {free / 1024**3:.2f} GiB free"
 
 
@@ -181,6 +187,7 @@ def run_checks(preflight, mode="train", skip_tests=False, skip_model_load=False)
         ("degradation_and_calibration", preflight.check_transforms),
         ("loss_tests", lambda: preflight.check_tests(["tests/test_loss_v2.py", "tests/test_smoke_loss_v2_integration.py"])),
         ("selection_tests", lambda: preflight.check_tests(["tests/test_selection_metric.py", "tests/test_smoke_selection_v2_integration.py", "tests/test_selection_regressions.py"])),
+        ("update_evidence_tests", lambda: preflight.check_tests(["tests/test_training_update_evidence.py", "tests/test_phase7_training_pilot.py", "tests/test_phase7_git_source.py"])),
         ("baseline_canonical", preflight.check_canonical),
         ("split_path_and_hash_isolation", preflight.check_splits),
     ]
@@ -194,11 +201,13 @@ def run_checks(preflight, mode="train", skip_tests=False, skip_model_load=False)
         except Exception as exc:
             results[name] = {"status": "FAIL", "message": str(exc)}
     try:
-        passed, message = check_gpu_environment()
+        minimum = preflight.config.get("training", {}).get("preflight_min_free_gib", 14.0)
+        passed, message = check_gpu_environment(float(minimum))
     except Exception as exc:
         passed, message = False, f"GPU probe failed: {exc}"
     status = "PASS" if passed else "SKIP" if mode == "audit" and not torch.cuda.is_available() else "FAIL"
-    results["gpu_14_gib_free"] = {"status": status, "message": message}
+    key = "gpu_14_gib_free" if preflight.config.get("training", {}).get("preflight_min_free_gib", 14.0) == 14.0 else "gpu_memory_availability"
+    results[key] = {"status": status, "message": message}
     return results
 
 

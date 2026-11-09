@@ -118,8 +118,9 @@ def _source(dataset, index):
 def build_q30_cache(dataset, max_samples=300, seed=42):
     """Sample both labels, then encode JPEG30 AFTER the clean resize/crop.
 
-    For generic tensor datasets, inputs must use ImageNet normalization, as the
-    project's eval transforms do. Subset indices are resolved before using records.
+    CrossDomainDataset supplies its explicit geometry and normalization profile.
+    Generic tensor datasets default to ImageNet normalization unless they expose
+    normalization_mean/std. Subset indices are resolved before using records.
     Missing/corrupt images and missing labels raise; no synthetic-Q30 fallback.
     """
     if not 2 <= max_samples <= 300:
@@ -144,16 +145,18 @@ def build_q30_cache(dataset, max_samples=300, seed=42):
     for indices in groups.values():
         rng.shuffle(indices)
         selected.extend(indices[:max_samples // 2])
-    mean = torch.tensor([.485, .456, .406]).view(3, 1, 1)
-    std = torch.tensor([.229, .224, .225]).view(3, 1, 1)
-    normalize = T.Compose([T.ToTensor(), T.Normalize(mean.flatten().tolist(), std.flatten().tolist())])
     cached = []
     for index in selected:
         source, record = _source(dataset, index)
+        mean = torch.tensor(getattr(source, "normalization_mean", [.485, .456, .406])).view(3, 1, 1)
+        std = torch.tensor(getattr(source, "normalization_std", [.229, .224, .225])).view(3, 1, 1)
+        normalize = T.Compose([T.ToTensor(), T.Normalize(mean.flatten().tolist(), std.flatten().tolist())])
         path = record.get("file_path", record.get("path", "")) if record is not None else ""
         if record is not None and not getattr(source, "allow_dummy", False):
             # CrossDomainDataset's geometry is deterministic Resize -> CenterCrop.
-            if hasattr(source, "img_resolution"):
+            if hasattr(source, "eval_geometry"):
+                geometry = source.eval_geometry
+            elif hasattr(source, "img_resolution"):
                 geometry = T.Compose([T.Resize((source.img_resolution, source.img_resolution)),
                                       T.CenterCrop(source.crop_resolution)])
             else:

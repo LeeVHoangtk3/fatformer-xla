@@ -1,0 +1,11 @@
+{
+  "status": "prepared_not_gpu_run",
+  "source_delivery": "git",
+  "branch": "hoang",
+  "commit": "record actual HEAD at runtime in source_identity.json",
+  "protected_notebooks": 32,
+  "all_notebooks_unchanged": true,
+  "gpu_smoke": "not_run",
+  "training": "not_run",
+  "quality_improvement": "not_measured"
+}

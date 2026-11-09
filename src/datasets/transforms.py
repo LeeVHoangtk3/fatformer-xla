@@ -5,6 +5,7 @@ from typing import Optional, Dict, Any, List, Tuple, Union, Set
 from PIL import Image, ImageFilter
 import torchvision.transforms as transforms
 import torchvision.transforms.functional as TF
+from .preprocessing import preprocessing_parts
 try:
     import yaml
 except ImportError:
@@ -320,6 +321,7 @@ class PairedCleanDegradedAugmentation:
         down_ratio: float = 160.0 / 224.0,
         jpeg_prob: float = 0.50,
         blur_prob: float = 0.30,
+        preprocessing: str = "legacy_imagenet",
     ):
         """
         Args:
@@ -341,26 +343,10 @@ class PairedCleanDegradedAugmentation:
         self.jpeg_prob        = jpeg_prob
         self.blur_prob        = blur_prob
 
-        _mean = [0.485, 0.456, 0.406]
-        _std  = [0.229, 0.224, 0.225]
-
-        # Pipeline ảnh sạch: chỉ resize + center-crop + normalize
-        self.clean_transform = transforms.Compose([
-            transforms.Resize((img_resolution, img_resolution)),
-            transforms.CenterCrop(crop_resolution),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=_mean, std=_std),
-        ])
-
-        # Pipeline ảnh suy biến: resize + center-crop (suy biến chèn sau crop, trước normalize)
-        self._resize_crop = transforms.Compose([
-            transforms.Resize((img_resolution, img_resolution)),
-            transforms.CenterCrop(crop_resolution),
-        ])
-        self._to_tensor_norm = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=_mean, std=_std),
-        ])
+        self.preprocessing = preprocessing
+        self._resize_crop, self._to_tensor_norm, _, _ = preprocessing_parts(
+            preprocessing, img_resolution, crop_resolution)
+        self.clean_transform = transforms.Compose([self._resize_crop, self._to_tensor_norm])
 
     def _apply_degradation(self, img: Image.Image) -> Image.Image:
         """Áp dụng một suy biến ngẫu nhiên theo phân phối xác suất được cấu hình."""

@@ -64,7 +64,7 @@ def training_context(args, root):
              "learning_rate", "anchor_learning_rate", "grad_clip_norm", "temperature", "label_smoothing",
              "weight_ce", "weight_ce_deg", "loss_mode", "alpha_kd", "beta_cons", "weight_feat", "weight_guard",
              "fake_index", "real_guard_threshold", "selection_threshold", "q30_max_samples",
-             "img_resolution", "crop_resolution", "val_split", "dry_run")
+             "img_resolution", "crop_resolution", "preprocessing", "validation_preprocessing", "val_split", "dry_run")
     context = {name: getattr(args, name, None) for name in names}
     context["device_type"] = torch.device(args.device).type
     context["torch_version"] = torch.__version__

@@ -1,0 +1,50 @@
+{
+  "schema": "phase7-improvement-preparation/v1",
+  "source_manifest_sha256": "c1e883fed2e0fdd55ad9732ddc3bd44e1d21438b009100134f91788cf6af218a",
+  "records": 14400,
+  "by_split": {
+    "train": 12240,
+    "val_calib": 1080,
+    "val_select": 1080
+  },
+  "autoregressive": [
+    {
+      "split": "train",
+      "family": "autoregressive",
+      "generator": "tamingTransformers",
+      "source": "cfe_small",
+      "n": 1020
+    },
+    {
+      "split": "val_calib",
+      "family": "autoregressive",
+      "generator": "tamingTransformers",
+      "source": "cfe_small",
+      "n": 90
+    },
+    {
+      "split": "val_select",
+      "family": "autoregressive",
+      "generator": "tamingTransformers",
+      "source": "cfe_small",
+      "n": 90
+    }
+  ],
+  "findings": [
+    "Autoregressive is present, but all 1,200 manifest records use tamingTransformers. This is narrow generator coverage, not evidence that the whole family is missing.",
+    "No verified one-to-one mapping from the CFE 5_other_autoregressive subset to these train generators; do not infer generator identity from filenames.",
+    "Legacy train/validation uses square stretch + ImageNet normalization; deployed benchmark uses short-edge bicubic + center crop + CLIP normalization.",
+    "The preprocessing mismatch is a testable hypothesis, not a proven explanation for the quality gap.",
+    "Old NaN averages cannot reveal skipped optimizer updates retrospectively. New trace instrumentation cannot reconstruct missing historical observations."
+  ],
+  "old_nonfinite_grad_norm_epochs": [
+    1,
+    4
+  ],
+  "local": {
+    "torch": "2.10.0+cpu",
+    "cuda_available": false,
+    "sample_image_available": false
+  },
+  "readiness": "local preparation only; staged-image audit, GPU smoke and training have not run"
+}

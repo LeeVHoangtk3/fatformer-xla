@@ -1,0 +1,108 @@
+# Phase 7 — vòng cải thiện 1, lấy code từ Git nhánh `hoang`
+
+Cập nhật 10/11/2026 theo yêu cầu dùng Git. **Không cần ZIP code. Chưa có lần smoke GPU/train mới hoặc kết quả cải thiện chất lượng.** Kết quả cũ ở `../task_7.15/current/` giữ nguyên: G7.2 FAIL 6/8, G7.3 pending reference.
+
+## 1. Những vấn đề đã xác định
+
+- Log train cũ có `grad_norm=NaN` ở epoch 1 và 4; không có bộ đếm AMP skipped updates nên chưa xác định được nguyên nhân. Không sửa log cũ hoặc suy ngược số cập nhật bị mất.
+- Train/validation cũ dùng stretch vuông + ImageNet normalization; benchmark deployment dùng resize cạnh ngắn bicubic + center crop + CLIP normalization. Đây là khác biệt thật, chưa chứng minh là nguyên nhân điểm thấp.
+- Manifest có 1.200 ảnh autoregressive: 1.020 train, 90 val_calib, 90 val_select, tất cả mang nhãn `tamingTransformers`. Không thể kết luận train thiếu cả họ autoregressive hoặc đã phủ đủ generator của subset CFE khó.
+
+## 2. Thiết kế pilot đã chốt
+
+- `p0_legacy_full`: train mới bằng tiền xử lý cũ, không lấy A4 cũ thay control.
+- `p1_clip_full`: train mới bằng CLIP preprocessing tương ứng deployment.
+
+Cả hai validation bằng **cùng CLIP preprocessing**, cùng IDs/ngưỡng/T baseline đóng băng. Giữ seed 42, 5 epoch/nhánh, dữ liệu, khởi tạo/teacher và loss A4. Batch mặc định 16 × accumulation 2 = 32; có thể chọn 8 × 4 hoặc 4 × 8 trước khi chạy và áp dụng cho cả hai nhánh.
+
+Chọn checkpoint trên `val_select`: worst-group cao nhất với Clean Real ≥90%; hòa điểm chọn `p0`. Worst-group là min của bốn recall clean Real/Fake và Q30 Real/Fake, không phải worst-generator của CFE. Không dùng CFE evaluation để chọn nhánh, epoch hoặc seed. Đây là pilot hai nhánh, không thay ablation bốn nhánh của Task 7.12.
+
+Thiết kế: `preparation/protocol.json`. Input/hash: `preparation/expected_inputs.json`. Audit: `preparation/audit.json`. Cấu hình tham khảo: `preparation/planned_configs/`; runner tạo cấu hình runtime từ code đã checkout.
+
+## 3. Điều kiện kỹ thuật trước khi train dài
+
+Runner kiểm tra ảnh/hash/isolation/split, canonical baseline và các test liên quan. **Cả hai nhánh phải qua smoke 100 mini-batch + 5 warmup trước khi train dài bất kỳ nhánh nào.**
+
+`optimizer_updates.jsonl` lưu từng lần optimizer cập nhật hoặc bị AMP bỏ qua, AMP scale, norm, epoch/minibatch. Bộ đếm dùng optimizer post-step hook với non-fused AdamW; không suy từ giá trị trả về `None` của `step()`.
+
+Chính sách kỹ thuật: có cập nhật dùng được, số đếm khớp, skip fraction phần đo ≤5%, không có cập nhật với norm không hữu hạn. Warmup lưu riêng và có thể cho AMP tự giảm scale. 5% ở đây là chính sách ổn định của vòng mới, không phải FPR hoặc tiêu chí chất lượng G7.2. OOM/gate lỗi thì dừng, lưu log và không train dài.
+
+## 4. Lấy code từ Git trên Colab
+
+Tạo notebook Colab mới, chọn GPU CUDA đủ bộ nhớ. Cell đầu, dành cho runtime mới:
+
+```python
+!git clone --branch hoang --single-branch https://github.com/LeeVHoangtk3/fatformer-xla.git /content/fatformer-xla
+```
+
+Cell thứ hai:
+
+```python
+from pathlib import Path
+import subprocess
+
+REPO = Path('/content/fatformer-xla')
+PILOT_REPO = str(REPO)
+PILOT_COMMIT = subprocess.check_output(
+    ['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True
+).strip()
+PILOT_STAGE = 'smoke'
+PILOT_BATCH_SIZE = 16
+PILOT_GRAD_ACCUM = 2
+exec(compile(
+    (REPO / 'notebooks/task/phase7_improvement_round1/start_colab.py').read_text(),
+    'start_colab.py', 'exec'
+))
+```
+
+Cell lưu chính xác commit đã checkout, không tự `pull` giữa smoke và train. Nếu có runtime/repo cũ, dùng runtime mới hoặc chủ động checkout đúng commit trước; không clone đè hoặc ép reset thay đổi chưa lưu.
+
+Runner chỉ nhận source/config/input sạch so với Git, trên nhánh `hoang` hoặc một commit được checkout detached còn thuộc lịch sử `origin/hoang`. `source_identity.json` ghi commit và hash file thực tế. Đổi code/commit trong cùng run sẽ bị từ chối; SHA là dấu vết kiểm tra, không phải chữ ký số.
+
+## 5. Input Drive và chạy train
+
+Giữ nguyên cấu trúc Drive của Task 7.11:
+
+- `MyDrive/Fatformer/phase7/train_crossdomain_v2.tar`.
+- `MyDrive/Fatformer/pretrained/ViT-L-14.pt`.
+- `MyDrive/Fatformer/pretrained/fatformer_4class_ckpt.pth`.
+
+Cell kiểm hash, stage ảnh lên SSD Colab, cài thư viện hỗ trợ còn thiếu rồi chạy preflight/smoke. Không thay bản torch/torchvision của Colab. Kiểm hash archive/weights có thể mất vài phút. GPU không bắt buộc là T4; phép backward smoke xác nhận cấu hình có vừa bộ nhớ hay không.
+
+Sau khi smoke thành công, giữ nguyên `PILOT_RUN_ID` và `PILOT_COMMIT` được in ra. Trong cùng phiên chạy:
+
+```python
+PILOT_STAGE = 'train'
+exec(compile(
+    (REPO / 'notebooks/task/phase7_improvement_round1/start_colab.py').read_text(),
+    'start_colab.py', 'exec'
+))
+```
+
+Runner kiểm tra lại trước khi train. Nếu OOM, tạo ID mới, đặt batch 8/accumulation 4 rồi smoke lại cả hai nhánh. Không đổi batch giữa thí nghiệm. Nếu chuyển runtime để resume, clone và checkout đúng commit đã ghi, dùng cùng đường dẫn/cấu hình và full snapshot; context khác GPU/framework/horizon sẽ yêu cầu run mới. Trace epoch dở được giữ riêng, không cộng trùng khi resume.
+
+## 6. Kết quả và hậu kiểm
+
+```text
+MyDrive/Fatformer/phase7/improvement_round1/<PILOT_RUN_ID>/
+  source_identity.json
+  status.json
+  p0_legacy_full/   # config, identity, smoke, CSV, trace, best và latest
+  p1_clip_full/
+  selection.json   # chỉ sau khi cả hai train/verify hoàn tất
+  pilot_results_without_weights.zip
+```
+
+ZIP ở đây chỉ là **ZIP kết quả để tải về**, không phải ZIP cấp code. Checkpoint/full-state resume được backup theo epoch và không nằm trong ZIP kết quả. Local Colab: `/content/phase7_pilot_runs/<PILOT_RUN_ID>/`. Lưu notebook mới; giải nén kết quả vào `wait/improvement_round1/<PILOT_RUN_ID>/` để hậu kiểm.
+
+Sau pilot, khóa lựa chọn từ validation trước khi hiệu chuẩn/đánh giá. Khi có model được chọn, tạo gói calibration/evaluation gắn đúng hash mới. Notebook `phase7_corrected_rerun_colab.ipynb` cũ khóa checkpoint `5cd49252…`, không tự nhận model mới. Chỉ cập nhật 7.14/7.15/7.16 sau đo và hậu kiểm; không ghi đè kết quả hiện hành dựa vào điểm validation.
+
+## 7. File và kiểm thử
+
+- [Cell khởi động Git](../../../../notebooks/task/phase7_improvement_round1/start_colab.py).
+- [Runner](../../../../tools/phase7_training_pilot.py).
+- [Kiểm tra commit/source](../../../../tools/phase7_git_source.py).
+- [Chuẩn bị metadata](../../../../tools/prepare_phase7_training_pilot.py): không tạo ZIP code.
+- `preparation/validation/git_workflow_tests.xml`: kiểm thử workflow Git và training liên quan, không phải bằng chứng GPU.
+
+32 notebook và 55 file raw lịch sử được bảo vệ bằng hash. Các ZIP code/bundle manifest local đã tạo trước đây chỉ là hồ sơ của phương thức cũ, không cần upload hoặc đưa vào Git. Không hạ gate hoặc tuyên bố chất lượng tăng khi chưa có phép đo mới.
