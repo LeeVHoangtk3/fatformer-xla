@@ -1,5 +1,43 @@
 # BẢNG ĐIỀU KHIỂN NHIỆM VỤ: THÀNH VIÊN A (DATA & INFRA LEAD)
 
+<!-- PHASE7_CURRENT_BEGIN -->
+## Kết quả Phase 7 hiện hành — 09/11/2026
+
+Run `corrected_20261109_102954_3d28ad`, package `248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0`. Số liệu hiện hành: [hậu kiểm chi tiết](../../../DATASET/logs/phase7/task_7.15/current/analysis/README.md), [view JSON v3 cho tài liệu](../../../DATASET/logs/phase7/task_7.16/final_phase7_report.json) và [bảng nguồn số cũ → mới](../../bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md). View v3 được tổng hợp từ raw corrected schema v1, **không phải một phép đo mới**.
+
+| Cổng | Kết quả hiện hành | Bằng chứng / phần còn thiếu |
+| :--- | :--- | :--- |
+| G7.0 | **PENDING** theo DoD toàn repo | Canonical core: 3 checkpoint nạp 0/0, Gen 1 bị từ chối; còn loader legacy và CI chẩn đoán n3/n8 chưa đủ. |
+| G7.1 | **FAIL** | Gen 2: Clean Fake@Real90 48,88% <55%; Q30 AUC 43,67% <55%. |
+| G7.2 | **FAIL — 6/8** | Clean Fake@Real90 64,12% <65%; worst-subset Fake ACC 30,86% <45%. |
+| G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
+
+Hoàn tất đo/biên soạn không có nghĩa đạt tất cả mục tiêu. Không dùng số Gen 1 như hiệu năng hợp lệ; không khẳng định router thắng, không đổi FAIL/pending thành PASS. Chấp nhận GPU CUDA đủ VRAM; latency chỉ áp dụng L4 đã ghi. Xác nhận chéo/chữ ký A/B/C còn chờ, không tạo chữ ký tự động.
+
+
+| Task | Chủ trì | Trạng thái | Kết quả và giới hạn |
+| :--- | :--- | :--- | :--- |
+| 7.7 | A | [x] | 14.400 bản ghi; train/val_calib/val_select=12.240/1.080/1.080; audit 0 vi phạm trong reference đã ghi. |
+| 7.8 | A | [x] | Pipeline v2 và benchmark CPU synthetic: overhead 14,08% <15%; không suy thành latency CLIP/GPU. |
+
+## Dữ liệu và chi phí đã có bằng chứng
+
+Kho v2 có **14.400 bản ghi**: train **12.240**, val_calib **1.080**, val_select **1.080**. 5 họ fake và real; 22 generator/source labels, 8 nguồn; replay 2.991 bản ghi. Đây không phải tập CFE calibration 400/evaluation 1.600 của package.
+
+Ảnh được manifest ghi nhận **8.107.529.958 byte**; tổng `bytes_downloaded` của ba provenance là **21.808.026.735 byte**. Không cộng hai đại lượng này làm dung lượng ảnh. Audit có `violations=0`, `coverage.complete=true`, external pHash threshold 8/internal 3 trong các reference đã ghi; không diễn giải thành chứng minh tuyệt đối không có mọi dạng leakage. Audit dùng reference 18 tập cùng các tập bổ sung, không phải tuyên bố 82.003 nội dung ảnh độc lập.
+
+Audit mất **512,7 giây**. **Chưa có số đo tổng thời gian stream**; không dùng thời gian audit làm thời gian tải. Không có bằng chứng đã kích hoạt fallback 8.000 ảnh. `blocked=[]` trong audit nói không có generator vi phạm trong manifest cuối; không phải số generator bị bộ thu thập loại từ đầu.
+
+Degradation v2 overhead **14,08%**, nguồn benchmark là 32 ảnh noise RGB, CPU/DataLoader, batch 8, không phải tốc độ GPU hay quality benchmark. Selection overhead **1,046×**, mô hình toy linear CPU, không gán sang CLIP.
+
+<!-- PHASE7_CURRENT_END -->
+
+<details>
+<summary>Kế hoạch nền và hồ sơ các giai đoạn trước — chỉ để tham khảo lịch sử, không dùng như kết quả Phase 7 hiện hành</summary>
+
+Các bảng, hình, kết luận và lệnh dưới đây được giữ để truy vết. Số Gen 1 là `invalid_layout`; chỉ mục nguồn và nội dung hiệu lực nằm ở khối cập nhật phía trên. Không dùng kết luận “PASS toàn bộ” trong hồ sơ cũ thay cho phán quyết mới.
+
+
 > **Vai trò**: Trưởng nhóm Dữ liệu & Hạ tầng (Data & Infrastructure Lead)  
 > **Trách nhiệm cốt lõi**: Quản trị kho dữ liệu Google Drive 5TB (tài khoản Google AI Pro), thiết lập đường truyền I/O chống nghẽn SSD NVMe trên Colab/Kaggle, chuẩn hóa tập dữ liệu ProGAN & Staging, xây dựng module `CurriculumDegradationScheduler` 3 giai đoạn theo epoch, chủ trì xây dựng kho dữ liệu đa bộ sinh độc lập (Task 6.2) kèm bộ lấy mẫu cân bằng `BalancedCrossDomainSampler` trong Milestone 6.
 
@@ -54,3 +92,5 @@
 6. **Kiểm Toán Tính Độc Lập Dữ Liệu & Đo Mốc Sàn Baseline**:
    - Khi hoàn thiện kho dữ liệu tại Task 6.2, Lead A phải thực hiện kiểm toán pHash để đảm bảo không có ảnh near-duplicate nào giữa kho mới và 18 tập test của Task 5.1.
    - Chạy mô hình gốc trên tập `val_crossdomain` để xác lập các giá trị mốc sàn ($\text{Base}_{\text{clean}}, \text{Base}_{\text{fake\_clean}}, \text{Base}_{\text{q30}}, \text{Base}_{\text{fake\_q30}}$), làm cơ sở cho Gate 4 điều kiện của Task 6.4.
+
+</details>

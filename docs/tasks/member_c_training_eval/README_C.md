@@ -1,5 +1,43 @@
 # BẢNG ĐIỀU KHIỂN NHIỆM VỤ: THÀNH VIÊN C (TRAINING & EVALUATION LEAD)
 
+<!-- PHASE7_CURRENT_BEGIN -->
+## Kết quả Phase 7 hiện hành — 09/11/2026
+
+Run `corrected_20261109_102954_3d28ad`, package `248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0`. Số liệu hiện hành: [hậu kiểm chi tiết](../../../DATASET/logs/phase7/task_7.15/current/analysis/README.md), [view JSON v3 cho tài liệu](../../../DATASET/logs/phase7/task_7.16/final_phase7_report.json) và [bảng nguồn số cũ → mới](../../bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md). View v3 được tổng hợp từ raw corrected schema v1, **không phải một phép đo mới**.
+
+| Cổng | Kết quả hiện hành | Bằng chứng / phần còn thiếu |
+| :--- | :--- | :--- |
+| G7.0 | **PENDING** theo DoD toàn repo | Canonical core: 3 checkpoint nạp 0/0, Gen 1 bị từ chối; còn loader legacy và CI chẩn đoán n3/n8 chưa đủ. |
+| G7.1 | **FAIL** | Gen 2: Clean Fake@Real90 48,88% <55%; Q30 AUC 43,67% <55%. |
+| G7.2 | **FAIL — 6/8** | Clean Fake@Real90 64,12% <65%; worst-subset Fake ACC 30,86% <45%. |
+| G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
+
+Hoàn tất đo/biên soạn không có nghĩa đạt tất cả mục tiêu. Không dùng số Gen 1 như hiệu năng hợp lệ; không khẳng định router thắng, không đổi FAIL/pending thành PASS. Chấp nhận GPU CUDA đủ VRAM; latency chỉ áp dụng L4 đã ghi. Xác nhận chéo/chữ ký A/B/C còn chờ, không tạo chữ ký tự động.
+
+
+| Task | Chủ trì | Trạng thái | Kết quả và giới hạn |
+| :--- | :--- | :--- | :--- |
+| 7.1 | C | [~] | Có audit 4 checkpoint; Gen 1 invalid_layout; n3/n8 verdict inconclusive vì thiếu CI phù hợp. |
+| 7.3 | C | [~] | Metric/CI đã đo; raw corrected schema v1 và view tài liệu v3 tách rõ; thiếu phân tầng generator chuẩn. |
+| 7.4 | C | [x] | Calibration runtime 400 ảnh đã hội tụ; T=2,78324914; FPR calibration 5%, không bảo đảm mọi miền. |
+| 7.5 | C | [x] | 12 ứng viên measured; chọn α=0,55, β=0,35; metadata nhúng và actual hash khớp matrix. |
+| 7.6 | C | [x] | Đã đo đủ 4 cấu hình ×2 điều kiện; kết quả G7.1 FAIL, không phải lỗi chưa chạy. |
+| 7.11 | C | [~] | Có 5 epoch, chọn epoch 4; val_select worst 46,67%; log grad_norm NaN còn ở epoch 1,4. |
+| 7.12 | C+B | [~] | Có ablation 4 cấu hình/seed 42; chưa chứng minh contribution tổng quát của hai loss; không đổi gate từ report ablation. |
+| 7.14 | C | [~] | Đã chấm package thực, đủ dự đoán và CI; G7.2 FAIL 6/8; taxonomy/schema còn ghi rõ giới hạn. |
+| 7.15 | C | [~] | 20 ảnh và overhead L4 đạt; G7.3 chờ reference; weights mới trên Drive, không trong ZIP local. |
+| 7.16 | A+B+C | [~] | Biên soạn/sync tài liệu và kiểm tra tự động hoàn tất; chờ cross-review và chữ ký thật A/B/C. |
+
+Benchmark/source checkpoint runtime hash `5cd49252…` đã ràng buộc với package`24869052…`, nhưng log training vẫn có `grad_norm=NaN` ở epoch 1,4; không tự viết “gradient luôn hữu hạn”. Preflight L4 và benchmark training Blackwell là hai bản ghi khác phiên, không gộp thành một cấu hình GPU duy nhất. Không bắt buộc T4 cho run hiện tại.
+
+<!-- PHASE7_CURRENT_END -->
+
+<details>
+<summary>Kế hoạch nền và hồ sơ các giai đoạn trước — chỉ để tham khảo lịch sử, không dùng như kết quả Phase 7 hiện hành</summary>
+
+Các bảng, hình, kết luận và lệnh dưới đây được giữ để truy vết. Số Gen 1 là `invalid_layout`; chỉ mục nguồn và nội dung hiệu lực nằm ở khối cập nhật phía trên. Không dùng kết luận “PASS toàn bộ” trong hồ sơ cũ thay cho phán quyết mới.
+
+
 > **Vai trò**: Trưởng nhóm Huấn Luyện & Đánh Giá Benchmark (Training & Evaluation Lead)  
 > **Trách nhiệm cốt lõi**: Quản trị tài nguyên Compute Units trên Colab Pro (tài khoản Google AI Pro 5TB), vận hành GPU A100 SXM4 và T4/L4 với AMP FP16 & Gradient Accumulation; xây dựng notebook huấn luyện `notebooks/train.ipynb`; thiết lập pipeline đánh giá nhanh `tools/fast_eval.py` và `tools/full_eval.py` trên 18 tập test; thiết lập mốc sàn Baseline (Clean & Degraded); chủ trì thực thi chiến dịch huấn luyện 8 epoch mô hình chính FatFormer-XLA theo giáo trình Curriculum; chạy Full-Benchmark 4 phiên bản Ablation Study; chủ trì tổng hợp Báo cáo kỹ thuật hoàn chỉnh (Chương 5, Kết luận) và Slide bảo vệ đồ án.
 
@@ -64,3 +102,5 @@
 3. **An Toàn Tuyệt Đối Cho Checkpoint**:
    - Tuyệt đối không lưu checkpoint đơn lẻ trên ổ SSD tạm thời của máy ảo Colab (`/content/`). Sau mỗi epoch huấn luyện, mã nguồn phải tự động sao lưu file `.pth` trực tiếp sang Google Drive 5TB: `/content/drive/MyDrive/FatFormer_Hub/checkpoints/`.
 4. **Tính Tự Chủ Triển Khai**: Thành viên C tự chủ tối ưu các siêu tham số huấn luyện (learning rate schedule, gradient clipping, batch accumulation), thiết kế cấu trúc notebook và kịch bản phân bổ tài nguyên, bảo đảm tiến độ và chất lượng thực nghiệm vượt trội.
+
+</details>

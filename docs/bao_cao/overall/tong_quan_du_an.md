@@ -1,4 +1,65 @@
 # BẢN THIẾT KẾ KIẾN TRÚC & TỔNG QUAN HỆ THỐNG DỰ ÁN FATFORMER-XLA
+
+<!-- PHASE7_CURRENT_BEGIN -->
+## Kết quả Phase 7 hiện hành — 09/11/2026
+
+Run `corrected_20261109_102954_3d28ad`, package `248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0`. Số liệu hiện hành: [hậu kiểm chi tiết](../../../DATASET/logs/phase7/task_7.15/current/analysis/README.md), [view JSON v3 cho tài liệu](../../../DATASET/logs/phase7/task_7.16/final_phase7_report.json) và [bảng nguồn số cũ → mới](bao_cao_ra_soat_so_lieu_phase7.md). View v3 được tổng hợp từ raw corrected schema v1, **không phải một phép đo mới**.
+
+| Cổng | Kết quả hiện hành | Bằng chứng / phần còn thiếu |
+| :--- | :--- | :--- |
+| G7.0 | **PENDING** theo DoD toàn repo | Canonical core: 3 checkpoint nạp 0/0, Gen 1 bị từ chối; còn loader legacy và CI chẩn đoán n3/n8 chưa đủ. |
+| G7.1 | **FAIL** | Gen 2: Clean Fake@Real90 48,88% <55%; Q30 AUC 43,67% <55%. |
+| G7.2 | **FAIL — 6/8** | Clean Fake@Real90 64,12% <65%; worst-subset Fake ACC 30,86% <45%. |
+| G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
+
+Hoàn tất đo/biên soạn không có nghĩa đạt tất cả mục tiêu. Không dùng số Gen 1 như hiệu năng hợp lệ; không khẳng định router thắng, không đổi FAIL/pending thành PASS. Chấp nhận GPU CUDA đủ VRAM; latency chỉ áp dụng L4 đã ghi. Xác nhận chéo/chữ ký A/B/C còn chờ, không tạo chữ ký tự động.
+
+
+## Kiến trúc đang được đo, không phải thiết kế router dự kiến
+
+```mermaid
+flowchart LR
+  A[Ảnh] --> B[CLIP resize và center crop]
+  B --> C[Anchored v2: SRM và frequency gating]
+  C --> D[Logits: một backbone forward]
+  D --> E[Softmax với T đã fit trên 400 calibration]
+  E --> F[Ngưỡng cố định]
+  F --> G[prob_fake và label]
+```
+
+Frequency gating λ(x) trong backbone khác DegradationRouter. Router hiện **tắt**, không tự chọn clean/JPEG ở deployment. Trọng số lấy từ Task 7.11, không phải WiSE-FT Gen2. Package nhúng trọng số/calibration/metadata, bố trí n3/[7,15,23]; hash `248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0`. Model mới ở Drive, local chỉ có log và metadata/reference, không thay bằng weights cũ.
+
+Chất lượng đã đo FP16/CUDA/batch 16; CLI ảnh mặc định FP32 chưa được gắn tự động với quality claim này. FPR cố định trên Q30 vượt 5%; chưa bảo đảm báo oan 5% mọi miền. G7.3 thiếu best-reference nên chưa chứng minh một model đạt mọi điều kiện tốt nhất, cũng không chứng minh bắt buộc phải có hai model.
+
+| Checkpoint | Tensor entries | Adapter blocks | Kết luận |
+| :--- | ---: | :--- | :--- |
+| `fatformer_4class_ckpt.pth` | 1116 | `[7, 15, 23]` | layout biểu diễn được; xem canonical 0/0 |
+| `crossdomain_model_best_m4.pth` | 1684 | `[2, 5, 8, 11, 14, 17, 20, 23]` | layout biểu diễn được; xem canonical 0/0 |
+| `fatformer_wise_ft_best.pth` | 1816 | `[2, 5, 7, 8, 11, 14, 15, 17, 20, 23]` | invalid_layout; chỉ forensic |
+| `fatformer_anchored_recovery_best.pth` | 1200 | `[7, 15, 23]` | layout biểu diễn được; xem canonical 0/0 |
+
+### 5.4. Chẩn đoán Gen 1 bằng số thật
+
+Gen 1 có 10 khối hợp của n3/n8, không có n hợp lệ biểu diễn đủ. Diagnostic partial trên 2.000 CFE, T1/ngưỡng 0,5: n3 ACC **64,75%**, Real **94,00%**, Fake **35,50%**, AUC **76,29%**; n8 ACC **52,05%**, Real **100,00%**, Fake **4,10%**, AUC **57,07%**. Các số diagnostic này chỉ để tham khảo lịch sử, `invalid_layout`, không dùng làm hiệu năng của Gen 1 hợp lệ.
+
+Delta Fake n8−n3 **-31,40 pp**, nhưng CI đối chiếu chưa có; giữ verdict **inconclusive**. Không suy ra different_basin, không chứng minh cần hai model và không cứu checkpoint bằng nạp thiếu.
+
+### 7. Gen 2 đã đo, không nhầm metadata cũ
+
+CSV có 12 ứng viên và đúng 1 selected: **α=0,55, β_srm=0,35**, n_keys=1200, layout n3/[7,15,23]. Đã băm file local: **`eb170fd62700b3613124b8c1519bc796c659ba1e4733be9abb1fb9f5801e429c`**, đọc metadata nhúng và đối chiếu matrix. Metadata rời `wise_ft_v2_best_metadata.json` α0,50 là ứng viên cũ `unselected`, hash khác; không dùng thay bản được chọn.
+
+Gen 2 selected Clean AUC **81,78%**, Fake@Real90 **48,88%**, Q30 AUC **43,67%**: **G7.1 FAIL**. File nguồn matrix còn dùng key ngưỡng 55% cho Fake@Real90 Q30, khác vị trí clean trong master plan; ghi nhận bất nhất này, không sửa raw. Theo tiêu chí clean55% và Q30 AUC 55% của kế hoạch, verdict vẫn FAIL.
+
+Gen 2 là thí nghiệm trước, **không phải package đang triển khai**. Package hiện hành là Anchored v2 source `5cd49252…`, đóng gói hash `24869052…`.
+
+
+<!-- PHASE7_CURRENT_END -->
+
+<details>
+<summary>Kế hoạch nền và hồ sơ các giai đoạn trước — chỉ để tham khảo lịch sử, không dùng như kết quả Phase 7 hiện hành</summary>
+
+Các bảng, hình, kết luận và lệnh dưới đây được giữ để truy vết. Số Gen 1 là `invalid_layout`; chỉ mục nguồn và nội dung hiệu lực nằm ở khối cập nhật phía trên. Không dùng kết luận “PASS toàn bộ” trong hồ sơ cũ thay cho phán quyết mới.
+
 > **Đề tài**: Nâng cao Độ bền vững Pháp y (Forensic Robustness) cho Mô hình Phát hiện Ảnh Sinh bởi AI (Synthetic Image Detection) trước Biến dạng Mạng xã hội.  
 > **Kiến trúc cải tiến**: **FatFormer + SRM 3-Kernels + Dynamic Frequency Gating $\lambda(x)$ + Dual-Stream Augmentation** (Phương án 2).  
 > **Hạ tầng triển khai**: Tài khoản Google AI Pro (GPU A100 SXM4 / L4, 5TB Google Drive trực tiếp và các đặc quyền AI) - Kiến trúc Hợp Nhất (Unified Super-Node).  
@@ -236,3 +297,5 @@ python -m src.main --train --epochs 20 --lr 4e-4 --batchsize 64 \
     --checkpoint_dir "checkpoints" \
     --drive_backup_dir "/content/drive/MyDrive/FatFormer_Hub/checkpoints"
 ```
+
+</details>

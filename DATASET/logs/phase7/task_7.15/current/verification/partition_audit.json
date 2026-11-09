@@ -1,5 +1,5 @@
 {
-  "schema": "temperature_repair_partition/v1",
+  "schema": "phase7_measured_partition/v1",
   "status": "verified_disjoint_ids",
   "identity_unit": "subset/class/filename; content duplicates not audited",
   "n_calibration": 400,
@@ -8,7 +8,7 @@
   "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
   "evaluation_split_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
   "sample_ids_sha256": "5ae613da819d065b93225b901a7d06d3309ad27e8cdbb9a441cf4df43d7552fb",
-  "source_logits_sha256": "3b0f66dfdc7c4655df6aa7fcab7346f0315d2663927559b66005bafa2c657942",
-  "original_package_sha256": "8ddcb401f1e160776c653a3d073d2512cbafa1e08e5d39510201be83ab097dd8",
-  "note": "Same measured FP32 400-image cache; no evaluation sample used for fitting; no image-content duplicate audit."
+  "source_logits_sha256": "1c8814aab2f71e2d08b4c6f6472192ccbc58c8214ebea212e4d9912107e17be6",
+  "run_id": "corrected_20261109_102954_3d28ad",
+  "note": "Runtime measured FP16/CUDA/batch16; no evaluation rows used for fitting; image-content duplicates not fully audited."
 }

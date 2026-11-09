@@ -1,0 +1,46 @@
+{
+  "n_subsets": 18,
+  "subsets_real_acc_below_90": [
+    "dalle",
+    "deepfake",
+    "glide_100_10",
+    "glide_100_27",
+    "glide_50_27",
+    "ldm_100",
+    "ldm_200",
+    "ldm_200_cfg",
+    "stargan"
+  ],
+  "subsets_balanced_acc_below_90": [
+    "dalle",
+    "deepfake",
+    "glide_100_10",
+    "glide_100_27",
+    "glide_50_27",
+    "guided",
+    "ldm_100",
+    "ldm_200",
+    "ldm_200_cfg",
+    "stargan"
+  ],
+  "repeated_relative_real_id_groups": 6194,
+  "real_records_in_repeated_relative_id_groups": 17609,
+  "groups_also_having_identical_stored_logits": 6173,
+  "content_duplicate_verification": "not possible from these prediction files; same names/logits are candidate shared references, not a byte/content proof",
+  "macro_subset_ci95": {
+    "point": 90.10184712075026,
+    "ci95_resampling_18_subsets": [
+      86.75526544256002,
+      93.32349591421729
+    ],
+    "n_boot": 10000,
+    "seed": 42,
+    "unit": "subset",
+    "purpose": "diagnostic, not the original acceptance CI rule"
+  },
+  "cpu_gpu_boundary_rows_total": 6,
+  "cpu_gpu_boundary_rows_by_dataset": {
+    "q50": 1,
+    "indist": 5
+  }
+}

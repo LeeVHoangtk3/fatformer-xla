@@ -1,0 +1,13 @@
+{
+  "epochs": 5,
+  "selected_epoch": 4,
+  "selected_worst_group_pct": 46.666666666666664,
+  "selected_clean_real_pct": 97.96610169491525,
+  "nonfinite_grad_norm_epochs": [
+    1,
+    4
+  ],
+  "source": "DATASET/logs/phase7/anchored_v2_run1/train_history.csv",
+  "source_sha256": "e2f278179915b23c48a3929fa454a95e60493cec63e37edcbce9c445be6487d8",
+  "note": "NaN telemetry is unresolved; finite current predictions do not prove all training gradients were finite."
+}

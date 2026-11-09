@@ -1,0 +1,968 @@
+{
+  "schema": "phase7_documentation_check/v1",
+  "passed": true,
+  "total_checks": 239,
+  "checks": [
+    {
+      "check": "sha256:docs/plan/ke_hoach.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/plan/ke_hoach_cac_cot_moc_va_diem_dung.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/plan/tong_hop_checkpoints_va_lich_su_thuc_nghiem.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/plan/ke_hoach_test_communityforensics_eval.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/tasks/member_a_data_infra/README_A.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/tasks/member_b_architecture_loss/README_B.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/tasks/member_c_training_eval/README_C.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/bao_cao/overall/README.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/bao_cao/overall/tong_quan_du_an.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/bao_cao/C/bao_cao_task_6.6_r_locked_recovery.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/bao_cao/overall/chuong_5_ket_luan_va_han_che.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/bao_cao/overall/slide_phase7_5phut.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/milestones/milestone_phase7_acceptance.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/tasks/member_c_training_eval/phase_7/README.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/tasks/member_c_training_eval/phase_7/task_7.16_cap_nhat_tai_lieu_du_an.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:README.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/bao_cao/C/bao_cao_task_7.1_checkpoint_audit.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:docs/plan/archive/ke_hoach_phase_7_dieu_chinh_toan_dien_v2.0_2026-10-27.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.16/README.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.16/evidence_catalog.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.16/final_phase7_report.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.16/source_values.csv",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.16/gen2_verified_metadata.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.16/training_summary.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.16/strict_loading_review.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.16/legacy_number_review.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:tools/sync_phase7_documentation.py",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/00_setup_drive_and_data_ingestion.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/eval_communityforensics.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/fatformer_xla_colab_pipeline.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/prepare_communityforensics_dataset.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/train.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/upload_3_test_set_kaggle.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/phase7_corrected/phase7_corrected_rerun_colab.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_2.1/task_2.1_make_degraded.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_2.2/benchmark_baseline.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_2.3/task_2.3_benchmark_degraded.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_4.1/task_4.1_train_phase_1.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_4.3/task_4.3_train_plan_a_kaggle_blackwell.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_4.3/task_4.3_train_plan_a_kaggle_blackwell_official_5epochs.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_5.1/task_5.1_full_benchmark.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_5.1/task_5.1_full_benchmark_kaggle.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_6.3/task_6.3_c_train_crossdomain.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_6.3/task_6.3_c_train_crossdomain_kaggle.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_6.3/task_6.3_r_anchored_recovery_training_kaggle.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_6.3/task_6.3_r_colab_anchored_recovery.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_6.3/task_6.3_r_kaggle_anchored_recovery.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_6.4/task_6.4_6.5_eval_and_selection_kaggle.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_6.6/task_6.6_final_locked_benchmark.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_6.6/task_6.6_final_locked_benchmark_colab.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_6.6/task_6.6_r_locked_recovery_colab.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_7.11/task_7.11_train_anchored_v2_colab.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_7.12/task_7.12_ablation_mini_colab.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_7.14/task_7.14_locked_benchmark_colab.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_7.15/task_7.15_unified_packaging_colab.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_7.2/task_7.2_verify_colab.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_7.6/task_7.6_phase7_acceptance_colab.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/task_7.7/task_7.7_build_data_v2_colab.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:notebooks/task/test/test_fatformer_benchmark.ipynb",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/acceptance.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/benchmark/per_subset_cfe.csv",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/benchmark/predictions_cfe_blur15.npz",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/benchmark/predictions_cfe_clean.npz",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/benchmark/predictions_cfe_downup05.npz",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/benchmark/predictions_cfe_q30.npz",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/benchmark/predictions_cfe_q50.npz",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/benchmark/predictions_cfe_q75.npz",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/benchmark/predictions_cfe_webp40.npz",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/benchmark/predictions_indist.npz",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/benchmark/preflight.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/benchmark/roc.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/BUNDLE_MANIFEST.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/calibration/anchored_v2.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/calibration/anchored_v2_reliability.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/calibration/logits_anchored_v2_calib_fp16.npz",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/calibration/summary.md",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/environment.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/gpu_memory_probe.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/input_bundle.zip",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/input_preflight.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/latency_phase7.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/logs/calibrate_and_select.log",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/logs/extract_calibration_logits.log",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/logs/finalize_phase7_corrected.log",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/logs/infer_unified.log",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/logs/package_unified_fatformer.log",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/logs/probe_phase7_gpu.log",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/logs/run_phase7_corrected.log",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/logs/verify_unified_package.log",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/package/metadata.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/real_image_verification.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/runtime_calibration_preflight.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_image_ids.json",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/00_real_0002_coco.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/01_real_0006_laion.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/02_fake_0013_MidjourneyV5_2.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/03_fake_0016_MidjourneyV5_2.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/04_real_0002_laion.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/05_real_0006_laion.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/06_fake_0000_LCM_lora_sdxl.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/07_fake_0002_LCM_lora_sdxl.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/08_real_0005_raise.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/09_real_0008_raise.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/10_fake_0003_Hourglass.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/11_fake_0004_Hourglass.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/12_real_0005_ffhq.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/13_real_0006_ffhq.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/14_fake_0005_DFGAN.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/15_fake_0026_DFGAN.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/16_real_0000_laion.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/17_real_0003_laion.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/18_fake_0002_stable_cascade.png",
+      "passed": true
+    },
+    {
+      "check": "sha256:DATASET/logs/phase7/task_7.15/current/raw/verification_images/19_fake_0004_stable_cascade.png",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.clean.auc",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.clean.ap",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.clean.fake_at_real90",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.clean.accuracy",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.clean.real_acc",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.clean.fake_acc",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.clean.ece",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.clean.nll",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.clean.ci95",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.clean.tpr_at_fpr",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.q30.auc",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.q30.ap",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.q30.fake_at_real90",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.q30.accuracy",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.q30.real_acc",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.q30.fake_acc",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.q30.ece",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.q30.nll",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.q30.ci95",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:cfe.q30.tpr_at_fpr",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:indist.macro_acc",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:indist.pooled_real_acc",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:indist.mean_subset_real_acc",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:fixed_fpr.q30",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:distribution.macro_ci",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:distribution.boundary_cases",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:bootstrap",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:calibration.T",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:calibration.T_star_default",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:calibration.n_calib",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:calibration.fpr_target",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:calibration.fpr_measured",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:calibration.ece_after",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:calibration.nll_after",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:latency.batch1.overhead_delta_ms",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:latency.batch1.package_per_image_ms",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:latency.batch1.overhead_delta_p95_ms",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:data.integrity.summary",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:data.elapsed_s",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:data.violations",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:data.pass",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:degradation.pct_overhead",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:degradation.source",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:degradation.passed",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:selection.ratio",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:selection.model",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:selection.passed",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:router.status",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:router.deployment_enabled",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:router.experiment_status",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:gen1.runs",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:gen1.delta_fake_acc",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:gen1.verdict",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:gen2.metadata",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:training.selected_worst_group_pct",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:training.nonfinite_grad_norm_epochs",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:tests.cases",
+      "passed": true
+    },
+    {
+      "check": "source_pointer:tests.total_disjoint_cases",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/task_7.15/current/raw/acceptance.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/task_7.15/current/raw/latency_phase7.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/task_7.15/current/raw/real_image_verification.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/task_7.15/current/analysis/verification.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/task_7.15/current/analysis/recomputed_metrics.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/task_7.15/current/analysis/distribution_cautions.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/task_7.15/current/analysis/ci_verification.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/wise_ft_sweep/task_7.2_canonical_load_verification.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/wise_ft_sweep/checkpoint_structure_audit.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/wise_ft_sweep/wise_ft_legacy_reinterpretation.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/wise_ft_sweep/cfe_v3_baseline_matrix.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/data_isolation_report.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/manifests/data_manifest_v2.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/degradation_v2/degradation_benchmark.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/selection_benchmark.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/router_params.json",
+      "passed": true
+    },
+    {
+      "check": "source_hash:DATASET/logs/phase7/ablation_v2_fixed_run1/ablation_mini_v2.json",
+      "passed": true
+    },
+    {
+      "check": "generated_block:docs/plan/ke_hoach.md",
+      "passed": true
+    },
+    {
+      "check": "generated_block:docs/plan/ke_hoach_cac_cot_moc_va_diem_dung.md",
+      "passed": true
+    },
+    {
+      "check": "generated_block:docs/plan/tong_hop_checkpoints_va_lich_su_thuc_nghiem.md",
+      "passed": true
+    },
+    {
+      "check": "generated_block:docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md",
+      "passed": true
+    },
+    {
+      "check": "generated_block:docs/plan/ke_hoach_test_communityforensics_eval.md",
+      "passed": true
+    },
+    {
+      "check": "generated_block:docs/tasks/member_a_data_infra/README_A.md",
+      "passed": true
+    },
+    {
+      "check": "generated_block:docs/tasks/member_b_architecture_loss/README_B.md",
+      "passed": true
+    },
+    {
+      "check": "generated_block:docs/tasks/member_c_training_eval/README_C.md",
+      "passed": true
+    },
+    {
+      "check": "generated_block:docs/bao_cao/overall/README.md",
+      "passed": true
+    },
+    {
+      "check": "generated_block:docs/bao_cao/overall/tong_quan_du_an.md",
+      "passed": true
+    },
+    {
+      "check": "generated_block:docs/bao_cao/C/bao_cao_task_6.6_r_locked_recovery.md",
+      "passed": true
+    },
+    {
+      "check": "generated_document:docs/bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md",
+      "passed": true
+    },
+    {
+      "check": "generated_document:docs/bao_cao/overall/chuong_5_ket_luan_va_han_che.md",
+      "passed": true
+    },
+    {
+      "check": "generated_document:docs/bao_cao/overall/slide_phase7_5phut.md",
+      "passed": true
+    },
+    {
+      "check": "generated_document:docs/milestones/milestone_phase7_acceptance.md",
+      "passed": true
+    },
+    {
+      "check": "six_slides",
+      "passed": true
+    },
+    {
+      "check": "four_chapter_sections",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/plan/ke_hoach.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/plan/ke_hoach_cac_cot_moc_va_diem_dung.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/plan/tong_hop_checkpoints_va_lich_su_thuc_nghiem.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/plan/ke_hoach_test_communityforensics_eval.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/tasks/member_a_data_infra/README_A.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/tasks/member_b_architecture_loss/README_B.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/tasks/member_c_training_eval/README_C.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/bao_cao/overall/README.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/bao_cao/overall/tong_quan_du_an.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/bao_cao/C/bao_cao_task_6.6_r_locked_recovery.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/bao_cao/overall/chuong_5_ket_luan_va_han_che.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/bao_cao/overall/slide_phase7_5phut.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/milestones/milestone_phase7_acceptance.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/tasks/member_c_training_eval/phase_7/README.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/tasks/member_c_training_eval/phase_7/task_7.16_cap_nhat_tai_lieu_du_an.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:README.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/bao_cao/C/bao_cao_task_7.1_checkpoint_audit.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:docs/plan/archive/ke_hoach_phase_7_dieu_chinh_toan_dien_v2.0_2026-10-27.md",
+      "passed": true
+    },
+    {
+      "check": "utf8_no_replacement:DATASET/logs/phase7/task_7.16/README.md",
+      "passed": true
+    },
+    {
+      "check": "current_relative_links_resolve",
+      "passed": true
+    },
+    {
+      "check": "legacy_numbers_scope_labeled",
+      "passed": true
+    },
+    {
+      "check": "three_human_roles_recorded",
+      "passed": true
+    },
+    {
+      "check": "no_automatic_human_signature",
+      "passed": true
+    },
+    {
+      "check": "measured_gate_status_preserved",
+      "passed": true
+    },
+    {
+      "check": "executed_notebook_matches_submission",
+      "passed": true
+    }
+  ],
+  "missing_links": [],
+  "documentation_status": "complete_machine_checked",
+  "human_acceptance": "pending_actual_cross_review_and_signoff",
+  "targeted_test_cases": 156,
+  "raw_files_preserved": 55
+}

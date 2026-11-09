@@ -1,0 +1,9 @@
+{
+  "cases": 53,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "source": "DATASET/logs/phase7/task_7.16/validation/component_tests.xml",
+  "sha256": "ce8363fe70172b37854bea0be35938889c81a7170b83988f62ff4476db1a1d06",
+  "scope": "loss_v2, selection_metric, selection_regressions, degradation_v2; disjoint test files from the 103-case run"
+}

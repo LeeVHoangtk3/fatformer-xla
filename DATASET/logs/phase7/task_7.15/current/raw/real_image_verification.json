@@ -1,0 +1,16 @@
+{
+  "schema": "unified_package_verification/v1",
+  "checkpoint_sha256": "248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0",
+  "reference_sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c",
+  "n_tensors": 1200,
+  "tensors_equal": true,
+  "prediction_status": "passed_real_images",
+  "real_image_acceptance": true,
+  "g73_status": "pending_condition_comparison_and_GPU_latency",
+  "n_images": 20,
+  "input_kind": "real",
+  "max_probability_error": 0.0,
+  "device": "cuda",
+  "precision": "fp16",
+  "standalone_clip_path": "NON_EXISTENT_CLIP.pt"
+}

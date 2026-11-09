@@ -1,5 +1,51 @@
 # KẾ HOẠCH TRIỂN KHAI KIỂM ĐỊNH NGOẠI VI: COMMUNITYFORENSICS-EVAL (CVPR 2025)
 
+<!-- PHASE7_CURRENT_BEGIN -->
+## Kết quả Phase 7 hiện hành — 09/11/2026
+
+Run `corrected_20261109_102954_3d28ad`, package `248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0`. Số liệu hiện hành: [hậu kiểm chi tiết](../../DATASET/logs/phase7/task_7.15/current/analysis/README.md), [view JSON v3 cho tài liệu](../../DATASET/logs/phase7/task_7.16/final_phase7_report.json) và [bảng nguồn số cũ → mới](../bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md). View v3 được tổng hợp từ raw corrected schema v1, **không phải một phép đo mới**.
+
+| Cổng | Kết quả hiện hành | Bằng chứng / phần còn thiếu |
+| :--- | :--- | :--- |
+| G7.0 | **PENDING** theo DoD toàn repo | Canonical core: 3 checkpoint nạp 0/0, Gen 1 bị từ chối; còn loader legacy và CI chẩn đoán n3/n8 chưa đủ. |
+| G7.1 | **FAIL** | Gen 2: Clean Fake@Real90 48,88% <55%; Q30 AUC 43,67% <55%. |
+| G7.2 | **FAIL — 6/8** | Clean Fake@Real90 64,12% <65%; worst-subset Fake ACC 30,86% <45%. |
+| G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
+
+Hoàn tất đo/biên soạn không có nghĩa đạt tất cả mục tiêu. Không dùng số Gen 1 như hiệu năng hợp lệ; không khẳng định router thắng, không đổi FAIL/pending thành PASS. Chấp nhận GPU CUDA đủ VRAM; latency chỉ áp dụng L4 đã ghi. Xác nhận chéo/chữ ký A/B/C còn chờ, không tạo chữ ký tự động.
+
+
+## A.9. Trạng thái E1–E6 trong đường báo cáo hiện hành
+
+| Mã | Hiện trạng | Giới hạn |
+| :--- | :--- | :--- |
+| E1 | Final checkpoint qua canonical loader, 0/0 hoặc từ chối có tên | Loader legacy còn trong repo; G7.0 rộng chưa đóng |
+| E2 | Không ép Gen 1 về n3/n8; layout không đầy đủ bị từ chối | Partial chỉ là forensic, gate-ineligible |
+| E3 | T/ngưỡng fit trên 400 calibration, tách 1.600 evaluation, không phụ thuộc batch đang chấm | Threshold biên có khác biệt CPU/CUDA rất nhỏ; benchmark giữ cùng backend |
+| E4 | Tham số/số đo router v1 synthetic thu hồi; router tắt | Chưa đo held-out win; fallback không đồng nghĩa router thành công |
+| E5 | Có AUC/AP/TPR1/5/10, ECE/NLL và CI95; nhiệt độ có kiểm tra hội tụ | Raw corrected schema v1; view v3 cho tài liệu là derived, không đổi schema nguồn |
+| E6 | Gen 2 cùng n3, 12-grid α×β, verify và actual hash đã đối chiếu | Metadata rời cũ khác hash được giữ như lịch sử, không coi là selected |
+
+Không suy tên generator từ filename để chế bảng5×4: nguồn hiện cung cấp per-subset, chưa đủ nhãn generator chuẩn cho taxonomy đó. Không fit lên evaluation; không dùng `mean_w` của tập để đặt ngưỡng. Mốc báo cáo hiện tại là post-hoc confirmation, không phải kiểm thử mù mới.
+
+
+## Protocol đã đo
+
+400 CFE calibration (200/200), 1.600 evaluation (800/800); 7 điều kiện, FP16/CUDA/batch 16, CLIP resize cạnh ngắn 224 bicubic/center crop, degradation post-resize. In-dist82.003 lượt/18 tập; chỉ báo cáo số lượt, không khẳng định82.003 nội dung độc lập. Raw schema hiện hành `phase7_corrected_benchmark/v1`; view tài liệu `report_schema:v3` ghi rõ derived và nguồn hash.
+
+| Điều kiện | AUC % [CI 95%] | AP % [CI 95%] | Fake@Real90 % [CI 95%] | ECE % |
+| :--- | :--- | :--- | :--- | ---: |
+| clean | 88,66 [87,11; 90,16] | 89,08 [87,35; 90,85] | 64,12 [59,25; 69,77] | 4,39 |
+| q30 | 79,88 [77,65; 82,07] | 78,47 [75,33; 81,49] | 42,62 [37,87; 47,91] | 5,08 |
+
+<!-- PHASE7_CURRENT_END -->
+
+<details>
+<summary>Kế hoạch nền và hồ sơ các giai đoạn trước — chỉ để tham khảo lịch sử, không dùng như kết quả Phase 7 hiện hành</summary>
+
+Các bảng, hình, kết luận và lệnh dưới đây được giữ để truy vết. Số Gen 1 là `invalid_layout`; chỉ mục nguồn và nội dung hiệu lực nằm ở khối cập nhật phía trên. Không dùng kết luận “PASS toàn bộ” trong hồ sơ cũ thay cho phán quyết mới.
+
+
 > **Dự án**: Nâng cao độ bền vững pháp y cho FatFormer trước biến dạng nén mạng xã hội (FatFormer-XLA)  
 > **Giai đoạn**: Milestone 7 (External Unseen Evaluation Benchmark)  
 > **Mục tiêu cốt lõi**: Kiểm thử mù Zero-shot (Unseen Testset) trên các mô hình AI tạo sinh thương mại và mã nguồn mở thế hệ mới nhất (Midjourney v6, DALL-E 3, SDXL, Flux.1, DeepFloyd, StyleGAN3...).  
@@ -362,3 +408,5 @@ Mỗi báo cáo phải có bảng:
 3. Khi so sánh với bài báo gốc CVPR 2024, phải nêu rõ khác biệt về metric (paper dùng ACC; ta dùng AUC + TPR@FPR).
 4. Mọi bảng phải có cột `CI 95%`; nếu chênh lệch giữa hai mô hình nhỏ hơn nửa độ rộng CI ⇒ **không được kết luận mô hình này tốt hơn**.
 
+
+</details>

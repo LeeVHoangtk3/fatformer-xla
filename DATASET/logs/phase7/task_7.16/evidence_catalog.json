@@ -1,0 +1,739 @@
+{
+  "schema": "phase7_documentation_evidence/v1",
+  "run_id": "corrected_20261109_102954_3d28ad",
+  "facts": [
+    {
+      "id": "cfe.clean.auc",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/clean/metrics/auc",
+      "value": 88.66,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.clean.ap",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/clean/metrics/ap",
+      "value": 89.08,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.clean.fake_at_real90",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/clean/metrics/fake_at_real90",
+      "value": 64.12,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.clean.accuracy",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/clean/metrics/accuracy",
+      "value": 74.375,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.clean.real_acc",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/clean/metrics/real_acc",
+      "value": 95.62,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.clean.fake_acc",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/clean/metrics/fake_acc",
+      "value": 53.12,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.clean.ece",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/clean/metrics/ece",
+      "value": 4.39,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.clean.nll",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/clean/metrics/nll",
+      "value": 0.4288,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.clean.ci95",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/clean/metrics/ci95",
+      "value": {
+        "auc": [
+          87.11,
+          90.16
+        ],
+        "ap": [
+          87.35,
+          90.85
+        ],
+        "tpr_at_fpr_0.05": [
+          46.98,
+          60.4
+        ],
+        "fake_at_real90": [
+          59.25,
+          69.77
+        ]
+      },
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.clean.tpr_at_fpr",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/clean/metrics/tpr_at_fpr",
+      "value": {
+        "0.01": 35.88,
+        "0.05": 54.0,
+        "0.10": 64.12
+      },
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.q30.auc",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/q30/metrics/auc",
+      "value": 79.88,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.q30.ap",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/q30/metrics/ap",
+      "value": 78.47,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.q30.fake_at_real90",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/q30/metrics/fake_at_real90",
+      "value": 42.62,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.q30.accuracy",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/q30/metrics/accuracy",
+      "value": 65.8125,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.q30.real_acc",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/q30/metrics/real_acc",
+      "value": 91.38,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.q30.fake_acc",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/q30/metrics/fake_acc",
+      "value": 40.25,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.q30.ece",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/q30/metrics/ece",
+      "value": 5.08,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.q30.nll",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/q30/metrics/nll",
+      "value": 0.5515,
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.q30.ci95",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/q30/metrics/ci95",
+      "value": {
+        "auc": [
+          77.65,
+          82.07
+        ],
+        "ap": [
+          75.33,
+          81.49
+        ],
+        "tpr_at_fpr_0.05": [
+          23.1,
+          35.94
+        ],
+        "fake_at_real90": [
+          37.87,
+          47.91
+        ]
+      },
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "cfe.q30.tpr_at_fpr",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/cfe/q30/metrics/tpr_at_fpr",
+      "value": {
+        "0.01": 12.38,
+        "0.05": 28.25,
+        "0.10": 42.62
+      },
+      "unit": "percent except nll",
+      "scope": "current"
+    },
+    {
+      "id": "indist.macro_acc",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/indist/macro_acc",
+      "value": 90.10184712075026,
+      "unit": "percent",
+      "scope": "current"
+    },
+    {
+      "id": "indist.pooled_real_acc",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/indist/pooled_real_acc",
+      "value": 90.41,
+      "unit": "percent",
+      "scope": "current"
+    },
+    {
+      "id": "indist.mean_subset_real_acc",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/indist/mean_subset_real_acc",
+      "value": 85.78888888888889,
+      "unit": "percent",
+      "scope": "current"
+    },
+    {
+      "id": "fixed_fpr.q30",
+      "file": "DATASET/logs/phase7/task_7.15/current/analysis/recomputed_metrics.json",
+      "pointer": "/pooled/q30/fixed_fpr_pct",
+      "value": 8.625,
+      "unit": "percent",
+      "scope": "current"
+    },
+    {
+      "id": "distribution.macro_ci",
+      "file": "DATASET/logs/phase7/task_7.15/current/analysis/distribution_cautions.json",
+      "pointer": "/macro_subset_ci95",
+      "value": {
+        "point": 90.10184712075026,
+        "ci95_resampling_18_subsets": [
+          86.75526544256002,
+          93.32349591421729
+        ],
+        "n_boot": 10000,
+        "seed": 42,
+        "unit": "subset",
+        "purpose": "diagnostic, not the original acceptance CI rule"
+      },
+      "unit": "",
+      "scope": "current"
+    },
+    {
+      "id": "distribution.boundary_cases",
+      "file": "DATASET/logs/phase7/task_7.15/current/analysis/distribution_cautions.json",
+      "pointer": "/cpu_gpu_boundary_rows_by_dataset",
+      "value": {
+        "q50": 1,
+        "indist": 5
+      },
+      "unit": "",
+      "scope": "current"
+    },
+    {
+      "id": "bootstrap",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "pointer": "/bootstrap",
+      "value": {
+        "n": 1000,
+        "seed": 42,
+        "unit": "image",
+        "confidence_level": 0.95
+      },
+      "unit": "",
+      "scope": "current"
+    },
+    {
+      "id": "calibration.T",
+      "file": "DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json",
+      "pointer": "/T",
+      "value": 2.7832491397857666,
+      "unit": "",
+      "scope": "current"
+    },
+    {
+      "id": "calibration.T_star_default",
+      "file": "DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json",
+      "pointer": "/T_star_default",
+      "value": 0.7918508648872375,
+      "unit": "",
+      "scope": "current"
+    },
+    {
+      "id": "calibration.n_calib",
+      "file": "DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json",
+      "pointer": "/n_calib",
+      "value": 400,
+      "unit": "",
+      "scope": "current"
+    },
+    {
+      "id": "calibration.fpr_target",
+      "file": "DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json",
+      "pointer": "/fpr_target",
+      "value": 0.05,
+      "unit": "",
+      "scope": "current"
+    },
+    {
+      "id": "calibration.fpr_measured",
+      "file": "DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json",
+      "pointer": "/fpr_measured",
+      "value": {
+        "0.01": 0.01,
+        "0.05": 0.05,
+        "0.10": 0.1
+      },
+      "unit": "",
+      "scope": "current"
+    },
+    {
+      "id": "calibration.ece_after",
+      "file": "DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json",
+      "pointer": "/ece_after",
+      "value": 5.39,
+      "unit": "",
+      "scope": "current"
+    },
+    {
+      "id": "calibration.nll_after",
+      "file": "DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json",
+      "pointer": "/nll_after",
+      "value": 0.4227,
+      "unit": "",
+      "scope": "current"
+    },
+    {
+      "id": "latency.batch1.overhead_delta_ms",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/latency_phase7.json",
+      "pointer": "/batches/1/overhead_delta_ms",
+      "value": 0.1880549998531933,
+      "unit": "ms/image",
+      "scope": "current"
+    },
+    {
+      "id": "latency.batch1.package_per_image_ms",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/latency_phase7.json",
+      "pointer": "/batches/1/package_per_image_ms",
+      "value": 44.98,
+      "unit": "ms/image",
+      "scope": "current"
+    },
+    {
+      "id": "latency.batch1.overhead_delta_p95_ms",
+      "file": "DATASET/logs/phase7/task_7.15/current/raw/latency_phase7.json",
+      "pointer": "/batches/1/overhead_delta_p95_ms",
+      "value": 2.4818566005478697,
+      "unit": "ms/image",
+      "scope": "current"
+    },
+    {
+      "id": "data.integrity.summary",
+      "file": "DATASET/logs/phase7/data_isolation_report.json",
+      "pointer": "/integrity/summary",
+      "value": {
+        "n_records": 14400,
+        "n_bytes_images": 8107529958,
+        "by_split": {
+          "train": 12240,
+          "val_calib": 1080,
+          "val_select": 1080
+        },
+        "split_ratio": {
+          "train": 0.85,
+          "val_calib": 0.075,
+          "val_select": 0.075
+        },
+        "family_totals": {
+          "autoregressive": 1200,
+          "commercial": 1200,
+          "latent_diffusion": 1750,
+          "modern_gans": 1200,
+          "pixel_diffusion": 1187,
+          "real": 7863
+        },
+        "family_new_only": {
+          "autoregressive": 1200,
+          "commercial": 1200,
+          "latent_diffusion": 551,
+          "modern_gans": 1200,
+          "pixel_diffusion": 1187,
+          "real": 6071
+        },
+        "family_imbalance": 1.4743,
+        "n_families": 6,
+        "real_frac_by_split": {
+          "train": 0.546,
+          "val_calib": 0.5463,
+          "val_select": 0.5463
+        },
+        "real_frac_total": 0.54604,
+        "replay": 2991,
+        "replay_frac": 0.20771,
+        "n_generators": 22,
+        "n_sources": 8
+      },
+      "unit": "",
+      "scope": "recorded artifact"
+    },
+    {
+      "id": "data.elapsed_s",
+      "file": "DATASET/logs/phase7/data_isolation_report.json",
+      "pointer": "/elapsed_s",
+      "value": 512.7,
+      "unit": "",
+      "scope": "recorded artifact"
+    },
+    {
+      "id": "data.violations",
+      "file": "DATASET/logs/phase7/data_isolation_report.json",
+      "pointer": "/violations",
+      "value": 0,
+      "unit": "",
+      "scope": "recorded artifact"
+    },
+    {
+      "id": "data.pass",
+      "file": "DATASET/logs/phase7/data_isolation_report.json",
+      "pointer": "/pass",
+      "value": true,
+      "unit": "",
+      "scope": "recorded artifact"
+    },
+    {
+      "id": "degradation.pct_overhead",
+      "file": "DATASET/logs/phase7/degradation_v2/degradation_benchmark.json",
+      "pointer": "/pct_overhead",
+      "value": 14.078018928444958,
+      "unit": "",
+      "scope": "recorded artifact"
+    },
+    {
+      "id": "degradation.source",
+      "file": "DATASET/logs/phase7/degradation_v2/degradation_benchmark.json",
+      "pointer": "/source",
+      "value": "synthetic:32 seeded RGB noise images, 256x256",
+      "unit": "",
+      "scope": "recorded artifact"
+    },
+    {
+      "id": "degradation.passed",
+      "file": "DATASET/logs/phase7/degradation_v2/degradation_benchmark.json",
+      "pointer": "/passed",
+      "value": true,
+      "unit": "",
+      "scope": "recorded artifact"
+    },
+    {
+      "id": "selection.ratio",
+      "file": "DATASET/logs/phase7/selection_benchmark.json",
+      "pointer": "/ratio",
+      "value": 1.0462320698546574,
+      "unit": "",
+      "scope": "recorded artifact"
+    },
+    {
+      "id": "selection.model",
+      "file": "DATASET/logs/phase7/selection_benchmark.json",
+      "pointer": "/model",
+      "value": "CPU pooled RGB linear classifier, not CLIP",
+      "unit": "",
+      "scope": "recorded artifact"
+    },
+    {
+      "id": "selection.passed",
+      "file": "DATASET/logs/phase7/selection_benchmark.json",
+      "pointer": "/passed",
+      "value": true,
+      "unit": "",
+      "scope": "recorded artifact"
+    },
+    {
+      "id": "router.status",
+      "file": "DATASET/logs/phase7/router_params.json",
+      "pointer": "/status",
+      "value": "awaiting_measured_calibration",
+      "unit": "",
+      "scope": "recorded artifact"
+    },
+    {
+      "id": "router.deployment_enabled",
+      "file": "DATASET/logs/phase7/router_params.json",
+      "pointer": "/deployment_enabled",
+      "value": false,
+      "unit": "",
+      "scope": "recorded artifact"
+    },
+    {
+      "id": "router.experiment_status",
+      "file": "DATASET/logs/phase7/router_params.json",
+      "pointer": "/experiment_status",
+      "value": "deferred",
+      "unit": "",
+      "scope": "recorded artifact"
+    },
+    {
+      "id": "gen1.runs",
+      "file": "DATASET/logs/phase7/wise_ft_sweep/wise_ft_legacy_reinterpretation.json",
+      "pointer": "/runs",
+      "value": [
+        {
+          "layout": "n3",
+          "loaded_blocks": [
+            7,
+            15,
+            23
+          ],
+          "dropped": [
+            2,
+            5,
+            8,
+            11,
+            14,
+            17,
+            20
+          ],
+          "acc": 64.75,
+          "real_acc": 94.0,
+          "fake_acc": 35.5,
+          "auc": 76.29,
+          "ap": 78.24
+        },
+        {
+          "layout": "n8",
+          "loaded_blocks": [
+            2,
+            5,
+            8,
+            11,
+            14,
+            17,
+            20,
+            23
+          ],
+          "dropped": [
+            7,
+            15
+          ],
+          "acc": 52.05,
+          "real_acc": 100.0,
+          "fake_acc": 4.1,
+          "auc": 57.07,
+          "ap": 60.41
+        }
+      ],
+      "unit": "",
+      "scope": "historical diagnostic"
+    },
+    {
+      "id": "gen1.delta_fake_acc",
+      "file": "DATASET/logs/phase7/wise_ft_sweep/wise_ft_legacy_reinterpretation.json",
+      "pointer": "/delta_fake_acc",
+      "value": -31.4,
+      "unit": "",
+      "scope": "historical diagnostic"
+    },
+    {
+      "id": "gen1.verdict",
+      "file": "DATASET/logs/phase7/wise_ft_sweep/wise_ft_legacy_reinterpretation.json",
+      "pointer": "/verdict",
+      "value": "inconclusive",
+      "unit": "",
+      "scope": "historical diagnostic"
+    },
+    {
+      "id": "gen2.metadata",
+      "file": "DATASET/logs/phase7/task_7.16/gen2_verified_metadata.json",
+      "pointer": "/metadata",
+      "value": {
+        "schema": "wise_ft_v2/v1",
+        "alpha": 0.55,
+        "beta_srm": 0.35,
+        "sources": {
+          "baseline": {
+            "path": "DATASET/pretrained/fatformer_4class_ckpt.pth",
+            "sha256": "3b904401ad4ce7d0bc33661e83742ec4b659850c076b73cd544e87e26d8cb3db",
+            "n_keys": 1116
+          },
+          "anchored": {
+            "path": "DATASET/checkpoints/anchored_recovery_phase_6r/fatformer_anchored_recovery_best.pth",
+            "sha256": "f70a11df9d7f45c11c60c4e117f8d1302c4f426b1f1b567cb2e50387b0111def",
+            "n_keys": 1200
+          }
+        },
+        "layout": {
+          "n": 3,
+          "indices": [
+            7,
+            15,
+            23
+          ],
+          "dropped": [],
+          "partial": false
+        },
+        "n_keys": 1200,
+        "dropped_top_level_keys": 0,
+        "git_commit": "851be5ec5e0bab73413deb202290a8a514bac0fc"
+      },
+      "unit": "",
+      "scope": "current"
+    },
+    {
+      "id": "training.selected_worst_group_pct",
+      "file": "DATASET/logs/phase7/task_7.16/training_summary.json",
+      "pointer": "/selected_worst_group_pct",
+      "value": 46.666666666666664,
+      "unit": "",
+      "scope": "current"
+    },
+    {
+      "id": "training.nonfinite_grad_norm_epochs",
+      "file": "DATASET/logs/phase7/task_7.16/training_summary.json",
+      "pointer": "/nonfinite_grad_norm_epochs",
+      "value": [
+        1,
+        4
+      ],
+      "unit": "",
+      "scope": "current"
+    },
+    {
+      "id": "tests.cases",
+      "file": "DATASET/logs/phase7/task_7.16/validation/targeted_tests.json",
+      "pointer": "/cases",
+      "value": 103,
+      "unit": "",
+      "scope": "current"
+    },
+    {
+      "id": "tests.total_disjoint_cases",
+      "file": "DATASET/logs/phase7/task_7.16/validation/targeted_tests.json",
+      "pointer": "/total_disjoint_cases",
+      "value": 156,
+      "unit": "",
+      "scope": "current"
+    }
+  ],
+  "sources": {
+    "benchmark": {
+      "path": "DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json",
+      "sha256": "b00fcb81ab164e3350b7cb7e67a6b9d9df8af1c1e450e7a4dac8a1b07d3b2a97"
+    },
+    "acceptance": {
+      "path": "DATASET/logs/phase7/task_7.15/current/raw/acceptance.json",
+      "sha256": "2e9ed4b908d5de8d6fd7a0af00eac6200e82fa20ab801bf79b3744baec5e6cd6"
+    },
+    "calibration": {
+      "path": "DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json",
+      "sha256": "7ff282ba1624308b977540358844c5c364c3a6128f01db796b422412ba7bece8"
+    },
+    "latency": {
+      "path": "DATASET/logs/phase7/task_7.15/current/raw/latency_phase7.json",
+      "sha256": "2a7e24d70abd5c144c6241960c632fb6c282e8acb74ab8031758ef5a52b7b9e8"
+    },
+    "verification": {
+      "path": "DATASET/logs/phase7/task_7.15/current/raw/real_image_verification.json",
+      "sha256": "bd2acb46a08a7a2c5e54925de8b3f5cca08e1da270484821909578f7b396ab4e"
+    },
+    "audit": {
+      "path": "DATASET/logs/phase7/task_7.15/current/analysis/verification.json",
+      "sha256": "f6c1e2abe00bcb0edcaafdbf34fe8cc27d893eaa838c945a33724b9ea112624d"
+    },
+    "recomputed": {
+      "path": "DATASET/logs/phase7/task_7.15/current/analysis/recomputed_metrics.json",
+      "sha256": "d13c039d6202b5deb5e277c51eed43c3793c39905e7def70a815829792b690a2"
+    },
+    "distribution": {
+      "path": "DATASET/logs/phase7/task_7.15/current/analysis/distribution_cautions.json",
+      "sha256": "6feba40ba08120d1c82313a422ce6937a7e0e2456d4606160ac684f3afda2eaf"
+    },
+    "ci": {
+      "path": "DATASET/logs/phase7/task_7.15/current/analysis/ci_verification.json",
+      "sha256": "0b8fc6e007d098b3994f7301968e3f5f1c0b61ed83a05b702a58590116e5f841"
+    },
+    "canonical": {
+      "path": "DATASET/logs/phase7/wise_ft_sweep/task_7.2_canonical_load_verification.json",
+      "sha256": "77604235b36eb392ad85bc0f1e124e847ca548eeeb8408e8c791143003055248"
+    },
+    "structure": {
+      "path": "DATASET/logs/phase7/wise_ft_sweep/checkpoint_structure_audit.json",
+      "sha256": "44a1cc18f3ef6970eb7a9606cff4f92e774a33480468425fafb71d7c284793b5"
+    },
+    "gen1": {
+      "path": "DATASET/logs/phase7/wise_ft_sweep/wise_ft_legacy_reinterpretation.json",
+      "sha256": "fcf58d569796dd038d9e311a7aa221fccc12be1fb80ad4b8e4158bd94cbd3918"
+    },
+    "matrix": {
+      "path": "DATASET/logs/phase7/wise_ft_sweep/cfe_v3_baseline_matrix.json",
+      "sha256": "f6016385ed8bd15361f1a7c384fd628291bcbc99177085784bf32a1166f89efc"
+    },
+    "data": {
+      "path": "DATASET/logs/phase7/data_isolation_report.json",
+      "sha256": "082fd1ee8f45eef98089ba774605a61b9110494ab7138b3eeaf20179f4ebe6fd"
+    },
+    "manifest": {
+      "path": "DATASET/manifests/data_manifest_v2.json",
+      "sha256": "c1e883fed2e0fdd55ad9732ddc3bd44e1d21438b009100134f91788cf6af218a"
+    },
+    "degradation": {
+      "path": "DATASET/logs/phase7/degradation_v2/degradation_benchmark.json",
+      "sha256": "3953bb09a3bf5941599b534a5bed3fe66e26819465e4dd8acc33c5fe3e2beaf5"
+    },
+    "selection": {
+      "path": "DATASET/logs/phase7/selection_benchmark.json",
+      "sha256": "4a838b36aafc4cb03906c228a59984bebe3ec5570c16dc3bd5a7013afb68d33d"
+    },
+    "router": {
+      "path": "DATASET/logs/phase7/router_params.json",
+      "sha256": "7eea9fca88d3674b4e6664c5f18a7198b6e91489562e4dd8b995daadcf106bba"
+    },
+    "ablation": {
+      "path": "DATASET/logs/phase7/ablation_v2_fixed_run1/ablation_mini_v2.json",
+      "sha256": "b3a1ca6735dc7adb6ac14e3a7bc50926fcf990c65659135aed9ca31f7af3d3e4"
+    }
+  },
+  "data_download_bytes_reported": 21808026735,
+  "data_stream_total_elapsed_s": null,
+  "data_stream_note": "Not recorded; audit elapsed_s is not stream time.",
+  "protected_notebooks": {
+    "notebooks/task/task_7.14/task_7.14_locked_benchmark_colab.ipynb": "16d476d4afbe789bb76ce8130b43f032729209c4c0400af4b9916240e9ab2abf",
+    "notebooks/task/task_7.15/task_7.15_unified_packaging_colab.ipynb": "f7ce2159b014aecacf6aa90926fde791dc09db1db62969087978039232053660"
+  },
+  "source_original_notebook_sha256": "311a50b171a868581e89616458c32f84f599b07b8dbb622a27ad2d83a844173a",
+  "source_script_sha256": "93d664331c2acf7b8256d86af452aa8f564fd72bf91ca3fba222866d9f09ea88"
+}

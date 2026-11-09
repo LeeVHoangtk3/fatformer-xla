@@ -1,5 +1,21 @@
 # PHASE 7 — NHÓM NHIỆM VỤ CỦA THÀNH VIÊN C (TRAINING & EVALUATION)
 
+<!-- PHASE7_CURRENT_BEGIN -->
+## Trạng thái thực tế ngày 09/11/2026
+
+Task 7.16 đã biên soạn 11/11 tài liệu, Chương 5, slide 6 trang và hồ sơ nghiệm thu. **Chờ cross-review và chữ ký thật A/B/C**; không xác nhận thay con người.
+
+| Cổng | Kết quả hiện hành | Bằng chứng / phần còn thiếu |
+| :--- | :--- | :--- |
+| G7.0 | **PENDING** theo DoD toàn repo | Canonical core: 3 checkpoint nạp 0/0, Gen 1 bị từ chối; còn loader legacy và CI chẩn đoán n3/n8 chưa đủ. |
+| G7.1 | **FAIL** | Gen 2: Clean Fake@Real90 48,88% <55%; Q30 AUC 43,67% <55%. |
+| G7.2 | **FAIL — 6/8** | Clean Fake@Real90 64,12% <65%; worst-subset Fake ACC 30,86% <45%. |
+| G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
+
+Hồ sơ: [biên bản và checklist](../../../milestones/milestone_phase7_acceptance.md) và [bảng số cũ → mới → nguồn](../../../bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md). GPU có thể là bất kỳ CUDA GPU đủ VRAM; kết quả latency hiện có chỉ được đo trên L4/FP16. Các mốc và số liệu cũ phía dưới là kế hoạch/hồ sơ lịch sử, không thay phán quyết hiện hành.
+<!-- PHASE7_CURRENT_END -->
+
+
 > **Giai đoạn**: Phase 7 — Tái lập đo lường & Hợp nhất mô hình (`27/10/2026 → 12/11/2026`)
 > **Chủ trì**: Thành viên C (Training & Evaluation Lead, giữ nhịp 4 cổng)
 > **Số task**: 10 (`7.1`, `7.3`, `7.4`, `7.5`, `7.6`, `7.11`, `7.12`, `7.14`, `7.15`, `7.16`)
@@ -21,7 +37,7 @@
 | **7.12** | [`task_7.12_ablation_mini_v2.md`](task_7.12_ablation_mini_v2.md) | Ablation Guard / Feature, bốn run mới (seed 42) | D7–D8 | 95,66 phút train+validation đã ghi; chưa gồm toàn bộ phụ trợ | **G7.2** | `[~] Có số đo bốn run A100 40GB; hậu kiểm checkpoint/logits còn mở. G7.2 chưa đạt đầy đủ theo tiêu chí hiện hành.` |
 | **7.14** | [`task_7.14_locked_benchmark_phase7.md`](task_7.14_locked_benchmark_phase7.md) | Locked Benchmark Phase 7 (in-dist 82k + CFE + 6 biến thể) | D9–D10 | 5 h | **G7.3** | `[~] Đã khóa cấu hình & sẵn sàng chạy đo GPU trên Colab` |
 | **7.15** | [`task_7.15_unified_packaging.md`](task_7.15_unified_packaging.md) | Đóng gói `UnifiedFatFormerXLA` + báo cáo nghiệm thu | D11 | 4 h | **G7.3** | `[ ] Sẵn sàng` |
-| **7.16** | [`task_7.16_cap_nhat_tai_lieu_du_an.md`](task_7.16_cap_nhat_tai_lieu_du_an.md) | Cập nhật tài liệu dự án & Chương 5/Hạn chế | D10–D12 | 6 h | **G7.3** | `[ ] Sẵn sàng` |
+| **7.16** | [`task_7.16_cap_nhat_tai_lieu_du_an.md`](task_7.16_cap_nhat_tai_lieu_du_an.md) | Cập nhật tài liệu dự án & Chương 5/Hạn chế | D10–D12 | 6 h | **G7.3** | `[~] Tài liệu xong; chờ cross-review A/B/C` |
 
 **Tổng**: ~46 giờ công + ~14–18 giờ GPU. C là người **duy nhất** được đánh dấu cổng pass/fail.
 
@@ -53,7 +69,7 @@ flowchart TD
 
 1. **Không chấp nhận** báo cáo thiếu `TPR@FPR` (1/5/10%), AUC/AP, CI 95%, và nguồn gốc tập hiệu chuẩn.
 2. **Mọi số của Gen 1** phải gắn nhãn `invalid_layout` — không được xuất hiện như kết quả hiện hành.
-3. **Không trích dẫn** `52.05%`, `4.10%`, `96.58%` như số liệu còn hiệu lực (xem kế hoạch §VIII).
+3. **Không trích dẫn** `52.05%`, `4.10%`, `96.58%` như số liệu còn hiệu lực (xem kế hoạch §VIII). — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*
 4. **Fit và báo cáo phải tách tập**: `val_calib` để fit, `val_select` để chọn checkpoint, CFE/18 tập để báo cáo.
 5. **Không đổi metric giữa chừng**: nếu phát hiện metric sai, dừng run, sửa, chạy lại từ checkpoint — không "vá" số liệu.
 6. **Kết quả âm vẫn hợp lệ**: nếu G7.2 trượt, Phase 7 vẫn đạt nếu có checkpoint Pareto tốt nhất + ablation đòn bẩy thất bại + mục Hạn chế trung thực (kế hoạch §II.3).

@@ -1,0 +1,9 @@
+﻿criterion,value,target,comparison,passed
+CFE_clean_Fake@Real90,64.125,65,>=,False
+CFE_clean_AUC,88.66226562499999,78,>=,True
+CFE_Q30_AUC,79.8790625,60,>=,True
+CFE_Q30_Fake@Real90,42.625,40,>=,True
+InDist_Macro_ACC,90.10184712075026,90,>=,True
+InDist_Real_ACC,90.4062820075111,90,>=,True
+Worst_Subset_Fake_ACC,30.864197530864196,45,>=,False
+ECE_Post_Calibration,0.05082282038172707,0.08,<=,True

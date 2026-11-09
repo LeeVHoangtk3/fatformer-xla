@@ -1,4 +1,38 @@
 # BÁO CÁO NGHIỆM THU KỸ THUẬT: TASK 6.6-R
+
+<!-- PHASE7_CURRENT_BEGIN -->
+## Kết quả Phase 7 hiện hành — 09/11/2026
+
+Run `corrected_20261109_102954_3d28ad`, package `248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0`. Số liệu hiện hành: [hậu kiểm chi tiết](../../../DATASET/logs/phase7/task_7.15/current/analysis/README.md), [view JSON v3 cho tài liệu](../../../DATASET/logs/phase7/task_7.16/final_phase7_report.json) và [bảng nguồn số cũ → mới](../overall/bao_cao_ra_soat_so_lieu_phase7.md). View v3 được tổng hợp từ raw corrected schema v1, **không phải một phép đo mới**.
+
+| Cổng | Kết quả hiện hành | Bằng chứng / phần còn thiếu |
+| :--- | :--- | :--- |
+| G7.0 | **PENDING** theo DoD toàn repo | Canonical core: 3 checkpoint nạp 0/0, Gen 1 bị từ chối; còn loader legacy và CI chẩn đoán n3/n8 chưa đủ. |
+| G7.1 | **FAIL** | Gen 2: Clean Fake@Real90 48,88% <55%; Q30 AUC 43,67% <55%. |
+| G7.2 | **FAIL — 6/8** | Clean Fake@Real90 64,12% <65%; worst-subset Fake ACC 30,86% <45%. |
+| G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
+
+Hoàn tất đo/biên soạn không có nghĩa đạt tất cả mục tiêu. Không dùng số Gen 1 như hiệu năng hợp lệ; không khẳng định router thắng, không đổi FAIL/pending thành PASS. Chấp nhận GPU CUDA đủ VRAM; latency chỉ áp dụng L4 đã ghi. Xác nhận chéo/chữ ký A/B/C còn chờ, không tạo chữ ký tự động.
+
+
+## Phạm vi hiệu lực của báo cáo Phase 6-R
+
+Toàn bộ phần gốc bên dưới chỉ để tham khảo lịch sử; cột WiSE-FT Gen1 là `invalid_layout`. Thu hồi cách đọc “PASS100% mọi hard gate”, “96.58% macro” hoặc “hai chế độ là tất yếu”. Không so trực tiếp ACC lịch sử/partition cũ với AUC hoặc macro balanced hiện hành.
+
+| Điều kiện | AUC % [CI 95%] | AP % [CI 95%] | Fake@Real90 % [CI 95%] | ECE % |
+| :--- | :--- | :--- | :--- | ---: |
+| clean | 88,66 [87,11; 90,16] | 89,08 [87,35; 90,85] | 64,12 [59,25; 69,77] | 4,39 |
+| q30 | 79,88 [77,65; 82,07] | 78,47 [75,33; 81,49] | 42,62 [37,87; 47,91] | 5,08 |
+
+Số liệu trên thuộc run mới, không sửa artifact Phase 6-R để giả là đã đo lại. Kết quả âm hiện hành và giới hạn ở [chuong_5_ket_luan_va_han_che.md](../overall/chuong_5_ket_luan_va_han_che.md). Bản Gen2 được đo riêng ở Task 7.5–7.6, G7.1 FAIL, không cứu các số Gen1.
+
+<!-- PHASE7_CURRENT_END -->
+
+<details>
+<summary>Kế hoạch nền và hồ sơ các giai đoạn trước — chỉ để tham khảo lịch sử, không dùng như kết quả Phase 7 hiện hành</summary>
+
+Các bảng, hình, kết luận và lệnh dưới đây được giữ để truy vết. Số Gen 1 là `invalid_layout`; chỉ mục nguồn và nội dung hiệu lực nằm ở khối cập nhật phía trên. Không dùng kết luận “PASS toàn bộ” trong hồ sơ cũ thay cho phán quyết mới.
+
 ## KIỂM CHUẨN KHÓA SỔ CHẾ ĐỘ KÉP (SINGLE-PASS DUAL-MODE) TRÊN 82.003 ẢNH BENCHMARK VÀ 6 BIẾN THỂ SUY BIẾN VẬT LÝ — HOÀN TẤT CHIẾN DỊCH KHÔI PHỤC HIỆU NĂNG ĐỈNH CAO PHASE 6-R
 
 > **Mã nhiệm vụ**: `Task 6.6-R` *(Milestone 6-R: Final Locked Recovery Benchmark)*  
@@ -14,7 +48,7 @@
 > **Trạng thái nghiệm thu**: `[x] ĐÃ HOÀN THÀNH XUẤT SẮC — TOÀN BỘ CÁC CHỈ TIÊU HARD GATES PHASE 6-R PASS 100% TRÊN GPU CLOUD`
 
 > 🚨 **ĐÍNH CHÍNH 27/10/2026 — PHẠM VI HIỆU LỰC BỊ THU HẸP**
-> Báo cáo này **chỉ còn hiệu lực cho cột Anchored Recovery**. Cột WiSE-FT (96,58% Macro ACC, 98,10% Real ACC, 99,15% AUC, 6,73% Q30 Fake) **bị vô hiệu** vì checkpoint `fatformer_wise_ft_best.pth` chứa **10 khối adapter** `{2,5,7,8,11,14,15,17,20,23}` — không `n ∈ {3,4,6,8,12,24}` nào nạp đầy đủ được (ràng buộc `(i+1)·24/n − 1`), và tại `7,15,23` còn mất nhánh SRM + Gating (66 vs 94 tensor/khối).
+> Báo cáo này **chỉ còn hiệu lực cho cột Anchored Recovery**. Cột WiSE-FT (96,58% Macro ACC, 98,10% Real ACC, 99,15% AUC, 6,73% Q30 Fake) **bị vô hiệu** vì checkpoint `fatformer_wise_ft_best.pth` chứa **10 khối adapter** `{2,5,7,8,11,14,15,17,20,23}` — không `n ∈ {3,4,6,8,12,24}` nào nạp đầy đủ được (ràng buộc `(i+1)·24/n − 1`), và tại `7,15,23` còn mất nhánh SRM + Gating (66 vs 94 tensor/khối). — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*
 > ⚠️ **Vì vậy câu "PASS 100%" ở dòng trạng thái trên là không còn đúng** — Hard Gate 1 và các gate liên quan WiSE-FT phải được đo lại.
 > Chi tiết: [`bao_cao_kiem_dinh_communityforensics_eval.md` Phần IX](../overall/bao_cao_kiem_dinh_communityforensics_eval.md#ix-đính-chính-kỹ-thuật-ngày-27102026) và [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §I. Việc thay thế: Task 7.1 (đo lại `n=3` vs `n=8`) và Task 7.5 (Gen 2).
 
@@ -42,7 +76,7 @@ Toàn bộ 82.003 ảnh kiểm chuẩn sạch (18 tập test) và 54.000 ảnh s
 
 | Chỉ Số Kỹ Thuật Đánh Giá | Mốc Sàn Gốc CVPR 2024 (Baseline) | Đợt Sụt Giảm M4 (Old Collapse) | Ứng Viên WiSE-FT (Task 6.1-R, Mode 1) | Ứng Viên Anchored (Task 6.3-R, Mode 1) | Ứng Viên Anchored (Task 6.3-R, Mode 2) | CHỈ TIÊU HARD GATE PHASE 6-R | KẾT LUẬN THẨM ĐỊNH |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Clean Macro ACC (18 tập)** | **96.45%** | **59.39%** | **96.58%** | 77.31% | 74.75% | $\ge \mathbf{90.00\%}$ | 🏆 **PASS (WiSE-FT vượt đỉnh)** |
+| **Clean Macro ACC (18 tập)** | **96.45%** | **59.39%** | **96.58%** | 77.31% | 74.75% | $\ge \mathbf{90.00\%}$ | 🏆 **PASS (WiSE-FT vượt đỉnh)**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
 | • Clean GANs Mean (8 họ) | 98.40% | 64.65% | **97.50%** | 78.44% | 76.10% | $\ge 93.00\%$ | 🏆 **PASS (WiSE-FT đạt 97.50%)** |
 | • Clean Diffusion Mean (10 họ) | 95.00% | 55.18% | **95.85%** | 76.41% | 73.66% | $\ge 88.00\%$ | 🏆 **PASS (WiSE-FT đạt 95.85%)** |
 | **Clean Real ACC (Chống Báo Giả)** | **99.37%** | **45.75%** | **98.10%** | 57.01% | 50.52% | $\ge \mathbf{90.00\%}$ | 🏆 **PASS (WiSE-FT đạt 98.10%)** |
@@ -88,7 +122,7 @@ Toàn bộ ma trận số liệu đã được trực quan hóa và lưu trữ t
 | **dalle** | Diffusion | 2.000 | **99.50%** | 99.50% | 99.50% | 72.45% | 45.00% | **99.90%** |
 | **pndm** | Diffusion | 2.000 | **96.95%** | 100.00% | 93.90% | 94.50% | 90.00% | **99.00%** |
 | **vqdiffusion** | Diffusion | 2.000 | **99.70%** | 100.00% | 99.40% | 95.00% | 90.00% | **100.00%** |
-| **TRUNG BÌNH CHUNG** | **Overall** | **82.003** | **96.58%** | **98.10%** | **95.07%** | **77.31%** | **57.01%** | **97.61%** |
+| **TRUNG BÌNH CHUNG** | **Overall** | **82.003** | **96.58%** | **98.10%** | **95.07%** | **77.31%** | **57.01%** | **97.61%**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
 
 ---
 
@@ -122,7 +156,7 @@ Kết quả thực nghiệm trên 82.003 ảnh đã mang lại **một phát hi�
 ```
 
 1. **Thành tựu của Mô hình WiSE-FT (Task 6.1-R)**:
-   - Đạt **96.58% Macro ACC**, **98.10% Real ACC** và **99.15% ROC-AUC** trên 18 tập benchmark sạch.
+   - Đạt **96.58% Macro ACC**, **98.10% Real ACC** và **99.15% ROC-AUC** trên 18 tập benchmark sạch. — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*
    - Hoàn toàn vượt mốc sàn gốc CVPR 2024 (**96.45%**) và cứu vãn hoàn toàn sự sụp đổ của đợt huấn luyện cũ (M4 Fallback: 59.39% ACC, 45.75% Real ACC).
    - Chứng minh định lý: *Nội suy không gian trọng số ($\alpha=0.25$, $\beta_{\text{srm}}=0.10$) là cơ chế bảo vệ biểu diễn sạch tối thượng cho Vision Transformer*.
 
@@ -146,7 +180,7 @@ Theo đặc tả nghiệm thu tại [`docs/plan/ke_hoach_phase_6_r_high_accuracy
 
 | Điều Kiện Hard Gate | Ngưỡng Quy Chuẩn Bắt Buộc | Kết Quả Đo Đạc Thực Tế Trên GPU | Trạng Thái Thẩm Định |
 | :--- | :---: | :---: | :---: |
-| **Hard Gate 1: Clean Macro ACC** | $\ge \mathbf{90.00\%}$ | **$96.58\%$** *(WiSE-FT)* | 🏆 **PASS (Vượt +6.58 pp)** |
+| **Hard Gate 1: Clean Macro ACC** | $\ge \mathbf{90.00\%}$ | **$96.58\%$** *(WiSE-FT)* | 🏆 **PASS (Vượt +6.58 pp)**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
 | **Hard Gate 2: Clean Real ACC** | $\ge \mathbf{90.00\%}$ | **$98.10\%$** *(WiSE-FT)* | 🏆 **PASS (Vượt +8.10 pp)** |
 | **Hard Gate 3: Clean Fake ACC** | $\ge \mathbf{88.00\%}$ | **$95.07\%$** *(WiSE-FT)* / **$97.61\%$** *(Anchored)* | 🏆 **PASS (Cả 2 mô hình đều vượt)** |
 | **Hard Gate 4: Clean ROC-AUC** | $\ge \mathbf{95.00\%}$ | **$99.15\%$** *(WiSE-FT)* / **$96.71\%$** *(Anchored)* | 🏆 **PASS (Vượt +4.15 pp)** |
@@ -176,3 +210,5 @@ Theo đặc tả nghiệm thu tại [`docs/plan/ke_hoach_phase_6_r_high_accuracy
 3. **Sẵn sàng cho các công đoạn tiếp theo**:
    - Hoàn tất số liệu thực nghiệm chuẩn xác phục vụ viết **Chương 5: Thực nghiệm và Đánh giá kết quả** trong Báo cáo Đồ án Tốt nghiệp.
    - Sẵn sàng xuất các bảng biểu đối sánh phục vụ thiết kế **Slide bảo vệ Đồ án Tốt nghiệp**.
+
+</details>

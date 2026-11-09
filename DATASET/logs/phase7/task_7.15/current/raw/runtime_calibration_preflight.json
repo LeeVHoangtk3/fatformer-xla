@@ -1,0 +1,22 @@
+{
+  "checkpoint_sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c",
+  "calibration_sha256": "7ff282ba1624308b977540358844c5c364c3a6128f01db796b422412ba7bece8",
+  "logits_sha256": "1c8814aab2f71e2d08b4c6f6472192ccbc58c8214ebea212e4d9912107e17be6",
+  "partition": {
+    "status": "verified_disjoint_ids",
+    "identity_unit": "subset/class/filename; content duplicates not audited",
+    "n_calibration": 400,
+    "n_evaluation": 1600,
+    "overlap": 0,
+    "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+    "evaluation_split_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+    "sample_ids_sha256": "5ae613da819d065b93225b901a7d06d3309ad27e8cdbb9a441cf4df43d7552fb"
+  },
+  "fpr_calibration": 0.05,
+  "T": 2.7832491397857666,
+  "threshold": 0.7918508648872375,
+  "inference_precision": "fp16",
+  "extraction_batch_size": 16,
+  "probability_device": "cuda",
+  "probability_batch_size": 16
+}

@@ -1,0 +1,38 @@
+{
+  "recomputed": {
+    "T": 2.7832491397857666,
+    "independent_T": 2.7832490979827673,
+    "independent_minimum_nll": 0.42269777637987443,
+    "ece_before": 14.377431824803356,
+    "ece_after": 5.392776682972908,
+    "nll_before": 0.6443558985885889,
+    "nll_after": 0.4226977718085097,
+    "cpu_crosscheck_fpr_005": 0.05
+  },
+  "partition": {
+    "status": "verified_disjoint_ids",
+    "identity_unit": "subset/class/filename; content duplicates not audited",
+    "n_calibration": 400,
+    "n_evaluation": 1600,
+    "overlap": 0,
+    "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+    "evaluation_split_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+    "sample_ids_sha256": "5ae613da819d065b93225b901a7d06d3309ad27e8cdbb9a441cf4df43d7552fb"
+  },
+  "temperature_optimization": {
+    "method": "bounded_inverse_temperature_bisection/v1",
+    "converged": true,
+    "status": "interior_converged",
+    "iterations": 36,
+    "temperature_bounds": [
+      0.05,
+      10.0
+    ],
+    "gradient_beta": -4.20434345116405e-10,
+    "scaled_kkt_residual": 8.640265422497188e-11,
+    "nll_at_T1": 0.6443562455758385,
+    "nll_at_fitted_T": 0.42269777637987443,
+    "objective_dtype": "float64",
+    "deployed_temperature_dtype": "float32"
+  }
+}

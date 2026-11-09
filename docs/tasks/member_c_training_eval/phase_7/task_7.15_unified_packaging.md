@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU** + ☁️ GPU (đo độ trễ)
 - **Độ ưu tiên**: 🟠 Cao — điều kiện cuối của **G7.3**
 - **Cổng liên quan**: **G7.3**
-- **Trạng thái**: `[~] Đã sửa hội tụ calibration 400 ảnh, đóng gói và kiểm chứng local; bản hiện hành ở DATASET/logs/phase7/task_7.15/current, chờ ảnh thật, so sánh điều kiện và đo GPU cho package hiện hành.`
+- **Trạng thái**: `[~] Đã chạy và hậu kiểm calibration hội tụ, đóng gói, kiểm chứng 20 ảnh và latency L4 cùng package 24869052…; G7.3 chờ reference tốt nhất theo điều kiện. Hồ sơ ở DATASET/logs/phase7/task_7.15/current; weights mới nằm trên Drive.`
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.15
 
 ---

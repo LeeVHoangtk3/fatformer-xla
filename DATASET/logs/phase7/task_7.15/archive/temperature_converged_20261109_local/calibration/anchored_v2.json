@@ -1,0 +1,69 @@
+{
+  "schema": "calibration/v1",
+  "evidence_level": "measured",
+  "model": "anchored_v2",
+  "checkpoint": {
+    "path": null,
+    "sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c",
+    "verification": "inherited_from_measured_logits; original source file not rehashed"
+  },
+  "calibration_source": "D:\\GIT REPO\\.nam4\\fatformer-xla\\DATASET\\logs\\phase7\\task_7.15\\runs\\unified_packaging_20261109_083821_8ddcb401\\raw\\logits_anchored_v2_clean_calib.npz",
+  "calibration_source_sha256": "3b0f66dfdc7c4655df6aa7fcab7346f0315d2663927559b66005bafa2c657942",
+  "n_calib": 400,
+  "class_balance": {
+    "real": 200,
+    "fake": 200
+  },
+  "T": 2.7863595485687256,
+  "T_raw": 2.7863595485687256,
+  "temperature_optimization": {
+    "method": "bounded_inverse_temperature_bisection/v1",
+    "converged": true,
+    "status": "interior_converged",
+    "iterations": 35,
+    "temperature_bounds": [
+      0.05,
+      10.0
+    ],
+    "gradient_beta": -1.6817430110727117e-08,
+    "scaled_kkt_residual": 3.4559639488818567e-09,
+    "nll_at_T1": 0.645287369411885,
+    "nll_at_fitted_T": 0.4229638974672379,
+    "objective_dtype": "float64",
+    "deployed_temperature_dtype": "float32"
+  },
+  "T_star": {
+    "0.01": 0.868035614490509,
+    "0.05": 0.7953211069107056,
+    "0.10": 0.7437446713447571
+  },
+  "T_star_default": 0.7953211069107056,
+  "fpr_target": 0.05,
+  "probability_device": "cpu",
+  "probability_batch_size": 32,
+  "fpr_measured": {
+    "0.01": 0.01,
+    "0.05": 0.05,
+    "0.10": 0.1
+  },
+  "real_acc": 95.0,
+  "fake_acc": 59.0,
+  "ece_before": 14.72,
+  "ece_after": 6.06,
+  "nll_before": 0.6453,
+  "nll_after": 0.423,
+  "cv": null,
+  "partition_validation": {
+    "status": "verified_disjoint_ids",
+    "identity_unit": "subset/class/filename; content duplicates not audited",
+    "n_calibration": 400,
+    "n_evaluation": 1600,
+    "overlap": 0,
+    "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+    "evaluation_split_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+    "sample_ids_sha256": "5ae613da819d065b93225b901a7d06d3309ad27e8cdbb9a441cf4df43d7552fb"
+  },
+  "inference_precision": "fp32",
+  "extraction_batch_size": 32,
+  "extraction_torch_version": "2.14.1+cu130"
+}

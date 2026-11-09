@@ -1,4 +1,55 @@
 # KẾ HOẠCH TRIỂN KHAI ĐỒ ÁN: TỐI ƯU HÓA ĐỘ BỀN VỮNG PHÁP Y CHO FATFORMER TRÊN MÁY CHỦ KAGGLE SERVER (GPU RTX 6000 BLACKWELL) & GOOGLE COLAB PRO
+
+<!-- PHASE7_CURRENT_BEGIN -->
+## Kết quả Phase 7 hiện hành — 09/11/2026
+
+Run `corrected_20261109_102954_3d28ad`, package `248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0`. Số liệu hiện hành: [hậu kiểm chi tiết](../../DATASET/logs/phase7/task_7.15/current/analysis/README.md), [view JSON v3 cho tài liệu](../../DATASET/logs/phase7/task_7.16/final_phase7_report.json) và [bảng nguồn số cũ → mới](../bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md). View v3 được tổng hợp từ raw corrected schema v1, **không phải một phép đo mới**.
+
+| Cổng | Kết quả hiện hành | Bằng chứng / phần còn thiếu |
+| :--- | :--- | :--- |
+| G7.0 | **PENDING** theo DoD toàn repo | Canonical core: 3 checkpoint nạp 0/0, Gen 1 bị từ chối; còn loader legacy và CI chẩn đoán n3/n8 chưa đủ. |
+| G7.1 | **FAIL** | Gen 2: Clean Fake@Real90 48,88% <55%; Q30 AUC 43,67% <55%. |
+| G7.2 | **FAIL — 6/8** | Clean Fake@Real90 64,12% <65%; worst-subset Fake ACC 30,86% <45%. |
+| G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
+
+Hoàn tất đo/biên soạn không có nghĩa đạt tất cả mục tiêu. Không dùng số Gen 1 như hiệu năng hợp lệ; không khẳng định router thắng, không đổi FAIL/pending thành PASS. Chấp nhận GPU CUDA đủ VRAM; latency chỉ áp dụng L4 đã ghi. Xác nhận chéo/chữ ký A/B/C còn chờ, không tạo chữ ký tự động.
+
+
+## Tuần 7–8: trạng thái 16 task theo bằng chứng
+
+| Task | Chủ trì | Trạng thái | Kết quả và giới hạn |
+| :--- | :--- | :--- | :--- |
+| 7.1 | C | [~] | Có audit 4 checkpoint; Gen 1 invalid_layout; n3/n8 verdict inconclusive vì thiếu CI phù hợp. |
+| 7.2 | B | [~] | Canonical core và từ chối layout đã xác minh; repo-wide legacy/exception review chưa đóng. |
+| 7.3 | C | [~] | Metric/CI đã đo; raw corrected schema v1 và view tài liệu v3 tách rõ; thiếu phân tầng generator chuẩn. |
+| 7.4 | C | [x] | Calibration runtime 400 ảnh đã hội tụ; T=2,78324914; FPR calibration 5%, không bảo đảm mọi miền. |
+| 7.5 | C | [x] | 12 ứng viên measured; chọn α=0,55, β=0,35; metadata nhúng và actual hash khớp matrix. |
+| 7.6 | C | [x] | Đã đo đủ 4 cấu hình ×2 điều kiện; kết quả G7.1 FAIL, không phải lỗi chưa chạy. |
+| 7.7 | A | [x] | 14.400 bản ghi; train/val_calib/val_select=12.240/1.080/1.080; audit 0 vi phạm trong reference đã ghi. |
+| 7.8 | A | [x] | Pipeline v2 và benchmark CPU synthetic: overhead 14,08% <15%; không suy thành latency CLIP/GPU. |
+| 7.9 | B | [x] | Loss v2 có code/smoke; kiểm thử thành phần được ghi riêng. Không đồng nghĩa đã chứng minh tăng khả năng tổng quát. |
+| 7.10 | B | [x] | Selection worst-group đã dùng trong training; CPU toy overhead 1,046×, không phải CLIP benchmark. |
+| 7.11 | C | [~] | Có 5 epoch, chọn epoch 4; val_select worst 46,67%; log grad_norm NaN còn ở epoch 1,4. |
+| 7.12 | C+B | [~] | Có ablation 4 cấu hình/seed 42; chưa chứng minh contribution tổng quát của hai loss; không đổi gate từ report ablation. |
+| 7.13 | B | [~] | Router code có regression; experiment deferred, deployment tắt; số synthetic v1 thu hồi; fixed fallback dùng được. |
+| 7.14 | C | [~] | Đã chấm package thực, đủ dự đoán và CI; G7.2 FAIL 6/8; taxonomy/schema còn ghi rõ giới hạn. |
+| 7.15 | C | [~] | 20 ảnh và overhead L4 đạt; G7.3 chờ reference; weights mới trên Drive, không trong ZIP local. |
+| 7.16 | A+B+C | [~] | Biên soạn/sync tài liệu và kiểm tra tự động hoàn tất; chờ cross-review và chữ ký thật A/B/C. |
+
+### Rủi ro đã thực sự xảy ra
+
+- Gen 1 trộn layout 10 khối không biểu diễn được: cách ly và chuyển sang Gen 2 cùng n3; không nâng số khi G7.1 không đạt.
+- Router v1 thiếu bằng chứng measured: hệ số/số synthetic bị thu hồi, bản hiện hành dùng fixed fallback.
+- Bộ fit T từng dừng sớm: đã sửa hội tụ; benchmark GPU mới thống nhất FP16/CUDA/batch 16.
+- G7.2 còn thiếu hai tiêu chí, G7.3 thiếu best-reference; chưa có căn cứ gọi checkpoint Pareto tối ưu toàn bộ hoặc nghiệm thu cuối.
+
+<!-- PHASE7_CURRENT_END -->
+
+<details>
+<summary>Kế hoạch nền và hồ sơ các giai đoạn trước — chỉ để tham khảo lịch sử, không dùng như kết quả Phase 7 hiện hành</summary>
+
+Các bảng, hình, kết luận và lệnh dưới đây được giữ để truy vết. Số Gen 1 là `invalid_layout`; chỉ mục nguồn và nội dung hiệu lực nằm ở khối cập nhật phía trên. Không dùng kết luận “PASS toàn bộ” trong hồ sơ cũ thay cho phán quyết mới.
+
 > **Đề tài**: Nâng cao độ bền phát hiện ảnh AI (Generalizable Synthetic Image Detection) trước biến dạng nén mạng xã hội (JPEG, Blur) và mở rộng nhận diện mô hình Diffusion thế hệ mới.  
 > **Kiến trúc & Pipeline đề xuất**: **FatFormer-XLA Unified Robustness Pipeline** (Tích hợp Chiến lược 1 + 2 + 3: Tầng kiến trúc SRM 3-Kernels + Cổng tần số thích ứng $\lambda(x)$; Tầng lập lịch suy thoái Curriculum Learning 3 giai đoạn theo epoch giữ mỏ neo Clean $\ge 50\%$; Tầng phân phối dữ liệu đa miền cân bằng ProGAN + Diffusion & Hàm mục tiêu kép Dual-Stream Label-Smoothing CE / Focal Loss).  
 > **Hạ tầng thực thi**:  
@@ -307,3 +358,5 @@ Dự án được đánh giá là hoàn thành chuẩn mực khi đạt đủ c�
 
 ---
 *Văn kiện này là bản kế hoạch điều hành chuẩn của đồ án FatFormer-XLA, được cập nhật và đồng bộ theo chiến dịch huấn luyện thực tế và quy chuẩn học thuật nghiêm ngặt.*
+
+</details>

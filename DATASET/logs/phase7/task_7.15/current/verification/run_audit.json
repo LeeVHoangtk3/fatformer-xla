@@ -1,0 +1,9 @@
+{
+  "schema": "phase7_run_audit_pointer/v1",
+  "audit": "../analysis/verification.json",
+  "run_id": "corrected_20261109_102954_3d28ad",
+  "checks_passed": 1906,
+  "G72": "6/8 FAIL",
+  "G73": "pending_verified_best_condition_reference",
+  "local_package_weights_available": false
+}

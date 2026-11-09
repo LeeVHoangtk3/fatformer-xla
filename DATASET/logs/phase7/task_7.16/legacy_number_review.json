@@ -1,0 +1,370 @@
+{
+  "scope": "authored docs/**/*.md excluding docs/sources",
+  "hits": [
+    {
+      "file": "docs/bao_cao/C/bao_cao_task_6.6_r_locked_recovery.md",
+      "line": 20,
+      "text": "Toàn bộ phần gốc bên dưới chỉ để tham khảo lịch sử; cột WiSE-FT Gen1 là `invalid_layout`. Thu hồi cách đọc “PASS100% mọi hard gate”, “96.58% macro” hoặc “hai chế độ là tất yếu”. Không so trực tiếp ACC lịch sử/partition cũ với AUC hoặc macro balanced hiện hành.",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/C/bao_cao_task_6.6_r_locked_recovery.md",
+      "line": 51,
+      "text": "> Báo cáo này **chỉ còn hiệu lực cho cột Anchored Recovery**. Cột WiSE-FT (96,58% Macro ACC, 98,10% Real ACC, 99,15% AUC, 6,73% Q30 Fake) **bị vô hiệu** vì checkpoint `fatformer_wise_ft_best.pth` chứa **10 khối adapter** `{2,5,7,8,11,14,15,17,20,23}` — không `n ∈ {3,4,6,8,12,24}` nào nạp đầy đủ được (ràng buộc `(i+1)·24/n − 1`), và tại `7,15,23` còn mất nhánh SRM + Gating (66 vs 94 tensor/khối). — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/C/bao_cao_task_6.6_r_locked_recovery.md",
+      "line": 79,
+      "text": "| **Clean Macro ACC (18 tập)** | **96.45%** | **59.39%** | **96.58%** | 77.31% | 74.75% | $\\ge \\mathbf{90.00\\%}$ | 🏆 **PASS (WiSE-FT vượt đỉnh)**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/C/bao_cao_task_6.6_r_locked_recovery.md",
+      "line": 125,
+      "text": "| **TRUNG BÌNH CHUNG** | **Overall** | **82.003** | **96.58%** | **98.10%** | **95.07%** | **77.31%** | **57.01%** | **97.61%**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/C/bao_cao_task_6.6_r_locked_recovery.md",
+      "line": 152,
+      "text": "                           │ • Clean Macro: 96.58%  │   │ • Q30 Fake ACC: 40.42% │",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/C/bao_cao_task_6.6_r_locked_recovery.md",
+      "line": 159,
+      "text": "   - Đạt **96.58% Macro ACC**, **98.10% Real ACC** và **99.15% ROC-AUC** trên 18 tập benchmark sạch. — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/C/bao_cao_task_6.6_r_locked_recovery.md",
+      "line": 183,
+      "text": "| **Hard Gate 1: Clean Macro ACC** | $\\ge \\mathbf{90.00\\%}$ | **$96.58\\%$** *(WiSE-FT)* | 🏆 **PASS (Vượt +6.58 pp)**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/C/bao_cao_task_7.1_checkpoint_audit.md",
+      "line": 4,
+      "text": "> Hồ sơ lịch sử / `invalid_layout` đối với số Gen 1. Các số 52.05, 4.10 và 96.58 dưới đây chỉ để tham chiếu lịch sử; không phải kết quả Phase 7 hiện hành. Xem [đính chính có nguồn](../overall/bao_cao_ra_soat_so_lieu_phase7.md) và [trạng thái nghiệm thu ngày 09/11/2026](../../milestones/milestone_phase7_acceptance.md). Không sử dụng kết luận hiệu lực cũ thay cho G7.1 FAIL, G7.2 FAIL và G7.3 pending.",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/C/bao_cao_task_7.1_checkpoint_audit.md",
+      "line": 49,
+      "text": "| **Overall Accuracy (ACC)** | **64.75%** | **52.05%** | **-12.70 pp**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/C/bao_cao_task_7.1_checkpoint_audit.md",
+      "line": 51,
+      "text": "| **Fake Accuracy** | **35.50%** | **4.10%** | **-31.40 pp (Sụp đổ)**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/C/bao_cao_task_7.1_checkpoint_audit.md",
+      "line": 55,
+      "text": "$\\rightarrow$ **Trả lời:** **KHÔNG**. Layout $n=8$ không những không cao hơn mà còn **suy giảm nghiêm trọng** Fake ACC (-31.40 pp), đẩy mô hình vào trạng thái tê liệt hoàn toàn năng lực phát hiện ảnh giả (đoán Real 100%, Fake chỉ 4.10%). Ngược lại, layout $n=3$ có Fake ACC đạt 35.50% chỉ vì nó đã loại bỏ 7 khối pha trộn và khôi phục lại gần như nguyên vẹn trạng thái của mô hình Baseline gốc (Fake ACC Baseline = 35.30%). — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/C/bao_cao_task_7.1_checkpoint_audit.md",
+      "line": 65,
+      "text": "   - Số liệu `52.05%` (Micro ACC), `4.10%` (Fake ACC), và `96.58%` gắn với Gen 1 trong các báo cáo cũ chính thức bị hủy bỏ giá trị tham chiếu. — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md",
+      "line": 53,
+      "text": "> - Vì vậy **các số `52,05%` (clean overall), `4,10%` (clean Fake), `0,20%` (Q30 Fake), `100,00%` (Real)** và cả **`96,58%` in-dist** đều **không phải kết quả hiện hành**. Không dùng để kết luận, không dùng để so sánh \"hơn/kém\", không đưa vào slide. — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md",
+      "line": 66,
+      "text": "| **Clean Macro ACC (18 tập in-dist.)** | 96.45% | ~~96.58%~~ | 77.31%  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md",
+      "line": 105,
+      "text": "| **Overall Pooled Micro ACC** | 64.65% | ~~52.05%~~ | **69.30%**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md",
+      "line": 107,
+      "text": "| **Fake ACC** | 35.30% | ~~4.10%~~ | **90.50%**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md",
+      "line": 162,
+      "text": "**Đối chiếu**: ~~Trên 18 tập in-distribution (Task 6.6-R), WiSE-FT đạt 96.58% ACC và 95.07% Fake ACC — chứng tỏ in-distribution WiSE-FT hoạt động bình thường.~~ 🚫 Các số này thuộc checkpoint `invalid_layout`, không dùng để lập luận. Việc \"in-distribution ổn\" của Gen 1 chưa từng được đo trên một lần nạp đầy đủ.",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md",
+      "line": 181,
+      "text": "- Fake ACC trên Clean OOD đạt **90.50%** — vượt Baseline (35.30%); ~~vượt WiSE-FT (4.10%)~~ — không so sánh với checkpoint `invalid_layout`.",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md",
+      "line": 197,
+      "text": "| Clean Macro ACC | ~~96.58%~~ | ~~54.10%~~ | ~~-42.5 pp~~ | 77.31% | **67.98%** | **-9.3 pp**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md",
+      "line": 198,
+      "text": "| Clean Fake ACC | ~~95.07%~~ | ~~4.10%~~ | ~~-90.97 pp~~ | **97.61%** | **90.50%** | **-7.1 pp**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md",
+      "line": 211,
+      "text": "| **Phát hiện AI thế hệ mới (Clean OOD Fake ACC)** | 35.30% ⚠️ | ~~4.10%~~ | **90.50%** ✅ | ✅ Kích hoạt Anchored  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md",
+      "line": 272,
+      "text": "**Không được trích dẫn như kết quả hiện hành**: `52,05%`, `4,10%`, `0,20%`, `100,00% Real`, `96,58% in-dist`, `6,73% Q30 Fake` của WiSE-FT. Nếu cần nhắc, phải ghi kèm: *\"số liệu lịch sử của checkpoint `invalid_layout`, không tái lập được\"*.",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md",
+      "line": 300,
+      "text": "- Nguyên nhân thật: eval cũ gặp 10 khối, rơi vào fallback `len(indices) > 8 → 3`, tức dựng mô hình với `n=3` và **chỉ nạp 3/10 khối** (`{7,15,23}`), đồng thời **bỏ 5 khối M4 thuần** `{2,5,8,11,14,17,20}`. Kết quả 4,10% là hệ quả tất yếu của một mô hình gần như ngẫu nhiên ở phần lớn thân mạng. — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md",
+      "line": 11,
+      "text": "| 52.05% | Gen 1 n=8, ACC diagnostic, invalid_layout | CFE clean accuracy: **74,38%** | [final_report.json](../../../DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json) `/cfe/clean/metrics/accuracy` | Không phải mức tăng cùng protocol; model và partition khác nhau. |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md",
+      "line": 12,
+      "text": "| 4.10% | Gen 1 n=8, Fake ACC diagnostic, invalid_layout | CFE clean Fake ACC: **53,12%** | [final_report.json](../../../DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json) `/cfe/clean/metrics/fake_acc` | Chỉ ở ngưỡng vận hành hiện hành; không thay thế Fake@Real90. |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md",
+      "line": 13,
+      "text": "| 96.58% | Overall Gen 1 bị invalid_layout, từng gọi sai là macro | In-dist mean 18 balanced ACC: **90,10%** | [final_report.json](../../../DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json) `/indist/macro_acc` | Không so trực tiếp overall cũ với macro mới. |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/README.md",
+      "line": 59,
+      "text": "1. **WiSE-FT Gen 1 bị cách ly** (`status: invalid_layout`): checkpoint chứa 10 khối adapter `{2,5,7,8,11,14,15,17,20,23}`, trong khi kiến trúc chỉ sinh được vị trí `(i+1)·24/n − 1` với `n ∈ {3,4,6,8,12,24}` ⇒ không nạp đầy đủ được. Mọi con số của nó (`52,05%`, `4,10%`, `0,20%`, `96,58%`) **không còn hiệu lực**.",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/bao_cao/overall/tong_quan_du_an.md",
+      "line": 43,
+      "text": "Gen 1 có 10 khối hợp của n3/n8, không có n hợp lệ biểu diễn đủ. Diagnostic partial trên 2.000 CFE, T1/ngưỡng 0,5: n3 ACC **64,75%**, Real **94,00%**, Fake **35,50%**, AUC **76,29%**; n8 ACC **52,05%**, Real **100,00%**, Fake **4,10%**, AUC **57,07%**. Các số diagnostic này chỉ để tham khảo lịch sử, `invalid_layout`, không dùng làm hiệu năng của Gen 1 hợp lệ.",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/archive/ke_hoach_phase_7_dieu_chinh_toan_dien_v2.0_2026-10-27.md",
+      "line": 4,
+      "text": "> Hồ sơ lịch sử / `invalid_layout` đối với số Gen 1. Các số 52.05, 4.10 và 96.58 dưới đây chỉ để tham chiếu lịch sử; không phải kết quả Phase 7 hiện hành. Xem [đính chính có nguồn](../../bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md) và [trạng thái nghiệm thu ngày 09/11/2026](../../milestones/milestone_phase7_acceptance.md). Không sử dụng kết luận hiệu lực cũ thay cho G7.1 FAIL, G7.2 FAIL và G7.3 pending.",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/archive/ke_hoach_phase_7_dieu_chinh_toan_dien_v2.0_2026-10-27.md",
+      "line": 14,
+      "text": "| **1** | **WiSE-FT tê liệt hoàn toàn:** Real ACC \\= 100%, nhưng Fake ACC \\= 4.10% (Clean) và 0.20% ($Q=30$). | **Lệch cấu trúc Loader & Lai tạp Checkpoint** | Bản fatformer\\_wise\\_ft\\_best.pth trộn giữa Baseline (1.116 keys) và M4 cũ (1.684 keys) tạo ra 1.816 tensors. Khi nạp với strict=False, hàng trăm tham số nhánh srm.\\*, gating.\\* và các khối Adapter bị bỏ qua thầm lặng hoặc nhận trọng số ngẫu nhiên, đẩy toàn bộ logit sụp về phía lớp Real. | **Canonical Loader (strict=True):** Tự động suy diễn số khối Adapter từ state\\_dict, chuẩn hóa tên khóa, cấm tuyệt đối strict=False. Đồng thời tái tạo **WiSE-FT Gen 2** từ Baseline và Anchored M6-R (cùng cấu trúc, cùng bồn hội tụ).  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/archive/ke_hoach_phase_7_dieu_chinh_toan_dien_v2.0_2026-10-27.md",
+      "line": 167,
+      "text": "| **3\\. Clean Fake ACC (Bắt AI 2024–2025)** | 35.30% | 4.10% *(Tê liệt)* | 90.50% | **68.0% – 76.0%** | **\\$\\\\ge 82.0\\\\% \\- 86.0\\\\%\\$**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/ke_hoach.md",
+      "line": 343,
+      "text": "> ⚠️ **Đính chính phạm vi hiệu lực (27/10/2026)**: Các số liệu Milestone 6 từng công bố **chỉ còn hiệu lực cho Baseline và Anchored Recovery**. Checkpoint `fatformer_wise_ft_best.pth` (Gen 1) chứa **10 khối adapter** `{2,5,7,8,11,14,15,17,20,23}` trong khi hàm dựng mô hình chỉ biểu diễn được `n ∈ {3,4,6,8,12,24}` (vị trí cố định `(i+1)·24/n − 1`), nên **không thể nạp đầy đủ**; mọi con số của checkpoint này (kể cả in-dist 96,58% và CFE 52,05%/Fake 4,10%) bị đánh dấu `invalid_layout` cho tới khi đo lại. Vì vậy Gate 4 **không còn là cổng nghiệm thu cuối cùng**; nó được thay bằng chuỗi **G7.0 → G7.3** của Phase 7 (xem bảng cổng ở Tuần 7–8 và [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](ke_hoach_phase_7_dieu_chinh_toan_dien.md) §II.3).",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/ke_hoach_cac_cot_moc_va_diem_dung.md",
+      "line": 227,
+      "text": "**Bối cảnh bắt buộc (đính chính 27/10/2026)**: Kết quả Mốc 6-R **chỉ còn hiệu lực với Baseline và Anchored Recovery**. Checkpoint `fatformer_wise_ft_best.pth` (WiSE-FT Gen 1) chứa **10 khối adapter** `{2,5,7,8,11,14,15,17,20,23}`, trong khi `src/models/clip/model.py` chỉ sinh được vị trí `(i+1)·24/n − 1` với `n ∈ {3,4,6,8,12,24}` ⇒ **không `n` nào biểu diễn được 10 khối**. Tại 3 khối `7,15,23`, bản Gen 1 chỉ có 66 tensor/khối (mức Baseline) thay vì 94 như M4/Anchored ⇒ nhánh SRM + Gating trong 3 adapter đó **đã mất trong lúc trộn**. Do đó Gen 1 bị **cách ly** với nhãn `invalid_layout`, và mọi số liệu của nó (bao gồm in-dist 96,58% và CFE 52,05%/Fake 4,10%) **không được trích dẫn như kết quả hiện hành**.",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/ke_hoach_cac_cot_moc_va_diem_dung.md",
+      "line": 246,
+      "text": "| **Cả 3** | **Task 7.16** | Cập nhật tài liệu dự án | 10 file tại §VIII của kế hoạch Phase 7; grep xóa số cũ `52.05 / 4.10 / 96.58` | Tài liệu đồng bộ | `[ ] Sẵn sàng`  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md",
+      "line": 49,
+      "text": "1. **Số liệu WiSE-FT đang lưu hành (CFE 52.05% / Fake 4.10%, và cả in-dist 96.58%) không dùng được** cho tới khi đo lại ở Task 7.1 & 7.6. Anchored và Baseline thì hợp lệ. — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md",
+      "line": 460,
+      "text": "Theo đúng danh mục §VIII. **DoD**: mọi file trong §VIII đã cập nhật (hiện 11/11), không còn mâu thuẫn số liệu (kiểm bằng cách grep các số cũ: `52.05`, `4.10`, `96.58`). — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md",
+      "line": 563,
+      "text": "| `docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md` | Thêm **Phần IX: Đính chính kỹ thuật 27/10/2026** (E1–E6, F1–F2, phạm vi hiệu lực của Bảng A/B, cảnh báo không trích dẫn 52.05%/4.10%)  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md",
+      "line": 585,
+      "text": "6. **Tài liệu**: 11 file ở §VIII đã cập nhật; không còn số cũ `52.05 / 4.10 / 96.58` xuất hiện như kết quả hiện hành (chỉ được phép xuất hiện kèm nhãn `invalid_layout` và gạch bỏ).",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/tong_hop_checkpoints_va_lich_su_thuc_nghiem.md",
+      "line": 27,
+      "text": "Gen 1 có 10 khối hợp của n3/n8, không có n hợp lệ biểu diễn đủ. Diagnostic partial trên 2.000 CFE, T1/ngưỡng 0,5: n3 ACC **64,75%**, Real **94,00%**, Fake **35,50%**, AUC **76,29%**; n8 ACC **52,05%**, Real **100,00%**, Fake **4,10%**, AUC **57,07%**. Các số diagnostic này chỉ để tham khảo lịch sử, `invalid_layout`, không dùng làm hiệu năng của Gen 1 hợp lệ.",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/tong_hop_checkpoints_va_lich_su_thuc_nghiem.md",
+      "line": 140,
+      "text": "| **4** | **`fatformer_wise_ft_best.pth`** *(WiSE-FT Gen 1)* | [Task 6.1-R](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/bao_cao/C/bao_cao_task_6.1_r_wise_ft_weight_ensembling.md) | 22/10/2026 | Workstation Local / Zero-Compute | 4.47 GB | 0M (Nội suy) | ~~96.58%~~ | ~~98.10%~~ | ~~6.73%~~ | 🚫 **`invalid_layout`** — 10 khối adapter, không `n` nào nạp đủ (§5.4) |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/tong_hop_checkpoints_va_lich_su_thuc_nghiem.md",
+      "line": 209,
+      "text": "> **Hệ quả**: mọi con số của checkpoint này — bao gồm **Clean Macro ACC 96,58%**, **CFE clean 52,05%**, **CFE Fake 4,10%**, **CFE Q30 Fake 0,20%** — mang nhãn `status: invalid_layout` và **không được trích dẫn như kết quả hiện hành**. Chúng chỉ còn giá trị như một quan sát lịch sử \"một checkpoint lai không thể nạp đầy đủ thì hiệu năng sụp\". Việc thay thế được giao cho **Task 7.5 (WiSE-FT Gen 2)** với điều kiện hai checkpoint bố mẹ **cùng `num_vit_adapter = 3`**.",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/tong_hop_checkpoints_va_lich_su_thuc_nghiem.md",
+      "line": 220,
+      "text": "  - *Clean Benchmark 18 tập (82.003 ảnh)*: ghi nhận 96,58% trong báo cáo cũ — **không tái lập được** vì không nạp đầy đủ checkpoint. — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/tong_hop_checkpoints_va_lich_su_thuc_nghiem.md",
+      "line": 287,
+      "text": "| **TỔNG HỢP TOÀN BỘ**| **OVERALL MACRO** | **82.003** | **96.45%** | **67.34%** | **59.39%** | ~~96.58%~~ 🚫 | **77.31%** | **74.75%**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/tong_hop_checkpoints_va_lich_su_thuc_nghiem.md",
+      "line": 293,
+      "text": "> ⚠️ **Cột \"WiSE-FT (Task 6.6-R)\" trong bảng trên là `invalid_layout`** (xem §5 và §5.4). Các con số 96,58% / 98,10% / 99,15% / 99,30% **không tái lập được** vì checkpoint chứa 10 khối adapter, không `n` nào nạp đầy đủ. Không dùng cột này làm kết quả chính thức, không so sánh \"hơn/kém\" với nó. Cột hợp lệ để đối chiếu hiện tại: Baseline, M4 Fallback (dùng `n=8`), Anchored M1/M2. Cột WiSE-FT sẽ được thay bằng **Gen 2** sau Task 7.5.",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/tong_hop_checkpoints_va_lich_su_thuc_nghiem.md",
+      "line": 344,
+      "text": "  1. \"WiSE-FT đạt 96,58% Clean Macro ACC và vượt mốc sàn 96,45%\" → **không tái lập được**, vì không có `n` nào nạp đầy đủ 10 khối. Số liệu bị đánh dấu `invalid_layout`.",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/plan/tong_hop_checkpoints_va_lich_su_thuc_nghiem.md",
+      "line": 383,
+      "text": "                       │ • Clean ACC: 96.58%  │   │ • Q30 Fake:  40.42%  │",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/tasks/member_c_training_eval/phase_7/README.md",
+      "line": 72,
+      "text": "3. **Không trích dẫn** `52.05%`, `4.10%`, `96.58%` như số liệu còn hiệu lực (xem kế hoạch §VIII). — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/tasks/member_c_training_eval/phase_7/task_7.16_cap_nhat_tai_lieu_du_an.md",
+      "line": 95,
+      "text": "| `52.05%` | báo cáo CFE | … | `final_phase7_report.json` → `cfe.q30.fake_at_real90` | Số cũ dùng ngưỡng batch ⇒ **vô hiệu**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/tasks/member_c_training_eval/phase_7/task_7.16_cap_nhat_tai_lieu_du_an.md",
+      "line": 96,
+      "text": "| `4.10%` | báo cáo CFE | … | `cfe.clean.real_acc` (nếu là Real ACC) |  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/tasks/member_c_training_eval/phase_7/task_7.16_cap_nhat_tai_lieu_du_an.md",
+      "line": 97,
+      "text": "| `96.58%` | Task 5.1/6.3 | … | `indist.macro_acc` | Số cũ là overall, không phải macro  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/tasks/member_c_training_eval/phase_7/task_7.16_cap_nhat_tai_lieu_du_an.md",
+      "line": 144,
+      "text": "**Cấm**: viết \"đạt 96,58%\" mà không nói đó là overall ACC của tập nào; viết \"vượt baseline\" khi chênh < nửa CI. — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    },
+    {
+      "file": "docs/tasks/member_c_training_eval/phase_7/task_7.16_cap_nhat_tai_lieu_du_an.md",
+      "line": 183,
+      "text": "- [x] `grep \"52.05\\|4.10\\|96.58\"` không còn kết quả nào **không** kèm nhãn `invalid_layout` hoặc \"chỉ để tham chiếu lịch sử\".",
+      "classification": "retained historical/invalid_layout, mapping or literal audit requirement",
+      "scope_labeled": true
+    }
+  ],
+  "unresolved_unlabeled": []
+}

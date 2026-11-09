@@ -1,0 +1,70 @@
+{
+  "schema": "phase7_corrected_acceptance/v1",
+  "package_sha256": "248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0",
+  "report_integrity": "verified",
+  "scientific_status": "post_hoc_confirmation",
+  "G72": {
+    "pass": false,
+    "verdict": "FAIL (H\u1ee3p l\u1ec7 theo \u0110i\u1ec1u kho\u1ea3n k\u1ebft qu\u1ea3 \u00e2m \u00a7II.3)",
+    "criteria": {
+      "CFE_clean_Fake@Real90": {
+        "value": 64.12,
+        "target": ">=65.0%",
+        "pass": false
+      },
+      "CFE_clean_AUC": {
+        "value": 88.66,
+        "target": ">=78.0%",
+        "pass": true
+      },
+      "CFE_Q30_AUC": {
+        "value": 79.88,
+        "target": ">=60.0%",
+        "pass": true
+      },
+      "CFE_Q30_Fake@Real90": {
+        "value": 42.62,
+        "target": ">=40.0%",
+        "pass": true
+      },
+      "InDist_Macro_ACC": {
+        "value": 90.10184712075026,
+        "target": ">=90.0%",
+        "pass": true
+      },
+      "InDist_Real_ACC": {
+        "value": 90.41,
+        "target": ">=90.0% (c\u1ee9ng)",
+        "pass": true
+      },
+      "Worst_Subset_Fake_ACC": {
+        "value": 30.86,
+        "target": ">=45.0%",
+        "pass": false,
+        "complete": true
+      },
+      "ECE_Post_Calibration": {
+        "value": 0.0508,
+        "target": "<=0.08",
+        "pass": true
+      }
+    }
+  },
+  "G73": {
+    "status": "pending",
+    "one_checkpoint_forward": true,
+    "real_image_equivalence": true,
+    "hardware_protocol": "any_compatible_cuda_gpu_with_sufficient_memory",
+    "allocated_gpu_overhead": "pass",
+    "original_t4_reference": "not_measured_on_T4",
+    "observed_gpu": "NVIDIA L4",
+    "observed_overhead_ms": 0.1880549998531933,
+    "condition_best_comparison": "pending_verified_reference",
+    "note": "No claim of G7.3 PASS without the best-by-condition comparison."
+  },
+  "source_reports": {
+    "/content/phase7_corrected/corrected_20261109_102954_3d28ad/benchmark/final_report.json": "b00fcb81ab164e3350b7cb7e67a6b9d9df8af1c1e450e7a4dac8a1b07d3b2a97",
+    "/content/phase7_corrected/corrected_20261109_102954_3d28ad/real_image_verification.json": "bd2acb46a08a7a2c5e54925de8b3f5cca08e1da270484821909578f7b396ab4e",
+    "/content/phase7_corrected/corrected_20261109_102954_3d28ad/latency_phase7.json": "2a7e24d70abd5c144c6241960c632fb6c282e8acb74ab8031758ef5a52b7b9e8"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "schema": "phase7_import_final_integrity/v1",
+  "checked_at": "2026-11-09T13:17:24.187068+00:00",
+  "run_id": "corrected_20261109_102954_3d28ad",
+  "source_files_unchanged": 55,
+  "raw_copies_byte_identical": 55,
+  "notebook_source_unchanged": true,
+  "notebook_copy_sha256": "311a50b171a868581e89616458c32f84f599b07b8dbb622a27ad2d83a844173a",
+  "previous_current_files_preserved": 23,
+  "local_links_checked": 63,
+  "sole_task715_log_root": "DATASET/logs/phase7/task_7.15",
+  "data_checks_passed": 1906,
+  "G72": "6/8 FAIL",
+  "G73": "pending_best_condition_reference",
+  "new_model_weights_available_locally": false
+}

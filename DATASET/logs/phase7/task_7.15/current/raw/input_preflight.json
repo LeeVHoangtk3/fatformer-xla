@@ -1,0 +1,32 @@
+{
+  "inputs": {
+    "checkpoint_sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c",
+    "calibration_sha256": "367c33869d4f41c087f8f5272fd16d2e2ca801515d0dd445302c98a7b254eb65",
+    "logits_sha256": "3b0f66dfdc7c4655df6aa7fcab7346f0315d2663927559b66005bafa2c657942",
+    "partition": {
+      "status": "verified_disjoint_ids",
+      "identity_unit": "subset/class/filename; content duplicates not audited",
+      "n_calibration": 400,
+      "n_evaluation": 1600,
+      "overlap": 0,
+      "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+      "evaluation_split_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+      "sample_ids_sha256": "5ae613da819d065b93225b901a7d06d3309ad27e8cdbb9a441cf4df43d7552fb"
+    },
+    "fpr_calibration": 0.05,
+    "T": 2.7863595485687256,
+    "threshold": 0.7953211069107056,
+    "inference_precision": "fp32",
+    "extraction_batch_size": 32,
+    "probability_device": "cpu",
+    "probability_batch_size": 32
+  },
+  "archives": {
+    "test_communityforensics.tar": "159b47e501686295be8f0edf879fb1a3070a0cf5b85c8157b0abd6bd5744f059",
+    "test_benchmark_gans.tar": "460eed863629b13ed7b574e5857c6a9afe848c45453a34c2defb7f3400a7539a",
+    "test_benchmark_diffusion.tar": "7938bd7d90ca1d63c2d36fb0d80280ad0a5f77b8b7db6b468555e3f752820726"
+  },
+  "n_cfe_calibration": 400,
+  "n_cfe_evaluation": 1600,
+  "n_indist": 82003
+}

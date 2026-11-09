@@ -1,0 +1,12 @@
+{
+  "schema": "unified_latency/pending",
+  "status": "pending_measurement_for_current_package",
+  "checkpoint_sha256": "16606e16c89901f39ab78c29951c1f83d9412f98f27ab55853c2e2dd13ee5f74",
+  "device": null,
+  "gpu_name": null,
+  "precision": null,
+  "batches": {},
+  "overhead_meets_target": null,
+  "reason": "Not measured after local temperature repair. Do not reuse previous package latency.",
+  "previous_L4_run": "../../archive/submission_20261109/raw/latency_phase7.json"
+}

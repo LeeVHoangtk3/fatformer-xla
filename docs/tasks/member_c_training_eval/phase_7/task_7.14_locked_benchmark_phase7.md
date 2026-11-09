@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: ☁️ **T4 / A100**
 - **Độ ưu tiên**: 🔴 Khẩn cấp — **chốt G7.3 và toàn bộ số liệu luận văn**
 - **Cổng liên quan**: **G7.3** (cuối D10)
-- **Trạng thái**: `[ ] Sẵn sàng`
+- **Trạng thái**: `[~] Đã chấm package FP16/CUDA và hậu kiểm run corrected_20261109_102954_3d28ad; G7.2 đạt 6/8, tổng thể FAIL; G7.3 chờ reference tốt nhất theo điều kiện. Hồ sơ ở DATASET/logs/phase7/task_7.15/current.`
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.14
 
 ---

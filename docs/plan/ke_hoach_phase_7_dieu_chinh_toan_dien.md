@@ -1,5 +1,21 @@
 # KẾ HOẠCH PHASE 7 — TÁI LẬP ĐO LƯỜNG & HỢP NHẤT MÔ HÌNH FATFORMER-XLA
 
+<!-- PHASE7_CURRENT_BEGIN -->
+## Trạng thái thực tế ngày 09/11/2026
+
+Task 7.16 đã biên soạn 11/11 tài liệu, Chương 5, slide 6 trang và hồ sơ nghiệm thu. **Chờ cross-review và chữ ký thật A/B/C**; không xác nhận thay con người.
+
+| Cổng | Kết quả hiện hành | Bằng chứng / phần còn thiếu |
+| :--- | :--- | :--- |
+| G7.0 | **PENDING** theo DoD toàn repo | Canonical core: 3 checkpoint nạp 0/0, Gen 1 bị từ chối; còn loader legacy và CI chẩn đoán n3/n8 chưa đủ. |
+| G7.1 | **FAIL** | Gen 2: Clean Fake@Real90 48,88% <55%; Q30 AUC 43,67% <55%. |
+| G7.2 | **FAIL — 6/8** | Clean Fake@Real90 64,12% <65%; worst-subset Fake ACC 30,86% <45%. |
+| G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
+
+Hồ sơ: [biên bản và checklist](../milestones/milestone_phase7_acceptance.md) và [bảng số cũ → mới → nguồn](../bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md). GPU có thể là bất kỳ CUDA GPU đủ VRAM; kết quả latency hiện có chỉ được đo trên L4/FP16. Các mốc và số liệu cũ phía dưới là kế hoạch/hồ sơ lịch sử, không thay phán quyết hiện hành.
+<!-- PHASE7_CURRENT_END -->
+
+
 > **Phiên bản**: `v3.0` — viết lại toàn bộ từ v2.0 sau khi kiểm chứng cấu trúc checkpoint bằng PyTorch (không dựa trên suy đoán).
 > **Ngày ban hành**: 27/10/2026
 > **Người chủ trì**: Thành viên C (Training & Evaluation Lead)
@@ -30,7 +46,7 @@ Thứ tự bắt buộc: **(1) sửa cho đúng thước đo → (2) thắng nha
 
 ### 0.2 Ba câu chốt
 
-1. **Số liệu WiSE-FT đang lưu hành (CFE 52.05% / Fake 4.10%, và cả in-dist 96.58%) không dùng được** cho tới khi đo lại ở Task 7.1 & 7.6. Anchored và Baseline thì hợp lệ.
+1. **Số liệu WiSE-FT đang lưu hành (CFE 52.05% / Fake 4.10%, và cả in-dist 96.58%) không dùng được** cho tới khi đo lại ở Task 7.1 & 7.6. Anchored và Baseline thì hợp lệ. — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*
 2. **Nút thắt thật của OOD không phải kiến trúc, mà là (a) ngưỡng/hiệu chuẩn, (b) vùng dữ liệu huấn luyện quá hẹp, (c) tín hiệu tần số bị bỏ phí.** Kiến trúc tự định tuyến chỉ có nghĩa sau khi 3 điểm trên được xử lý.
 3. **Mọi con số phải kèm điều kiện vận hành** `TPR@FPR` và một tập hiệu chuẩn tách rời. Bỏ "overall accuracy" làm chỉ số chính.
 
@@ -441,7 +457,7 @@ Chấm một lượt: 18 tập in-dist (82.003 ảnh) + CFE clean/Q30 + 6 biến
 
 #### 🔹 Task 7.16 — Cập nhật tài liệu dự án `[Cả 3, 6 h]`
 
-Theo đúng danh mục §VIII. **DoD**: mọi file trong §VIII đã cập nhật (hiện 11/11), không còn mâu thuẫn số liệu (kiểm bằng cách grep các số cũ: `52.05`, `4.10`, `96.58`).
+Theo đúng danh mục §VIII. **DoD**: mọi file trong §VIII đã cập nhật (hiện 11/11), không còn mâu thuẫn số liệu (kiểm bằng cách grep các số cũ: `52.05`, `4.10`, `96.58`). — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*
 
 ---
 
@@ -544,7 +560,7 @@ Theo đúng danh mục §VIII. **DoD**: mọi file trong §VIII đã cập nhậ
 | `docs/plan/ke_hoach.md` | Thêm mục **Tuần 7–8: Phase 7** (bảng 16 task + cổng); cập nhật bảng Gate 4 → Gate Phase 7; thêm 2 dòng rủi ro mới |
 | `docs/plan/ke_hoach_cac_cot_moc_va_diem_dung.md` | Thêm **ĐIỂM DỪNG 6: PHASE 7** với G7.0–G7.3; sửa "Điểm dừng chung cuộc" để không tuyên bố vượt gate khi chưa đo lại Gen 1 |
 | `docs/plan/tong_hop_checkpoints_va_lich_su_thuc_nghiem.md` | Thêm **§5.4 Đính chính Gen 1** (10 khối, không biểu diễn được, số liệu `invalid_layout`); thêm **§7 Thế hệ 6: Gen 2 (dự kiến)**; đánh dấu các số WiSE-FT cần đo lại |
-| `docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md` | Thêm **Phần IX: Đính chính kỹ thuật 27/10/2026** (E1–E6, F1–F2, phạm vi hiệu lực của Bảng A/B, cảnh báo không trích dẫn 52.05%/4.10%) |
+| `docs/bao_cao/overall/bao_cao_kiem_dinh_communityforensics_eval.md` | Thêm **Phần IX: Đính chính kỹ thuật 27/10/2026** (E1–E6, F1–F2, phạm vi hiệu lực của Bảng A/B, cảnh báo không trích dẫn 52.05%/4.10%)  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
 | `docs/plan/ke_hoach_test_communityforensics_eval.md` | Thêm **Phụ lục A: Khế ước đo lường v3** (metric, split, CI, cấm overall-acc) |
 | `docs/tasks/member_a_data_infra/README_A.md` | Thêm dòng Phase 7: 7.7, 7.8 |
 | `docs/tasks/member_b_architecture_loss/README_B.md` | Thêm dòng Phase 7: 7.2, 7.9, 7.10, 7.13 |

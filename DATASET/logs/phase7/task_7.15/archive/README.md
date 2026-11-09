@@ -8,5 +8,7 @@ Nguồn duy nhất để chạy tiếp/lấy số liệu hiện hành là [../cu
 - `shared_paths_before_consolidation/`: các tệp Task 7.15 trước đây nằm rải ở `phase7/` và `phase7/calibration/`.
 - `navigation_before_consolidation/`: README, index và báo cáo trước khi thống nhất thư mục.
 - `export_before_consolidation/`: ZIP và kiểm chứng export trước khi sửa các đường dẫn mặc định.
+- `temperature_converged_20261109_local/`: bản sửa FP32 local/package `16606e16…` trước run GPU hiện hành; chỉ giữ làm lịch sử.
+- `reports_before_corrected_20261109/`: báo cáo và danh mục trước khi nhận run GPU `corrected_20261109_102954_3d28ad`.
 
 Nội dung bằng chứng cũ được giữ nguyên byte. Các lệnh/đường dẫn trong chúng là ghi nhận lịch sử, không phải hướng dẫn chạy hiện tại. Dùng [PATH_MIGRATION.json](../PATH_MIGRATION.json) để tra vị trí mới. Không cộng hoặc ghép các kết quả giữa các package khác hash.

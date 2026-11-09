@@ -1,4 +1,36 @@
 # KẾ HOẠCH CÁC CỘT MỐC CHIẾN LƯỢC & ĐIỂM DỪNG NGHIỆM THU DỰ ÁN
+
+<!-- PHASE7_CURRENT_BEGIN -->
+## Kết quả Phase 7 hiện hành — 09/11/2026
+
+Run `corrected_20261109_102954_3d28ad`, package `248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0`. Số liệu hiện hành: [hậu kiểm chi tiết](../../DATASET/logs/phase7/task_7.15/current/analysis/README.md), [view JSON v3 cho tài liệu](../../DATASET/logs/phase7/task_7.16/final_phase7_report.json) và [bảng nguồn số cũ → mới](../bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md). View v3 được tổng hợp từ raw corrected schema v1, **không phải một phép đo mới**.
+
+| Cổng | Kết quả hiện hành | Bằng chứng / phần còn thiếu |
+| :--- | :--- | :--- |
+| G7.0 | **PENDING** theo DoD toàn repo | Canonical core: 3 checkpoint nạp 0/0, Gen 1 bị từ chối; còn loader legacy và CI chẩn đoán n3/n8 chưa đủ. |
+| G7.1 | **FAIL** | Gen 2: Clean Fake@Real90 48,88% <55%; Q30 AUC 43,67% <55%. |
+| G7.2 | **FAIL — 6/8** | Clean Fake@Real90 64,12% <65%; worst-subset Fake ACC 30,86% <45%. |
+| G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
+
+Hoàn tất đo/biên soạn không có nghĩa đạt tất cả mục tiêu. Không dùng số Gen 1 như hiệu năng hợp lệ; không khẳng định router thắng, không đổi FAIL/pending thành PASS. Chấp nhận GPU CUDA đủ VRAM; latency chỉ áp dụng L4 đã ghi. Xác nhận chéo/chữ ký A/B/C còn chờ, không tạo chữ ký tự động.
+
+
+## Điểm dừng 6 và quyết định chung cuộc
+
+Có thể bàn giao hồ sơ thí nghiệm và negative result có truy vết; chưa được tuyên bố toàn Phase 7 PASS. Chưa có Pareto/best-reference đủ bằng chứng thì không tự gọi checkpoint là tối ưu. Hoàn tất tài liệu không tự đóng G7.0/G7.3 hoặc thay chữ ký của hội đồng/ba thành viên.
+
+| Task | Chủ trì | Trạng thái | Kết quả và giới hạn |
+| :--- | :--- | :--- | :--- |
+| 7.14 | C | [~] | Đã chấm package thực, đủ dự đoán và CI; G7.2 FAIL 6/8; taxonomy/schema còn ghi rõ giới hạn. |
+| 7.15 | C | [~] | 20 ảnh và overhead L4 đạt; G7.3 chờ reference; weights mới trên Drive, không trong ZIP local. |
+| 7.16 | A+B+C | [~] | Biên soạn/sync tài liệu và kiểm tra tự động hoàn tất; chờ cross-review và chữ ký thật A/B/C. |
+<!-- PHASE7_CURRENT_END -->
+
+<details>
+<summary>Kế hoạch nền và hồ sơ các giai đoạn trước — chỉ để tham khảo lịch sử, không dùng như kết quả Phase 7 hiện hành</summary>
+
+Các bảng, hình, kết luận và lệnh dưới đây được giữ để truy vết. Số Gen 1 là `invalid_layout`; chỉ mục nguồn và nội dung hiệu lực nằm ở khối cập nhật phía trên. Không dùng kết luận “PASS toàn bộ” trong hồ sơ cũ thay cho phán quyết mới.
+
 > **Văn Kiện Điều Hành & Quản Trị Của Trưởng Dự Án (Lead C - Training & Evaluation Lead)**  
 > **Dự án**: Nâng cao độ bền vững pháp y cho FatFormer trước biến dạng nén mạng xã hội (FatFormer-XLA)  
 > **Hạ tầng thực thi**:  
@@ -211,7 +243,7 @@ flowchart TD
 | **Thành viên B** | **Task 7.13** | `DegradationRouter` + fusion | 3 tín hiệu không tham chiếu (blockiness, $V_{Lap}$, $\bar\lambda$); logistic fit trên `val_calib`; **không đặt tay hằng số** | `src/models/degradation_router.py` + `router_params.json` | `[ ] Sẵn sàng` |
 | **Thành viên C** | **Task 7.14** | Locked Benchmark Phase 7 | 18 tập in-dist (82.003 ảnh) + CFE clean/Q30 + 6 biến thể suy biến, một lượt | `final_phase7_report.{json,md}` | `[ ] Sẵn sàng` |
 | **Thành viên C** | **Task 7.15** | Đóng gói Unified | Một `.pth` + `router_params.json`; `forward(x)` duy nhất không cờ chế độ | `unified_fatformer.py`, `tools/infer_unified.py` | `[ ] Sẵn sàng` |
-| **Cả 3** | **Task 7.16** | Cập nhật tài liệu dự án | 10 file tại §VIII của kế hoạch Phase 7; grep xóa số cũ `52.05 / 4.10 / 96.58` | Tài liệu đồng bộ | `[ ] Sẵn sàng` |
+| **Cả 3** | **Task 7.16** | Cập nhật tài liệu dự án | 10 file tại §VIII của kế hoạch Phase 7; grep xóa số cũ `52.05 / 4.10 / 96.58` | Tài liệu đồng bộ | `[ ] Sẵn sàng`  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
 
 #### 🛑 Bốn cổng chặn Phase 7
 
@@ -238,3 +270,5 @@ Khi mô hình Phase 7 vượt qua chuỗi cổng G7.0 → G7.3:
 4. **Một mô hình duy nhất**: một file checkpoint + `router_params.json`, một `forward()`, không cần cờ chế độ — điều kiện G7.3.
 
 
+
+</details>

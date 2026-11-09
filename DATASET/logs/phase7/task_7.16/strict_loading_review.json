@@ -1,0 +1,148 @@
+{
+  "schema": "strict_loading_scope_review/v1",
+  "sites": [
+    {
+      "file": "src/main.py",
+      "line": 106,
+      "call": "CheckpointManager.load",
+      "strict": "strict",
+      "scope": "legacy/dynamic path; not permission to report final metrics"
+    },
+    {
+      "file": "src/models/canonical_loader.py",
+      "line": 338,
+      "call": "model.load_state_dict",
+      "strict": "not allow_partial",
+      "scope": "canonical: allow_partial explicit; final path uses default false"
+    },
+    {
+      "file": "src/models/clip/model.py",
+      "line": 613,
+      "call": "model.load_state_dict",
+      "strict": "False",
+      "scope": "base CLIP initialization; final checkpoint load validated later"
+    },
+    {
+      "file": "src/training/checkpoint_manager.py",
+      "line": 194,
+      "call": "model_to_load.load_state_dict",
+      "strict": "strict",
+      "scope": "legacy/dynamic path; not permission to report final metrics"
+    },
+    {
+      "file": "src/training/train_crossdomain.py",
+      "line": 1169,
+      "call": "CheckpointManager.load",
+      "strict": "False",
+      "scope": "legacy/dynamic path; not permission to report final metrics"
+    },
+    {
+      "file": "tools/eval_crossdomain_ablation.py",
+      "line": 360,
+      "call": "model.load_state_dict",
+      "strict": "False",
+      "scope": "legacy/dynamic path; not permission to report final metrics"
+    },
+    {
+      "file": "tools/eval_degraded.py",
+      "line": 368,
+      "call": "CheckpointManager.load",
+      "strict": "args.strict",
+      "scope": "legacy/dynamic path; not permission to report final metrics"
+    },
+    {
+      "file": "tools/eval_gen1_reinterpretation.py",
+      "line": 203,
+      "call": "model.load_state_dict",
+      "strict": "False",
+      "scope": "forensic diagnostic only; invalid_layout; gate-ineligible"
+    },
+    {
+      "file": "tools/eval_locked_benchmark.py",
+      "line": 427,
+      "call": "CheckpointManager.load",
+      "strict": "False",
+      "scope": "legacy/dynamic path; not permission to report final metrics"
+    },
+    {
+      "file": "tools/fast_eval.py",
+      "line": 196,
+      "call": "CheckpointManager.load",
+      "strict": "args.strict",
+      "scope": "legacy/dynamic path; not permission to report final metrics"
+    },
+    {
+      "file": "tools/fast_eval.py",
+      "line": 209,
+      "call": "CheckpointManager.load",
+      "strict": "args.strict",
+      "scope": "legacy/dynamic path; not permission to report final metrics"
+    },
+    {
+      "file": "tools/fast_eval.py",
+      "line": 199,
+      "call": "CheckpointManager.load",
+      "strict": "False",
+      "scope": "legacy/dynamic path; not permission to report final metrics"
+    },
+    {
+      "file": "tools/fast_eval.py",
+      "line": 211,
+      "call": "CheckpointManager.load",
+      "strict": "False",
+      "scope": "legacy/dynamic path; not permission to report final metrics"
+    },
+    {
+      "file": "tools/full_eval.py",
+      "line": 542,
+      "call": "CheckpointManager.load",
+      "strict": "args.strict",
+      "scope": "legacy/dynamic path; not permission to report final metrics"
+    },
+    {
+      "file": "tools/full_eval.py",
+      "line": 550,
+      "call": "CheckpointManager.load",
+      "strict": "args.strict",
+      "scope": "legacy/dynamic path; not permission to report final metrics"
+    },
+    {
+      "file": "tools/inspect_image.py",
+      "line": 887,
+      "call": "CheckpointManager.load",
+      "strict": "strict",
+      "scope": "legacy/dynamic path; not permission to report final metrics"
+    },
+    {
+      "file": "tools/sync_phase7_documentation.py",
+      "line": 114,
+      "call": "dict",
+      "strict": "expression",
+      "scope": "legacy/dynamic path; not permission to report final metrics"
+    },
+    {
+      "file": "tools/test_smoke_m6.py",
+      "line": 429,
+      "call": "CheckpointManager.load",
+      "strict": "False",
+      "scope": "initialization/test; not current measured-report path"
+    },
+    {
+      "file": "tools/test_src_load.py",
+      "line": 102,
+      "call": "CheckpointManager.load",
+      "strict": "False",
+      "scope": "initialization/test; not current measured-report path"
+    },
+    {
+      "file": "tools/test_zero_init_identity.py",
+      "line": 204,
+      "call": "CheckpointManager.load",
+      "strict": "False",
+      "scope": "initialization/test; not current measured-report path"
+    }
+  ],
+  "repository_wide_clean": false,
+  "current_final_loader": "src/models/canonical_loader.py",
+  "conclusion": "Current report path is canonical; broad legacy cleanup/exception audit remains open. No source loader was changed by Task 7.16."
+}

@@ -1,39 +1,42 @@
-# Báo cáo Task 7.15 — đóng gói và hậu kiểm
+# Task 7.15 — đóng gói và kiểm chứng package đo trên GPU
 
-Cập nhật ngày 09/11/2026. Hồ sơ log duy nhất: [DATASET/logs/phase7/task_7.15](../../../DATASET/logs/phase7/task_7.15/README.md). **Chỉ dùng `current/` cho bản hiện hành; `archive/` là lịch sử.** Notebook và dữ liệu nộp gốc được giữ nguyên.
+Run hiện hành **corrected_20261109_102954_3d28ad**, [hồ sơ duy nhất](../../../DATASET/logs/phase7/task_7.15/README.md). Bản sửa local FP32 trước đó được giữ trong `archive/temperature_converged_20261109_local/`; chỉ dùng `current/` cho số liệu hiện hành.
 
-## Kết quả hiện hành
+## Phần đã thực hiện và hậu kiểm
 
-Đã sửa bộ fit nhiệt độ dừng sớm bằng bộ giải NLL lồi theo nghịch đảo nhiệt độ, có kiểm tra điều kiện tối ưu. Fit lại T và các ngưỡng từ đúng **400 logits thực nghiệm FP32**, gồm 200 real và 200 fake, không trùng ID với 1.600 evaluation. Không huấn luyện lại backbone và không dùng evaluation để chọn T/ngưỡng.
+- Notebook hoàn tất 11 cell, không có output lỗi, source khớp notebook mẫu trong ZIP. Dùng đúng ZIP đã chuẩn bị, kiểm tra đủ hash 140 tệp. Notebook và nguồn kết quả được giữ nguyên.
+- Đo lại đúng **400 ảnh calibration, 200 real + 200 fake**, không trùng ID với 1.600 evaluation; FP16/CUDA/batch 16 thống nhất với benchmark. Bộ fit nhiệt độ đã hội tụ và được xác nhận bằng tối ưu độc lập.
+- [Calibration hiện hành](../../../DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json): **T=2,7832491397857666**, ngưỡng 5% **0,7918508648872375**, FPR calibration **5%**, Real/Fake ACC **95%/58,5%**. ECE **14,38% → 5,39%**, NLL **0,6444 → 0,4227**. Không dùng metric trên tập fit thay cho chất lượng evaluation.
+- [JSON kiểm chứng GPU](../../../DATASET/logs/phase7/task_7.15/current/raw/real_image_verification.json) báo đủ **1.200 tensor bằng source**, standalone khi CLIP path không tồn tại, **20 ảnh dữ liệu thực (10 real + 10 fake)**, sai số xác suất và nhãn reference cùng calibration bằng 0. Hậu kiểm local đọc/verify đủ 20 PNG, khớp ID calibration và 20 file có hash nội dung khác nhau.
+- [Benchmark](../../../DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json) lưu dự đoán từng ảnh. [Hậu kiểm](../../../DATASET/logs/phase7/task_7.15/current/analysis/verification.json) tính lại metric và CI95, xác nhận báo cáo cùng hash package. Router tắt, dùng fallback clean cố định; không công bố đã nghiệm thu degradation router.
 
-Nguồn số liệu: [calibration](../../../DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json), [NPZ 400 ảnh](../../../DATASET/logs/phase7/task_7.15/current/inputs/calibration_400.npz), [kiểm chứng](../../../DATASET/logs/phase7/task_7.15/current/verification/repair_validation.json).
+## Package và phạm vi bằng chứng
 
-- T: **2,7863595485687256**; ngưỡng FPR 5%: **0,7953211069107056**.
-- FPR calibration **5%**, Real ACC **95%**, Fake ACC **59%**.
-- NLL calibration sau sửa: **0,4230**, so với **0,5013** của run nộp mới trước sửa hội tụ.
-- ECE calibration sau sửa: **6,06%**, so với **11,70%** trước sửa hội tụ.
-- Bộ giải hội tụ sau 35 vòng; nghiệm được xác nhận bằng tối ưu số độc lập trên cùng calibration logits.
+Package SHA256 **`248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0`**, source checkpoint ghi nhận `5cd49252…`. File model nằm tại:
 
-Đây là cải thiện hiệu chuẩn trên tập fit, không phải bằng chứng AUC/Fake@Real90 hay accuracy evaluation tăng. Độc lập phân vùng được kiểm tra theo ID, chưa thay thế kiểm tra trùng nội dung ảnh dưới tên khác.
+```text
+MyDrive/Fatformer/checkpoint/phase7/corrected_20261109_102954_3d28ad/unified_fatformer_v2.pth
+```
 
-## Package và kiểm chứng
+[Package reference](../../../DATASET/logs/phase7/task_7.15/current/artifacts/package_reference.json) ghi rõ vị trí, hash và giới hạn xác minh. ZIP kết quả không kèm weights, nên local chưa băm lại tệp `.pth` hoặc chạy forward độc lập bằng package mới. Không dùng file local cũ `16606e16…` thay thế. Kiểm chứng tensor/forward dựa trên JSON/log GPU được ràng buộc cùng hash và source code đã đối chiếu; metric được tái tính từ dự đoán đã nộp.
 
-[Package hiện hành](../../../DATASET/logs/phase7/task_7.15/current/artifacts/unified_fatformer_v2.pth) có SHA256 `16606e16c89901f39ab78c29951c1f83d9412f98f27ab55853c2e2dd13ee5f74`. Toàn bộ 1.200 entry tensor của state_dict khớp package nguồn; layout `[7,15,23]`, không partial. Router tắt đúng chính sách chưa có held-out win; dùng fallback cố định đã hiệu chuẩn.
+## Latency cùng package
 
-[Kiểm chứng package](../../../DATASET/logs/phase7/task_7.15/current/verification/package_verification.json) xác nhận nạp standalone không cần CLIP path ngoài, smoke tổng hợp CPU khớp xác suất/nhãn reference cùng T/ngưỡng, sai số tối đa 0. Có **116 tests pass** cho bản sửa; lần xuất ZIP trước khi gom thư mục đã qua 38 tests từ chính code giải nén. Kiểm chứng export hiện hành được lưu riêng cạnh package để tránh nhầm các phiên bản ZIP.
+NVIDIA L4 **22,03 GiB**, FP16, TF32 tắt; **20 warmup, 200 cặp đo/batch**, luân phiên thứ tự backbone/package. Đã tái tính median, p95, throughput và delta từ mảng thô:
 
-Hash checkpoint huấn luyện `5cd49252…` được kế thừa đúng nguồn NPZ/package; không tuyên bố đã băm lại file huấn luyện trên Drive ở local. Metadata giữ thông tin repackage và hash container nguồn.
+- Batch 1: package **44,98 ms/ảnh**, overhead median **0,188055 ms/ảnh**, p95 overhead **2,481857 ms/ảnh**, khoảng **22,2 FPS**.
+- Batch 8: package **9,60 ms/ảnh**, khoảng **104,2 FPS**.
+- Batch 16: package **9,61 ms/ảnh**, khoảng **104,1 FPS**.
+- Batch 32: package **10,38 ms/ảnh**, khoảng **96,4 FPS**.
 
-## Trạng thái nghiệm thu
+**Overhead <5 ms tại batch 1 đạt trên L4.** Median chênh lệch từng cặp không nhất thiết bằng hiệu hai median. Delta âm nhỏ tại batch 16 được giữ nguyên là dao động đo, không chứng minh wrapper tăng tốc backbone. Tensor tổng hợp không gồm I/O/preprocessing; không suy diễn thời gian đầu-cuối hoặc số đo sang GPU khác. [Latency gốc](../../../DATASET/logs/phase7/task_7.15/current/raw/latency_phase7.json), [bảng tái tính](../../../DATASET/logs/phase7/task_7.15/current/analysis/latency_summary.csv).
 
-**G7.3 vẫn pending.** Chưa có đối chiếu ≥20 ảnh thật, benchmark `package.predict()` trên evaluation/reference tốt nhất theo từng điều kiện, và phép đo latency mới cùng hash package hiện hành.
+## Phán quyết và bước còn thiếu
 
-Run nộp trước sửa có overhead batch 1 khoảng **0,119 ms/ảnh trên L4**, đạt ngưỡng <5 ms, nhưng số này thuộc package `8ddcb401…`; không gán sang package hiện hành. [Trạng thái latency hiện tại](../../../DATASET/logs/phase7/task_7.15/current/verification/latency_phase7.json) ghi pending, không tạo số đo thay thế. Chấp nhận GPU CUDA tương thích đủ VRAM; không bắt buộc T4 và không suy diễn số đo giữa các GPU.
+**G7.2 đạt 6/8, tổng thể FAIL. G7.3 pending**, vì chưa có đối chiếu reference tốt nhất theo từng điều kiện với delta AUC/Fake@Real90 ≤1,5 pp trên cùng partition/protocol. Tương đương source/package và 20 ảnh không thay thế so sánh với best model. Trạng thái sau cùng nằm trong [acceptance.json](../../../DATASET/logs/phase7/task_7.15/current/raw/acceptance.json); metadata và benchmark giữ trạng thái tại thời điểm được tạo trước latency.
 
-Run Task 7.14 trước đó dùng operating point baseline, không phải phép chấm trực tiếp của package mới. Giữ nguyên kết luận G7.2 5/8 của run đó; cần chấm lại package đúng protocol trước khi dùng cho báo cáo cuối.
+Không cần chạy lại y nguyên toàn bộ notebook vì lỗi kỹ thuật từ run này. Muốn hoàn tất G7.3 cần thêm reference phù hợp; muốn tăng hai tiêu chí G7.2 còn thiếu cần thí nghiệm model/dữ liệu có kiểm soát trên train/val_select, không chỉnh ngưỡng theo evaluation.
 
-## Chạy tiếp và tra cứu
+Chất lượng hiện được xác minh ở FP16/CUDA/batch 16. CLI ảnh thông thường trong code nộp mặc định FP32; nếu triển khai kênh đó cần kiểm chứng protocol tương ứng. Có 1 mẫu Q50 và 5 mẫu in-dist đổi nhãn khi tính softmax trên CPU do sát ngưỡng, chênh xác suất ≤3×10⁻⁷. Giữ dự đoán GPU làm nguồn cho báo cáo CUDA, không thay bằng nhãn CPU.
 
-Dùng [hướng dẫn hiện hành](../../../DATASET/logs/phase7/task_7.15/current/README.md) và [ZIP trong current](../../../DATASET/logs/phase7/task_7.15/current/colab/phase7_corrected_colab_bundle.zip). Notebook tổng hợp giữ nguyên, nạp ZIP thay cho clone GitHub; đồng bộ calibration/batch/precision với benchmark GPU, kiểm chứng ảnh thật rồi đánh giá 7.14 và latency cùng package. Đây là xác nhận sau hậu kiểm, không gọi evaluation đã xem là phép thử mù mới.
-
-[Archive](../../../DATASET/logs/phase7/task_7.15/archive/README.md) giữ bản gốc 2.000 ảnh, recovery cũ và run nộp ngày 09/11. Không dùng các bản đó làm kết quả hiện hành. [PATH_MIGRATION.json](../../../DATASET/logs/phase7/task_7.15/PATH_MIGRATION.json) ghi vị trí mới và hash trước khi gom; các đường dẫn trong bằng chứng lịch sử giữ nguyên như thời điểm chạy.
+Xem [phân tích công tâm đầy đủ](../../../DATASET/logs/phase7/task_7.15/current/analysis/README.md) và [báo cáo 7.14](bao_cao_task_7.14_locked_benchmark.md). Đây là post-hoc confirmation, không phải kiểm thử mù mới và không chứng minh FPR ≤5% cho mọi miền.

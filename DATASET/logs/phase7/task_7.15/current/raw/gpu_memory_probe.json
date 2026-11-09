@@ -1,0 +1,22 @@
+{
+  "schema": "phase7_gpu_memory_probe/v1",
+  "status": "completed",
+  "gpu_name": "NVIDIA L4",
+  "cuda_capability": [
+    8,
+    9
+  ],
+  "total_vram_gib": 22.0343017578125,
+  "free_vram_gib_before_model": 21.658203125,
+  "precision": "fp16_autocast",
+  "requested_max_batch": 16,
+  "purpose": "Synthetic input tests memory only; no accuracy or latency acceptance",
+  "selected_batch_size": 16,
+  "attempts": [
+    {
+      "batch_size": 16,
+      "status": "fits",
+      "peak_allocated_gib": 2.4668588638305664
+    }
+  ]
+}

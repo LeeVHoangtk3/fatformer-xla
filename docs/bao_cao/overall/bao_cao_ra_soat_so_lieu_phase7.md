@@ -1,0 +1,37 @@
+# Rà soát số liệu Phase 7 — nguồn cho Task 7.16
+
+Run hiện hành `corrected_20261109_102954_3d28ad`; package `248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0`. Tài liệu này được lập trước khi cập nhật 11 tệp mục tiêu. Chỉ các số mới có file và JSON pointer bên dưới được dùng cho báo cáo hiện hành.
+
+## Số cũ → số mới → nguồn
+
+Các số cũ trong bảng chỉ để tham khảo lịch sử; Gen 1 là `invalid_layout`. Không hiểu các cặp số khác metric/protocol là mức cải thiện trực tiếp.
+
+| Số/mô tả cũ | Ngữ cảnh cũ | Hiện hành | File + trường JSON | Diễn giải |
+| :--- | :--- | :--- | :--- | :--- |
+| 52.05% | Gen 1 n=8, ACC diagnostic, invalid_layout | CFE clean accuracy: **74,38%** | [final_report.json](../../../DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json) `/cfe/clean/metrics/accuracy` | Không phải mức tăng cùng protocol; model và partition khác nhau. |
+| 4.10% | Gen 1 n=8, Fake ACC diagnostic, invalid_layout | CFE clean Fake ACC: **53,12%** | [final_report.json](../../../DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json) `/cfe/clean/metrics/fake_acc` | Chỉ ở ngưỡng vận hành hiện hành; không thay thế Fake@Real90. |
+| 96.58% | Overall Gen 1 bị invalid_layout, từng gọi sai là macro | In-dist mean 18 balanced ACC: **90,10%** | [final_report.json](../../../DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json) `/indist/macro_acc` | Không so trực tiếp overall cũ với macro mới. |
+| 91.5% | Mốc Phase 6-R, chỉ để tham khảo lịch sử | CFE clean AUC: **88,66%** | [final_report.json](../../../DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json) `/cfe/clean/metrics/auc` | Không đổi ACC thành AUC; chỉ thay nguồn trích dẫn hiện hành. |
+| 5/8 G7.2 | Run operating point baseline trước sửa | G7.2 hiện hành: **6/8; FAIL** | [acceptance.json](../../../DATASET/logs/phase7/task_7.15/current/raw/acceptance.json) `/G72` | Điểm ECE Q30 nay đạt; hai mục vẫn FAIL. |
+| 13.49% ECE Q30 | Run baseline operating point | ECE Q30: **5,08%** | [final_report.json](../../../DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json) `/cfe/q30/metrics/ece` | Khác calibration/precision; không gán là tăng năng lực phân biệt. |
+| T=1.4676 / 2.78636 | Bản trước hội tụ / local FP32 | T FP16/CUDA batch16: **2.7832491397857666** | [anchored_v2.json](../../../DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json) `/T` | Không ép T bằng cache local; ngưỡng cũng fit lại. |
+| 0.9127 / 0.795321 | Ngưỡng baseline / local FP32 | Ngưỡng hiện hành: **0.7918508648872375** | [anchored_v2.json](../../../DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json) `/T_star_default` | Fit trên 400 calibration, không dùng evaluation. |
+| 44.79 ms hoặc 44.98 ms | Backbone/package tổng, từng nhầm với overhead | Overhead batch1: **0,188055 ms** | [latency_phase7.json](../../../DATASET/logs/phase7/task_7.15/current/raw/latency_phase7.json) `/batches/1/overhead_delta_ms` | Median từng cặp đo; không lấy hiệu hai median đã làm tròn. |
+| Chờ 20 ảnh / chờ T4 | Trạng thái trước run GPU | Verification: **20 ảnh; L4 đã đo** | [real_image_verification.json](../../../DATASET/logs/phase7/task_7.15/current/raw/real_image_verification.json) `/n_images` | T4 không bắt buộc theo yêu cầu người dùng. |
+| Router thắng / 71 tests = nghiệm thu | Số synthetic v1 đã thu hồi | Router: **Tắt; experiment deferred** | [router_params.json](../../../DATASET/logs/phase7/router_params.json) `/deployment_enabled` | Unit test không thay cho thí nghiệm held-out. |
+| Gen 2 alpha=.50 metadata rời | Ứng viên cũ, unselected | Gen 2 đã chọn: **alpha=.55; beta=.35** | [gen2_verified_metadata.json](../../../DATASET/logs/phase7/task_7.16/gen2_verified_metadata.json) `/metadata` | Đã băm actual .pth và đối chiếu metadata nhúng + CSV + matrix. |
+| 12–16k dự kiến | Kho dữ liệu v2 | Số bản ghi: **14.400** | [data_isolation_report.json](../../../DATASET/logs/phase7/data_isolation_report.json) `/integrity/summary/n_records` | Train 12.240; val_calib 1.080; val_select 1.080, khác CFE 400/1.600. |
+
+Toàn bộ giá trị chi tiết, kể cả AUC/AP/TPR/CI, count, calibration và latency: [evidence_catalog.json](../../../DATASET/logs/phase7/task_7.16/evidence_catalog.json) và [source_values.csv](../../../DATASET/logs/phase7/task_7.16/source_values.csv). Hash nguồn được giữ trong catalog; không gõ số slide độc lập.
+
+## Những điều không được suy ra
+
+G7.0 còn DoD legacy trên toàn repo; G7.1 FAIL; G7.2 FAIL 6/8; G7.3 pending reference tốt nhất theo điều kiện. Không biến việc hoàn tất thí nghiệm hoặc viết tài liệu thành PASS tất cả cổng.
+
+Pooled accuracy, macro balanced accuracy và mean-subset Real ACC là ba đại lượng khác nhau. FPR calibration 5% không bảo đảm FPR của miền khác. CI theo ảnh không bao quát phụ thuộc giữa generator/dataset. Full checkpoint GPU không có trong ZIP; không dùng file local cũ khác hash để kiểm chứng thay thế.
+
+## Kiểm tra source và phạm vi công cụ
+
+AST ghi nhận 20 vị trí `strict` không hằng True; không phải tất cả đều là lỗi checkpoint trong đường báo cáo. [strict_loading_review.json](../../../DATASET/logs/phase7/task_7.16/strict_loading_review.json) phân biệt initialization, diagnostic và legacy. Không xóa chuỗi grep hoặc đổi source loader để làm đẹp DoD. E1–E6 trong pipeline hiện hành được đối chiếu cụ thể ở phụ lục A.9 của kế hoạch CFE.
+
+Kiểm thử mục tiêu hiện tại: **103 test pipeline + 53 test thành phần = 156 passed, 0 failed/error/skipped**, trên 9 file riêng biệt; phạm vi ghi trong [targeted_tests.json](../../../DATASET/logs/phase7/task_7.16/validation/targeted_tests.json). Không tuyên bố đã chạy xanh toàn bộ repository. Cross-review và chữ ký A/B/C vẫn chờ người thật.

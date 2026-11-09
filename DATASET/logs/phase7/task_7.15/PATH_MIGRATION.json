@@ -39,127 +39,127 @@
   "files": [
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/artifact_manifest.json",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/artifact_manifest.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/artifact_manifest.json",
       "bytes": 3378,
       "sha256": "455c177b5f85c3faa1c0ea96e7326d8e3bcc1b02dadddf83bc0b648c269f6ea7",
       "preserved_original_path": "DATASET/logs/phase7/task_7.15/archive/export_before_consolidation/artifact_manifest.json"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/artifacts/metadata.json",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/artifacts/metadata.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/artifacts/metadata.json",
       "bytes": 4329,
       "sha256": "a0a42462c64442190765b70bc9b350324898e43b5575767c77a2309288482571"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/artifacts/unified_fatformer_v2.pth",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/artifacts/unified_fatformer_v2.pth",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/artifacts/unified_fatformer_v2.pth",
       "bytes": 1972729455,
       "sha256": "16606e16c89901f39ab78c29951c1f83d9412f98f27ab55853c2e2dd13ee5f74"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/calibration/anchored_v2.json",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/calibration/anchored_v2.json",
       "bytes": 2358,
       "sha256": "367c33869d4f41c087f8f5272fd16d2e2ca801515d0dd445302c98a7b254eb65"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/calibration/anchored_v2_reliability.png",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2_reliability.png",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/calibration/anchored_v2_reliability.png",
       "bytes": 101801,
       "sha256": "7a1570e6272ed07a2901449c324d1eb0a1346369e530f785c381bd6510ceecf5"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/calibration/summary.md",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/calibration/summary.md",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/calibration/summary.md",
       "bytes": 641,
       "sha256": "9fbc19684904b2ce337bf176ce0c377b1436d435ebafa1cb44dd56215cd3f84b"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/code_snapshot/changes.diff",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/code_snapshot/changes.diff",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/code_snapshot/changes.diff",
       "bytes": 10365,
       "sha256": "45485df220b4aa1e96e23bd08975a4de4bef90b00937082572ce286d2b3540cc"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/code_snapshot/tests/test_temperature_convergence.py",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/code_snapshot/tests/test_temperature_convergence.py",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/code_snapshot/tests/test_temperature_convergence.py",
       "bytes": 3176,
       "sha256": "7405589f6af7d7a6c8f06302d83dc70d757c2512e29364b61184711808615bff"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/code_snapshot/tools/build_phase7_colab_bundle.py",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/code_snapshot/tools/build_phase7_colab_bundle.py",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/code_snapshot/tools/build_phase7_colab_bundle.py",
       "bytes": 4749,
       "sha256": "2d0e29722ef765a354e684a28849cd3a286a42d2b44a99368a13d280708fa895"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/code_snapshot/tools/calibrate_and_select.py",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/code_snapshot/tools/calibrate_and_select.py",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/code_snapshot/tools/calibrate_and_select.py",
       "bytes": 34498,
       "sha256": "0e1359042fbafdd4d3abd9e81a96b27522d5fb9bae62d8474da8c9bbca361fe9"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/colab/phase7_corrected_colab_bundle.zip",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/colab/phase7_corrected_colab_bundle.zip",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/colab/phase7_corrected_colab_bundle.zip",
       "bytes": 1933417,
       "sha256": "aa904760ae0fccf2a4fa8a20ca58290906dac40f0b3289ceeb191dcd3892032d",
       "preserved_original_path": "DATASET/logs/phase7/task_7.15/archive/export_before_consolidation/colab/phase7_corrected_colab_bundle.zip"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/colab/phase7_corrected_colab_bundle.zip.sha256",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/colab/phase7_corrected_colab_bundle.zip.sha256",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/colab/phase7_corrected_colab_bundle.zip.sha256",
       "bytes": 101,
       "sha256": "d3ceea944e3e9c027148576e662afe57a6dfe34eaec68ee752a8c35b56e2694b",
       "preserved_original_path": "DATASET/logs/phase7/task_7.15/archive/export_before_consolidation/colab/phase7_corrected_colab_bundle.zip.sha256"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/README.md",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/README.md",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/README.md",
       "bytes": 7010,
       "sha256": "f874c22095ea02a872cc08a0a09743e04e3d2416dcd15d9bd8a69971bd8035a1",
       "preserved_original_path": "DATASET/logs/phase7/task_7.15/archive/export_before_consolidation/README.md"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/verification/export_tests.xml",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/verification/export_tests.xml",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/verification/export_tests.xml",
       "bytes": 5377,
       "sha256": "f994bd45282b8cc2c51943618a8d2cd8f4ee555e4348d4cabedbd3f0d7eedf91",
       "preserved_original_path": "DATASET/logs/phase7/task_7.15/archive/export_before_consolidation/verification/export_tests.xml"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/verification/export_validation.json",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/verification/export_validation.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/verification/export_validation.json",
       "bytes": 340,
       "sha256": "851cb36b40580ebead02aefef93439375a0cb90bb6482f734c0515d9eaaf74a1",
       "preserved_original_path": "DATASET/logs/phase7/task_7.15/archive/export_before_consolidation/verification/export_validation.json"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/verification/historical_logits_rescore.csv",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/verification/historical_logits_rescore.csv",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/verification/historical_logits_rescore.csv",
       "bytes": 1613,
       "sha256": "ed61bb6fa366bf898e9232673bbb60bd160eb37e1ae233804597bdd835e7a0d7"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/verification/package_verification.json",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/verification/package_verification.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/verification/package_verification.json",
       "bytes": 610,
       "sha256": "ab37e6112456e3ad16acd4a8e5f276d6fee296e0377b16d4030c769bdb5e7cdc"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/verification/partition_audit.json",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/verification/partition_audit.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/verification/partition_audit.json",
       "bytes": 840,
       "sha256": "94d098805dc85c06b5a6f616f549289c914e340abc6f9a8eff66aae746b3215c"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/verification/repair_validation.json",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/verification/repair_validation.json",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/verification/repair_validation.json",
       "bytes": 3249,
       "sha256": "d1030e2c7b29f5721f7dee39fee6d6447fde74fe96555d7612ac2b7a43786f6f"
     },
     {
       "old_path": "DATASET/logs/phase7/task_7.15/runs/temperature_converged_20261109_local/verification/tests.xml",
-      "new_path": "DATASET/logs/phase7/task_7.15/current/verification/tests.xml",
+      "new_path": "DATASET/logs/phase7/task_7.15/archive/temperature_converged_20261109_local/verification/tests.xml",
       "bytes": 16047,
       "sha256": "c3d1db641f64cd29ba2cbb66a8e42abbf5aea4ffae888953949dab6ffe036d5b"
     },
@@ -458,5 +458,15 @@
     "notebooks/task/phase7_corrected/phase7_corrected_rerun_colab.ipynb": "07790dd6e397bf531cc2d40acf67da051e1f39a118209327400b53c4578f8a68"
   },
   "verified_at": "2026-11-09T10:12:18.337681+00:00",
-  "preservation_note": "All 68 pre-move files preserved byte-for-byte. Refreshed current navigation/manifests/ZIP have their original bytes backed up under archive/export_before_consolidation; historical provenance paths are not rewritten."
+  "preservation_note": "All 68 pre-move files preserved byte-for-byte. Refreshed current navigation/manifests/ZIP have their original bytes backed up under archive/export_before_consolidation; historical provenance paths are not rewritten.",
+  "later_promotions": [
+    {
+      "at": "2026-11-09T13:10:00.098206+00:00",
+      "former_current": "current",
+      "archived_as": "archive/temperature_converged_20261109_local",
+      "new_current_run": "corrected_20261109_102954_3d28ad",
+      "source": "wait/phase7_corrected_rerun/corrected_20261109_102954_3d28ad_results",
+      "notebook_sha256_at_import": "311a50b171a868581e89616458c32f84f599b07b8dbb622a27ad2d83a844173a"
+    }
+  ]
 }

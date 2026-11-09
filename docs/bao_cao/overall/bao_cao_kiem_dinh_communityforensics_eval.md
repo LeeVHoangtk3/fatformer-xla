@@ -1,4 +1,40 @@
 # BÁO CÁO NGHIỆM THU KỸ THUẬT: KIỂM CHUẨN NGOẠI VI COMMUNITYFORENSICS-EVAL (CVPR 2025)
+
+<!-- PHASE7_CURRENT_BEGIN -->
+## Kết quả Phase 7 hiện hành — 09/11/2026
+
+Run `corrected_20261109_102954_3d28ad`, package `248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0`. Số liệu hiện hành: [hậu kiểm chi tiết](../../../DATASET/logs/phase7/task_7.15/current/analysis/README.md), [view JSON v3 cho tài liệu](../../../DATASET/logs/phase7/task_7.16/final_phase7_report.json) và [bảng nguồn số cũ → mới](bao_cao_ra_soat_so_lieu_phase7.md). View v3 được tổng hợp từ raw corrected schema v1, **không phải một phép đo mới**.
+
+| Cổng | Kết quả hiện hành | Bằng chứng / phần còn thiếu |
+| :--- | :--- | :--- |
+| G7.0 | **PENDING** theo DoD toàn repo | Canonical core: 3 checkpoint nạp 0/0, Gen 1 bị từ chối; còn loader legacy và CI chẩn đoán n3/n8 chưa đủ. |
+| G7.1 | **FAIL** | Gen 2: Clean Fake@Real90 48,88% <55%; Q30 AUC 43,67% <55%. |
+| G7.2 | **FAIL — 6/8** | Clean Fake@Real90 64,12% <65%; worst-subset Fake ACC 30,86% <45%. |
+| G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
+
+Hoàn tất đo/biên soạn không có nghĩa đạt tất cả mục tiêu. Không dùng số Gen 1 như hiệu năng hợp lệ; không khẳng định router thắng, không đổi FAIL/pending thành PASS. Chấp nhận GPU CUDA đủ VRAM; latency chỉ áp dụng L4 đã ghi. Xác nhận chéo/chữ ký A/B/C còn chờ, không tạo chữ ký tự động.
+
+
+## IX. Số đo mới thay cho bảng A/B lịch sử
+
+| Điều kiện | AUC % [CI 95%] | AP % [CI 95%] | Fake@Real90 % [CI 95%] | ECE % |
+| :--- | :--- | :--- | :--- | ---: |
+| clean | 88,66 [87,11; 90,16] | 89,08 [87,35; 90,85] | 64,12 [59,25; 69,77] | 4,39 |
+| q30 | 79,88 [77,65; 82,07] | 78,47 [75,33; 81,49] | 42,62 [37,87; 47,91] | 5,08 |
+
+Nguồn: [final_report.json](../../../DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json) `/cfe`, [ci_verification.json](../../../DATASET/logs/phase7/task_7.15/current/analysis/ci_verification.json). Bảng A/B cũ dưới phần lịch sử không còn là kết quả hiện hành. Fake@Real90 là metric mốc Real90, khác Fake ACC tại ngưỡng deployment. Ngưỡng hiện hành **0,79185086**, T **2,78324914**.
+
+In-dist macro balanced ACC **90,10%**, pooled Real ACC **90,41%**. Không nhầm pooled accuracy93,46% thành macro. CI trên ảnh không khẳng định độc lập giữa mọi generator/dataset.
+
+Clean Fake@Real90 thiếu **0,88 pp**, worst-subset Fake ACC thiếu **14,14 pp**. FPR Q30 tại ngưỡng cố định **8,625%**, nên calibration 5% không bảo đảm 5% mọi miền. Không kết luận vượt baseline có ý nghĩa thống kê từ các protocol khác nhau.
+
+<!-- PHASE7_CURRENT_END -->
+
+<details>
+<summary>Kế hoạch nền và hồ sơ các giai đoạn trước — chỉ để tham khảo lịch sử, không dùng như kết quả Phase 7 hiện hành</summary>
+
+Các bảng, hình, kết luận và lệnh dưới đây được giữ để truy vết. Số Gen 1 là `invalid_layout`; chỉ mục nguồn và nội dung hiệu lực nằm ở khối cập nhật phía trên. Không dùng kết luận “PASS toàn bộ” trong hồ sơ cũ thay cho phán quyết mới.
+
 ## ĐÁNH GIÁ ĐA CHIỀU: NĂNG LỰC TỔNG QUÁT HÓA ZERO-SHOT & ĐỘ BỀN VỮNG MẠNG XÃ HỘI
 
 > **Mã nhiệm vụ**: `Task CFE-Benchmark` *(External Zero-shot OOD Generalization)*  
@@ -14,7 +50,7 @@
 > 🚨 **ĐÍNH CHÍNH 27/10/2026 — BẮT BUỘC ĐỌC PHẦN IX TRƯỚC KHI TRÍCH DẪN**
 > Sau khi kiểm chứng trực tiếp cấu trúc 4 checkpoint bằng `torch.load`, báo cáo này được xác nhận là **có giá trị cho Baseline và Anchored Recovery**, nhưng **mọi số liệu của cột WiSE-FT bị vô hiệu** (`status: invalid_layout`):
 > - Checkpoint `fatformer_wise_ft_best.pth` chứa **10 khối adapter** `{2,5,7,8,11,14,15,17,20,23}`; kiến trúc chỉ biểu diễn được `n ∈ {3,4,6,8,12,24}` ⇒ **không nạp đầy đủ được**. Tại `7,15,23` nó còn mất cả nhánh SRM + Gating (66 vs 94 tensor/khối).
-> - Vì vậy **các số `52,05%` (clean overall), `4,10%` (clean Fake), `0,20%` (Q30 Fake), `100,00%` (Real)** và cả **`96,58%` in-dist** đều **không phải kết quả hiện hành**. Không dùng để kết luận, không dùng để so sánh "hơn/kém", không đưa vào slide.
+> - Vì vậy **các số `52,05%` (clean overall), `4,10%` (clean Fake), `0,20%` (Q30 Fake), `100,00%` (Real)** và cả **`96,58%` in-dist** đều **không phải kết quả hiện hành**. Không dùng để kết luận, không dùng để so sánh "hơn/kém", không đưa vào slide. — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*
 > - Nguyên nhân gốc không phải "146 unexpected keys" mà là **ánh xạ khối adapter**. Chi tiết: **Phần IX** dưới đây và [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §I.
 
 ---
@@ -27,7 +63,7 @@ Trước khi đánh giá, cần đối chiếu với hai bộ số liệu nền 
 
 | Chỉ Số Kỹ Thuật | Baseline CVPR 2024 | WiSE-FT (Task 6.1-R) 🚫 `invalid_layout` | Anchored Recovery (Task 6.3-R) |
 | :--- | :---: | :---: | :---: |
-| **Clean Macro ACC (18 tập in-dist.)** | 96.45% | ~~96.58%~~ | 77.31% |
+| **Clean Macro ACC (18 tập in-dist.)** | 96.45% | ~~96.58%~~ | 77.31%  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
 | **Clean Real ACC (in-dist.)** | 99.37% | ~~98.10%~~ | 57.01% |
 | **Clean Fake ACC (in-dist.)** | 93.54% | ~~95.07%~~ | **97.61% 🔥** |
 | **Q=30 Fake ACC (in-dist.)** | 5.78% | ~~6.73%~~ | **40.42% 🏆** |
@@ -66,9 +102,9 @@ Toàn bộ 2.000 ảnh được trích xuất từ **CommunityForensics-Eval (CV
 | ACC `4_modern_gans` | **95.00%** | ~~70.50%~~ | 71.50% |
 | ACC `5_other_autoregressive` | 59.50% | ~~50.00%~~ | **60.50%** |
 | **Subset-Macro Mean ACC** | **68.03%** | ~~54.10%~~ | 67.98% |
-| **Overall Pooled Micro ACC** | 64.65% | ~~52.05%~~ | **69.30%** |
+| **Overall Pooled Micro ACC** | 64.65% | ~~52.05%~~ | **69.30%**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
 | **Real ACC** | 94.00% | ~~100.00%~~ | 48.10% |
-| **Fake ACC** | 35.30% | ~~4.10%~~ | **90.50%** |
+| **Fake ACC** | 35.30% | ~~4.10%~~ | **90.50%**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
 | **ROC-AUC** | 76.21% | ~~57.07%~~ | **79.28%** |
 | **Average Precision (AP)** | **78.22%** | ~~60.41%~~ | 73.53% |
 
@@ -158,8 +194,8 @@ Baseline cho thấy sự lệch phân phối rõ rệt theo họ kiến trúc:
 
 | Chỉ Số | WiSE-FT In-dist (18 tập) 🚫 | WiSE-FT OOD (CFE) 🚫 | Gap 🚫 | Anchored In-dist | Anchored OOD (CFE) | Gap |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| Clean Macro ACC | ~~96.58%~~ | ~~54.10%~~ | ~~-42.5 pp~~ | 77.31% | **67.98%** | **-9.3 pp** |
-| Clean Fake ACC | ~~95.07%~~ | ~~4.10%~~ | ~~-90.97 pp~~ | **97.61%** | **90.50%** | **-7.1 pp** |
+| Clean Macro ACC | ~~96.58%~~ | ~~54.10%~~ | ~~-42.5 pp~~ | 77.31% | **67.98%** | **-9.3 pp**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
+| Clean Fake ACC | ~~95.07%~~ | ~~4.10%~~ | ~~-90.97 pp~~ | **97.61%** | **90.50%** | **-7.1 pp**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
 | Q=30 Fake ACC | ~~6.73%~~ | ~~0.20%~~ | ~~-6.5 pp~~ | **40.42%** | **40.80%** | **+0.4 pp** |
 | Clean Real ACC | ~~98.10%~~ | ~~100.00%~~ | ~~+1.9 pp~~ | 57.01% | 48.10% | -8.9 pp |
 
@@ -172,7 +208,7 @@ Baseline cho thấy sự lệch phân phối rõ rệt theo họ kiến trúc:
 
 | Tiêu Chí | Baseline | WiSE-FT 🚫 `invalid_layout` | Anchored | Hệ Thống Kép |
 | :--- | :---: | :---: | :---: | :---: |
-| **Phát hiện AI thế hệ mới (Clean OOD Fake ACC)** | 35.30% ⚠️ | ~~4.10%~~ | **90.50%** ✅ | ✅ Kích hoạt Anchored |
+| **Phát hiện AI thế hệ mới (Clean OOD Fake ACC)** | 35.30% ⚠️ | ~~4.10%~~ | **90.50%** ✅ | ✅ Kích hoạt Anchored  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
 | **Bảo vệ ảnh thật (Clean Real ACC)** | 94.00% ✅ | ~~100.00%~~ | 48.10% ❌ | ⚠️ Cần hiệu chuẩn lại (Task 7.4) |
 | **Kháng nén sâu Q=30 (Fake ACC)** | 0.90% ❌ | ~~0.20%~~ | **40.80%** ✅ | ✅ Kích hoạt Anchored |
 | **Ổn định OOD vs. in-dist** | Trung bình | ~~Rất kém~~ | **Xuất sắc** ✅ | ⚠️ Chờ đo lại ở G7.1 |
@@ -261,7 +297,7 @@ add_adapter[(i + 1) * n_spilt - 1] = True  # i = 0 .. n-1
 ### IX.3. Phát hiện F2 — Nguyên nhân sụp đổ là ánh xạ khối, không phải khoá thừa
 
 - 146 "unexpected keys" thực chất là `srm.*` (10) và `gating.*` (4) top-level — các module đã bị vô hiệu trong `CLIPModel` (`self.srm = None`). Chúng **không phải** nguyên nhân làm Fake ACC sụp.
-- Nguyên nhân thật: eval cũ gặp 10 khối, rơi vào fallback `len(indices) > 8 → 3`, tức dựng mô hình với `n=3` và **chỉ nạp 3/10 khối** (`{7,15,23}`), đồng thời **bỏ 5 khối M4 thuần** `{2,5,8,11,14,17,20}`. Kết quả 4,10% là hệ quả tất yếu của một mô hình gần như ngẫu nhiên ở phần lớn thân mạng.
+- Nguyên nhân thật: eval cũ gặp 10 khối, rơi vào fallback `len(indices) > 8 → 3`, tức dựng mô hình với `n=3` và **chỉ nạp 3/10 khối** (`{7,15,23}`), đồng thời **bỏ 5 khối M4 thuần** `{2,5,8,11,14,17,20}`. Kết quả 4,10% là hệ quả tất yếu của một mô hình gần như ngẫu nhiên ở phần lớn thân mạng. — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*
 - Kiểm tra alias: **100%** key `image_encoder.*` bằng đúng tensor `clip_model.visual.*` ⇒ không có ghi đè chéo.
 
 ### IX.4. Sáu khuyết tật công cụ (E1–E6) và bản vá tương ứng
@@ -287,3 +323,5 @@ add_adapter[(i + 1) * n_spilt - 1] = True  # i = 0 .. n-1
 
 | Báo cáo JSON đầu ra | `/content/drive/MyDrive/Fatformer/logs/cfe_benchmark/communityforensics_benchmark_report.json` |
 | Báo cáo Markdown đầu ra | `/content/drive/MyDrive/Fatformer/logs/cfe_benchmark/communityforensics_benchmark_report.md` |
+
+</details>

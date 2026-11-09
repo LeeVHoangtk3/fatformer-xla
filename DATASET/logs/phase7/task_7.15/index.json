@@ -17,7 +17,7 @@
     },
     {
       "run_id": "temperature_converged_20261109_local",
-      "path": "current",
+      "path": "archive/temperature_converged_20261109_local",
       "run_type": "local_posthoc_calibration_repair",
       "package_sha256": "16606e16c89901f39ab78c29951c1f83d9412f98f27ab55853c2e2dd13ee5f74",
       "status": "local_verified_pending_real_images_GPU_and_evaluation",
@@ -26,16 +26,35 @@
       "exported_tests_passed": 38,
       "GPU_overhead": "pending_for_new_package_hash",
       "G73_status": "pending"
+    },
+    {
+      "run_id": "corrected_20261109_102954_3d28ad",
+      "path": "current",
+      "run_type": "measured_FP16_CUDA_package_benchmark",
+      "package_sha256": "248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0",
+      "status": "audited_measurement_G72_FAIL_G73_pending",
+      "calibration_optimizer": "verified_converged",
+      "G72_criteria_passed": 6,
+      "G72_criteria_total": 8,
+      "G72_status": "FAIL",
+      "G73_status": "pending_best_condition_reference",
+      "real20_equivalence": "reported_passed_images_inspected",
+      "gpu_overhead": "verified_pass_on_L4_FP16",
+      "local_weights_available": false
     }
   ],
-  "latest_imported_run": "unified_packaging_20261109_083821_8ddcb401",
+  "latest_imported_run": "corrected_20261109_102954_3d28ad",
   "latest_accepted_final_package_run": null,
   "latest_repaired_candidate_run": "temperature_converged_20261109_local",
   "current_directory": "current",
   "current_inputs": "current/inputs/calibration_400.npz",
   "current_calibration": "current/calibration/anchored_v2.json",
-  "current_package": "current/artifacts/unified_fatformer_v2.pth",
+  "current_package": null,
   "current_colab_bundle": "current/colab/phase7_corrected_colab_bundle.zip",
   "archive_directory": "archive",
-  "path_migration": "PATH_MIGRATION.json"
+  "path_migration": "PATH_MIGRATION.json",
+  "latest_measured_package_run": "corrected_20261109_102954_3d28ad",
+  "current_package_reference": "current/artifacts/package_reference.json",
+  "current_package_drive_path": "MyDrive/Fatformer/checkpoint/phase7/corrected_20261109_102954_3d28ad/unified_fatformer_v2.pth",
+  "current_audit": "current/analysis/verification.json"
 }

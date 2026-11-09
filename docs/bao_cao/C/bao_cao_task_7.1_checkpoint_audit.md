@@ -1,4 +1,9 @@
 # BÁO CÁO NGHIỆM THU NHIỆM VỤ 7.1 (TASK 7.1)
+
+<!-- PHASE7_CURRENT_BEGIN -->
+> Hồ sơ lịch sử / `invalid_layout` đối với số Gen 1. Các số 52.05, 4.10 và 96.58 dưới đây chỉ để tham chiếu lịch sử; không phải kết quả Phase 7 hiện hành. Xem [đính chính có nguồn](../overall/bao_cao_ra_soat_so_lieu_phase7.md) và [trạng thái nghiệm thu ngày 09/11/2026](../../milestones/milestone_phase7_acceptance.md). Không sử dụng kết luận hiệu lực cũ thay cho G7.1 FAIL, G7.2 FAIL và G7.3 pending.
+<!-- PHASE7_CURRENT_END -->
+
 ## KIỂM TOÁN CẤU TRÚC CHECKPOINT & ĐO LẠI GEN 1 (WiSE-FT CŨ: $n=3$ vs $n=8$)
 
 > **Mã nhiệm vụ**: `Task 7.1` *(Phase 7 — D1–D2)*  
@@ -41,13 +46,13 @@ Thực nghiệm đo đạc độc lập trên cùng 2.000 ảnh Clean của Comm
 
 | Chỉ số đo đạc | Layout $n=3$ (Nạp 3 khối `{7,15,23}`, Bỏ 7 khối) | Layout $n=8$ (Nạp 8 khối `{2..23}`, Bỏ 2 khối `{7,15}`) | Chênh lệch ($\Delta = n_8 - n_3$) |
 | :--- | :---: | :---: | :---: |
-| **Overall Accuracy (ACC)** | **64.75%** | **52.05%** | **-12.70 pp** |
+| **Overall Accuracy (ACC)** | **64.75%** | **52.05%** | **-12.70 pp**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
 | **Real Accuracy** | **94.00%** | **100.00%** | **+6.00 pp** |
-| **Fake Accuracy** | **35.50%** | **4.10%** | **-31.40 pp (Sụp đổ)** |
+| **Fake Accuracy** | **35.50%** | **4.10%** | **-31.40 pp (Sụp đổ)**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
 | **ROC-AUC** | **76.29%** | **57.07%** | **-19.22 pp** |
 | **Average Precision (AP)** | **78.24%** | **60.41%** | **-17.83 pp** |
 
-$\rightarrow$ **Trả lời:** **KHÔNG**. Layout $n=8$ không những không cao hơn mà còn **suy giảm nghiêm trọng** Fake ACC (-31.40 pp), đẩy mô hình vào trạng thái tê liệt hoàn toàn năng lực phát hiện ảnh giả (đoán Real 100%, Fake chỉ 4.10%). Ngược lại, layout $n=3$ có Fake ACC đạt 35.50% chỉ vì nó đã loại bỏ 7 khối pha trộn và khôi phục lại gần như nguyên vẹn trạng thái của mô hình Baseline gốc (Fake ACC Baseline = 35.30%).
+$\rightarrow$ **Trả lời:** **KHÔNG**. Layout $n=8$ không những không cao hơn mà còn **suy giảm nghiêm trọng** Fake ACC (-31.40 pp), đẩy mô hình vào trạng thái tê liệt hoàn toàn năng lực phát hiện ảnh giả (đoán Real 100%, Fake chỉ 4.10%). Ngược lại, layout $n=3$ có Fake ACC đạt 35.50% chỉ vì nó đã loại bỏ 7 khối pha trộn và khôi phục lại gần như nguyên vẹn trạng thái của mô hình Baseline gốc (Fake ACC Baseline = 35.30%). — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*
 
 ### Câu hỏi 3: Phán quyết nguyên nhân — `artifact_loader`, `different_basin` hay `inconclusive`?
 * **Phán quyết:** **`inconclusive` kết hợp `invalid_layout`**.
@@ -57,7 +62,7 @@ $\rightarrow$ **Trả lời:** **KHÔNG**. Layout $n=8$ không những không ca
 ### Câu hỏi 4: Hệ quả học thuật — Gen 1 có được dùng không và số liệu nào bị vô hiệu?
 1. **Cô lập vĩnh viễn:** Checkpoint `fatformer_wise_ft_best.pth` bị gắn nhãn bất biến **`invalid_layout`**, tuyệt đối **CẤM** đưa vào bất kỳ báo cáo kết quả hay sản phẩm triển khai nào.
 2. **Vô hiệu hóa toàn bộ số liệu Phase 6-R:**
-   - Số liệu `52.05%` (Micro ACC), `4.10%` (Fake ACC), và `96.58%` gắn với Gen 1 trong các báo cáo cũ chính thức bị hủy bỏ giá trị tham chiếu.
+   - Số liệu `52.05%` (Micro ACC), `4.10%` (Fake ACC), và `96.58%` gắn với Gen 1 trong các báo cáo cũ chính thức bị hủy bỏ giá trị tham chiếu. — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*
 3. **Mở khóa Cổng G7.0 & Bàn giao:**
    - Toàn bộ kết quả kiểm toán này mở khóa thành công Cổng **G7.0**.
    - Bàn giao script cho Thành viên B để triển khai `canonical_loader` ở Task 7.2.

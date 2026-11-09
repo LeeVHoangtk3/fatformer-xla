@@ -1,0 +1,59 @@
+﻿id,file,pointer,value,unit,scope
+cfe.clean.auc,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/clean/metrics/auc,88.66,percent except nll,current
+cfe.clean.ap,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/clean/metrics/ap,89.08,percent except nll,current
+cfe.clean.fake_at_real90,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/clean/metrics/fake_at_real90,64.12,percent except nll,current
+cfe.clean.accuracy,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/clean/metrics/accuracy,74.375,percent except nll,current
+cfe.clean.real_acc,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/clean/metrics/real_acc,95.62,percent except nll,current
+cfe.clean.fake_acc,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/clean/metrics/fake_acc,53.12,percent except nll,current
+cfe.clean.ece,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/clean/metrics/ece,4.39,percent except nll,current
+cfe.clean.nll,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/clean/metrics/nll,0.4288,percent except nll,current
+cfe.clean.ci95,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/clean/metrics/ci95,"{""auc"": [87.11, 90.16], ""ap"": [87.35, 90.85], ""tpr_at_fpr_0.05"": [46.98, 60.4], ""fake_at_real90"": [59.25, 69.77]}",percent except nll,current
+cfe.clean.tpr_at_fpr,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/clean/metrics/tpr_at_fpr,"{""0.01"": 35.88, ""0.05"": 54.0, ""0.10"": 64.12}",percent except nll,current
+cfe.q30.auc,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/q30/metrics/auc,79.88,percent except nll,current
+cfe.q30.ap,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/q30/metrics/ap,78.47,percent except nll,current
+cfe.q30.fake_at_real90,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/q30/metrics/fake_at_real90,42.62,percent except nll,current
+cfe.q30.accuracy,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/q30/metrics/accuracy,65.8125,percent except nll,current
+cfe.q30.real_acc,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/q30/metrics/real_acc,91.38,percent except nll,current
+cfe.q30.fake_acc,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/q30/metrics/fake_acc,40.25,percent except nll,current
+cfe.q30.ece,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/q30/metrics/ece,5.08,percent except nll,current
+cfe.q30.nll,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/q30/metrics/nll,0.5515,percent except nll,current
+cfe.q30.ci95,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/q30/metrics/ci95,"{""auc"": [77.65, 82.07], ""ap"": [75.33, 81.49], ""tpr_at_fpr_0.05"": [23.1, 35.94], ""fake_at_real90"": [37.87, 47.91]}",percent except nll,current
+cfe.q30.tpr_at_fpr,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/cfe/q30/metrics/tpr_at_fpr,"{""0.01"": 12.38, ""0.05"": 28.25, ""0.10"": 42.62}",percent except nll,current
+indist.macro_acc,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/indist/macro_acc,90.10184712075026,percent,current
+indist.pooled_real_acc,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/indist/pooled_real_acc,90.41,percent,current
+indist.mean_subset_real_acc,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/indist/mean_subset_real_acc,85.78888888888889,percent,current
+fixed_fpr.q30,DATASET/logs/phase7/task_7.15/current/analysis/recomputed_metrics.json,/pooled/q30/fixed_fpr_pct,8.625,percent,current
+distribution.macro_ci,DATASET/logs/phase7/task_7.15/current/analysis/distribution_cautions.json,/macro_subset_ci95,"{""point"": 90.10184712075026, ""ci95_resampling_18_subsets"": [86.75526544256002, 93.32349591421729], ""n_boot"": 10000, ""seed"": 42, ""unit"": ""subset"", ""purpose"": ""diagnostic, not the original acceptance CI rule""}",,current
+distribution.boundary_cases,DATASET/logs/phase7/task_7.15/current/analysis/distribution_cautions.json,/cpu_gpu_boundary_rows_by_dataset,"{""q50"": 1, ""indist"": 5}",,current
+bootstrap,DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json,/bootstrap,"{""n"": 1000, ""seed"": 42, ""unit"": ""image"", ""confidence_level"": 0.95}",,current
+calibration.T,DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json,/T,2.7832491397857666,,current
+calibration.T_star_default,DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json,/T_star_default,0.7918508648872375,,current
+calibration.n_calib,DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json,/n_calib,400,,current
+calibration.fpr_target,DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json,/fpr_target,0.05,,current
+calibration.fpr_measured,DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json,/fpr_measured,"{""0.01"": 0.01, ""0.05"": 0.05, ""0.10"": 0.1}",,current
+calibration.ece_after,DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json,/ece_after,5.39,,current
+calibration.nll_after,DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json,/nll_after,0.4227,,current
+latency.batch1.overhead_delta_ms,DATASET/logs/phase7/task_7.15/current/raw/latency_phase7.json,/batches/1/overhead_delta_ms,0.1880549998531933,ms/image,current
+latency.batch1.package_per_image_ms,DATASET/logs/phase7/task_7.15/current/raw/latency_phase7.json,/batches/1/package_per_image_ms,44.98,ms/image,current
+latency.batch1.overhead_delta_p95_ms,DATASET/logs/phase7/task_7.15/current/raw/latency_phase7.json,/batches/1/overhead_delta_p95_ms,2.4818566005478697,ms/image,current
+data.integrity.summary,DATASET/logs/phase7/data_isolation_report.json,/integrity/summary,"{""n_records"": 14400, ""n_bytes_images"": 8107529958, ""by_split"": {""train"": 12240, ""val_calib"": 1080, ""val_select"": 1080}, ""split_ratio"": {""train"": 0.85, ""val_calib"": 0.075, ""val_select"": 0.075}, ""family_totals"": {""autoregressive"": 1200, ""commercial"": 1200, ""latent_diffusion"": 1750, ""modern_gans"": 1200, ""pixel_diffusion"": 1187, ""real"": 7863}, ""family_new_only"": {""autoregressive"": 1200, ""commercial"": 1200, ""latent_diffusion"": 551, ""modern_gans"": 1200, ""pixel_diffusion"": 1187, ""real"": 6071}, ""family_imbalance"": 1.4743, ""n_families"": 6, ""real_frac_by_split"": {""train"": 0.546, ""val_calib"": 0.5463, ""val_select"": 0.5463}, ""real_frac_total"": 0.54604, ""replay"": 2991, ""replay_frac"": 0.20771, ""n_generators"": 22, ""n_sources"": 8}",,recorded artifact
+data.elapsed_s,DATASET/logs/phase7/data_isolation_report.json,/elapsed_s,512.7,,recorded artifact
+data.violations,DATASET/logs/phase7/data_isolation_report.json,/violations,0,,recorded artifact
+data.pass,DATASET/logs/phase7/data_isolation_report.json,/pass,true,,recorded artifact
+degradation.pct_overhead,DATASET/logs/phase7/degradation_v2/degradation_benchmark.json,/pct_overhead,14.078018928444958,,recorded artifact
+degradation.source,DATASET/logs/phase7/degradation_v2/degradation_benchmark.json,/source,"""synthetic:32 seeded RGB noise images, 256x256""",,recorded artifact
+degradation.passed,DATASET/logs/phase7/degradation_v2/degradation_benchmark.json,/passed,true,,recorded artifact
+selection.ratio,DATASET/logs/phase7/selection_benchmark.json,/ratio,1.0462320698546574,,recorded artifact
+selection.model,DATASET/logs/phase7/selection_benchmark.json,/model,"""CPU pooled RGB linear classifier, not CLIP""",,recorded artifact
+selection.passed,DATASET/logs/phase7/selection_benchmark.json,/passed,true,,recorded artifact
+router.status,DATASET/logs/phase7/router_params.json,/status,"""awaiting_measured_calibration""",,recorded artifact
+router.deployment_enabled,DATASET/logs/phase7/router_params.json,/deployment_enabled,false,,recorded artifact
+router.experiment_status,DATASET/logs/phase7/router_params.json,/experiment_status,"""deferred""",,recorded artifact
+gen1.runs,DATASET/logs/phase7/wise_ft_sweep/wise_ft_legacy_reinterpretation.json,/runs,"[{""layout"": ""n3"", ""loaded_blocks"": [7, 15, 23], ""dropped"": [2, 5, 8, 11, 14, 17, 20], ""acc"": 64.75, ""real_acc"": 94.0, ""fake_acc"": 35.5, ""auc"": 76.29, ""ap"": 78.24}, {""layout"": ""n8"", ""loaded_blocks"": [2, 5, 8, 11, 14, 17, 20, 23], ""dropped"": [7, 15], ""acc"": 52.05, ""real_acc"": 100.0, ""fake_acc"": 4.1, ""auc"": 57.07, ""ap"": 60.41}]",,historical diagnostic
+gen1.delta_fake_acc,DATASET/logs/phase7/wise_ft_sweep/wise_ft_legacy_reinterpretation.json,/delta_fake_acc,-31.4,,historical diagnostic
+gen1.verdict,DATASET/logs/phase7/wise_ft_sweep/wise_ft_legacy_reinterpretation.json,/verdict,"""inconclusive""",,historical diagnostic
+gen2.metadata,DATASET/logs/phase7/task_7.16/gen2_verified_metadata.json,/metadata,"{""schema"": ""wise_ft_v2/v1"", ""alpha"": 0.55, ""beta_srm"": 0.35, ""sources"": {""baseline"": {""path"": ""DATASET/pretrained/fatformer_4class_ckpt.pth"", ""sha256"": ""3b904401ad4ce7d0bc33661e83742ec4b659850c076b73cd544e87e26d8cb3db"", ""n_keys"": 1116}, ""anchored"": {""path"": ""DATASET/checkpoints/anchored_recovery_phase_6r/fatformer_anchored_recovery_best.pth"", ""sha256"": ""f70a11df9d7f45c11c60c4e117f8d1302c4f426b1f1b567cb2e50387b0111def"", ""n_keys"": 1200}}, ""layout"": {""n"": 3, ""indices"": [7, 15, 23], ""dropped"": [], ""partial"": false}, ""n_keys"": 1200, ""dropped_top_level_keys"": 0, ""git_commit"": ""851be5ec5e0bab73413deb202290a8a514bac0fc""}",,current
+training.selected_worst_group_pct,DATASET/logs/phase7/task_7.16/training_summary.json,/selected_worst_group_pct,46.666666666666664,,current
+training.nonfinite_grad_norm_epochs,DATASET/logs/phase7/task_7.16/training_summary.json,/nonfinite_grad_norm_epochs,"[1, 4]",,current
+tests.cases,DATASET/logs/phase7/task_7.16/validation/targeted_tests.json,/cases,103,,current
+tests.total_disjoint_cases,DATASET/logs/phase7/task_7.16/validation/targeted_tests.json,/total_disjoint_cases,156,,current

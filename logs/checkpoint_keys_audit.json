@@ -573,5 +573,23 @@
     "missing_keys": [],
     "unexpected_keys_count": 0,
     "unexpected_keys": []
+  },
+  {
+    "timestamp": "2026-11-09 21:42:14",
+    "checkpoint_path": "D:\\GIT REPO\\.nam4\\fatformer-xla\\scratch\\pytest_task716_components_20261109\\test_real_pipeline_never_promo0\\baseline.pth",
+    "strict_mode": false,
+    "missing_keys_count": 0,
+    "missing_keys": [],
+    "unexpected_keys_count": 0,
+    "unexpected_keys": []
+  },
+  {
+    "timestamp": "2026-11-09 21:42:14",
+    "checkpoint_path": "D:\\GIT REPO\\.nam4\\fatformer-xla\\scratch\\pytest_task716_components_20261109\\test_real_pipeline_never_promo0\\baseline.pth",
+    "strict_mode": true,
+    "missing_keys_count": 0,
+    "missing_keys": [],
+    "unexpected_keys_count": 0,
+    "unexpected_keys": []
   }
 ]

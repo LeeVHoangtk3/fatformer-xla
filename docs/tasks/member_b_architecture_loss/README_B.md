@@ -1,5 +1,39 @@
 # BẢNG ĐIỀU KHIỂN NHIỆM VỤ: THÀNH VIÊN B (ARCHITECTURE & LOSS LEAD)
 
+<!-- PHASE7_CURRENT_BEGIN -->
+## Kết quả Phase 7 hiện hành — 09/11/2026
+
+Run `corrected_20261109_102954_3d28ad`, package `248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0`. Số liệu hiện hành: [hậu kiểm chi tiết](../../../DATASET/logs/phase7/task_7.15/current/analysis/README.md), [view JSON v3 cho tài liệu](../../../DATASET/logs/phase7/task_7.16/final_phase7_report.json) và [bảng nguồn số cũ → mới](../../bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md). View v3 được tổng hợp từ raw corrected schema v1, **không phải một phép đo mới**.
+
+| Cổng | Kết quả hiện hành | Bằng chứng / phần còn thiếu |
+| :--- | :--- | :--- |
+| G7.0 | **PENDING** theo DoD toàn repo | Canonical core: 3 checkpoint nạp 0/0, Gen 1 bị từ chối; còn loader legacy và CI chẩn đoán n3/n8 chưa đủ. |
+| G7.1 | **FAIL** | Gen 2: Clean Fake@Real90 48,88% <55%; Q30 AUC 43,67% <55%. |
+| G7.2 | **FAIL — 6/8** | Clean Fake@Real90 64,12% <65%; worst-subset Fake ACC 30,86% <45%. |
+| G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
+
+Hoàn tất đo/biên soạn không có nghĩa đạt tất cả mục tiêu. Không dùng số Gen 1 như hiệu năng hợp lệ; không khẳng định router thắng, không đổi FAIL/pending thành PASS. Chấp nhận GPU CUDA đủ VRAM; latency chỉ áp dụng L4 đã ghi. Xác nhận chéo/chữ ký A/B/C còn chờ, không tạo chữ ký tự động.
+
+
+| Task | Chủ trì | Trạng thái | Kết quả và giới hạn |
+| :--- | :--- | :--- | :--- |
+| 7.2 | B | [~] | Canonical core và từ chối layout đã xác minh; repo-wide legacy/exception review chưa đóng. |
+| 7.9 | B | [x] | Loss v2 có code/smoke; kiểm thử thành phần được ghi riêng. Không đồng nghĩa đã chứng minh tăng khả năng tổng quát. |
+| 7.10 | B | [x] | Selection worst-group đã dùng trong training; CPU toy overhead 1,046×, không phải CLIP benchmark. |
+| 7.13 | B | [~] | Router code có regression; experiment deferred, deployment tắt; số synthetic v1 thu hồi; fixed fallback dùng được. |
+
+Kiểm thử mục tiêu: **103 passed**, phạm vi canonical/calibration/router/acceptance ghi trong JSON test; không gọi đó là test toàn repo hoặc thí nghiệm router held-out. Loss smoke dùng tiny RGB student/teacher, không phải quality benchmark CLIP. So sánh loss: 4 run/seed 42 chưa chứng minh cải thiện tổng quát; `primary_driver=null` trong ablation.
+
+Source active core: `src/models/canonical_loader.py`, `src/models/unified_fatformer.py`. Các điểm non-strict legacy/initialization được phân loại trong [strict_loading_review.json](../../../DATASET/logs/phase7/task_7.16/strict_loading_review.json); không được lấy loader legacy tạo số hiện hành.
+
+<!-- PHASE7_CURRENT_END -->
+
+<details>
+<summary>Kế hoạch nền và hồ sơ các giai đoạn trước — chỉ để tham khảo lịch sử, không dùng như kết quả Phase 7 hiện hành</summary>
+
+Các bảng, hình, kết luận và lệnh dưới đây được giữ để truy vết. Số Gen 1 là `invalid_layout`; chỉ mục nguồn và nội dung hiệu lực nằm ở khối cập nhật phía trên. Không dùng kết luận “PASS toàn bộ” trong hồ sơ cũ thay cho phán quyết mới.
+
+
 > **Vai trò**: Trưởng nhóm Kiến trúc Mô hình & Hàm Mất Mát (Architecture & Loss Lead)  
 > **Trách nhiệm cốt lõi**: Quản lý tính toàn vẹn của mã nguồn mô hình tại `src/models/`, bảo đảm nạp khớp cấu trúc tensor; hiện thực hóa tầng kiến trúc **Spatial Residual Block (SRM 3-Kernels)** và mạng cổng thích ứng tần số động **$\lambda(x) \in [0.0, 2.0]$**; cấu hình đóng băng CLIP ViT-L/14; xây dựng hàm mục tiêu thích ứng `DualStreamCELoss`; chủ trì thiết kế hàm mất mát tích hợp triệt tiêu phân kỳ KL (Knowledge Distillation), module Paired Augmentation và module LoRA có kiểm soát trong Milestone 6.
 
@@ -44,3 +78,5 @@
 4. **Hàm Mục Tiêu Bảo Tồn Tri Thức Trong Milestone 6**:
    - Khi thiết kế hàm mất mát tại Task 6.3-B, nhánh ảnh sạch bắt buộc áp dụng triệt tiêu phân kỳ KL (Knowledge Distillation) với logit từ mô hình gốc làm mỏ neo, ngăn chặn hiện tượng trôi dạt biểu diễn (representation drift) gây sụt giảm độ chính xác trên ảnh sạch phòng lab.
 5. **Tính Tự Chủ Triển Khai**: Chi tiết cài đặt hàm toán học, căn chỉnh shape tensor trong `src/models/` do Thành viên B tự chủ xử lý, miễn bảo đảm đúng tiêu chuẩn đầu ra và vượt qua cổng Smoke Test Gate.
+
+</details>

@@ -1,5 +1,21 @@
 # FatFormer-XLA: Robust Synthetic Image Detection via Spatial Residual Mining & Dynamic Frequency Gating
 
+<!-- PHASE7_CURRENT_BEGIN -->
+## Trạng thái thực tế ngày 09/11/2026
+
+Task 7.16 đã biên soạn 11/11 tài liệu, Chương 5, slide 6 trang và hồ sơ nghiệm thu. **Chờ cross-review và chữ ký thật A/B/C**; không xác nhận thay con người.
+
+| Cổng | Kết quả hiện hành | Bằng chứng / phần còn thiếu |
+| :--- | :--- | :--- |
+| G7.0 | **PENDING** theo DoD toàn repo | Canonical core: 3 checkpoint nạp 0/0, Gen 1 bị từ chối; còn loader legacy và CI chẩn đoán n3/n8 chưa đủ. |
+| G7.1 | **FAIL** | Gen 2: Clean Fake@Real90 48,88% <55%; Q30 AUC 43,67% <55%. |
+| G7.2 | **FAIL — 6/8** | Clean Fake@Real90 64,12% <65%; worst-subset Fake ACC 30,86% <45%. |
+| G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
+
+Hồ sơ: [biên bản và checklist](docs/milestones/milestone_phase7_acceptance.md) và [bảng số cũ → mới → nguồn](docs/bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md). GPU có thể là bất kỳ CUDA GPU đủ VRAM; kết quả latency hiện có chỉ được đo trên L4/FP16. Các mốc và số liệu cũ phía dưới là kế hoạch/hồ sơ lịch sử, không thay phán quyết hiện hành.
+<!-- PHASE7_CURRENT_END -->
+
+
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-ee4c2c.svg?logo=pytorch)](https://pytorch.org/)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg?logo=python)](https://www.python.org/)
 [![CVPR 2024 Baseline](https://img.shields.io/badge/Baseline-CVPR%202024%20FatFormer-brightgreen.svg)](https://openaccess.thecvf.com/content/CVPR2024/html/Xie_FatFormer_Transferable_and_Robust_Face_Forgery_Detection_via_Feature_Adaptive_CVPR_2024_paper.html)
@@ -180,9 +196,9 @@ Theo **Khế ước đo lường CFE v3**, nghiêm cấm việc chỉ báo cáo 
 | **Baseline (CVPR 2024)** | 64.75% | 94.00% | 35.50% | 76.29% | 78.24% |
 | **Anchored Recovery (Phase 6R)** | **68.20%** | **92.40%** | **44.00%** | **79.15%** | **81.02%** |
 | *M4 Robust (8 Blocks)* | 61.30% | 88.50% | 34.10% | 72.40% | 74.80% |
-| *Gen 1 Layout n=8 (Đo lại Task 7.1)* | *52.05%* | *100.00%* | *4.10% (Sụp đổ)* | *57.07%* | *60.41%* |
+| *Gen 1 Layout n=8 (Đo lại Task 7.1)* | *52.05%* | *100.00%* | *4.10% (Sụp đổ)* | *57.07%* | *60.41%*  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
 
-*(Ghi chú: Checkpoint WiSE-FT Gen 1 bị sụp đổ Fake ACC xuống 4.10% do hiện tượng khác biệt lưu vực tham số `different_basin` khi hòa trộn giữa $n=3$ và $n=8$, đã được nghiệm thu đóng vết tại Cổng G7.0).*
+*(Ghi chú: Checkpoint WiSE-FT Gen 1 bị sụp đổ Fake ACC xuống 4.10% do hiện tượng khác biệt lưu vực tham số `different_basin` khi hòa trộn giữa $n=3$ và $n=8$, đã được nghiệm thu đóng vết tại Cổng G7.0).* — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*
 
 ---
 
@@ -263,11 +279,16 @@ flowchart LR
     A --> B --> C --> A
 ```
 
-### Lộ Trình Hiện Hành: Phase 7 (Unified Single Checkpoint)
-- [x] **Cổng G7.0 (Toàn vẹn đo lường)**: Hoàn thành Task 7.1 — Kiểm toán 4 checkpoint, đóng vết và cô lập WiSE-FT Gen 1.
-- [~] **Cổng G7.1 (Tương thích kiến trúc)**: Task 7.2 — Implementation complete (`canonical_loader.py`, `adapter_block_indices`, audit refactored, báo cáo). Chờ xác nhận DoD: `pytest`, nạp 4 checkpoint thực tế 0/0, smoke 1 batch. Task 7.3 — pending.
-- [ ] **Cổng G7.2 (Khôi phục Anchor)**: Huấn luyện mô hình Anchor thế hệ mới trên tập dữ liệu chuẩn hóa.
-- [ ] **Cổng G7.3 (Nghiệm thu Đích)**: Đóng gói checkpoint thống nhất duy nhất `UnifiedFatFormerXLA`.
+### Lộ trình Phase 7: trạng thái đo thực tế
+
+| Cổng | Kết quả hiện hành | Bằng chứng / phần còn thiếu |
+| :--- | :--- | :--- |
+| G7.0 | **PENDING** theo DoD toàn repo | Canonical core: 3 checkpoint nạp 0/0, Gen 1 bị từ chối; còn loader legacy và CI chẩn đoán n3/n8 chưa đủ. |
+| G7.1 | **FAIL** | Gen 2: Clean Fake@Real90 48,88% <55%; Q30 AUC 43,67% <55%. |
+| G7.2 | **FAIL — 6/8** | Clean Fake@Real90 64,12% <65%; worst-subset Fake ACC 30,86% <45%. |
+| G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
+
+Task 7.16 đã biên soạn tài liệu; cross-review/chữ ký A/B/C chưa có. Xem [biên bản nghiệm thu](docs/milestones/milestone_phase7_acceptance.md).
 
 ---
 

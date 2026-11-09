@@ -1,5 +1,21 @@
 # TASK 7.16 — CẬP NHẬT TÀI LIỆU DỰ ÁN & CHƯƠNG 5 / HẠN CHẾ
 
+<!-- PHASE7_CURRENT_BEGIN -->
+## Trạng thái thực tế ngày 09/11/2026
+
+Task 7.16 đã biên soạn 11/11 tài liệu, Chương 5, slide 6 trang và hồ sơ nghiệm thu. **Chờ cross-review và chữ ký thật A/B/C**; không xác nhận thay con người.
+
+| Cổng | Kết quả hiện hành | Bằng chứng / phần còn thiếu |
+| :--- | :--- | :--- |
+| G7.0 | **PENDING** theo DoD toàn repo | Canonical core: 3 checkpoint nạp 0/0, Gen 1 bị từ chối; còn loader legacy và CI chẩn đoán n3/n8 chưa đủ. |
+| G7.1 | **FAIL** | Gen 2: Clean Fake@Real90 48,88% <55%; Q30 AUC 43,67% <55%. |
+| G7.2 | **FAIL — 6/8** | Clean Fake@Real90 64,12% <65%; worst-subset Fake ACC 30,86% <45%. |
+| G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
+
+Hồ sơ: [biên bản và checklist](../../../milestones/milestone_phase7_acceptance.md) và [bảng số cũ → mới → nguồn](../../../bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md). GPU có thể là bất kỳ CUDA GPU đủ VRAM; kết quả latency hiện có chỉ được đo trên L4/FP16. Các mốc và số liệu cũ phía dưới là kế hoạch/hồ sơ lịch sử, không thay phán quyết hiện hành.
+<!-- PHASE7_CURRENT_END -->
+
+
 - **Mã nhiệm vụ**: `Task 7.16` *(Phase 7 — D10–D12)*
 - **Người thực hiện**: **Cả 3 thành viên** — **C chủ trì & chịu trách nhiệm cuối**
 - **Phân công**: A = tài liệu dữ liệu; B = tài liệu kiến trúc/checkpoint; C = kế hoạch, báo cáo, slide
@@ -76,9 +92,9 @@ Trước khi sửa bất kỳ file nào, lập bảng nguồn:
 
 | Số cũ | Xuất hiện ở | Số mới | Nguồn (file + trường JSON) | Ghi chú |
 | :--- | :--- | :--- | :--- | :--- |
-| `52.05%` | báo cáo CFE | … | `final_phase7_report.json` → `cfe.q30.fake_at_real90` | Số cũ dùng ngưỡng batch ⇒ **vô hiệu** |
-| `4.10%` | báo cáo CFE | … | `cfe.clean.real_acc` (nếu là Real ACC) | |
-| `96.58%` | Task 5.1/6.3 | … | `indist.macro_acc` | Số cũ là overall, không phải macro |
+| `52.05%` | báo cáo CFE | … | `final_phase7_report.json` → `cfe.q30.fake_at_real90` | Số cũ dùng ngưỡng batch ⇒ **vô hiệu**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
+| `4.10%` | báo cáo CFE | … | `cfe.clean.real_acc` (nếu là Real ACC) |  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
+| `96.58%` | Task 5.1/6.3 | … | `indist.macro_acc` | Số cũ là overall, không phải macro  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
 | `91.5%` | Phase 6-R | … | `cfe.clean.acc` | |
 
 **Luật**: mỗi số mới **phải** trỏ được tới một trường JSON cụ thể. Không có nguồn ⇒ không được viết.
@@ -125,7 +141,7 @@ Cấu trúc bắt buộc:
 ## 5.4. Hướng phát triển
 ```
 
-**Cấm**: viết "đạt 96,58%" mà không nói đó là overall ACC của tập nào; viết "vượt baseline" khi chênh < nửa CI.
+**Cấm**: viết "đạt 96,58%" mà không nói đó là overall ACC của tập nào; viết "vượt baseline" khi chênh < nửa CI. — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*
 
 ### Bước 4 — Rà soát chéo & grep (D12, ~0,5 h, cả 3)
 
@@ -162,14 +178,14 @@ Biên bản `milestone_phase7_acceptance.md`: 4 cổng, PASS/FAIL, người xác
 
 ## 6. Definition of Done
 
-- [ ] **11/11** file ở §3 đã cập nhật (đánh dấu trong biên bản).
-- [ ] `bao_cao_ra_soat_so_lieu_phase7.md` có bảng "số cũ → số mới → nguồn JSON" cho **mọi** số bị thay đổi.
-- [ ] `grep "52.05\|4.10\|96.58"` không còn kết quả nào **không** kèm nhãn `invalid_layout` hoặc "chỉ để tham chiếu lịch sử".
-- [ ] Chương 5 có đủ 4 mục 5.1–5.4; mục Hạn chế nêu **số pp thiếu** nếu G7.2 trượt.
-- [ ] Slide 6 trang, số liệu khớp `final_phase7_report.json` **100%** (không làm tròn khác).
+- [x] **11/11** file ở §3 đã cập nhật (đánh dấu trong biên bản).
+- [x] `bao_cao_ra_soat_so_lieu_phase7.md` có bảng "số cũ → số mới → nguồn JSON" cho **mọi** số bị thay đổi.
+- [x] `grep "52.05\|4.10\|96.58"` không còn kết quả nào **không** kèm nhãn `invalid_layout` hoặc "chỉ để tham chiếu lịch sử".
+- [x] Chương 5 có đủ 4 mục 5.1–5.4; mục Hạn chế nêu **số pp thiếu** nếu G7.2 trượt.
+- [x] Slide 6 trang, số liệu khớp `final_phase7_report.json` **100%** (không làm tròn khác).
 - [ ] Biên bản nghiệm thu có 4 cổng + đường dẫn bằng chứng + 3 người xác nhận.
 - [ ] `grep "strict=False"` trong `src/`, `tools/`, `docs/` — không còn trong đường báo cáo.
-- [ ] Không còn câu nào mô tả WiSE-FT cũ là đang hiệu lực.
+- [x] Không còn câu nào mô tả WiSE-FT cũ là đang hiệu lực.
 - [ ] **Rà soát chéo**: mỗi thành viên đọc ít nhất 1 file của người khác và ký nhận.
 
 ---

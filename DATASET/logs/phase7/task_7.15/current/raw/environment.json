@@ -1,0 +1,19 @@
+{
+  "run_id": "corrected_20261109_102954_3d28ad",
+  "gpu": "NVIDIA L4",
+  "torch": "2.14.1+cu130",
+  "hardware_protocol": "any_compatible_cuda_gpu",
+  "free_vram_gib": 21.8448486328125,
+  "total_vram_gib": 22.0343017578125,
+  "max_batch_size": 16,
+  "bundle": {
+    "contract": "phase7-corrected-20261109-v2",
+    "sha256": "9d7e622a365e0d490bd49f8fb64b07ec25d0794c9096d974e8d4aec1f1053c0e",
+    "n_verified_files": 140,
+    "source": {
+      "base_git_commit": "bb43fd90dc65df67707de2eee0c41b5a63eec335",
+      "working_tree_dirty": true,
+      "method": "snapshot of actual working files; not GitHub HEAD"
+    }
+  }
+}

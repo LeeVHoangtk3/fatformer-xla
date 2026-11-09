@@ -1,0 +1,24 @@
+{
+  "status": "pending_actual_cross_review",
+  "participants": [
+    {
+      "role": "A",
+      "name": null,
+      "signed": false,
+      "date": null
+    },
+    {
+      "role": "B",
+      "name": null,
+      "signed": false,
+      "date": null
+    },
+    {
+      "role": "C",
+      "name": null,
+      "signed": false,
+      "date": null
+    }
+  ],
+  "notice": "Only actual human confirmation can close these fields; scripts must not sign."
+}

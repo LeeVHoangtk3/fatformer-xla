@@ -1,0 +1,8066 @@
+{
+  "schema": "phase7_corrected_run_audit/v1",
+  "audited_at": "2026-11-09T12:59:45.322632+00:00",
+  "run_id": "corrected_20261109_102954_3d28ad",
+  "source": "wait/phase7_corrected_rerun/corrected_20261109_102954_3d28ad_results",
+  "notebook": {
+    "path": "notebooks/task/phase7_corrected/phase7_corrected_rerun_colab.ipynb",
+    "sha256": "311a50b171a868581e89616458c32f84f599b07b8dbb622a27ad2d83a844173a",
+    "unchanged": true,
+    "preserved_copy": "evidence/executed_notebook.ipynb"
+  },
+  "package_sha256": "248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0",
+  "source_checkpoint_sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c",
+  "bundle_zip_sha256": "3cd63cd9f5e07d6a70348e3d23809a8216c633b0d45224e815651378923ce657",
+  "bundle_manifest_sha256": "9d7e622a365e0d490bd49f8fb64b07ec25d0794c9096d974e8d4aec1f1053c0e",
+  "checks_passed": 1906,
+  "checks": [
+    {
+      "name": "55 submitted files",
+      "passed": true
+    },
+    {
+      "name": "completed package benchmark",
+      "passed": true
+    },
+    {
+      "name": "one package hash across all outputs",
+      "passed": true
+    },
+    {
+      "name": "calibration and metadata equality",
+      "passed": true
+    },
+    {
+      "name": "source checkpoint consistency",
+      "passed": true
+    },
+    {
+      "name": "FP16 batch16 CUDA contract",
+      "passed": true
+    },
+    {
+      "name": "router disabled",
+      "passed": true
+    },
+    {
+      "name": "benchmark artifact hash predictions_cfe_clean.npz",
+      "passed": true
+    },
+    {
+      "name": "benchmark artifact hash predictions_cfe_q30.npz",
+      "passed": true
+    },
+    {
+      "name": "benchmark artifact hash predictions_cfe_q50.npz",
+      "passed": true
+    },
+    {
+      "name": "benchmark artifact hash predictions_cfe_q75.npz",
+      "passed": true
+    },
+    {
+      "name": "benchmark artifact hash predictions_cfe_webp40.npz",
+      "passed": true
+    },
+    {
+      "name": "benchmark artifact hash predictions_cfe_blur15.npz",
+      "passed": true
+    },
+    {
+      "name": "benchmark artifact hash predictions_cfe_downup05.npz",
+      "passed": true
+    },
+    {
+      "name": "benchmark artifact hash predictions_indist.npz",
+      "passed": true
+    },
+    {
+      "name": "benchmark artifact hash per_subset_cfe.csv",
+      "passed": true
+    },
+    {
+      "name": "benchmark artifact hash roc.png",
+      "passed": true
+    },
+    {
+      "name": "acceptance source-report hash benchmark/final_report.json",
+      "passed": true
+    },
+    {
+      "name": "acceptance source-report hash real_image_verification.json",
+      "passed": true
+    },
+    {
+      "name": "acceptance source-report hash latency_phase7.json",
+      "passed": true
+    },
+    {
+      "name": "inner and outer bundle manifests agree",
+      "passed": true
+    },
+    {
+      "name": "manifest hash matches environment",
+      "passed": true
+    },
+    {
+      "name": "expected complete bundle membership",
+      "passed": true
+    },
+    {
+      "name": "bundle member configs/ablation_v2/a1_data.yaml",
+      "passed": true
+    },
+    {
+      "name": "bundle member configs/ablation_v2/a2_data_guard.yaml",
+      "passed": true
+    },
+    {
+      "name": "bundle member configs/ablation_v2/a3_data_featcons.yaml",
+      "passed": true
+    },
+    {
+      "name": "bundle member configs/ablation_v2/a4_full.yaml",
+      "passed": true
+    },
+    {
+      "name": "bundle member configs/degradation_v2.yaml",
+      "passed": true
+    },
+    {
+      "name": "bundle member configs/phase7_data_v2.runtime.yaml",
+      "passed": true
+    },
+    {
+      "name": "bundle member configs/phase7_data_v2.yaml",
+      "passed": true
+    },
+    {
+      "name": "bundle member configs/phase7_gpu_acceptance.yaml",
+      "passed": true
+    },
+    {
+      "name": "bundle member configs/train_config.yaml",
+      "passed": true
+    },
+    {
+      "name": "bundle member configs/train_config_kaggle.yaml",
+      "passed": true
+    },
+    {
+      "name": "bundle member configs/train_m3_data.yaml",
+      "passed": true
+    },
+    {
+      "name": "bundle member configs/train_m4_distill.yaml",
+      "passed": true
+    },
+    {
+      "name": "bundle member configs/train_m5_lora.yaml",
+      "passed": true
+    },
+    {
+      "name": "bundle member configs/train_m6_r_anchored.yaml",
+      "passed": true
+    },
+    {
+      "name": "bundle member configs/train_phase7_anchored_v2.yaml",
+      "passed": true
+    },
+    {
+      "name": "bundle member inputs/anchored_v2.json",
+      "passed": true
+    },
+    {
+      "name": "bundle member inputs/calibration_400.npz",
+      "passed": true
+    },
+    {
+      "name": "bundle member inputs/calibration_split.npz",
+      "passed": true
+    },
+    {
+      "name": "bundle member inputs/evaluation_split.npz",
+      "passed": true
+    },
+    {
+      "name": "bundle member inputs/partition_audit.json",
+      "passed": true
+    },
+    {
+      "name": "bundle member notebooks/task/phase7_corrected/phase7_corrected_rerun_colab.ipynb",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/__init__.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/datasets/__init__.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/datasets/dataset.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/datasets/samplers.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/datasets/transforms.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/evaluation/__init__.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/evaluation/fast_eval.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/evaluation/metrics.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/main.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/models/__init__.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/models/canonical_loader.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/models/clip/__init__.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/models/clip/bpe_simple_vocab_16e6.txt.gz",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/models/clip/clip.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/models/clip/model.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/models/clip/simple_tokenizer.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/models/clip_models.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/models/degradation_router.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/models/gating.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/models/lora_adapter.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/models/srm.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/models/unified_fatformer.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/training/__init__.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/training/checkpoint_manager.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/training/freeze_utils.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/training/loss.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/training/metrics.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/training/runtime_state.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/training/selection.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/training/train_crossdomain.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member src/training/trainer.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_ablation_v2.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_calibration_partitions.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_canonical_loader.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_degradation_v2.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_loss_v2.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_phase7_acceptance.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_phase7_corrected.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_phase7_preflight.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_phase7_training_runtime.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_router.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_router_pipeline.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_selection_metric.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_selection_regressions.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_smoke_degradation_integration.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_smoke_loss_v2_integration.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_smoke_selection_v2_integration.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_temperature_convergence.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_unified_packaging.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tests/test_wise_ft_merge_verify.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/Check_module.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/ablation_v2_common.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/aggregate_phase7_benchmark.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/analyze_distribution_shift.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/audit_ablation_configs.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/audit_checkpoint_compat.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/audit_checkpoints.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/audit_data_leakage.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/audit_manifest_v2.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/bench_degradation.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/bench_selection.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/build_crossdomain_manifest.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/build_generator_denylist.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/build_manifest_v2.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/build_phase7_colab_bundle.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/calibrate_and_select.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/calibration_data.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/check_weights.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/data_v2_contract.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/download_datasets.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/eval_communityforensics.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/eval_crossdomain_ablation.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/eval_degraded.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/eval_gen1_reinterpretation.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/eval_locked_benchmark.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/eval_val_crossdomain_baseline.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/evaluate_ablation_v2.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/extract_calibration_logits.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/extract_weights.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/fast_eval.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/finalize_phase7_corrected.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/fit_router.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/full_eval.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/generate_router_ablation.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/hash_utils.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/index_test_sets.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/infer_unified.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/inspect_image.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/make_degraded.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/package_kaggle_code.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/package_manifest_v2.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/package_unified_fatformer.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/phase7_corrected.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/phase7_reference_io.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/plot_crossdomain_ablation.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/plot_degradation_profile.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/plot_m6_convergence.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/plot_three_way_benchmark.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/preflight_phase7_train.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/probe_phase7_gpu.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/rebaseline_cfe_matrix.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/recover_calibration_split.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/router_data.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/run_ablation_v2.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/run_locked_benchmark_phase7.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/run_phase7_acceptance.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/run_phase7_corrected.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/smoke_test_pipeline.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/sweep_wise_ft_candidates.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/test_data_v2.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/test_index_test_sets.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/test_smoke_m6.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/test_src_load.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/test_zero_init_identity.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/verify_data_isolation.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/verify_unified_package.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/verify_weights_provenance.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/visualize_cam.py",
+      "passed": true
+    },
+    {
+      "name": "bundle member tools/wise_ft_merge.py",
+      "passed": true
+    },
+    {
+      "name": "exact prepared ZIP used",
+      "passed": true
+    },
+    {
+      "name": "frozen calibration split exact bytes",
+      "passed": true
+    },
+    {
+      "name": "frozen evaluation split exact bytes",
+      "passed": true
+    },
+    {
+      "name": "measured finite 400x2 calibration",
+      "passed": true
+    },
+    {
+      "name": "balanced 200/200 calibration",
+      "passed": true
+    },
+    {
+      "name": "all partition declarations agree",
+      "passed": true
+    },
+    {
+      "name": "calibration paths/IDs agree",
+      "passed": true
+    },
+    {
+      "name": "calibration cache provenance",
+      "passed": true
+    },
+    {
+      "name": "calibration cache precision/batch",
+      "passed": true
+    },
+    {
+      "name": "actual calibration source fingerprint",
+      "passed": true
+    },
+    {
+      "name": "actual calibration JSON fingerprint",
+      "passed": true
+    },
+    {
+      "name": "temperature fit reproduced",
+      "passed": true
+    },
+    {
+      "name": "independent minimum temperature",
+      "passed": true
+    },
+    {
+      "name": "independent minimum NLL",
+      "passed": true
+    },
+    {
+      "name": "optimizer converged",
+      "passed": true
+    },
+    {
+      "name": "calibration metric ece_before",
+      "passed": true
+    },
+    {
+      "name": "calibration metric ece_after",
+      "passed": true
+    },
+    {
+      "name": "calibration metric nll_before",
+      "passed": true
+    },
+    {
+      "name": "calibration metric nll_after",
+      "passed": true
+    },
+    {
+      "name": "calibration fixed FPR 0.01",
+      "passed": true
+    },
+    {
+      "name": "calibration FPR cap 0.01",
+      "passed": true
+    },
+    {
+      "name": "calibration fixed FPR 0.05",
+      "passed": true
+    },
+    {
+      "name": "calibration FPR cap 0.05",
+      "passed": true
+    },
+    {
+      "name": "calibration fixed FPR 0.10",
+      "passed": true
+    },
+    {
+      "name": "calibration FPR cap 0.10",
+      "passed": true
+    },
+    {
+      "name": "calibration real accuracy",
+      "passed": true
+    },
+    {
+      "name": "calibration fake accuracy",
+      "passed": true
+    },
+    {
+      "name": "all notebook cell sources match supplied template",
+      "passed": true
+    },
+    {
+      "name": "11 executed cells without error outputs",
+      "passed": true
+    },
+    {
+      "name": "notebook reports exact run and package",
+      "passed": true
+    },
+    {
+      "name": "20 balanced actual verification images",
+      "passed": true
+    },
+    {
+      "name": "verification samples calibration-only",
+      "passed": true
+    },
+    {
+      "name": "two real/two fake per CFE subset",
+      "passed": true
+    },
+    {
+      "name": "verification filename 0",
+      "passed": true
+    },
+    {
+      "name": "verification filename 1",
+      "passed": true
+    },
+    {
+      "name": "verification filename 2",
+      "passed": true
+    },
+    {
+      "name": "verification filename 3",
+      "passed": true
+    },
+    {
+      "name": "verification filename 4",
+      "passed": true
+    },
+    {
+      "name": "verification filename 5",
+      "passed": true
+    },
+    {
+      "name": "verification filename 6",
+      "passed": true
+    },
+    {
+      "name": "verification filename 7",
+      "passed": true
+    },
+    {
+      "name": "verification filename 8",
+      "passed": true
+    },
+    {
+      "name": "verification filename 9",
+      "passed": true
+    },
+    {
+      "name": "verification filename 10",
+      "passed": true
+    },
+    {
+      "name": "verification filename 11",
+      "passed": true
+    },
+    {
+      "name": "verification filename 12",
+      "passed": true
+    },
+    {
+      "name": "verification filename 13",
+      "passed": true
+    },
+    {
+      "name": "verification filename 14",
+      "passed": true
+    },
+    {
+      "name": "verification filename 15",
+      "passed": true
+    },
+    {
+      "name": "verification filename 16",
+      "passed": true
+    },
+    {
+      "name": "verification filename 17",
+      "passed": true
+    },
+    {
+      "name": "verification filename 18",
+      "passed": true
+    },
+    {
+      "name": "verification filename 19",
+      "passed": true
+    },
+    {
+      "name": "20 distinct verification image contents",
+      "passed": true
+    },
+    {
+      "name": "real-image verification report passed",
+      "passed": true
+    },
+    {
+      "name": "clean prediction shapes",
+      "passed": true
+    },
+    {
+      "name": "clean finite predictions",
+      "passed": true
+    },
+    {
+      "name": "clean probabilities in range",
+      "passed": true
+    },
+    {
+      "name": "clean metadata",
+      "passed": true
+    },
+    {
+      "name": "clean fixed threshold exact",
+      "passed": true
+    },
+    {
+      "name": "clean labels reproduce saved GPU scores",
+      "passed": true
+    },
+    {
+      "name": "clean router fixed clean fallback",
+      "passed": true
+    },
+    {
+      "name": "clean unique full sample IDs and paths",
+      "passed": true
+    },
+    {
+      "name": "clean subset ID prefix",
+      "passed": true
+    },
+    {
+      "name": "clean exact frozen evaluation identities/labels",
+      "passed": true
+    },
+    {
+      "name": "clean paths map to IDs",
+      "passed": true
+    },
+    {
+      "name": "clean paired condition order",
+      "passed": true
+    },
+    {
+      "name": "clean independent CPU score crosscheck",
+      "passed": true
+    },
+    {
+      "name": "clean.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.real_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "clean.auc",
+      "passed": true
+    },
+    {
+      "name": "clean.ap",
+      "passed": true
+    },
+    {
+      "name": "clean.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "clean.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "clean.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "clean.ece",
+      "passed": true
+    },
+    {
+      "name": "clean.nll",
+      "passed": true
+    },
+    {
+      "name": "clean.total_samples",
+      "passed": true
+    },
+    {
+      "name": "clean.accuracy",
+      "passed": true
+    },
+    {
+      "name": "clean.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.n_real",
+      "passed": true
+    },
+    {
+      "name": "clean.n_fake",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.real_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.auc",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.ap",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.ece",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.nll",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.total_samples",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.accuracy",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.n_real",
+      "passed": true
+    },
+    {
+      "name": "clean.1_commercial.n_fake",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "clean.2_latent_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "clean.3_pixel_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.real_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.auc",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.ap",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.ece",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.nll",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.total_samples",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.accuracy",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.n_real",
+      "passed": true
+    },
+    {
+      "name": "clean.4_modern_gans.n_fake",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.real_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.auc",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.ap",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.ece",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.nll",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.total_samples",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.accuracy",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.n_real",
+      "passed": true
+    },
+    {
+      "name": "clean.5_other_autoregressive.n_fake",
+      "passed": true
+    },
+    {
+      "name": "clean CI95 auc",
+      "passed": true
+    },
+    {
+      "name": "clean CI95 ap",
+      "passed": true
+    },
+    {
+      "name": "clean CI95 tpr_at_fpr_0.05",
+      "passed": true
+    },
+    {
+      "name": "clean CI95 fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q30 prediction shapes",
+      "passed": true
+    },
+    {
+      "name": "q30 finite predictions",
+      "passed": true
+    },
+    {
+      "name": "q30 probabilities in range",
+      "passed": true
+    },
+    {
+      "name": "q30 metadata",
+      "passed": true
+    },
+    {
+      "name": "q30 fixed threshold exact",
+      "passed": true
+    },
+    {
+      "name": "q30 labels reproduce saved GPU scores",
+      "passed": true
+    },
+    {
+      "name": "q30 router fixed clean fallback",
+      "passed": true
+    },
+    {
+      "name": "q30 unique full sample IDs and paths",
+      "passed": true
+    },
+    {
+      "name": "q30 subset ID prefix",
+      "passed": true
+    },
+    {
+      "name": "q30 exact frozen evaluation identities/labels",
+      "passed": true
+    },
+    {
+      "name": "q30 paths map to IDs",
+      "passed": true
+    },
+    {
+      "name": "q30 paired condition order",
+      "passed": true
+    },
+    {
+      "name": "q30 independent CPU score crosscheck",
+      "passed": true
+    },
+    {
+      "name": "q30.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q30.auc",
+      "passed": true
+    },
+    {
+      "name": "q30.ap",
+      "passed": true
+    },
+    {
+      "name": "q30.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q30.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q30.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q30.ece",
+      "passed": true
+    },
+    {
+      "name": "q30.nll",
+      "passed": true
+    },
+    {
+      "name": "q30.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q30.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q30.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.n_real",
+      "passed": true
+    },
+    {
+      "name": "q30.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.auc",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.ap",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.ece",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.nll",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.n_real",
+      "passed": true
+    },
+    {
+      "name": "q30.1_commercial.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "q30.2_latent_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "q30.3_pixel_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.auc",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.ap",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.ece",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.nll",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.n_real",
+      "passed": true
+    },
+    {
+      "name": "q30.4_modern_gans.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.auc",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.ap",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.ece",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.nll",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.n_real",
+      "passed": true
+    },
+    {
+      "name": "q30.5_other_autoregressive.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q30 CI95 auc",
+      "passed": true
+    },
+    {
+      "name": "q30 CI95 ap",
+      "passed": true
+    },
+    {
+      "name": "q30 CI95 tpr_at_fpr_0.05",
+      "passed": true
+    },
+    {
+      "name": "q30 CI95 fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q50 prediction shapes",
+      "passed": true
+    },
+    {
+      "name": "q50 finite predictions",
+      "passed": true
+    },
+    {
+      "name": "q50 probabilities in range",
+      "passed": true
+    },
+    {
+      "name": "q50 metadata",
+      "passed": true
+    },
+    {
+      "name": "q50 fixed threshold exact",
+      "passed": true
+    },
+    {
+      "name": "q50 labels reproduce saved GPU scores",
+      "passed": true
+    },
+    {
+      "name": "q50 router fixed clean fallback",
+      "passed": true
+    },
+    {
+      "name": "q50 unique full sample IDs and paths",
+      "passed": true
+    },
+    {
+      "name": "q50 subset ID prefix",
+      "passed": true
+    },
+    {
+      "name": "q50 exact frozen evaluation identities/labels",
+      "passed": true
+    },
+    {
+      "name": "q50 paths map to IDs",
+      "passed": true
+    },
+    {
+      "name": "q50 paired condition order",
+      "passed": true
+    },
+    {
+      "name": "q50 independent CPU score crosscheck",
+      "passed": true
+    },
+    {
+      "name": "q50.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q50.auc",
+      "passed": true
+    },
+    {
+      "name": "q50.ap",
+      "passed": true
+    },
+    {
+      "name": "q50.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q50.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q50.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q50.ece",
+      "passed": true
+    },
+    {
+      "name": "q50.nll",
+      "passed": true
+    },
+    {
+      "name": "q50.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q50.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q50.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.n_real",
+      "passed": true
+    },
+    {
+      "name": "q50.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.auc",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.ap",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.ece",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.nll",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.n_real",
+      "passed": true
+    },
+    {
+      "name": "q50.1_commercial.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "q50.2_latent_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "q50.3_pixel_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.auc",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.ap",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.ece",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.nll",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.n_real",
+      "passed": true
+    },
+    {
+      "name": "q50.4_modern_gans.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.auc",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.ap",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.ece",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.nll",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.n_real",
+      "passed": true
+    },
+    {
+      "name": "q50.5_other_autoregressive.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q50 CI95 auc",
+      "passed": true
+    },
+    {
+      "name": "q50 CI95 ap",
+      "passed": true
+    },
+    {
+      "name": "q50 CI95 tpr_at_fpr_0.05",
+      "passed": true
+    },
+    {
+      "name": "q50 CI95 fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q75 prediction shapes",
+      "passed": true
+    },
+    {
+      "name": "q75 finite predictions",
+      "passed": true
+    },
+    {
+      "name": "q75 probabilities in range",
+      "passed": true
+    },
+    {
+      "name": "q75 metadata",
+      "passed": true
+    },
+    {
+      "name": "q75 fixed threshold exact",
+      "passed": true
+    },
+    {
+      "name": "q75 labels reproduce saved GPU scores",
+      "passed": true
+    },
+    {
+      "name": "q75 router fixed clean fallback",
+      "passed": true
+    },
+    {
+      "name": "q75 unique full sample IDs and paths",
+      "passed": true
+    },
+    {
+      "name": "q75 subset ID prefix",
+      "passed": true
+    },
+    {
+      "name": "q75 exact frozen evaluation identities/labels",
+      "passed": true
+    },
+    {
+      "name": "q75 paths map to IDs",
+      "passed": true
+    },
+    {
+      "name": "q75 paired condition order",
+      "passed": true
+    },
+    {
+      "name": "q75 independent CPU score crosscheck",
+      "passed": true
+    },
+    {
+      "name": "q75.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q75.auc",
+      "passed": true
+    },
+    {
+      "name": "q75.ap",
+      "passed": true
+    },
+    {
+      "name": "q75.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q75.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q75.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q75.ece",
+      "passed": true
+    },
+    {
+      "name": "q75.nll",
+      "passed": true
+    },
+    {
+      "name": "q75.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q75.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q75.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.n_real",
+      "passed": true
+    },
+    {
+      "name": "q75.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.auc",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.ap",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.ece",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.nll",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.n_real",
+      "passed": true
+    },
+    {
+      "name": "q75.1_commercial.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "q75.2_latent_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "q75.3_pixel_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.auc",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.ap",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.ece",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.nll",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.n_real",
+      "passed": true
+    },
+    {
+      "name": "q75.4_modern_gans.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.real_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.auc",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.ap",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.ece",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.nll",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.total_samples",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.accuracy",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.n_real",
+      "passed": true
+    },
+    {
+      "name": "q75.5_other_autoregressive.n_fake",
+      "passed": true
+    },
+    {
+      "name": "q75 CI95 auc",
+      "passed": true
+    },
+    {
+      "name": "q75 CI95 ap",
+      "passed": true
+    },
+    {
+      "name": "q75 CI95 tpr_at_fpr_0.05",
+      "passed": true
+    },
+    {
+      "name": "q75 CI95 fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "webp40 prediction shapes",
+      "passed": true
+    },
+    {
+      "name": "webp40 finite predictions",
+      "passed": true
+    },
+    {
+      "name": "webp40 probabilities in range",
+      "passed": true
+    },
+    {
+      "name": "webp40 metadata",
+      "passed": true
+    },
+    {
+      "name": "webp40 fixed threshold exact",
+      "passed": true
+    },
+    {
+      "name": "webp40 labels reproduce saved GPU scores",
+      "passed": true
+    },
+    {
+      "name": "webp40 router fixed clean fallback",
+      "passed": true
+    },
+    {
+      "name": "webp40 unique full sample IDs and paths",
+      "passed": true
+    },
+    {
+      "name": "webp40 subset ID prefix",
+      "passed": true
+    },
+    {
+      "name": "webp40 exact frozen evaluation identities/labels",
+      "passed": true
+    },
+    {
+      "name": "webp40 paths map to IDs",
+      "passed": true
+    },
+    {
+      "name": "webp40 paired condition order",
+      "passed": true
+    },
+    {
+      "name": "webp40 independent CPU score crosscheck",
+      "passed": true
+    },
+    {
+      "name": "webp40.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.real_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "webp40.auc",
+      "passed": true
+    },
+    {
+      "name": "webp40.ap",
+      "passed": true
+    },
+    {
+      "name": "webp40.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "webp40.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "webp40.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "webp40.ece",
+      "passed": true
+    },
+    {
+      "name": "webp40.nll",
+      "passed": true
+    },
+    {
+      "name": "webp40.total_samples",
+      "passed": true
+    },
+    {
+      "name": "webp40.accuracy",
+      "passed": true
+    },
+    {
+      "name": "webp40.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.n_real",
+      "passed": true
+    },
+    {
+      "name": "webp40.n_fake",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.real_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.auc",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.ap",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.ece",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.nll",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.total_samples",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.accuracy",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.n_real",
+      "passed": true
+    },
+    {
+      "name": "webp40.1_commercial.n_fake",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "webp40.2_latent_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "webp40.3_pixel_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.real_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.auc",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.ap",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.ece",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.nll",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.total_samples",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.accuracy",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.n_real",
+      "passed": true
+    },
+    {
+      "name": "webp40.4_modern_gans.n_fake",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.real_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.auc",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.ap",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.ece",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.nll",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.total_samples",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.accuracy",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.n_real",
+      "passed": true
+    },
+    {
+      "name": "webp40.5_other_autoregressive.n_fake",
+      "passed": true
+    },
+    {
+      "name": "webp40 CI95 auc",
+      "passed": true
+    },
+    {
+      "name": "webp40 CI95 ap",
+      "passed": true
+    },
+    {
+      "name": "webp40 CI95 tpr_at_fpr_0.05",
+      "passed": true
+    },
+    {
+      "name": "webp40 CI95 fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "blur15 prediction shapes",
+      "passed": true
+    },
+    {
+      "name": "blur15 finite predictions",
+      "passed": true
+    },
+    {
+      "name": "blur15 probabilities in range",
+      "passed": true
+    },
+    {
+      "name": "blur15 metadata",
+      "passed": true
+    },
+    {
+      "name": "blur15 fixed threshold exact",
+      "passed": true
+    },
+    {
+      "name": "blur15 labels reproduce saved GPU scores",
+      "passed": true
+    },
+    {
+      "name": "blur15 router fixed clean fallback",
+      "passed": true
+    },
+    {
+      "name": "blur15 unique full sample IDs and paths",
+      "passed": true
+    },
+    {
+      "name": "blur15 subset ID prefix",
+      "passed": true
+    },
+    {
+      "name": "blur15 exact frozen evaluation identities/labels",
+      "passed": true
+    },
+    {
+      "name": "blur15 paths map to IDs",
+      "passed": true
+    },
+    {
+      "name": "blur15 paired condition order",
+      "passed": true
+    },
+    {
+      "name": "blur15 independent CPU score crosscheck",
+      "passed": true
+    },
+    {
+      "name": "blur15.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.real_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "blur15.auc",
+      "passed": true
+    },
+    {
+      "name": "blur15.ap",
+      "passed": true
+    },
+    {
+      "name": "blur15.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "blur15.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "blur15.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "blur15.ece",
+      "passed": true
+    },
+    {
+      "name": "blur15.nll",
+      "passed": true
+    },
+    {
+      "name": "blur15.total_samples",
+      "passed": true
+    },
+    {
+      "name": "blur15.accuracy",
+      "passed": true
+    },
+    {
+      "name": "blur15.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.n_real",
+      "passed": true
+    },
+    {
+      "name": "blur15.n_fake",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.real_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.auc",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.ap",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.ece",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.nll",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.total_samples",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.accuracy",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.n_real",
+      "passed": true
+    },
+    {
+      "name": "blur15.1_commercial.n_fake",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "blur15.2_latent_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "blur15.3_pixel_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.real_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.auc",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.ap",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.ece",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.nll",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.total_samples",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.accuracy",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.n_real",
+      "passed": true
+    },
+    {
+      "name": "blur15.4_modern_gans.n_fake",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.real_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.auc",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.ap",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.ece",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.nll",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.total_samples",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.accuracy",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.n_real",
+      "passed": true
+    },
+    {
+      "name": "blur15.5_other_autoregressive.n_fake",
+      "passed": true
+    },
+    {
+      "name": "blur15 CI95 auc",
+      "passed": true
+    },
+    {
+      "name": "blur15 CI95 ap",
+      "passed": true
+    },
+    {
+      "name": "blur15 CI95 tpr_at_fpr_0.05",
+      "passed": true
+    },
+    {
+      "name": "blur15 CI95 fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "downup05 prediction shapes",
+      "passed": true
+    },
+    {
+      "name": "downup05 finite predictions",
+      "passed": true
+    },
+    {
+      "name": "downup05 probabilities in range",
+      "passed": true
+    },
+    {
+      "name": "downup05 metadata",
+      "passed": true
+    },
+    {
+      "name": "downup05 fixed threshold exact",
+      "passed": true
+    },
+    {
+      "name": "downup05 labels reproduce saved GPU scores",
+      "passed": true
+    },
+    {
+      "name": "downup05 router fixed clean fallback",
+      "passed": true
+    },
+    {
+      "name": "downup05 unique full sample IDs and paths",
+      "passed": true
+    },
+    {
+      "name": "downup05 subset ID prefix",
+      "passed": true
+    },
+    {
+      "name": "downup05 exact frozen evaluation identities/labels",
+      "passed": true
+    },
+    {
+      "name": "downup05 paths map to IDs",
+      "passed": true
+    },
+    {
+      "name": "downup05 paired condition order",
+      "passed": true
+    },
+    {
+      "name": "downup05 independent CPU score crosscheck",
+      "passed": true
+    },
+    {
+      "name": "downup05.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.real_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "downup05.auc",
+      "passed": true
+    },
+    {
+      "name": "downup05.ap",
+      "passed": true
+    },
+    {
+      "name": "downup05.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "downup05.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "downup05.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "downup05.ece",
+      "passed": true
+    },
+    {
+      "name": "downup05.nll",
+      "passed": true
+    },
+    {
+      "name": "downup05.total_samples",
+      "passed": true
+    },
+    {
+      "name": "downup05.accuracy",
+      "passed": true
+    },
+    {
+      "name": "downup05.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.n_real",
+      "passed": true
+    },
+    {
+      "name": "downup05.n_fake",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.real_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.auc",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.ap",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.ece",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.nll",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.total_samples",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.accuracy",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.n_real",
+      "passed": true
+    },
+    {
+      "name": "downup05.1_commercial.n_fake",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "downup05.2_latent_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "downup05.3_pixel_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.real_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.auc",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.ap",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.ece",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.nll",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.total_samples",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.accuracy",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.n_real",
+      "passed": true
+    },
+    {
+      "name": "downup05.4_modern_gans.n_fake",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.real_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.auc",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.ap",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.ece",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.nll",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.total_samples",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.accuracy",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.n_real",
+      "passed": true
+    },
+    {
+      "name": "downup05.5_other_autoregressive.n_fake",
+      "passed": true
+    },
+    {
+      "name": "downup05 CI95 auc",
+      "passed": true
+    },
+    {
+      "name": "downup05 CI95 ap",
+      "passed": true
+    },
+    {
+      "name": "downup05 CI95 tpr_at_fpr_0.05",
+      "passed": true
+    },
+    {
+      "name": "downup05 CI95 fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist prediction shapes",
+      "passed": true
+    },
+    {
+      "name": "indist finite predictions",
+      "passed": true
+    },
+    {
+      "name": "indist probabilities in range",
+      "passed": true
+    },
+    {
+      "name": "indist metadata",
+      "passed": true
+    },
+    {
+      "name": "indist fixed threshold exact",
+      "passed": true
+    },
+    {
+      "name": "indist labels reproduce saved GPU scores",
+      "passed": true
+    },
+    {
+      "name": "indist router fixed clean fallback",
+      "passed": true
+    },
+    {
+      "name": "indist unique full sample IDs and paths",
+      "passed": true
+    },
+    {
+      "name": "indist subset ID prefix",
+      "passed": true
+    },
+    {
+      "name": "18 in-dist counts",
+      "passed": true
+    },
+    {
+      "name": "in-dist labels agree with path class",
+      "passed": true
+    },
+    {
+      "name": "indist independent CPU score crosscheck",
+      "passed": true
+    },
+    {
+      "name": "indist.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.biggan.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.cyclegan.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.dalle.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.deepfake.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.gaugan.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_10.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_100_27.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.glide_50_27.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.guided.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_100.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.ldm_200_cfg.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.pndm.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.progan.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.stargan.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.stylegan2.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.tpr_at_fpr.0.01",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.tpr_at_fpr.0.05",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.tpr_at_fpr.0.10",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "indist.vqdiffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "indist CI95 auc",
+      "passed": true
+    },
+    {
+      "name": "indist CI95 ap",
+      "passed": true
+    },
+    {
+      "name": "indist CI95 tpr_at_fpr_0.05",
+      "passed": true
+    },
+    {
+      "name": "indist CI95 fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "macro balanced accuracy across 18 subsets",
+      "passed": true
+    },
+    {
+      "name": "reported pooled real accuracy",
+      "passed": true
+    },
+    {
+      "name": "mean-subset real accuracy",
+      "passed": true
+    },
+    {
+      "name": "gate value CFE_clean_Fake@Real90",
+      "passed": true
+    },
+    {
+      "name": "gate verdict CFE_clean_Fake@Real90",
+      "passed": true
+    },
+    {
+      "name": "gate value CFE_clean_AUC",
+      "passed": true
+    },
+    {
+      "name": "gate verdict CFE_clean_AUC",
+      "passed": true
+    },
+    {
+      "name": "gate value CFE_Q30_AUC",
+      "passed": true
+    },
+    {
+      "name": "gate verdict CFE_Q30_AUC",
+      "passed": true
+    },
+    {
+      "name": "gate value CFE_Q30_Fake@Real90",
+      "passed": true
+    },
+    {
+      "name": "gate verdict CFE_Q30_Fake@Real90",
+      "passed": true
+    },
+    {
+      "name": "gate value InDist_Macro_ACC",
+      "passed": true
+    },
+    {
+      "name": "gate verdict InDist_Macro_ACC",
+      "passed": true
+    },
+    {
+      "name": "gate value InDist_Real_ACC",
+      "passed": true
+    },
+    {
+      "name": "gate verdict InDist_Real_ACC",
+      "passed": true
+    },
+    {
+      "name": "gate value Worst_Subset_Fake_ACC",
+      "passed": true
+    },
+    {
+      "name": "gate verdict Worst_Subset_Fake_ACC",
+      "passed": true
+    },
+    {
+      "name": "gate value ECE_Post_Calibration",
+      "passed": true
+    },
+    {
+      "name": "gate verdict ECE_Post_Calibration",
+      "passed": true
+    },
+    {
+      "name": "G72 six of eight, overall FAIL",
+      "passed": true
+    },
+    {
+      "name": "G73 correctly remains pending best condition comparison",
+      "passed": true
+    },
+    {
+      "name": "L4 FP16 latency protocol",
+      "passed": true
+    },
+    {
+      "name": "latency batch 1 raw positive finite timing pairs",
+      "passed": true
+    },
+    {
+      "name": "latency batch 1 paired deltas",
+      "passed": true
+    },
+    {
+      "name": "latency batch 1 backbone_batch_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 1 package_batch_median_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 1 package_batch_p95_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 1 backbone_per_image_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 1 package_per_image_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 1 throughput_fps",
+      "passed": true
+    },
+    {
+      "name": "latency batch 1 median overhead",
+      "passed": true
+    },
+    {
+      "name": "latency batch 1 p95 overhead",
+      "passed": true
+    },
+    {
+      "name": "latency batch 8 raw positive finite timing pairs",
+      "passed": true
+    },
+    {
+      "name": "latency batch 8 paired deltas",
+      "passed": true
+    },
+    {
+      "name": "latency batch 8 backbone_batch_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 8 package_batch_median_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 8 package_batch_p95_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 8 backbone_per_image_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 8 package_per_image_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 8 throughput_fps",
+      "passed": true
+    },
+    {
+      "name": "latency batch 8 median overhead",
+      "passed": true
+    },
+    {
+      "name": "latency batch 8 p95 overhead",
+      "passed": true
+    },
+    {
+      "name": "latency batch 16 raw positive finite timing pairs",
+      "passed": true
+    },
+    {
+      "name": "latency batch 16 paired deltas",
+      "passed": true
+    },
+    {
+      "name": "latency batch 16 backbone_batch_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 16 package_batch_median_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 16 package_batch_p95_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 16 backbone_per_image_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 16 package_per_image_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 16 throughput_fps",
+      "passed": true
+    },
+    {
+      "name": "latency batch 16 median overhead",
+      "passed": true
+    },
+    {
+      "name": "latency batch 16 p95 overhead",
+      "passed": true
+    },
+    {
+      "name": "latency batch 32 raw positive finite timing pairs",
+      "passed": true
+    },
+    {
+      "name": "latency batch 32 paired deltas",
+      "passed": true
+    },
+    {
+      "name": "latency batch 32 backbone_batch_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 32 package_batch_median_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 32 package_batch_p95_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 32 backbone_per_image_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 32 package_per_image_ms",
+      "passed": true
+    },
+    {
+      "name": "latency batch 32 throughput_fps",
+      "passed": true
+    },
+    {
+      "name": "latency batch 32 median overhead",
+      "passed": true
+    },
+    {
+      "name": "latency batch 32 p95 overhead",
+      "passed": true
+    },
+    {
+      "name": "GPU overhead passes",
+      "passed": true
+    },
+    {
+      "name": "35 CFE condition/subset CSV rows",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.1_commercial.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.1_commercial.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.1_commercial.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.1_commercial.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.1_commercial.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.1_commercial.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.1_commercial.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.1_commercial.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.1_commercial.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.1_commercial.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.1_commercial.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.1_commercial.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.1_commercial.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.2_latent_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.2_latent_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.2_latent_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.2_latent_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.2_latent_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.2_latent_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.2_latent_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.2_latent_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.2_latent_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.2_latent_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.2_latent_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.2_latent_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.2_latent_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.3_pixel_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.3_pixel_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.3_pixel_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.3_pixel_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.3_pixel_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.3_pixel_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.3_pixel_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.3_pixel_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.3_pixel_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.3_pixel_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.3_pixel_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.3_pixel_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.3_pixel_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.4_modern_gans.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.4_modern_gans.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.4_modern_gans.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.4_modern_gans.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.4_modern_gans.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.4_modern_gans.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.4_modern_gans.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.4_modern_gans.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.4_modern_gans.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.4_modern_gans.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.4_modern_gans.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.4_modern_gans.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.4_modern_gans.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.5_other_autoregressive.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.5_other_autoregressive.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.5_other_autoregressive.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.5_other_autoregressive.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.5_other_autoregressive.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.5_other_autoregressive.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.5_other_autoregressive.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.5_other_autoregressive.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.5_other_autoregressive.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.5_other_autoregressive.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.5_other_autoregressive.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.5_other_autoregressive.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV clean.5_other_autoregressive.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.1_commercial.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.1_commercial.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.1_commercial.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.1_commercial.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.1_commercial.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.1_commercial.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.1_commercial.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.1_commercial.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.1_commercial.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.1_commercial.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.1_commercial.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.1_commercial.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.1_commercial.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.2_latent_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.2_latent_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.2_latent_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.2_latent_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.2_latent_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.2_latent_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.2_latent_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.2_latent_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.2_latent_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.2_latent_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.2_latent_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.2_latent_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.2_latent_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.3_pixel_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.3_pixel_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.3_pixel_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.3_pixel_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.3_pixel_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.3_pixel_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.3_pixel_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.3_pixel_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.3_pixel_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.3_pixel_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.3_pixel_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.3_pixel_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.3_pixel_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.4_modern_gans.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.4_modern_gans.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.4_modern_gans.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.4_modern_gans.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.4_modern_gans.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.4_modern_gans.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.4_modern_gans.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.4_modern_gans.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.4_modern_gans.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.4_modern_gans.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.4_modern_gans.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.4_modern_gans.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.4_modern_gans.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.5_other_autoregressive.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.5_other_autoregressive.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.5_other_autoregressive.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.5_other_autoregressive.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.5_other_autoregressive.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.5_other_autoregressive.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.5_other_autoregressive.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.5_other_autoregressive.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.5_other_autoregressive.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.5_other_autoregressive.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.5_other_autoregressive.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.5_other_autoregressive.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV q30.5_other_autoregressive.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.1_commercial.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.1_commercial.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.1_commercial.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.1_commercial.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.1_commercial.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.1_commercial.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.1_commercial.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.1_commercial.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.1_commercial.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.1_commercial.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.1_commercial.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.1_commercial.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.1_commercial.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.2_latent_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.2_latent_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.2_latent_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.2_latent_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.2_latent_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.2_latent_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.2_latent_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.2_latent_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.2_latent_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.2_latent_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.2_latent_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.2_latent_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.2_latent_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.3_pixel_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.3_pixel_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.3_pixel_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.3_pixel_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.3_pixel_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.3_pixel_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.3_pixel_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.3_pixel_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.3_pixel_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.3_pixel_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.3_pixel_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.3_pixel_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.3_pixel_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.4_modern_gans.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.4_modern_gans.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.4_modern_gans.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.4_modern_gans.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.4_modern_gans.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.4_modern_gans.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.4_modern_gans.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.4_modern_gans.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.4_modern_gans.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.4_modern_gans.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.4_modern_gans.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.4_modern_gans.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.4_modern_gans.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.5_other_autoregressive.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.5_other_autoregressive.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.5_other_autoregressive.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.5_other_autoregressive.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.5_other_autoregressive.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.5_other_autoregressive.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.5_other_autoregressive.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.5_other_autoregressive.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.5_other_autoregressive.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.5_other_autoregressive.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.5_other_autoregressive.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.5_other_autoregressive.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV q50.5_other_autoregressive.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.1_commercial.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.1_commercial.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.1_commercial.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.1_commercial.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.1_commercial.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.1_commercial.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.1_commercial.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.1_commercial.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.1_commercial.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.1_commercial.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.1_commercial.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.1_commercial.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.1_commercial.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.2_latent_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.2_latent_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.2_latent_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.2_latent_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.2_latent_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.2_latent_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.2_latent_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.2_latent_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.2_latent_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.2_latent_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.2_latent_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.2_latent_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.2_latent_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.3_pixel_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.3_pixel_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.3_pixel_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.3_pixel_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.3_pixel_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.3_pixel_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.3_pixel_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.3_pixel_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.3_pixel_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.3_pixel_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.3_pixel_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.3_pixel_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.3_pixel_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.4_modern_gans.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.4_modern_gans.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.4_modern_gans.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.4_modern_gans.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.4_modern_gans.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.4_modern_gans.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.4_modern_gans.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.4_modern_gans.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.4_modern_gans.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.4_modern_gans.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.4_modern_gans.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.4_modern_gans.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.4_modern_gans.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.5_other_autoregressive.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.5_other_autoregressive.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.5_other_autoregressive.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.5_other_autoregressive.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.5_other_autoregressive.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.5_other_autoregressive.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.5_other_autoregressive.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.5_other_autoregressive.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.5_other_autoregressive.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.5_other_autoregressive.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.5_other_autoregressive.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.5_other_autoregressive.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV q75.5_other_autoregressive.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.1_commercial.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.1_commercial.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.1_commercial.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.1_commercial.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.1_commercial.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.1_commercial.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.1_commercial.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.1_commercial.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.1_commercial.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.1_commercial.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.1_commercial.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.1_commercial.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.1_commercial.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.2_latent_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.2_latent_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.2_latent_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.2_latent_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.2_latent_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.2_latent_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.2_latent_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.2_latent_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.2_latent_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.2_latent_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.2_latent_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.2_latent_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.2_latent_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.3_pixel_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.3_pixel_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.3_pixel_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.3_pixel_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.3_pixel_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.3_pixel_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.3_pixel_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.3_pixel_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.3_pixel_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.3_pixel_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.3_pixel_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.3_pixel_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.3_pixel_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.4_modern_gans.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.4_modern_gans.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.4_modern_gans.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.4_modern_gans.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.4_modern_gans.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.4_modern_gans.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.4_modern_gans.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.4_modern_gans.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.4_modern_gans.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.4_modern_gans.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.4_modern_gans.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.4_modern_gans.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.4_modern_gans.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.5_other_autoregressive.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.5_other_autoregressive.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.5_other_autoregressive.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.5_other_autoregressive.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.5_other_autoregressive.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.5_other_autoregressive.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.5_other_autoregressive.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.5_other_autoregressive.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.5_other_autoregressive.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.5_other_autoregressive.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.5_other_autoregressive.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.5_other_autoregressive.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV webp40.5_other_autoregressive.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.1_commercial.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.1_commercial.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.1_commercial.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.1_commercial.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.1_commercial.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.1_commercial.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.1_commercial.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.1_commercial.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.1_commercial.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.1_commercial.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.1_commercial.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.1_commercial.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.1_commercial.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.2_latent_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.2_latent_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.2_latent_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.2_latent_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.2_latent_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.2_latent_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.2_latent_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.2_latent_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.2_latent_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.2_latent_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.2_latent_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.2_latent_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.2_latent_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.3_pixel_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.3_pixel_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.3_pixel_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.3_pixel_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.3_pixel_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.3_pixel_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.3_pixel_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.3_pixel_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.3_pixel_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.3_pixel_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.3_pixel_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.3_pixel_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.3_pixel_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.4_modern_gans.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.4_modern_gans.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.4_modern_gans.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.4_modern_gans.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.4_modern_gans.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.4_modern_gans.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.4_modern_gans.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.4_modern_gans.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.4_modern_gans.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.4_modern_gans.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.4_modern_gans.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.4_modern_gans.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.4_modern_gans.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.5_other_autoregressive.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.5_other_autoregressive.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.5_other_autoregressive.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.5_other_autoregressive.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.5_other_autoregressive.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.5_other_autoregressive.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.5_other_autoregressive.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.5_other_autoregressive.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.5_other_autoregressive.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.5_other_autoregressive.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.5_other_autoregressive.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.5_other_autoregressive.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV blur15.5_other_autoregressive.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.1_commercial.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.1_commercial.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.1_commercial.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.1_commercial.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.1_commercial.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.1_commercial.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.1_commercial.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.1_commercial.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.1_commercial.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.1_commercial.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.1_commercial.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.1_commercial.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.1_commercial.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.2_latent_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.2_latent_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.2_latent_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.2_latent_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.2_latent_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.2_latent_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.2_latent_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.2_latent_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.2_latent_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.2_latent_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.2_latent_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.2_latent_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.2_latent_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.3_pixel_diffusion.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.3_pixel_diffusion.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.3_pixel_diffusion.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.3_pixel_diffusion.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.3_pixel_diffusion.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.3_pixel_diffusion.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.3_pixel_diffusion.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.3_pixel_diffusion.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.3_pixel_diffusion.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.3_pixel_diffusion.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.3_pixel_diffusion.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.3_pixel_diffusion.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.3_pixel_diffusion.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.4_modern_gans.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.4_modern_gans.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.4_modern_gans.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.4_modern_gans.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.4_modern_gans.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.4_modern_gans.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.4_modern_gans.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.4_modern_gans.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.4_modern_gans.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.4_modern_gans.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.4_modern_gans.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.4_modern_gans.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.4_modern_gans.n_fake",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.5_other_autoregressive.macro_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.5_other_autoregressive.real_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.5_other_autoregressive.fake_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.5_other_autoregressive.fake_at_real90",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.5_other_autoregressive.auc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.5_other_autoregressive.ap",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.5_other_autoregressive.ece",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.5_other_autoregressive.nll",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.5_other_autoregressive.total_samples",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.5_other_autoregressive.accuracy",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.5_other_autoregressive.balanced_acc",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.5_other_autoregressive.n_real",
+      "passed": true
+    },
+    {
+      "name": "CSV downup05.5_other_autoregressive.n_fake",
+      "passed": true
+    },
+    {
+      "name": "source notebook unchanged before import",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation acceptance.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation benchmark/final_report.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation benchmark/per_subset_cfe.csv",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation benchmark/predictions_cfe_blur15.npz",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation benchmark/predictions_cfe_clean.npz",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation benchmark/predictions_cfe_downup05.npz",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation benchmark/predictions_cfe_q30.npz",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation benchmark/predictions_cfe_q50.npz",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation benchmark/predictions_cfe_q75.npz",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation benchmark/predictions_cfe_webp40.npz",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation benchmark/predictions_indist.npz",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation benchmark/preflight.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation benchmark/roc.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation BUNDLE_MANIFEST.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation calibration/anchored_v2.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation calibration/anchored_v2_reliability.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation calibration/logits_anchored_v2_calib_fp16.npz",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation calibration/summary.md",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation environment.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation gpu_memory_probe.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation input_bundle.zip",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation input_preflight.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation latency_phase7.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation logs/calibrate_and_select.log",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation logs/extract_calibration_logits.log",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation logs/finalize_phase7_corrected.log",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation logs/infer_unified.log",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation logs/package_unified_fatformer.log",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation logs/probe_phase7_gpu.log",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation logs/run_phase7_corrected.log",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation logs/verify_unified_package.log",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation package/metadata.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation real_image_verification.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation runtime_calibration_preflight.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_image_ids.json",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/00_real_0002_coco.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/01_real_0006_laion.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/02_fake_0013_MidjourneyV5_2.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/03_fake_0016_MidjourneyV5_2.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/04_real_0002_laion.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/05_real_0006_laion.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/06_fake_0000_LCM_lora_sdxl.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/07_fake_0002_LCM_lora_sdxl.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/08_real_0005_raise.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/09_real_0008_raise.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/10_fake_0003_Hourglass.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/11_fake_0004_Hourglass.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/12_real_0005_ffhq.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/13_real_0006_ffhq.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/14_fake_0005_DFGAN.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/15_fake_0026_DFGAN.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/16_real_0000_laion.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/17_real_0003_laion.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/18_fake_0002_stable_cascade.png",
+      "passed": true
+    },
+    {
+      "name": "raw byte preservation verification_images/19_fake_0004_stable_cascade.png",
+      "passed": true
+    },
+    {
+      "name": "notebook unchanged after import",
+      "passed": true
+    },
+    {
+      "name": "all in-dist path classes recognized and matched to labels",
+      "passed": true
+    }
+  ],
+  "scientific_status": "post_hoc_confirmation; evaluation previously inspected",
+  "calibration": {
+    "T": 2.7832491397857666,
+    "independent_T": 2.7832490979827673,
+    "independent_minimum_nll": 0.42269777637987443,
+    "ece_before": 14.377431824803356,
+    "ece_after": 5.392776682972908,
+    "nll_before": 0.6443558985885889,
+    "nll_after": 0.4226977718085097,
+    "cpu_crosscheck_fpr_005": 0.05
+  },
+  "partition": {
+    "status": "verified_disjoint_ids",
+    "identity_unit": "subset/class/filename; content duplicates not audited",
+    "n_calibration": 400,
+    "n_evaluation": 1600,
+    "overlap": 0,
+    "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+    "evaluation_split_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+    "sample_ids_sha256": "5ae613da819d065b93225b901a7d06d3309ad27e8cdbb9a441cf4df43d7552fb"
+  },
+  "cfe": {
+    "clean": {
+      "macro_acc": 74.375,
+      "real_acc": 95.625,
+      "fake_acc": 53.125,
+      "fake_at_real90": 64.125,
+      "auc": 88.66226562499999,
+      "ap": 89.07791579426758,
+      "tpr_at_fpr": {
+        "0.01": 35.875,
+        "0.05": 54.0,
+        "0.10": 64.125
+      },
+      "ece": 4.393606406403708,
+      "nll": 0.4288259606134463,
+      "total_samples": 1600,
+      "accuracy": 74.375,
+      "balanced_acc": 74.375,
+      "n_real": 800,
+      "n_fake": 800,
+      "fixed_fpr_pct": 4.375,
+      "false_positives": 35,
+      "true_positives": 425
+    },
+    "q30": {
+      "macro_acc": 65.8125,
+      "real_acc": 91.375,
+      "fake_acc": 40.25,
+      "fake_at_real90": 42.625,
+      "auc": 79.8790625,
+      "ap": 78.46816585174366,
+      "tpr_at_fpr": {
+        "0.01": 12.375,
+        "0.05": 28.249999999999996,
+        "0.10": 42.625
+      },
+      "ece": 5.082282038172707,
+      "nll": 0.5515397315841061,
+      "total_samples": 1600,
+      "accuracy": 65.8125,
+      "balanced_acc": 65.8125,
+      "n_real": 800,
+      "n_fake": 800,
+      "fixed_fpr_pct": 8.625,
+      "false_positives": 69,
+      "true_positives": 322
+    },
+    "q50": {
+      "macro_acc": 66.5,
+      "real_acc": 92.875,
+      "fake_acc": 40.125,
+      "fake_at_real90": 47.5,
+      "auc": 81.556953125,
+      "ap": 80.63345097124403,
+      "tpr_at_fpr": {
+        "0.01": 15.75,
+        "0.05": 35.75,
+        "0.10": 47.5
+      },
+      "ece": 5.445805415511131,
+      "nll": 0.5312755550183524,
+      "total_samples": 1600,
+      "accuracy": 66.5,
+      "balanced_acc": 66.5,
+      "n_real": 800,
+      "n_fake": 800,
+      "fixed_fpr_pct": 7.125,
+      "false_positives": 57,
+      "true_positives": 321
+    },
+    "q75": {
+      "macro_acc": 66.4375,
+      "real_acc": 94.0,
+      "fake_acc": 38.875,
+      "fake_at_real90": 48.625,
+      "auc": 83.324296875,
+      "ap": 82.84706838975937,
+      "tpr_at_fpr": {
+        "0.01": 19.5,
+        "0.05": 35.625,
+        "0.10": 48.625
+      },
+      "ece": 5.459397575585174,
+      "nll": 0.5108986630670488,
+      "total_samples": 1600,
+      "accuracy": 66.4375,
+      "balanced_acc": 66.4375,
+      "n_real": 800,
+      "n_fake": 800,
+      "fixed_fpr_pct": 6.0,
+      "false_positives": 48,
+      "true_positives": 311
+    },
+    "webp40": {
+      "macro_acc": 66.3125,
+      "real_acc": 89.0,
+      "fake_acc": 43.625,
+      "fake_at_real90": 41.75,
+      "auc": 79.00890625,
+      "ap": 77.24213840586268,
+      "tpr_at_fpr": {
+        "0.01": 7.625,
+        "0.05": 26.5,
+        "0.10": 41.75
+      },
+      "ece": 7.398421857040373,
+      "nll": 0.5702383819367584,
+      "total_samples": 1600,
+      "accuracy": 66.3125,
+      "balanced_acc": 66.3125,
+      "n_real": 800,
+      "n_fake": 800,
+      "fixed_fpr_pct": 11.0,
+      "false_positives": 88,
+      "true_positives": 349
+    },
+    "blur15": {
+      "macro_acc": 71.0625,
+      "real_acc": 88.125,
+      "fake_acc": 54.0,
+      "fake_at_real90": 50.74999999999999,
+      "auc": 84.21484375,
+      "ap": 83.23716108390829,
+      "tpr_at_fpr": {
+        "0.01": 17.75,
+        "0.05": 37.875,
+        "0.10": 50.74999999999999
+      },
+      "ece": 1.9602362920995806,
+      "nll": 0.5021144473399856,
+      "total_samples": 1600,
+      "accuracy": 71.0625,
+      "balanced_acc": 71.0625,
+      "n_real": 800,
+      "n_fake": 800,
+      "fixed_fpr_pct": 11.875,
+      "false_positives": 95,
+      "true_positives": 432
+    },
+    "downup05": {
+      "macro_acc": 77.5625,
+      "real_acc": 87.875,
+      "fake_acc": 67.25,
+      "fake_at_real90": 64.875,
+      "auc": 86.98796875000001,
+      "ap": 86.88445462198582,
+      "tpr_at_fpr": {
+        "0.01": 27.750000000000004,
+        "0.05": 52.37500000000001,
+        "0.10": 64.875
+      },
+      "ece": 4.080955754732712,
+      "nll": 0.48525684353359,
+      "total_samples": 1600,
+      "accuracy": 77.5625,
+      "balanced_acc": 77.5625,
+      "n_real": 800,
+      "n_fake": 800,
+      "fixed_fpr_pct": 12.125,
+      "false_positives": 97,
+      "true_positives": 538
+    }
+  },
+  "indist": {
+    "pooled": {
+      "macro_acc": 93.46487323634501,
+      "real_acc": 90.4062820075111,
+      "fake_acc": 96.52413591238384,
+      "fake_at_real90": 96.59243359270191,
+      "auc": 98.41047670003242,
+      "ap": 98.6806413344017,
+      "tpr_at_fpr": {
+        "0.01": 86.50159767787888,
+        "0.05": 95.20696636339244,
+        "0.10": 96.5896529014318
+      },
+      "ece": 6.9878815322934145,
+      "nll": 0.3386336073882839,
+      "total_samples": 82003,
+      "accuracy": 93.46487323634501,
+      "balanced_acc": 93.46520895994746,
+      "n_real": 41006,
+      "n_fake": 40997,
+      "fixed_fpr_pct": 9.593717992488905,
+      "false_positives": 3934,
+      "true_positives": 39572
+    },
+    "macro_acc": 90.10184712075026,
+    "mean_subset_real_acc": 85.78919657800226,
+    "macro_diagnostic": {
+      "point": 90.10184712075026,
+      "ci95_resampling_18_subsets": [
+        86.75526544256002,
+        93.32349591421729
+      ],
+      "n_boot": 10000,
+      "seed": 42,
+      "unit": "subset",
+      "purpose": "diagnostic, not the original acceptance CI rule"
+    }
+  },
+  "G72": {
+    "status": "FAIL",
+    "criteria_passed": 6,
+    "criteria_total": 8,
+    "criteria": [
+      {
+        "criterion": "CFE_clean_Fake@Real90",
+        "value": 64.125,
+        "target": 65,
+        "comparison": ">=",
+        "passed": false
+      },
+      {
+        "criterion": "CFE_clean_AUC",
+        "value": 88.66226562499999,
+        "target": 78,
+        "comparison": ">=",
+        "passed": true
+      },
+      {
+        "criterion": "CFE_Q30_AUC",
+        "value": 79.8790625,
+        "target": 60,
+        "comparison": ">=",
+        "passed": true
+      },
+      {
+        "criterion": "CFE_Q30_Fake@Real90",
+        "value": 42.625,
+        "target": 40,
+        "comparison": ">=",
+        "passed": true
+      },
+      {
+        "criterion": "InDist_Macro_ACC",
+        "value": 90.10184712075026,
+        "target": 90,
+        "comparison": ">=",
+        "passed": true
+      },
+      {
+        "criterion": "InDist_Real_ACC",
+        "value": 90.4062820075111,
+        "target": 90,
+        "comparison": ">=",
+        "passed": true
+      },
+      {
+        "criterion": "Worst_Subset_Fake_ACC",
+        "value": 30.864197530864196,
+        "target": 45,
+        "comparison": ">=",
+        "passed": false
+      },
+      {
+        "criterion": "ECE_Post_Calibration",
+        "value": 0.05082282038172707,
+        "target": 0.08,
+        "comparison": "<=",
+        "passed": true
+      }
+    ],
+    "worst_subset": "5_other_autoregressive"
+  },
+  "G73": {
+    "status": "pending",
+    "real20_equivalence": "reported_passed_and_20_images_inspected",
+    "gpu_overhead": "verified_from_200_pairs_on_L4_FP16",
+    "best_condition_comparison": "missing_verified_matched_reference"
+  },
+  "backend_sensitivity": {
+    "cpu_changed_labels": 6,
+    "rows": [
+      {
+        "dataset": "q50",
+        "sample_id": "1_commercial/1/fake_0130_Firefly_Image2.png",
+        "target": 1,
+        "gpu_probability": 0.7918508052825928,
+        "cpu_probability": 0.7918509244918823,
+        "threshold": 0.7918508648872375,
+        "gpu_label": 0,
+        "cpu_label": 1
+      },
+      {
+        "dataset": "indist",
+        "sample_id": "stylegan/car/0_real/01939.png",
+        "target": 0,
+        "gpu_probability": 0.7918509244918823,
+        "cpu_probability": 0.7918508052825928,
+        "threshold": 0.7918508648872375,
+        "gpu_label": 1,
+        "cpu_label": 0
+      },
+      {
+        "dataset": "indist",
+        "sample_id": "stylegan2/car/0_real/01939.png",
+        "target": 0,
+        "gpu_probability": 0.7918509244918823,
+        "cpu_probability": 0.7918508052825928,
+        "threshold": 0.7918508648872375,
+        "gpu_label": 1,
+        "cpu_label": 0
+      },
+      {
+        "dataset": "indist",
+        "sample_id": "stylegan2/horse/1_fake/001451.png",
+        "target": 1,
+        "gpu_probability": 0.7918508052825928,
+        "cpu_probability": 0.7918509840965271,
+        "threshold": 0.7918508648872375,
+        "gpu_label": 0,
+        "cpu_label": 1
+      },
+      {
+        "dataset": "indist",
+        "sample_id": "pndm/bedroom/0_real/022fb8172a7a867b0103eec47a08b42c04c2ae2d.jpg",
+        "target": 0,
+        "gpu_probability": 0.7918509244918823,
+        "cpu_probability": 0.7918508052825928,
+        "threshold": 0.7918508648872375,
+        "gpu_label": 1,
+        "cpu_label": 0
+      },
+      {
+        "dataset": "indist",
+        "sample_id": "vqdiffusion/bedroom/0_real/022fb8172a7a867b0103eec47a08b42c04c2ae2d.jpg",
+        "target": 0,
+        "gpu_probability": 0.7918509244918823,
+        "cpu_probability": 0.7918508052825928,
+        "threshold": 0.7918508648872375,
+        "gpu_label": 1,
+        "cpu_label": 0
+      }
+    ],
+    "n_indist": 82003,
+    "interpretation": "Stored GPU probability/labels are authoritative for this CUDA protocol; independent CPU softmax can cross a one-ULP threshold boundary.",
+    "changes_by_dataset": {
+      "q50": 1,
+      "indist": 5
+    },
+    "total_prediction_records": 93203
+  },
+  "model_file": {
+    "submitted_locally": false,
+    "reason": "The result ZIP intentionally excludes model weights.",
+    "drive_path": "MyDrive/Fatformer/checkpoint/phase7/corrected_20261109_102954_3d28ad/unified_fatformer_v2.pth",
+    "verification": "Reports and prediction hashes agree; the actual GPU package bytes and original training checkpoint cannot be rehashed locally without those files."
+  },
+  "limitations": [
+    "20 copied verification images do not audit all dataset image bytes or content duplicates.",
+    "Image bootstrap intervals do not capture uncertainty across generator families/datasets.",
+    "In-dist preprocessing changed from old stretch224 to canonical CLIP; differences cannot be attributed only to temperature.",
+    "Single-run L4 synthetic-input timings exclude I/O/preprocessing and do not generalize to other GPUs.",
+    "G7.2 point-threshold verdicts are retained; no significance or superiority is inferred from calibration improvements."
+  ],
+  "distribution_cautions": {
+    "n_subsets": 18,
+    "subsets_real_acc_below_90": [
+      "dalle",
+      "deepfake",
+      "glide_100_10",
+      "glide_100_27",
+      "glide_50_27",
+      "ldm_100",
+      "ldm_200",
+      "ldm_200_cfg",
+      "stargan"
+    ],
+    "subsets_balanced_acc_below_90": [
+      "dalle",
+      "deepfake",
+      "glide_100_10",
+      "glide_100_27",
+      "glide_50_27",
+      "guided",
+      "ldm_100",
+      "ldm_200",
+      "ldm_200_cfg",
+      "stargan"
+    ],
+    "repeated_relative_real_id_groups": 6194,
+    "real_records_in_repeated_relative_id_groups": 17609,
+    "groups_also_having_identical_stored_logits": 6173,
+    "content_duplicate_verification": "not possible from these prediction files; same names/logits are candidate shared references, not a byte/content proof",
+    "macro_subset_ci95": {
+      "point": 90.10184712075026,
+      "ci95_resampling_18_subsets": [
+        86.75526544256002,
+        93.32349591421729
+      ],
+      "n_boot": 10000,
+      "seed": 42,
+      "unit": "subset",
+      "purpose": "diagnostic, not the original acceptance CI rule"
+    },
+    "cpu_gpu_boundary_rows_total": 6,
+    "cpu_gpu_boundary_rows_by_dataset": {
+      "q50": 1,
+      "indist": 5
+    }
+  }
+}

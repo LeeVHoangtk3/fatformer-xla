@@ -1,5 +1,49 @@
 # CHUYÊN KHẢO KHOA HỌC: TỔNG HỢP TOÀN DIỆN CÁC THẾ HỆ CHECKPOINT & LỊCH SỬ THỰC NGHIỆM ĐO ĐẠC ĐA MIỀN DỰ ÁN FATFORMER-XLA
 
+<!-- PHASE7_CURRENT_BEGIN -->
+## Kết quả Phase 7 hiện hành — 09/11/2026
+
+Run `corrected_20261109_102954_3d28ad`, package `248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0`. Số liệu hiện hành: [hậu kiểm chi tiết](../../DATASET/logs/phase7/task_7.15/current/analysis/README.md), [view JSON v3 cho tài liệu](../../DATASET/logs/phase7/task_7.16/final_phase7_report.json) và [bảng nguồn số cũ → mới](../bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md). View v3 được tổng hợp từ raw corrected schema v1, **không phải một phép đo mới**.
+
+| Cổng | Kết quả hiện hành | Bằng chứng / phần còn thiếu |
+| :--- | :--- | :--- |
+| G7.0 | **PENDING** theo DoD toàn repo | Canonical core: 3 checkpoint nạp 0/0, Gen 1 bị từ chối; còn loader legacy và CI chẩn đoán n3/n8 chưa đủ. |
+| G7.1 | **FAIL** | Gen 2: Clean Fake@Real90 48,88% <55%; Q30 AUC 43,67% <55%. |
+| G7.2 | **FAIL — 6/8** | Clean Fake@Real90 64,12% <65%; worst-subset Fake ACC 30,86% <45%. |
+| G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
+
+Hoàn tất đo/biên soạn không có nghĩa đạt tất cả mục tiêu. Không dùng số Gen 1 như hiệu năng hợp lệ; không khẳng định router thắng, không đổi FAIL/pending thành PASS. Chấp nhận GPU CUDA đủ VRAM; latency chỉ áp dụng L4 đã ghi. Xác nhận chéo/chữ ký A/B/C còn chờ, không tạo chữ ký tự động.
+
+
+| Checkpoint | Tensor entries | Adapter blocks | Kết luận |
+| :--- | ---: | :--- | :--- |
+| `fatformer_4class_ckpt.pth` | 1116 | `[7, 15, 23]` | layout biểu diễn được; xem canonical 0/0 |
+| `crossdomain_model_best_m4.pth` | 1684 | `[2, 5, 8, 11, 14, 17, 20, 23]` | layout biểu diễn được; xem canonical 0/0 |
+| `fatformer_wise_ft_best.pth` | 1816 | `[2, 5, 7, 8, 11, 14, 15, 17, 20, 23]` | invalid_layout; chỉ forensic |
+| `fatformer_anchored_recovery_best.pth` | 1200 | `[7, 15, 23]` | layout biểu diễn được; xem canonical 0/0 |
+
+### 5.4. Chẩn đoán Gen 1 bằng số thật
+
+Gen 1 có 10 khối hợp của n3/n8, không có n hợp lệ biểu diễn đủ. Diagnostic partial trên 2.000 CFE, T1/ngưỡng 0,5: n3 ACC **64,75%**, Real **94,00%**, Fake **35,50%**, AUC **76,29%**; n8 ACC **52,05%**, Real **100,00%**, Fake **4,10%**, AUC **57,07%**. Các số diagnostic này chỉ để tham khảo lịch sử, `invalid_layout`, không dùng làm hiệu năng của Gen 1 hợp lệ.
+
+Delta Fake n8−n3 **-31,40 pp**, nhưng CI đối chiếu chưa có; giữ verdict **inconclusive**. Không suy ra different_basin, không chứng minh cần hai model và không cứu checkpoint bằng nạp thiếu.
+
+### 7. Gen 2 đã đo, không nhầm metadata cũ
+
+CSV có 12 ứng viên và đúng 1 selected: **α=0,55, β_srm=0,35**, n_keys=1200, layout n3/[7,15,23]. Đã băm file local: **`eb170fd62700b3613124b8c1519bc796c659ba1e4733be9abb1fb9f5801e429c`**, đọc metadata nhúng và đối chiếu matrix. Metadata rời `wise_ft_v2_best_metadata.json` α0,50 là ứng viên cũ `unselected`, hash khác; không dùng thay bản được chọn.
+
+Gen 2 selected Clean AUC **81,78%**, Fake@Real90 **48,88%**, Q30 AUC **43,67%**: **G7.1 FAIL**. File nguồn matrix còn dùng key ngưỡng 55% cho Fake@Real90 Q30, khác vị trí clean trong master plan; ghi nhận bất nhất này, không sửa raw. Theo tiêu chí clean55% và Q30 AUC 55% của kế hoạch, verdict vẫn FAIL.
+
+Gen 2 là thí nghiệm trước, **không phải package đang triển khai**. Package hiện hành là Anchored v2 source `5cd49252…`, đóng gói hash `24869052…`.
+
+<!-- PHASE7_CURRENT_END -->
+
+<details>
+<summary>Kế hoạch nền và hồ sơ các giai đoạn trước — chỉ để tham khảo lịch sử, không dùng như kết quả Phase 7 hiện hành</summary>
+
+Các bảng, hình, kết luận và lệnh dưới đây được giữ để truy vết. Số Gen 1 là `invalid_layout`; chỉ mục nguồn và nội dung hiệu lực nằm ở khối cập nhật phía trên. Không dùng kết luận “PASS toàn bộ” trong hồ sơ cũ thay cho phán quyết mới.
+
+
 > **Dự án**: Nâng cao độ bền vững pháp y cho FatFormer trước biến dạng nén mạng xã hội (FatFormer-XLA)  
 > **Tài liệu tham chiếu quy hoạch**: [`docs/plan/quy_trinh_thuc_hien_tu_dau.md`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/plan/quy_trinh_thuc_hien_tu_dau.md) & [`docs/plan/ke_hoach_cac_cot_moc_va_diem_dung.md`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/docs/plan/ke_hoach_cac_cot_moc_va_diem_dung.md) | **Sơ đồ hạ tầng Drive 5TB**: [`so_do_ha_tang_google_drive_5tb.md`](so_do_ha_tang_google_drive_5tb.md)  
 > **Cơ quan lưu trữ**: Kho nhật ký thực nghiệm [`DATASET/logs/README.md`](file:///d:/GIT%20REPO/.nam4/fatformer-xla/DATASET/logs/README.md)  
@@ -173,7 +217,7 @@ Bảng tổng hợp xếp hạng theo **thời gian sinh ra thực tế trong d�
   - Hiệu chuẩn xác suất: Nhiệt độ $T = 1.0811$, khóa tuyệt đối ngưỡng $T^* = 0.50$.
   - ⚠️ **Lỗi thiết kế**: $W_0$ có `n=3` khối, $W_1$ có `n=8` khối. Phép trộn theo khoá tạo ra **hợp 10 khối** — không biểu diễn được. Đây là nguyên nhân gốc, không phải "146 unexpected keys".
 - **Đặc tính kiểm thử (⚠️ `invalid_layout` — chỉ để truy vết, không dùng làm kết quả)**:
-  - *Clean Benchmark 18 tập (82.003 ảnh)*: ghi nhận 96,58% trong báo cáo cũ — **không tái lập được** vì không nạp đầy đủ checkpoint.
+  - *Clean Benchmark 18 tập (82.003 ảnh)*: ghi nhận 96,58% trong báo cáo cũ — **không tái lập được** vì không nạp đầy đủ checkpoint. — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*
   - *Clean Real ACC*: 98,10% (cùng lý do trên).
   - *Clean ROC-AUC / AP*: 99,15% / 99,30% (cùng lý do trên).
   - *Hạn chế*: Fake ACC tại $Q=30$ chỉ 6,73%.
@@ -240,7 +284,7 @@ Tất cả số liệu dưới đây được đo đạc chính thức trong cá
 | | `pndm` | 2.000 | 96.40% | 49.60% | 54.15% | **96.95%** | 94.50% | 94.50% |
 | | `vqdiffusion` | 2.000 | 99.50% | 81.90% | 80.60% | **99.70%** | 95.00% | 95.00% |
 | **TRUNG BÌNH DIFF**| **MEAN_DIFFUSION**| **20.000** | **95.00%** | **64.29%** | **55.18%** | **95.85%** | **76.41%** | **73.66%** |
-| **TỔNG HỢP TOÀN BỘ**| **OVERALL MACRO** | **82.003** | **96.45%** | **67.34%** | **59.39%** | ~~96.58%~~ 🚫 | **77.31%** | **74.75%** |
+| **TỔNG HỢP TOÀN BỘ**| **OVERALL MACRO** | **82.003** | **96.45%** | **67.34%** | **59.39%** | ~~96.58%~~ 🚫 | **77.31%** | **74.75%**  <br>*(chỉ để tham khảo lịch sử; không phải số hiện hành)* |
 | • Clean Real ACC | (Bảo vệ ảnh thật) | 82.003 | **99.37%** | 90.70% | 45.75% | **98.10%** 🏆 | 57.01% | 50.52% |
 | • Clean Fake ACC | (Bắt ảnh giả) | 82.003 | 93.54% | 43.98% | 73.02% | 95.07% | **97.61%** | **98.97%** 🔥 |
 | • Clean ROC-AUC | (Năng lực phân tách) | 82.003 | 99.10% | 69.96% | 68.90% | **99.15%** 🏆 | 96.71% | 96.71% |
@@ -383,3 +427,5 @@ Nhằm phục vụ quá trình huấn luyện và kiểm chuẩn độc lập t�
 ---
 
 > **Kết luận nghiệm thu tài liệu**: Văn bản chuyên khảo này đã chuẩn hóa và khóa sổ toàn bộ dữ liệu lịch sử checkpoint của dự án FatFormer-XLA, sẵn sàng phục vụ việc biên soạn các chương 3, 4, 5 trong Báo cáo Đồ án Tốt nghiệp kỹ sư.
+
+</details>
