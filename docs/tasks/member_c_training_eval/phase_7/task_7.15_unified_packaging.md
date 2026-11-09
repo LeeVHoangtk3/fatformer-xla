@@ -6,7 +6,7 @@
 - **Môi trường thực thi**: 🖥️ **Local CPU** + ☁️ GPU (đo độ trễ)
 - **Độ ưu tiên**: 🟠 Cao — điều kiện cuối của **G7.3**
 - **Cổng liên quan**: **G7.3**
-- **Trạng thái**: `[ ] Sẵn sàng`
+- **Trạng thái**: `[~] Đã khôi phục calibration 400 ảnh, đóng gói lại và kiểm chứng tensor/standalone smoke; chờ ảnh thật, so sánh điều kiện và T4.`
 - **Kế hoạch gốc**: [`ke_hoach_phase_7_dieu_chinh_toan_dien.md`](../../../plan/ke_hoach_phase_7_dieu_chinh_toan_dien.md) §IV.2 — Task 7.15
 
 ---
@@ -21,7 +21,7 @@ Biến kết quả nghiên cứu thành **một artifact dùng được**: một
 | :--- | :---: | :--- |
 | Một checkpoint, một `forward()` | bắt buộc | `ls` chỉ 1 file `.pth`; API không có nhánh "chọn model" |
 | Chênh lệch vs ensemble/fixed | ≤ 1,5 pp | Chấm cùng tập, so trực tiếp |
-| Độ trễ | < 5 ms/ảnh (GPU) | Đo 200 ảnh, báo cáo trung vị + p95 |
+| Độ trễ thêm do wrapper | < 5 ms/ảnh trên GPU CUDA thực tế, batch 1 | Cùng backbone/input/precision; lưu GPU, VRAM, median, p95 và mẫu đo |
 
 **Điểm khác biệt so với "đóng gói cho có"**
 
@@ -145,7 +145,9 @@ Yêu cầu CLI:
 ### Bước 4 — Đo độ trễ (D11, ~0,5 h)
 
 ```python
-# 200 ảnh, batch 1/8/32, warmup 20, đo bằng torch.cuda.Event
+# Batch 1/8/32, warmup 20, 200 cặp đo xen kẽ backbone/package.
+# Đồng bộ CUDA trước/sau mỗi phép đo; lưu GPU, precision, hash package và mẫu thô.
+# Ghi riêng thời gian batch, throughput và overhead có dấu; chỉ nghiệm thu phần cứng T4.
 ```
 
 Ghi `latency_phase7.json`:
@@ -160,15 +162,15 @@ Ghi `latency_phase7.json`:
 }
 ```
 
-> G7.3 yêu cầu **< 5 ms/ảnh**. Nếu batch 1 vượt, báo cáo cả batch 8/32 và ghi rõ điều kiện đạt. **Không** đổi đơn vị để "đạt".
+> Theo yêu cầu cập nhật ngày 09/11/2026, chấp nhận GPU CUDA tương thích có đủ VRAM, không bắt buộc T4. Đánh giá **độ trễ thêm <5 ms/ảnh trên GPU thực tế** ở batch 1; ghi riêng latency tuyệt đối và throughput. Batch quá lớn được ghi thiếu bộ nhớ, không gán số. T4 cũ chỉ là tham chiếu, không là điều kiện chặn.
 
 ### Bước 5 — Đối chiếu G7.3 (D11, ~0,5 h)
 
-1. Chấm `unified_fatformer_v2.pth` trên 2.000 ảnh CFE bằng chính `predict()`.
-2. So với `final_phase7_report.json`:
+1. Chấm `unified_fatformer_v2.pth` trên đúng **1.600 ảnh evaluation CFE** bằng `predict()`, clean và Q30; 400 ảnh calibration không được đưa vào phép đánh giá này.
+2. Kiểm tra tương đương package/reference với **cùng calibration mới**, cùng precision/preprocessing; sau đó đối chiếu cấu hình tốt nhất có bằng chứng trên cùng partition ở từng điều kiện. So sánh với run 7.14 dùng calibration baseline chỉ là tham chiếu lịch sử:
    - `|Fake@Real90_unified − Fake@Real90_report| ≤ 1,5 pp`
    - `|AUC_unified − AUC_report| ≤ 1,5 pp`
-3. Nếu lệch > 1,5 pp ⇒ wrapper đang làm sai (tiền xử lý, `T`, ngưỡng) ⇒ sửa, không chấp nhận.
+3. Chênh lệch vượt 1,5 pp phải được điều tra; không mặc định là lỗi wrapper nếu calibration/protocol khác. Không nhầm delta so với cấu hình tham chiếu thành clean trừ Q30. Lần chấm sau sửa calibration phải ghi là post-hoc confirmation.
 
 ### Bước 6 — Báo cáo nghiệm thu (D11, ~0,5 h)
 
@@ -192,7 +194,7 @@ Ghi `latency_phase7.json`:
 - [ ] Thiếu `router` ⇒ fallback ngưỡng cố định, có cảnh báo, vẫn chạy.
 - [ ] `latency_phase7.json` có median + p95 cho batch 1/8/32.
 - [ ] Chênh lệch vs `final_phase7_report.json` ≤ **1,5 pp** trên cả `Fake@Real90` và `AUC`.
-- [ ] Độ trễ < 5 ms/ảnh **hoặc** ghi rõ không đạt + điều kiện đạt.
+- [ ] Độ trễ thêm <5 ms/ảnh trên GPU thực tế, hoặc ghi rõ pending/không đạt; kèm GPU, VRAM, batch và precision, không suy diễn sang GPU khác.
 - [ ] Báo cáo nghiệm thu có bảng G7.3 PASS/FAIL **kèm số**.
 
 ---

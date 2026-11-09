@@ -1,0 +1,23 @@
+{
+  "schema": "calibration_recovery/v1",
+  "status": "recovered",
+  "method": "Select frozen calibration IDs from saved logits; no model forward",
+  "scientific_status": "post_hoc_recovery; evaluation previously inspected",
+  "source_pool": "DATASET/logs/phase7/logits_anchored_v2_clean_calib.npz",
+  "source_pool_sha256": "7714859ef4f763adf33abbfca6acb313e2a525510fec90302913149eae8a767c",
+  "source_checkpoint_sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c",
+  "source_pool_n": 2000,
+  "source_pool_evaluation_overlap": 1600,
+  "partition_validation": {
+    "status": "verified_disjoint_ids",
+    "identity_unit": "subset/class/filename; content duplicates not audited",
+    "n_calibration": 400,
+    "n_evaluation": 1600,
+    "overlap": 0,
+    "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+    "evaluation_split_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+    "sample_ids_sha256": "5ae613da819d065b93225b901a7d06d3309ad27e8cdbb9a441cf4df43d7552fb"
+  },
+  "output_npz": "DATASET\\logs\\phase7\\task_7.15_recovery\\logits_anchored_v2_calibration_400.npz",
+  "output_npz_sha256": "9b7651fe88dd5d7a07dfbc39a55870bb981049c978d71ef817f8bf4944da89ad"
+}

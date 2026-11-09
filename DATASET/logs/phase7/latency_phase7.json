@@ -1,37 +1,24 @@
 {
-  "device": "cuda",
-  "precision": "FP16",
-  "batches": {
-    "1": {
-      "batch_size": 1,
-      "backbone_batch_ms": 47.56,
-      "package_batch_median_ms": 47.83,
-      "package_batch_p95_ms": 49.55,
-      "backbone_per_image_ms": 47.56,
-      "package_per_image_ms": 47.83,
-      "overhead_delta_ms": 0.2743,
-      "throughput_fps": 20.9
-    },
-    "8": {
-      "batch_size": 8,
-      "backbone_batch_ms": 48.23,
-      "package_batch_median_ms": 48.04,
-      "package_batch_p95_ms": 48.78,
-      "backbone_per_image_ms": 6.03,
-      "package_per_image_ms": 6.0,
-      "overhead_delta_ms": 0.0,
-      "throughput_fps": 166.5
-    },
-    "32": {
-      "batch_size": 32,
-      "backbone_batch_ms": 80.26,
-      "package_batch_median_ms": 80.43,
-      "package_batch_p95_ms": 80.81,
-      "backbone_per_image_ms": 2.51,
-      "package_per_image_ms": 2.51,
-      "overhead_delta_ms": 0.0055,
-      "throughput_fps": 397.8
-    }
+  "schema": "unified_latency_acceptance/v1",
+  "status": "pending_allocated_gpu_measurement_for_recovered_package",
+  "checkpoint_sha256": "5d8961d06c0490c70ef7b5463ba4acad172b42ffeda909565813ef53aed66306",
+  "target_gpu": "any compatible CUDA GPU with sufficient memory",
+  "overhead_meets_target": null,
+  "batches": {},
+  "historical_measurement": {
+    "path": "DATASET\\logs\\phase7\\task_7.15_original_68cd0a8\\latency_phase7.json",
+    "sha256": "44ab46ee216d3ba2e1976076379d548cfa9669ee301de780ca68285b6446df72",
+    "gpu_name": "NVIDIA A100-SXM4-40GB",
+    "package_sha256": "3d0c880ff57e8dfcb0024b0c02952db2f879b95ca4f95d4d18ad32dbfe2927a9",
+    "overhead_batch1_ms": 0.2743,
+    "warmup": 15,
+    "steps": 40,
+    "status": "historical A100 measurement of original package; does not accept new package on T4"
   },
-  "overhead_meets_target": true
+  "notes": [
+    "Original raw A100 timing JSON preserved byte-for-byte in archive.",
+    "No new local CUDA measurement generated.",
+    "Condition comparison is also pending; latency alone cannot establish the whole G7.3 gate."
+  ],
+  "hardware_requirement_revision": "User clarification 2026-11-09: T4 is optional; accept measurements on the reported GPU."
 }

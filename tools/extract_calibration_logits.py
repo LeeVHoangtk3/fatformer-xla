@@ -23,6 +23,7 @@ import torchvision.transforms as transforms
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from src.models.canonical_loader import extract_state_dict, infer_adapter_blocks, resolve_layout, load_canonical
+from tools.calibration_data import sample_id, read_partition, validate_partitions
 
 
 def compute_sha256(filepath: str) -> str:
@@ -46,58 +47,25 @@ def get_default_transform():
 
 
 def find_calib_samples(data_dir: str, split_file: Optional[str] = None) -> List[Tuple[str, int, str]]:
-    """Tìm danh sách mẫu ảnh và nhãn (path, target, sample_id)."""
-    samples = []
-    
-    # 1. Nếu có file split JSON/NPZ chỉ định danh sách mẫu
-    if split_file and os.path.exists(split_file):
-        if split_file.endswith(".npz"):
-            ref_npz = np.load(split_file, allow_pickle=True)
-            ref_ids = ref_npz.get("sample_ids", None)
-            ref_targets = ref_npz.get("targets", None)
-            if ref_ids is not None and ref_targets is not None:
-                for sid, tgt in zip(ref_ids, ref_targets):
-                    # Tìm file tương ứng trong data_dir
-                    matches = list(Path(data_dir).rglob(str(sid)))
-                    if not matches:
-                        matches = list(Path(data_dir).rglob(f"*{sid}*"))
-                    if matches:
-                        samples.append((str(matches[0]), int(tgt), str(sid)))
-        elif split_file.endswith(".json"):
-            with open(split_file, "r", encoding="utf-8") as f:
-                split_data = json.load(f)
-            # Giả định cấu trúc danh sách dict hoặc {sample_id: target}
-            if isinstance(split_data, list):
-                for item in split_data:
-                    p = item.get("path")
-                    tgt = item.get("target", item.get("label", 0))
-                    sid = item.get("sample_id", os.path.basename(p) if p else "")
-                    if p and os.path.exists(p):
-                        samples.append((p, int(tgt), sid))
-                    elif p:
-                        matched = list(Path(data_dir).rglob(os.path.basename(p)))
-                        if matched:
-                            samples.append((str(matched[0]), int(tgt), sid))
-
-    # 2. Nếu chưa tìm thấy qua split_file, quét thư mục chuẩn (real/fake)
-    if not samples and os.path.exists(data_dir):
-        valid_exts = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
-        real_dirs = [d for d in Path(data_dir).rglob("*") if d.is_dir() and "real" in d.name.lower() or "0_real" in d.name.lower()]
-        fake_dirs = [d for d in Path(data_dir).rglob("*") if d.is_dir() and "fake" in d.name.lower() or "1_fake" in d.name.lower()]
-
-        for rd in real_dirs:
-            for f in rd.iterdir():
-                if f.is_file() and f.suffix.lower() in valid_exts:
-                    samples.append((str(f.resolve()), 0, f.name))
-
-        for fd in fake_dirs:
-            for f in fd.iterdir():
-                if f.is_file() and f.suffix.lower() in valid_exts:
-                    samples.append((str(f.resolve()), 1, f.name))
-
-    # Sắp xếp để đảm bảo tính tái lập tuyệt đối
-    samples = sorted(samples, key=lambda x: x[2])
-    return samples
+    """Resolve every frozen identity exactly; missing/ambiguous files are errors."""
+    if not split_file:
+        raise ValueError("Measured calibration requires an explicit split_file")
+    expected, targets = read_partition(split_file, "calibration")
+    index = {}
+    for path in Path(data_dir).rglob("*"):
+        if not path.is_file() or path.suffix.lower() not in {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tif", ".tiff"}:
+            continue
+        try:
+            sid = sample_id(path)
+        except ValueError:
+            continue
+        if sid in index:
+            raise ValueError(f"Ambiguous sample identity: {sid}")
+        index[sid] = str(path.resolve())
+    missing = set(expected) - set(index)
+    if missing:
+        raise FileNotFoundError(f"Missing {len(missing)} frozen calibration samples: {sorted(missing)[:3]}")
+    return [(index[sid], int(y), sid) for sid, y in zip(expected, targets)]
 
 
 def extract_logits(
@@ -108,7 +76,9 @@ def extract_logits(
     clip_path: Optional[str] = None,
     device: str = "cpu",
     batch_size: int = 32,
-    test_dummy: bool = False
+    test_dummy: bool = False,
+    evaluation_split: Optional[str] = None,
+    precision: str = "fp32"
 ) -> str:
     """Trích xuất logits và lưu file NPZ."""
     ckpt_sha = compute_sha256(checkpoint_path) if os.path.exists(checkpoint_path) else "dummy_sha"
@@ -129,6 +99,7 @@ def extract_logits(
             split="calibration",
             sample_ids=sample_ids,
             paths=paths,
+            evidence_level="synthetic",
             checkpoint_sha256=ckpt_sha,
             manifest_sha256="dummy_manifest_sha",
             preprocessing="Resize(224) -> CenterCrop(224) -> ToTensor() -> Normalize",
@@ -137,7 +108,18 @@ def extract_logits(
         print(f"[✓] Đã tạo dummy NPZ: {output_npz}")
         return output_npz
 
+    if batch_size <= 0:
+        raise ValueError("batch_size must be positive")
+    if precision not in {"fp32","fp16"} or (precision == 'fp16' and torch.device(device).type != 'cuda'):
+        raise ValueError('FP16 extraction requires a CUDA device; use explicit fp32 on CPU')
+    if torch.device(device).type == 'cuda':
+        torch.backends.cuda.matmul.allow_tf32 = False
+        torch.backends.cudnn.allow_tf32 = False
+    if not evaluation_split:
+        raise ValueError("Measured extraction requires evaluation_split to verify independence")
     samples = find_calib_samples(data_dir, split_file)
+    partition = validate_partitions([s[2] for s in samples], np.array([s[1] for s in samples]),
+                                    split_file, evaluation_split)
     if not samples:
         raise ValueError(f"Không tìm thấy mẫu ảnh hợp lệ nào trong '{data_dir}' (split_file={split_file}).")
 
@@ -160,6 +142,7 @@ def extract_logits(
         adapter_block_indices=layout["indices"]
     )
 
+    del raw_sd
     model, report = load_canonical(checkpoint_path, model_args)
     model = model.to(device).eval()
     print("[✓] Nạp mô hình thành công. Đang tiến hành forward trích xuất logits...")
@@ -189,7 +172,7 @@ def extract_logits(
                     cur_sids.append(sid)
                     cur_paths.append(p)
             except Exception as e:
-                print(f"[SKIP] Lỗi đọc ảnh {p}: {e}")
+                raise ValueError(f"Cannot read frozen calibration image: {p}") from e
 
         if not tensors:
             continue
@@ -197,7 +180,9 @@ def extract_logits(
         batch_tensors = torch.stack(tensors, dim=0).to(dev_obj)
 
         with torch.no_grad():
-            outputs = model(batch_tensors)
+            with torch.amp.autocast(dev_obj.type,dtype=torch.float16,
+                                    enabled=dev_obj.type=='cuda' and precision=='fp16'):
+                outputs = model(batch_tensors)
             if isinstance(outputs, tuple):
                 outputs = outputs[0]
             out_np = outputs.cpu().float().numpy()
@@ -222,6 +207,11 @@ def extract_logits(
         split="calibration",
         sample_ids=final_sids,
         paths=final_paths,
+        evidence_level="measured",
+        precision=precision,
+        inference_batch_size=batch_size,
+        torch_version=str(torch.__version__),
+        partition_validation=json.dumps(partition, sort_keys=True),
         checkpoint_sha256=report.get("sha256", ckpt_sha),
         manifest_sha256=manifest_sha,
         preprocessing="Resize(224) -> CenterCrop(224) -> ToTensor() -> Normalize",
@@ -232,6 +222,9 @@ def extract_logits(
 
 
 def main():
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="Extract Calibration Logits from Checkpoint (Task 7.15)")
     parser.add_argument("--checkpoint", type=str, required=True, help="Đường dẫn file .pth")
     parser.add_argument("--data_dir", type=str, default="DATASET/val_crossdomain", help="Thư mục dữ liệu validation")
@@ -241,6 +234,8 @@ def main():
     parser.add_argument("--device", type=str, default="auto")
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--test_dummy", action="store_true", help="Chạy chế độ dummy test")
+    parser.add_argument("--evaluation_split", help="Frozen evaluation NPZ/JSON; required for measured extraction")
+    parser.add_argument("--precision", choices=['fp32','fp16'], default='fp32')
     args = parser.parse_args()
 
     device = "cuda" if (args.device == "auto" and torch.cuda.is_available()) or args.device == "cuda" else "cpu"
@@ -254,7 +249,9 @@ def main():
             clip_path=args.clip_path,
             device=device,
             batch_size=args.batch_size,
-            test_dummy=args.test_dummy
+            test_dummy=args.test_dummy,
+            evaluation_split=args.evaluation_split,
+            precision=args.precision
         )
     except Exception as e:
         print(f"[!] Thất bại trong quá trình trích xuất logits: {e}", file=sys.stderr)

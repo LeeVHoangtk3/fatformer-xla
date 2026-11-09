@@ -1,0 +1,36 @@
+{
+  "schema": "task_7.15_local_validation/v1",
+  "status": "passed_local_checks; cloud_acceptance_pending",
+  "tests": {
+    "distinct_related_tests_passed": 128,
+    "runs": [
+      {
+        "suite": "router/ablation/canonical/phase7/packaging/partition",
+        "passed": 127
+      },
+      {
+        "suite": "partition regressions including locked-gate missing metrics test",
+        "passed": 12
+      },
+      {
+        "suite": "packaging and partition after final numeric changes",
+        "passed": 21
+      }
+    ],
+    "note": "Overlapping suites; distinct count 107 existing + 9 packaging + 12 partition regressions."
+  },
+  "actual_package": {
+    "n_tensor_entries_equal": 1200,
+    "standalone_synthetic_cpu_smoke": "passed",
+    "max_probability_error": 0.0,
+    "real_image_acceptance": false
+  },
+  "cli_help": "passed extract/infer/package",
+  "notebooks_modified": false,
+  "pending": [
+    "20 real-image reference/package verification",
+    "condition-wise held-out comparison",
+    "T4 overhead measurement"
+  ],
+  "git_actions": "No commit or push performed"
+}

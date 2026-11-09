@@ -1,0 +1,270 @@
+{
+  "schema": "phase7_rerun_audit/v1",
+  "source_commit": "9d798f5e9459723331f3a53609f7af830ae25312",
+  "status": "old code rerun; not corrected package acceptance",
+  "calibration_evaluation_overlap": 1600,
+  "calibration_source_n": 2000,
+  "gpu": "NVIDIA L4",
+  "formal_t4_acceptance": false,
+  "canonical_artifacts_replaced": false,
+  "conditions": {
+    "blur15": {
+      "source_npz_sha256": "66412bb8ae79bf6fc5ddbe2d39d8bde9a2db521ac596a88e85348b04284a9108",
+      "original_metrics_reproduced": true,
+      "original": {
+        "macro_acc": 71.0,
+        "real_acc": 89.0,
+        "fake_acc": 53.0,
+        "fake_at_real90": 50.62,
+        "auc": 84.22,
+        "ap": 83.24,
+        "tpr_at_fpr": {
+          "0.01": 17.88,
+          "0.05": 37.75,
+          "0.10": 50.62
+        },
+        "ece": 10.09,
+        "nll": 0.5623,
+        "total_samples": 1600
+      },
+      "cache_rescore_with_corrected_calibration": {
+        "macro_acc": 71.06,
+        "real_acc": 88.25,
+        "fake_acc": 53.87,
+        "fake_at_real90": 50.62,
+        "auc": 84.22,
+        "ap": 83.24,
+        "tpr_at_fpr": {
+          "0.01": 17.88,
+          "0.05": 37.75,
+          "0.10": 50.62
+        },
+        "ece": 11.37,
+        "nll": 0.5914,
+        "total_samples": 1600
+      }
+    },
+    "clean": {
+      "source_npz_sha256": "fa6328ba72a2278a983f8ef4c882e9224fa4f76599bdec17d73705fc8bc84c83",
+      "original_metrics_reproduced": true,
+      "original": {
+        "macro_acc": 73.75,
+        "real_acc": 95.75,
+        "fake_acc": 51.75,
+        "fake_at_real90": 64.12,
+        "auc": 88.67,
+        "ap": 89.08,
+        "tpr_at_fpr": {
+          "0.01": 35.62,
+          "0.05": 54.12,
+          "0.10": 64.25
+        },
+        "ece": 9.56,
+        "nll": 0.4816,
+        "total_samples": 1600
+      },
+      "cache_rescore_with_corrected_calibration": {
+        "macro_acc": 74.38,
+        "real_acc": 95.62,
+        "fake_acc": 53.12,
+        "fake_at_real90": 64.12,
+        "auc": 88.67,
+        "ap": 89.08,
+        "tpr_at_fpr": {
+          "0.01": 35.62,
+          "0.05": 54.12,
+          "0.10": 64.25
+        },
+        "ece": 10.82,
+        "nll": 0.5085,
+        "total_samples": 1600
+      }
+    },
+    "downup05": {
+      "source_npz_sha256": "3dbd7146535baadbc74660996281984a3264b4ce4a3b94b562365bcc516b5cc2",
+      "original_metrics_reproduced": true,
+      "original": {
+        "macro_acc": 77.38,
+        "real_acc": 88.5,
+        "fake_acc": 66.25,
+        "fake_at_real90": 64.75,
+        "auc": 87.0,
+        "ap": 86.89,
+        "tpr_at_fpr": {
+          "0.01": 27.75,
+          "0.05": 52.12,
+          "0.10": 64.75
+        },
+        "ece": 11.47,
+        "nll": 0.5573,
+        "total_samples": 1600
+      },
+      "cache_rescore_with_corrected_calibration": {
+        "macro_acc": 77.62,
+        "real_acc": 88.0,
+        "fake_acc": 67.25,
+        "fake_at_real90": 64.75,
+        "auc": 87.0,
+        "ap": 86.89,
+        "tpr_at_fpr": {
+          "0.01": 27.75,
+          "0.05": 52.12,
+          "0.10": 64.75
+        },
+        "ece": 12.5,
+        "nll": 0.5897,
+        "total_samples": 1600
+      }
+    },
+    "q30": {
+      "source_npz_sha256": "ecbf581a3224a4b371434553cca94bab4cd0db8d09beb548193831728f462077",
+      "original_metrics_reproduced": true,
+      "original": {
+        "macro_acc": 65.31,
+        "real_acc": 92.0,
+        "fake_acc": 38.62,
+        "fake_at_real90": 42.62,
+        "auc": 79.87,
+        "ap": 78.47,
+        "tpr_at_fpr": {
+          "0.01": 12.38,
+          "0.05": 28.25,
+          "0.10": 42.62
+        },
+        "ece": 13.49,
+        "nll": 0.6368,
+        "total_samples": 1600
+      },
+      "cache_rescore_with_corrected_calibration": {
+        "macro_acc": 65.75,
+        "real_acc": 91.5,
+        "fake_acc": 40.0,
+        "fake_at_real90": 42.62,
+        "auc": 79.86,
+        "ap": 78.47,
+        "tpr_at_fpr": {
+          "0.01": 12.38,
+          "0.05": 28.25,
+          "0.10": 42.62
+        },
+        "ece": 15.05,
+        "nll": 0.6733,
+        "total_samples": 1600
+      }
+    },
+    "q50": {
+      "source_npz_sha256": "eded6b7b17584f2c3ae99247aa56913ffd8d1e80572148fd5b5e0c753914213a",
+      "original_metrics_reproduced": true,
+      "original": {
+        "macro_acc": 66.31,
+        "real_acc": 93.5,
+        "fake_acc": 39.12,
+        "fake_at_real90": 47.62,
+        "auc": 81.55,
+        "ap": 80.63,
+        "tpr_at_fpr": {
+          "0.01": 15.62,
+          "0.05": 35.62,
+          "0.10": 47.62
+        },
+        "ece": 13.04,
+        "nll": 0.6147,
+        "total_samples": 1600
+      },
+      "cache_rescore_with_corrected_calibration": {
+        "macro_acc": 66.38,
+        "real_acc": 92.88,
+        "fake_acc": 39.88,
+        "fake_at_real90": 47.62,
+        "auc": 81.55,
+        "ap": 80.63,
+        "tpr_at_fpr": {
+          "0.01": 15.62,
+          "0.05": 35.62,
+          "0.10": 47.62
+        },
+        "ece": 14.37,
+        "nll": 0.6509,
+        "total_samples": 1600
+      }
+    },
+    "q75": {
+      "source_npz_sha256": "398326c353906dab68fcd57e1fa37af3d0acfa0ff9b11940d91eaad7b60e5010",
+      "original_metrics_reproduced": true,
+      "original": {
+        "macro_acc": 66.19,
+        "real_acc": 94.62,
+        "fake_acc": 37.75,
+        "fake_at_real90": 48.75,
+        "auc": 83.31,
+        "ap": 82.83,
+        "tpr_at_fpr": {
+          "0.01": 19.75,
+          "0.05": 35.62,
+          "0.10": 48.75
+        },
+        "ece": 12.8,
+        "nll": 0.5853,
+        "total_samples": 1600
+      },
+      "cache_rescore_with_corrected_calibration": {
+        "macro_acc": 66.31,
+        "real_acc": 94.12,
+        "fake_acc": 38.5,
+        "fake_at_real90": 48.75,
+        "auc": 83.31,
+        "ap": 82.83,
+        "tpr_at_fpr": {
+          "0.01": 19.75,
+          "0.05": 35.5,
+          "0.10": 48.75
+        },
+        "ece": 14.09,
+        "nll": 0.6185,
+        "total_samples": 1600
+      }
+    },
+    "webp40": {
+      "source_npz_sha256": "d8698f9c2791d017cda3fc2d60f0b0af8054b0afb668f5a6f5d9f4bcf5b28493",
+      "original_metrics_reproduced": true,
+      "original": {
+        "macro_acc": 65.94,
+        "real_acc": 89.75,
+        "fake_acc": 42.12,
+        "fake_at_real90": 41.88,
+        "auc": 79.0,
+        "ap": 77.23,
+        "tpr_at_fpr": {
+          "0.01": 7.62,
+          "0.05": 26.88,
+          "0.10": 41.88
+        },
+        "ece": 14.94,
+        "nll": 0.6894,
+        "total_samples": 1600
+      },
+      "cache_rescore_with_corrected_calibration": {
+        "macro_acc": 66.25,
+        "real_acc": 89.12,
+        "fake_acc": 43.38,
+        "fake_at_real90": 41.88,
+        "auc": 79.0,
+        "ap": 77.23,
+        "tpr_at_fpr": {
+          "0.01": 7.62,
+          "0.05": 26.75,
+          "0.10": 41.88
+        },
+        "ece": 16.69,
+        "nll": 0.7356,
+        "total_samples": 1600
+      }
+    }
+  },
+  "cache_rescore": {
+    "gate_eligible": false,
+    "method": "Recompute from saved backbone logits; no wrapper forward or new GPU timing",
+    "calibration_sha256": "7d9a41a1ab626e648d672d95d11394133d0585a2526a98870b4d4f8b413674eb",
+    "note": "Post-hoc cache analysis; does not replace real-image wrapper verification, condition-best comparison or in-dist reevaluation."
+  }
+}

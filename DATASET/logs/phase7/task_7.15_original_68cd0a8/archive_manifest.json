@@ -1,0 +1,58 @@
+{
+  "schema": "task_7.15_original_archive/v1",
+  "status": "preserved_original; calibration used full CFE including evaluation; not a deployable calibrated release",
+  "files": [
+    {
+      "original_path": "DATASET/checkpoints/phase7/unified_fatformer_v2.pth",
+      "archived_path": "DATASET\\logs\\phase7\\task_7.15_original_68cd0a8\\unified_fatformer_v2.pth",
+      "sha256": "3d0c880ff57e8dfcb0024b0c02952db2f879b95ca4f95d4d18ad32dbfe2927a9",
+      "bytes": 1972727663
+    },
+    {
+      "original_path": "DATASET/checkpoints/phase7/metadata.json",
+      "archived_path": "DATASET\\logs\\phase7\\task_7.15_original_68cd0a8\\metadata.json",
+      "sha256": "e8f3f3bd54acb8f55ddf2fc413c79935f27827ed58d3182341b162be82955f5c",
+      "bytes": 2324
+    },
+    {
+      "original_path": "DATASET/logs/phase7/calibration/anchored_v2.json",
+      "archived_path": "DATASET\\logs\\phase7\\task_7.15_original_68cd0a8\\anchored_v2.json",
+      "sha256": "c2ec1a3f986220cd5f2a1dfed6499dd8067acb810011e6a34b2bf760985b4bd3",
+      "bytes": 975
+    },
+    {
+      "original_path": "DATASET/logs/phase7/calibration/anchored_v2_reliability.png",
+      "archived_path": "DATASET\\logs\\phase7\\task_7.15_original_68cd0a8\\anchored_v2_reliability.png",
+      "sha256": "ca5502c1309aa4b398e98b0dd91226615599056e72985dd10d195eb94a7c077b",
+      "bytes": 107492
+    },
+    {
+      "original_path": "DATASET/logs/phase7/calibration/summary.md",
+      "archived_path": "DATASET\\logs\\phase7\\task_7.15_original_68cd0a8\\summary.md",
+      "sha256": "7b1032bb5eb9e2f5cab9b5ee97ff5af8ded6e00c499bdafe4c728d2dca8f6510",
+      "bytes": 820
+    },
+    {
+      "original_path": "DATASET/logs/phase7/latency_phase7.json",
+      "archived_path": "DATASET\\logs\\phase7\\task_7.15_original_68cd0a8\\latency_phase7.json",
+      "sha256": "44ab46ee216d3ba2e1976076379d548cfa9669ee301de780ca68285b6446df72",
+      "bytes": 966
+    },
+    {
+      "original_path": "DATASET/logs/phase7/logits_anchored_v2_clean_calib.npz",
+      "archived_path": "DATASET\\logs\\phase7\\task_7.15_original_68cd0a8\\logits_anchored_v2_clean_calib.npz",
+      "sha256": "7714859ef4f763adf33abbfca6acb313e2a525510fec90302913149eae8a767c",
+      "bytes": 34409
+    },
+    {
+      "original_path": "docs/bao_cao/C/bao_cao_task_7.15_unified_packaging.md",
+      "archived_path": "DATASET\\logs\\phase7\\task_7.15_original_68cd0a8\\bao_cao_task_7.15_unified_packaging.md",
+      "sha256": "7c037943271b75674d936ca285186c5d5774037af9fd4a427e50610a7a2dd38b",
+      "bytes": 14438
+    }
+  ],
+  "notebooks_sha256": {
+    "notebooks\\task\\task_7.14\\task_7.14_locked_benchmark_colab.ipynb": "cc431f24ab6876fb4f19378161365a3b1a853f76606fd75f2ba0a747e068d40e",
+    "notebooks\\task\\task_7.15\\task_7.15_unified_packaging_colab.ipynb": "3cc61470d57cc510f5686f8cba86b4ec0f9969b50ae0e7b1be5b95bf8eb6e6ba"
+  }
+}

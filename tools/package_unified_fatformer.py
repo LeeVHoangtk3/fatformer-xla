@@ -12,16 +12,19 @@ import argparse
 import datetime
 import hashlib
 import json
+import math
 import os
 import subprocess
 import sys
 from typing import Any, Dict, Optional
+from pathlib import Path
 
 import torch
 
 # Hỗ trợ nạp module từ thư mục gốc
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from src.models.canonical_loader import extract_state_dict, infer_adapter_blocks, resolve_layout
+from src.models.unified_fatformer import is_sha256_digest
 
 
 def compute_file_sha256(filepath: str) -> str:
@@ -47,6 +50,8 @@ def validate_calibration_against_checkpoint(calib: Dict[str, Any], ckpt_sha: str
     
     Ngăn chặn việc gán ghép calibration sai nguồn hoặc sửa hash metadata.
     """
+    if not is_sha256_digest(ckpt_sha):
+        raise ValueError("Invalid source checkpoint SHA-256")
     calib_ckpt_sha = calib.get("checkpoint", {}).get("sha256")
     if not calib_ckpt_sha:
         raise ValueError("[!] Lỗi: Tệp calibration thiếu trường 'checkpoint.sha256'.")
@@ -58,6 +63,21 @@ def validate_calibration_against_checkpoint(calib: Dict[str, Any], ckpt_sha: str
             f"  - Calibration CKPT SHA : {calib_ckpt_sha}\n"
             f"Không được giả mạo hash hoặc dùng calibration của baseline cho v2!"
         )
+    if calib.get("schema") != "calibration/v1" or calib.get("evidence_level") != "measured":
+        raise ValueError("Require measured calibration/v1")
+    temperature = float(calib["T"])
+    threshold = calib.get("T_star_default", calib.get("T_star"))
+    threshold = float(threshold["0.05"] if isinstance(threshold, dict) else threshold)
+    if not math.isfinite(temperature) or temperature <= 0 or not 0 <= threshold <= 1.000001:
+        raise ValueError("Invalid calibrated temperature/threshold")
+    partition = calib.get("partition_validation", {})
+    if partition.get("status") != "verified_disjoint_ids" or partition.get("overlap") != 0:
+        raise ValueError("Packaging requires verified disjoint calibration/evaluation identities")
+    if (not is_sha256_digest(calib.get("calibration_source_sha256"))
+            or not all(is_sha256_digest(partition.get(k)) for k in
+                       ("calibration_split_sha256", "evaluation_split_sha256", "sample_ids_sha256"))
+            or partition.get("n_calibration") != calib.get("n_calib")):
+        raise ValueError("Missing calibration partition/source fingerprints")
 
 
 def package_checkpoint(
@@ -68,16 +88,26 @@ def package_checkpoint(
     router_ablation_path: Optional[str] = None,
     metadata_json_path: Optional[str] = None,
     allow_partial: bool = False,
-    allow_uncalibrated_debug: bool = False
+    allow_uncalibrated_debug: bool = False,
+    repackage: bool = False
 ) -> Dict[str, Any]:
     """Đóng gói checkpoint và metadata thành file .pth thống nhất."""
     if not os.path.exists(checkpoint_path):
         raise FileNotFoundError(f"Không tìm thấy checkpoint nguồn: {checkpoint_path}")
+    if os.path.abspath(checkpoint_path) == os.path.abspath(output_path):
+        raise ValueError("Input and output must differ; preserve source artifact")
 
     print(f"[*] Đang đọc checkpoint nguồn: {checkpoint_path}")
-    raw_payload = torch.load(checkpoint_path, map_location="cpu")
+    raw_payload = torch.load(checkpoint_path, map_location="cpu", weights_only=True, mmap=True)
     src_sd = extract_state_dict(raw_payload)
-    ckpt_sha = compute_file_sha256(checkpoint_path)
+    container_sha = compute_file_sha256(checkpoint_path)
+    previous = raw_payload.get("metadata", {}) if isinstance(raw_payload, dict) else {}
+    if previous.get("schema") == "unified_fatformer/v1" and not repackage:
+        raise ValueError("Packaged input requires explicit --repackage to preserve training-checkpoint provenance")
+    if repackage and (previous.get("schema") != "unified_fatformer/v1"
+                      or not is_sha256_digest(previous.get("source_checkpoint_sha256"))):
+        raise ValueError("Repackaging requires an existing unified package with source provenance")
+    ckpt_sha = previous["source_checkpoint_sha256"] if repackage else container_sha
     print(f"[✓] Checkpoint SHA-256: {ckpt_sha}")
 
     # Nhận diện layout adapter và kiểm tra tính hoàn chỉnh
@@ -110,8 +140,8 @@ def package_checkpoint(
         print("[✓] Xác thực calibration chính chủ: Khớp SHA-256 100%.")
 
     # Đọc và xác thực router (nếu có)
-    router_dict = None
-    router_proof = None
+    router_dict = previous.get("router") if repackage else None
+    router_proof = previous.get("router_ablation") if repackage else None
     router_enabled = False
     if router_path and os.path.exists(router_path):
         print(f"[*] Đang nạp router params: {router_path}")
@@ -124,6 +154,9 @@ def package_checkpoint(
             router_enabled = router_is_approved(router_dict, router_proof)
             print(f"[✓] Trạng thái router: router_enabled={router_enabled}")
 
+    if router_dict:
+        from src.models.unified_fatformer import router_is_approved
+        router_enabled = router_is_approved(router_dict, router_proof)
     git_commit = get_git_commit()
     created_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
 
@@ -138,6 +171,22 @@ def package_checkpoint(
         "source_checkpoint_sha256": ckpt_sha,
         "created_at": created_at
     }
+    metadata["validation_status"] = "pending_real_prediction_equivalence_and_G7.3"
+    try:
+        dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], text=True,
+                                             stderr=subprocess.DEVNULL).strip())
+    except (subprocess.SubprocessError, OSError):
+        dirty = None  # An unpacked Colab bundle has no .git; do not invent a clean tree.
+    metadata["build"] = {"git_commit": git_commit, "dirty": dirty}
+    bundle_manifest = Path(__file__).resolve().parents[1] / "BUNDLE_MANIFEST.json"
+    if bundle_manifest.is_file():
+        metadata["build"]["bundle_manifest_sha256"] = compute_file_sha256(bundle_manifest)
+    if repackage:
+        metadata["repackaged_from"] = {
+            "sha256": container_sha, "git_commit": previous.get("git_commit"),
+            "source_checkpoint_verification": "inherited original training hash; original training file not rehashed",
+            "weights": "preserved from previous measured package",
+        }
 
     packaged_payload = {
         "model": src_sd,
@@ -156,19 +205,24 @@ def package_checkpoint(
 
     # Tự kiểm tra tính toàn vẹn (Self-Verification)
     print("[*] Đang thực hiện tự kiểm chứng trọng số...")
-    reloaded = torch.load(output_path, map_location="cpu")
-    assert "model" in reloaded and "metadata" in reloaded, "Lỗi: Payload đóng gói thiếu model hoặc metadata"
+    reloaded = torch.load(output_path, map_location="cpu", weights_only=True, mmap=True)
+    if "model" not in reloaded or "metadata" not in reloaded:
+        raise ValueError("Packaged payload missing model/metadata")
     reloaded_sd = reloaded["model"]
-    assert len(reloaded_sd) == len(src_sd), "Lỗi: Số lượng tensor không khớp"
+    if set(reloaded_sd) != set(src_sd):
+        raise ValueError("Packaged tensor keys disagree")
     for k in src_sd:
-        assert k in reloaded_sd, f"Lỗi: Thiếu tensor {k}"
-        assert torch.equal(src_sd[k], reloaded_sd[k]), f"Lỗi: Tensor {k} bị biến đổi giá trị sau đóng gói"
+        if not torch.equal(src_sd[k], reloaded_sd[k]):
+            raise ValueError(f"Packaged tensor changed: {k}")
     print("[✓] TỰ KIỂM CHỨNG THÀNH CÔNG: Trọng số khớp 100% không bị thay đổi.")
 
     return metadata
 
 
 def main():
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="FatFormer-XLA Checkpoint Packaging Tool (Task 7.15)")
     parser.add_argument("--checkpoint", type=str, required=True, help="Đường dẫn file .pth nguồn")
     parser.add_argument("--output", type=str, default="DATASET/checkpoints/phase7/unified_fatformer_v2.pth", help="Đường dẫn file .pth đích")
@@ -178,6 +232,7 @@ def main():
     parser.add_argument("--metadata_out", type=str, default=None, help="Đường dẫn file metadata JSON độc lập")
     parser.add_argument("--allow_partial", action="store_true", help="Cho phép layout adapter không đầy đủ (chỉ dùng cho forensic analysis)")
     parser.add_argument("--allow_uncalibrated_debug", action="store_true", help="Bỏ qua bắt buộc calibration (chỉ dùng cho debug nội bộ)")
+    parser.add_argument("--repackage", action="store_true", help="Replace metadata of an existing package; retain original training checkpoint hash")
     args = parser.parse_args()
 
     try:
@@ -189,7 +244,8 @@ def main():
             router_ablation_path=args.router_ablation,
             metadata_json_path=args.metadata_out,
             allow_partial=args.allow_partial,
-            allow_uncalibrated_debug=args.allow_uncalibrated_debug
+            allow_uncalibrated_debug=args.allow_uncalibrated_debug,
+            repackage=args.repackage
         )
     except Exception as e:
         print(f"[!] Thất bại trong quá trình đóng gói: {e}", file=sys.stderr)

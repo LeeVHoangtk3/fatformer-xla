@@ -1,0 +1,37 @@
+{
+  "device": "cuda",
+  "precision": "FP16",
+  "batches": {
+    "1": {
+      "batch_size": 1,
+      "backbone_batch_ms": 47.56,
+      "package_batch_median_ms": 47.83,
+      "package_batch_p95_ms": 49.55,
+      "backbone_per_image_ms": 47.56,
+      "package_per_image_ms": 47.83,
+      "overhead_delta_ms": 0.2743,
+      "throughput_fps": 20.9
+    },
+    "8": {
+      "batch_size": 8,
+      "backbone_batch_ms": 48.23,
+      "package_batch_median_ms": 48.04,
+      "package_batch_p95_ms": 48.78,
+      "backbone_per_image_ms": 6.03,
+      "package_per_image_ms": 6.0,
+      "overhead_delta_ms": 0.0,
+      "throughput_fps": 166.5
+    },
+    "32": {
+      "batch_size": 32,
+      "backbone_batch_ms": 80.26,
+      "package_batch_median_ms": 80.43,
+      "package_batch_p95_ms": 80.81,
+      "backbone_per_image_ms": 2.51,
+      "package_per_image_ms": 2.51,
+      "overhead_delta_ms": 0.0055,
+      "throughput_fps": 397.8
+    }
+  },
+  "overhead_meets_target": true
+}

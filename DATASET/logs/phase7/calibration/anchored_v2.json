@@ -3,24 +3,25 @@
   "evidence_level": "measured",
   "model": "anchored_v2",
   "checkpoint": {
-    "path": "/content/drive/MyDrive/Fatformer/checkpoint/phase7/anchored_v2_run1/fatformer_anchored_v2_best.pth",
-    "sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c"
+    "path": null,
+    "sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c",
+    "verification": "inherited_from_measured_logits; original source file not rehashed"
   },
-  "calibration_source": "/content/fatformer-xla/DATASET/logs/phase7/logits_anchored_v2_clean_calib.npz",
-  "calibration_source_sha256": "7714859ef4f763adf33abbfca6acb313e2a525510fec90302913149eae8a767c",
-  "n_calib": 2000,
+  "calibration_source": "D:\\GIT REPO\\.nam4\\fatformer-xla\\DATASET\\logs\\phase7\\task_7.15_recovery\\logits_anchored_v2_calibration_400.npz",
+  "calibration_source_sha256": "9b7651fe88dd5d7a07dfbc39a55870bb981049c978d71ef817f8bf4944da89ad",
+  "n_calib": 400,
   "class_balance": {
-    "real": 1000,
-    "fake": 1000
+    "real": 200,
+    "fake": 200
   },
-  "T": 1.468,
-  "T_raw": 1.468,
+  "T": 1.4670088291168213,
+  "T_raw": 1.4670088291168213,
   "T_star": {
-    "0.01": 0.9782,
-    "0.05": 0.9233,
-    "0.10": 0.8452
+    "0.01": 0.9728275537490845,
+    "0.05": 0.9273644089698792,
+    "0.10": 0.8685132265090942
   },
-  "T_star_default": 0.9233,
+  "T_star_default": 0.9273644089698792,
   "fpr_target": 0.05,
   "fpr_measured": {
     "0.01": 0.01,
@@ -28,10 +29,41 @@
     "0.10": 0.1
   },
   "real_acc": 95.0,
-  "fake_acc": 54.6,
-  "ece_before": 13.71,
-  "ece_after": 10.68,
-  "nll_before": 0.6511,
-  "nll_after": 0.5064,
-  "cv": null
+  "fake_acc": 58.5,
+  "ece_before": 14.29,
+  "ece_after": 11.56,
+  "nll_before": 0.6436,
+  "nll_after": 0.5003,
+  "cv": null,
+  "partition_validation": {
+    "status": "verified_disjoint_ids",
+    "identity_unit": "subset/class/filename; content duplicates not audited",
+    "n_calibration": 400,
+    "n_evaluation": 1600,
+    "overlap": 0,
+    "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+    "evaluation_split_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+    "sample_ids_sha256": "5ae613da819d065b93225b901a7d06d3309ad27e8cdbb9a441cf4df43d7552fb"
+  },
+  "recovery": {
+    "method": "Select frozen calibration IDs from saved logits; no model forward",
+    "partition_validation": {
+      "calibration_split_sha256": "128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c",
+      "evaluation_split_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+      "identity_unit": "subset/class/filename; content duplicates not audited",
+      "n_calibration": 400,
+      "n_evaluation": 1600,
+      "overlap": 0,
+      "sample_ids_sha256": "5ae613da819d065b93225b901a7d06d3309ad27e8cdbb9a441cf4df43d7552fb",
+      "status": "verified_disjoint_ids"
+    },
+    "schema": "calibration_recovery/v1",
+    "scientific_status": "post_hoc_recovery; evaluation previously inspected",
+    "source_checkpoint_sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c",
+    "source_pool": "DATASET/logs/phase7/logits_anchored_v2_clean_calib.npz",
+    "source_pool_evaluation_overlap": 1600,
+    "source_pool_n": 2000,
+    "source_pool_sha256": "7714859ef4f763adf33abbfca6acb313e2a525510fec90302913149eae8a767c",
+    "status": "recovered"
+  }
 }

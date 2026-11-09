@@ -14,6 +14,8 @@ import json
 import os
 import sys
 import time
+import gc
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Dict, List, Optional, Tuple
@@ -27,6 +29,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from src.models import build_model
 from src.models.canonical_loader import load_canonical
 from src.models.unified_fatformer import UnifiedFatFormerXLA
+from tools.package_unified_fatformer import validate_calibration_against_checkpoint, compute_file_sha256
 
 
 def get_default_transform():
@@ -87,7 +90,7 @@ def load_unified_model(
     if not os.path.exists(checkpoint_path):
         raise FileNotFoundError(f"Không tìm thấy checkpoint: {checkpoint_path}")
 
-    raw_payload = torch.load(checkpoint_path, map_location="cpu")
+    raw_payload = torch.load(checkpoint_path, map_location="cpu", weights_only=True, mmap=True)
     metadata = {}
     if isinstance(raw_payload, dict) and "metadata" in raw_payload:
         metadata = raw_payload["metadata"]
@@ -117,13 +120,12 @@ def load_unified_model(
         adapter_block_indices=layout_indices
     )
 
-    backbone, load_report = load_canonical(checkpoint_path, model_args)
-    backbone = backbone.to(device).eval()
-
-    sha256_to_use = ckpt_sha or load_report.get("sha256")
+    sha256_to_use = ckpt_sha or compute_file_sha256(checkpoint_path)
 
     # Nếu người dùng truyền --calibration từ bên ngoài
-    if calibration_path and os.path.exists(calibration_path):
+    if calibration_path and not os.path.isfile(calibration_path):
+        raise FileNotFoundError(calibration_path)
+    if calibration_path:
         with open(calibration_path, "r", encoding="utf-8") as f:
             calib_dict = json.load(f)
 
@@ -142,6 +144,10 @@ def load_unified_model(
             f"  - Calibration CKPT SHA : {calib_ckpt_sha}\n"
             f"Không được dùng calibration của baseline cho checkpoint v2!"
         )
+    validate_calibration_against_checkpoint(calib_dict, sha256_to_use)
+    # The already mapped payload avoids a second multi-GB checkpoint read.
+    backbone, load_report = load_canonical(raw_payload, model_args)
+    backbone = backbone.to(device).eval()
 
     unified = UnifiedFatFormerXLA(
         backbone=backbone,
@@ -158,9 +164,10 @@ def benchmark_latency(
     model: UnifiedFatFormerXLA,
     device: torch.device,
     batch_sizes: List[int] = (1, 8, 32),
-    n_warmup: int = 15,
-    n_steps: int = 40,
-    output_json: Optional[str] = None
+    n_warmup: int = 20,
+    n_steps: int = 200,
+    output_json: Optional[str] = None,
+    checkpoint_path: Optional[str] = None
 ) -> Dict[str, Any]:
     """Đo đạc độ trễ phân tầng: Backbone vs Unified Package, tính overhead Delta T."""
     results = {
@@ -169,19 +176,43 @@ def benchmark_latency(
         "batches": {},
         "overhead_meets_target": None
     }
+    if device.type=='cuda':
+        torch.backends.cuda.matmul.allow_tf32=False
+        torch.backends.cudnn.allow_tf32=False
+    results['allow_tf32'] = False
+    if n_steps < 2 or n_warmup < 1 or any(b <= 0 for b in batch_sizes):
+        raise ValueError("Require positive batches/warmup and at least two timing steps")
+    results["schema"] = "unified_latency/v3"
+    results["gpu_name"] = torch.cuda.get_device_name(device) if device.type == "cuda" else None
+    results["protocol"] = dict(warmup=n_warmup, steps=n_steps,
+                               order="paired, alternating backbone/package first",
+                               input="synthetic normalized tensor, excludes I/O/preprocessing")
+    results["target_gpu"] = "allocated CUDA GPU"
+    results["hardware_protocol"] = "any_compatible_cuda_gpu_with_sufficient_memory"
+    results["original_t4_reference_meets_target"] = None
+    results["requested_batch_sizes"] = list(batch_sizes)
+    if device.type == "cuda":
+        free,total = torch.cuda.mem_get_info(device)
+        results["total_vram_gib"] = total/(1024**3)
+        results["free_vram_gib_at_benchmark_start"] = free/(1024**3)
+    results["timestamp_utc"] = datetime.now(timezone.utc).isoformat()
+    if checkpoint_path:
+        results["checkpoint_sha256"] = compute_file_sha256(checkpoint_path)
 
     print("\n" + "=" * 80)
     print("TIẾN HÀNH ĐO ĐẠC ĐỘ TRỄ SUY LUẬN (LATENCY OVERHEAD BENCHMARK - G7.3)")
     print(f"Thiết bị: {device} | Precision: {results['precision']} | Warmup: {n_warmup} | Steps: {n_steps}")
     print("=" * 80)
 
-    for b in batch_sizes:
+    def measure_batch(b):
+        if device.type == 'cuda':
+            torch.cuda.reset_peak_memory_stats(device)
         x = torch.randn(b, 3, 224, 224, device=device)
         times_backbone = []
         times_package = []
 
         with torch.no_grad():
-            with torch.amp.autocast(device.type, enabled=(device.type == "cuda")):
+            with torch.amp.autocast(device.type, dtype=torch.float16, enabled=(device.type == "cuda")):
                 # 1. Warmup
                 for _ in range(n_warmup):
                     _ = model.backbone(x)
@@ -189,21 +220,18 @@ def benchmark_latency(
                 if device.type == "cuda":
                     torch.cuda.synchronize()
 
-                # 2. Đo Backbone thô
-                for _ in range(n_steps):
-                    t0 = time.perf_counter()
-                    _ = model.backbone(x)
-                    if device.type == "cuda":
-                        torch.cuda.synchronize()
-                    times_backbone.append((time.perf_counter() - t0) * 1000.0)
-
-                # 3. Đo Unified Wrapper (Package)
-                for _ in range(n_steps):
-                    t0 = time.perf_counter()
-                    _ = model(x)
-                    if device.type == "cuda":
-                        torch.cuda.synchronize()
-                    times_package.append((time.perf_counter() - t0) * 1000.0)
+                for step in range(n_steps):
+                    calls = [(model.backbone, times_backbone), (model, times_package)]
+                    if step % 2:
+                        calls.reverse()
+                    for call, timings in calls:
+                        if device.type == "cuda":
+                            torch.cuda.synchronize(device)
+                        t0 = time.perf_counter()
+                        _ = call(x)
+                        if device.type == "cuda":
+                            torch.cuda.synchronize(device)
+                        timings.append((time.perf_counter() - t0) * 1000.0)
 
         bb_median_batch = float(np.median(times_backbone))
         pkg_median_batch = float(np.median(times_package))
@@ -211,7 +239,8 @@ def benchmark_latency(
 
         bb_per_img = bb_median_batch / b
         pkg_per_img = pkg_median_batch / b
-        overhead_per_img = max(0.0, pkg_per_img - bb_per_img)
+        deltas = (np.array(times_package) - np.array(times_backbone)) / b
+        overhead_per_img = float(np.median(deltas))
         throughput = (1000.0 / pkg_median_batch) * b
 
         results["batches"][str(b)] = {
@@ -221,19 +250,46 @@ def benchmark_latency(
             "package_batch_p95_ms": round(pkg_p95_batch, 2),
             "backbone_per_image_ms": round(bb_per_img, 2),
             "package_per_image_ms": round(pkg_per_img, 2),
-            "overhead_delta_ms": round(overhead_per_img, 4),
+            "overhead_delta_ms": overhead_per_img,
             "throughput_fps": round(throughput, 1)
         }
+        results["batches"][str(b)].update(
+            overhead_delta_p95_ms=float(np.percentile(deltas, 95)),
+            backbone_samples_ms=times_backbone, package_samples_ms=times_package,
+            paired_delta_per_image_ms=deltas.tolist())
 
         print(f"• Batch {b:>2}: Package = {pkg_median_batch:>6.2f} ms/batch | {pkg_per_img:>5.2f} ms/ảnh | Overhead = {overhead_per_img:>6.4f} ms | {throughput:>5.1f} FPS")
 
-    # Kiểm tra tiêu chuẩn G7.3: Overhead do wrapper thêm vào < 5.0 ms/ảnh (chỉ nghiệm thu trên GPU CUDA)
-    if device.type == "cuda":
-        b1_overhead = results["batches"].get("1", {}).get("overhead_delta_ms", 999.0)
+        results["batches"][str(b)]["status"] = "measured"
+        if device.type == 'cuda':
+            results["batches"][str(b)]["peak_allocated_gib"] = torch.cuda.max_memory_allocated(device)/(1024**3)
+
+    for b in batch_sizes:
+        oom = False
+        try:
+            measure_batch(b)
+        except torch.OutOfMemoryError:
+            if device.type != 'cuda':
+                raise
+            oom = True
+            results["batches"][str(b)] = dict(batch_size=b, status="out_of_memory",
+                                             reason="Batch does not fit available VRAM; no timing reported")
+            print(f"Batch {b}: out of memory; other batches remain valid", flush=True)
+        if oom:
+            gc.collect()
+            torch.cuda.empty_cache()
+
+    # Hardware requirement revised by the user: evaluate the GPU actually used.
+    results["observed_device_meets_5ms"] = None
+    b1_overhead = results["batches"].get("1", {}).get("overhead_delta_ms")
+    if device.type == "cuda" and b1_overhead is not None and np.isfinite(b1_overhead):
         results["overhead_meets_target"] = bool(b1_overhead < 5.0)
+        results["observed_device_meets_5ms"] = results["overhead_meets_target"]
+        if "T4" in results["gpu_name"]:
+            results["original_t4_reference_meets_target"] = results["overhead_meets_target"]
+        results["notes"] = "Acceptance applies to the reported GPU only; T4 reference is informational."
     else:
-        results["overhead_meets_target"] = None
-        results["notes"] = "Kiểm chuẩn chạy trên CPU; mục tiêu G7.3 (<5.0 ms overhead) chỉ nghiệm thu chính thức trên GPU T4."
+        results["notes"] = "No valid CUDA batch-1 timing; GPU overhead acceptance remains unavailable."
 
     if output_json:
         os.makedirs(os.path.dirname(os.path.abspath(output_json)), exist_ok=True)
@@ -245,6 +301,9 @@ def benchmark_latency(
 
 
 def main():
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="FatFormer-XLA Unified Inference CLI (Task 7.15)")
     parser.add_argument("--checkpoint", type=str, required=True, help="Đường dẫn file .pth (đóng gói hoặc thô)")
     parser.add_argument("--calibration", type=str, default=None, help="Đường dẫn file calibration JSON chính chủ (nếu checkpoint chưa đóng gói)")
@@ -254,8 +313,11 @@ def main():
     parser.add_argument("--batch_size", type=int, default=1, help="Kích thước batch suy luận")
     parser.add_argument("--device", type=str, default="auto", choices=["auto", "cpu", "cuda"])
     parser.add_argument("--benchmark_latency", action="store_true", help="Chạy kiểm chuẩn độ trễ phân tầng (B=1,8,32)")
+    parser.add_argument("--latency_batches", nargs="+", type=int, default=[1,8,32], help="Requested latency batches; CUDA OOM is recorded per batch")
     parser.add_argument("--latency_out", type=str, default=None, help="Đường dẫn lưu file JSON độ trễ")
     args = parser.parse_args()
+    if args.batch_size <= 0:
+        parser.error("--batch_size must be positive")
 
     # Xác định device
     if args.device == "auto":
@@ -274,7 +336,8 @@ def main():
 
     # Nếu có cờ đo latency
     if args.benchmark_latency:
-        benchmark_latency(unified_model, device=device, output_json=args.latency_out)
+        benchmark_latency(unified_model, device=device, batch_sizes=args.latency_batches, output_json=args.latency_out,
+                          checkpoint_path=args.checkpoint)
 
     if not args.images:
         if not args.benchmark_latency:

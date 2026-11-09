@@ -36,6 +36,7 @@ from sklearn.model_selection import StratifiedKFold
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
+from tools.calibration_data import validate_partitions
 
 if hasattr(sys.stdout, "reconfigure"):
     try:
@@ -118,7 +119,7 @@ def compute_ece(probs_fake: np.ndarray, targets: np.ndarray, n_bins: int = 10) -
 def compute_nll(probs_fake: np.ndarray, targets: np.ndarray) -> float:
     """Tính Negative Log-Likelihood (Log-Loss)."""
     eps = 1e-12
-    p_clipped = np.clip(probs_fake, eps, 1.0 - eps)
+    p_clipped = np.clip(np.asarray(probs_fake,dtype=np.float64), eps, 1.0 - eps)
     return float(-np.mean(targets * np.log(p_clipped) + (1.0 - targets) * np.log(1.0 - p_clipped)))
 
 
@@ -140,19 +141,17 @@ def fit_thresholds_by_fpr(
 
     for f_target in fpr_targets:
         # Ngưỡng phân vị đảm bảo tỷ lệ báo oan <= f_target
-        thr = float(np.quantile(p_real, 1.0 - f_target))
+        # Scores and comparisons use float32 in deployment. Reject ties at the
+        # boundary rather than silently allowing target + 0.5 percentage points.
+        ordered = np.sort(np.asarray(p_real, dtype=np.float32))
+        allowed = int(np.floor(f_target * len(ordered)))
+        boundary = ordered[len(ordered) - allowed - 1]
+        thr = float(np.nextafter(boundary, np.float32(np.inf)))
         # Kiểm tra lại số thực
         actual_fpr = float((p_real >= thr).mean())
 
-        # Nếu do làm tròn mà actual_fpr vượt f_target quá 0.5 pp, nhích ngưỡng lên
-        if actual_fpr > f_target + 0.005:
-            sorted_real = np.sort(p_real)
-            cutoff_idx = int(np.floor((1.0 - f_target) * len(sorted_real)))
-            thr = float(sorted_real[min(cutoff_idx, len(sorted_real) - 1)])
-            actual_fpr = float((p_real >= thr).mean())
-
         k_str = f"{f_target:.2f}"
-        t_stars[k_str] = round(thr, 4)
+        t_stars[k_str] = thr
         fpr_measured[k_str] = round(actual_fpr, 4)
 
     return t_stars, fpr_measured
@@ -493,11 +492,21 @@ def write_measured_calibration_summary(output_dir: str) -> str:
         "| :--- | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
         *rows,
         "",
-        "> `T*` được fit trên calibration split độc lập; không dùng evaluation split để chọn ngưỡng.",
+        "> Kiểm tra partition_validation trong từng JSON để xác nhận phân vùng. Kết quả sửa sau hậu kiểm được ghi rõ trong recovery; không coi là phép thử mù mới.",
     ]
     with open(summary_path, "w", encoding="utf-8") as handle:
         handle.write("\n".join(lines) + "\n")
     return summary_path
+
+
+def calibration_probabilities(logits, temperature, device="cpu", batch_size=32):
+    """Float32 score computation on the same backend/batch as deployed softmax."""
+    device = torch.device(device)
+    if batch_size < 1 or (device.type=='cuda' and not torch.cuda.is_available()):
+        raise ValueError('Requested calibration scoring backend is unavailable')
+    with torch.no_grad():
+        return np.concatenate([F.softmax(logits[i:i+batch_size].to(device).float()/temperature,dim=-1)[:,1].cpu().numpy()
+                               for i in range(0,len(logits),batch_size)])
 
 
 def run_measured_calibration(
@@ -507,30 +516,63 @@ def run_measured_calibration(
     checkpoint: str = "",
     cv_folds: int = 0,
     fpr_target: float = 0.05,
+    calibration_split: Optional[str] = None,
+    evaluation_split: Optional[str] = None,
+    probability_device: str = "cpu",
 ) -> Dict[str, Any]:
     """Fit calibration from measured logits stored as ``logits`` and ``targets``.
 
     The NPZ must come from a held-out calibration split. Synthetic inputs are
     intentionally accepted only through the separate ``--test_dummy`` path.
     """
+    provenance = {}
+    checkpoint_sha = _sha256_file(checkpoint) if checkpoint else None
     with np.load(logits_npz, allow_pickle=False) as payload:
         if "logits" not in payload or "targets" not in payload:
             raise ValueError("NPZ phải có đúng hai mảng bắt buộc: logits và targets.")
         if "split" not in payload or str(payload["split"]) != "calibration":
             raise ValueError("Nghiệm thu measured chỉ nhận NPZ mang split=calibration.")
+        if "evidence_level" in payload and str(payload["evidence_level"]) != "measured":
+            raise ValueError("Synthetic/unverified logits cannot produce measured calibration")
+        if "checkpoint_sha256" in payload:
+            inherited_sha = str(payload["checkpoint_sha256"])
+            if len(inherited_sha) != 64 or any(c not in "0123456789abcdef" for c in inherited_sha):
+                raise ValueError("Invalid logits checkpoint SHA-256")
+            if checkpoint_sha and inherited_sha != checkpoint_sha:
+                raise ValueError("Logits checkpoint SHA-256 disagrees with the supplied checkpoint")
+            checkpoint_sha = checkpoint_sha or inherited_sha
+            if not calibration_split or not evaluation_split:
+                raise ValueError("Checkpoint-bound logits require calibration_split and evaluation_split")
+        if bool(calibration_split) != bool(evaluation_split):
+            raise ValueError("Supply both calibration_split and evaluation_split")
+        if calibration_split:
+            provenance["partition_validation"] = validate_partitions(
+                payload["sample_ids"], payload["targets"], calibration_split, evaluation_split)
+        if "recovery" in payload:
+            provenance["recovery"] = json.loads(str(payload["recovery"]))
+        if "precision" in payload:
+            provenance['inference_precision'] = str(payload['precision'])
+            provenance['extraction_batch_size'] = int(payload['inference_batch_size'])
+            provenance['extraction_torch_version'] = str(payload['torch_version'])
         logits = torch.as_tensor(payload["logits"].copy(), dtype=torch.float32)
-        targets = torch.as_tensor(payload["targets"].copy(), dtype=torch.long)
+        raw_targets = payload["targets"].copy()
+        if raw_targets.dtype.kind not in "iu":
+            raise ValueError("targets must have integer dtype")
+        targets = torch.as_tensor(raw_targets, dtype=torch.long)
     if logits.ndim != 2 or logits.shape[1] != 2:
         raise ValueError(f"logits phải có shape [N,2], nhận {tuple(logits.shape)}")
     if targets.ndim != 1 or targets.shape[0] != logits.shape[0]:
         raise ValueError("targets phải có shape [N] và cùng số mẫu với logits.")
     if logits.shape[0] < 20 or set(targets.tolist()) != {0, 1}:
         raise ValueError("Tập calibration phải có >=20 mẫu và đủ hai lớp 0/1.")
+    if not torch.isfinite(logits).all():
+        raise ValueError("Logits must be finite")
 
     calibrator = ModelWithTemperature(init_temp=1.0)
     opt_t, raw_t = calibrator.fit(logits, targets)
-    probs_before = F.softmax(logits, dim=-1)[:, 1].detach().numpy()
-    probs_after = F.softmax(logits / opt_t, dim=-1)[:, 1].detach().numpy()
+    scoring_batch = provenance.get('extraction_batch_size',32)
+    probs_before = calibration_probabilities(logits,1.,probability_device,scoring_batch)
+    probs_after = calibration_probabilities(logits,opt_t,probability_device,scoring_batch)
     targets_np = targets.numpy()
     if not 0.0 < fpr_target < 1.0:
         raise ValueError(f"fpr_target phải nằm trong (0,1), nhận {fpr_target}")
@@ -553,17 +595,20 @@ def run_measured_calibration(
         "model": model_name,
         "checkpoint": {
             "path": checkpoint or None,
-            "sha256": _sha256_file(checkpoint) if checkpoint and os.path.isfile(checkpoint) else None,
+            "sha256": checkpoint_sha,
+            "verification": "hashed_source_file" if checkpoint else "inherited_from_measured_logits; original source file not rehashed",
         },
         "calibration_source": os.path.abspath(logits_npz),
         "calibration_source_sha256": _sha256_file(logits_npz),
         "n_calib": int(logits.shape[0]),
         "class_balance": {"real": int(real_mask.sum()), "fake": int(fake_mask.sum())},
-        "T": round(opt_t, 4),
-        "T_raw": round(raw_t, 4),
+        "T": opt_t,
+        "T_raw": raw_t,
         "T_star": t_stars,
         "T_star_default": threshold,
         "fpr_target": fpr_target,
+        "probability_device": probability_device,
+        "probability_batch_size": scoring_batch,
         "fpr_measured": measured,
         "real_acc": round(float((preds[real_mask] == 0).mean() * 100.0), 2),
         "fake_acc": round(float((preds[fake_mask] == 1).mean() * 100.0), 2),
@@ -573,6 +618,7 @@ def run_measured_calibration(
         "nll_after": round(compute_nll(probs_after, targets_np), 4),
         "cv": run_5fold_cross_validation(logits, targets, fpr_target=fpr_target)
         if cv_folds == 5 else None,
+        **provenance,
     }
     output_json = os.path.join(output_dir, f"{model_name}.json")
     with open(output_json, "w", encoding="utf-8") as handle:
@@ -596,6 +642,9 @@ def main():
     parser.add_argument("--output_dir", type=str, default="DATASET/logs/phase7/calibration", help="Thư mục xuất file JSON và biểu đồ")
     parser.add_argument("--fpr_target", type=float, default=0.05, help="Mức khống chế báo oan FPR mục tiêu (mặc định 0.05)")
     parser.add_argument("--cv_folds", type=int, default=0, help="Số fold Cross-Validation nếu không có val_calib tách rời")
+    parser.add_argument("--calibration_split", help="Frozen calibration partition")
+    parser.add_argument("--evaluation_split", help="Frozen evaluation partition")
+    parser.add_argument("--probability_device", choices=['cpu','cuda'], default='cpu', help="Float32 softmax backend used to fit thresholds")
     args = parser.parse_args()
 
     if args.test_dummy:
@@ -607,6 +656,8 @@ def main():
             args.logits_npz, args.output_dir, args.model_name,
             checkpoint=args.checkpoint, cv_folds=args.cv_folds,
             fpr_target=args.fpr_target,
+            calibration_split=args.calibration_split, evaluation_split=args.evaluation_split,
+            probability_device=args.probability_device,
         )
     else:
         parser.error("Nghiệm thu thật yêu cầu --logits_npz; dummy phải bật rõ --test_dummy.")

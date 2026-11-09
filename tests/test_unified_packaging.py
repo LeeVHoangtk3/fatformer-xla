@@ -68,7 +68,7 @@ class _DummyToyBackbone(nn.Module):
     def forward(self, x):
         # x: [B, 3, 224, 224] -> trả về logits [B, 2]
         b = x.shape[0]
-        return torch.randn(b, 2)
+        return self.fc(x.mean(dim=(1, 2, 3))[:, None].expand(b, 32))
 
 
 def _install_dummy_builder(monkeypatch):
@@ -105,6 +105,12 @@ def dummy_checkpoint_and_calib():
             "T": 1.5000,
             "T_star": 0.8500
         }
+        calib_data.update(n_calib=20, calibration_source_sha256="a" * 64,
+                          partition_validation={"status": "verified_disjoint_ids", "overlap": 0,
+                                                "n_calibration": 20, "n_evaluation": 4,
+                                                "calibration_split_sha256": "b" * 64,
+                                                "evaluation_split_sha256": "c" * 64,
+                                                "sample_ids_sha256": "d" * 64})
         with open(calib_path, "w", encoding="utf-8") as f:
             json.dump(calib_data, f)
 
@@ -257,6 +263,10 @@ def test_load_and_predict_packaged_model_end_to_end(monkeypatch, dummy_checkpoin
     assert "threshold" in outputs
     assert outputs["prob_fake"].shape == (2,)
     assert outputs["label"].shape == (2,)
+    original = _DummyToyBackbone([7, 15, 23])
+    original.load_state_dict(info["state_dict"])
+    expected = torch.softmax(original(x) / meta["calibration"]["T"], -1)[:, 1]
+    torch.testing.assert_close(outputs["prob_fake"], expected)
 
 
 def test_benchmark_latency_cpu_behavior(monkeypatch, dummy_checkpoint_and_calib):
@@ -271,10 +281,14 @@ def test_benchmark_latency_cpu_behavior(monkeypatch, dummy_checkpoint_and_calib)
     )
 
     model, _ = load_unified_model(info["out_pkg_path"], device="cpu")
+    ticks = iter([0, .002, .010, .011, .020, .021, .030, .032])
+    monkeypatch.setattr('tools.infer_unified.time', SimpleNamespace(perf_counter=lambda: next(ticks)))
     res = benchmark_latency(model, device=torch.device("cpu"), batch_sizes=[1], n_warmup=1, n_steps=2)
 
     assert res["overhead_meets_target"] is None
     assert "notes" in res
+    assert res['batches']['1']['overhead_delta_ms'] < 0
+    assert len(res['batches']['1']['paired_delta_per_image_ms']) == 2
 
 
 def test_extract_calibration_logits_dummy(tmp_path):

@@ -1,0 +1,14 @@
+{
+  "contract": "phase7-corrected-20261109-v2",
+  "status": "passed_local_export_validation",
+  "tested_bundle_sha256": "a73ac4845f631b901395236c3401ed26db1247d860b86813d6482c32118db082",
+  "bundle_bytes": 1931429,
+  "test_stdout": "..................................                                       [100%]\n============================== warnings summary ===============================\ntests/test_phase7_corrected.py::test_actual_predict_is_captured_once_and_metrics_are_finite\ntests/test_unified_packaging.py::test_load_and_predict_packaged_model_end_to_end\ntests/test_unified_packaging.py::test_benchmark_latency_cpu_behavior\n  D:\\GIT REPO\\.nam4\\fatformer-xla\\scratch\\exported-phase7-v2-0b4f8b92b360490d868a28e3698f77de\\src\\models\\unified_fatformer.py:165: RuntimeWarning: [WARN] router disabled: no validated held-out win; calibrated fixed fallback\n    warnings.warn(\"[WARN] router disabled: no validated held-out win; calibrated fixed fallback\", RuntimeWarning)\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n34 passed, 3 warnings in 7.81s\n",
+  "export_git_commit": "unknown_commit",
+  "original_notebooks_unchanged": {
+    "notebooks\\task\\task_7.14\\task_7.14_locked_benchmark_colab.ipynb": "0b24fd2b2005b92a5680269838cdf5444d2ca5b19e686578beee615201585f23",
+    "notebooks\\task\\task_7.15\\task_7.15_unified_packaging_colab.ipynb": "8b6daba36b85c6624f091928d78409a9aca941d183350e327d9a344b1e86e107"
+  },
+  "gpu_run_performed": false,
+  "hardware_protocol": "any compatible CUDA GPU with sufficient memory; tests simulate OOM only"
+}

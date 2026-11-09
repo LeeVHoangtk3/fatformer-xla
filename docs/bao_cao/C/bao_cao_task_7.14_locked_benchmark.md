@@ -62,7 +62,7 @@ Toàn bộ các con số trong báo cáo này được trích xuất trực ti�
 
 ## 3. KẾT QUẢ KIỂM CHUẨN 18 TẬP IN-DISTRIBUTION (82.003 ẢNH)
 
-Phép đo quét qua toàn bộ 82.003 ảnh phòng lab tiêu chuẩn của bài báo gốc chứng minh mô hình giữ vững năng lực trên miền dữ liệu huấn luyện, không bị quên thảm khốc (Catastrophic Forgetting).
+Phép đo trên 82.003 ảnh ghi nhận năng lực in-distribution tại operating point baseline tham chiếu. Chưa có đối chiếu baseline cùng protocol đủ để kết luận không xảy ra quên thảm khốc.
 
 ### 3.1. Tổng Quan Chỉ Số In-Distribution
 * **Tổng số lượng mẫu**: 82.003 ảnh.
@@ -147,7 +147,7 @@ Kiểm chuẩn ngoại miền được thực hiện trên phân vùng độc l�
 2. **Giá trị của Điều khoản kết quả âm (§II.3)**:
    - Điều khoản kết quả âm ghi nhận tính trung thực của kết quả thực nghiệm, nhưng **không thay thế cho việc kiểm chứng phương pháp luận**.
    - Việc tách biệt calibration của baseline và calibration riêng của v2 là bắt buộc để đảm bảo tính khách quan khoa học.
-3. **Ứng viên cho bước đóng gói**: Checkpoint `fatformer_anchored_v2_best.pth` là ứng viên triển vọng nhất hiện có của Phase 7 nhờ giữ vững Real ACC >90% trên 82k ảnh. Tuy nhiên, việc khẳng định tính tối ưu Pareto và mức độ tổng quát toàn diện đòi hỏi phải đối chiếu trực tiếp với các biến thể khác trên cùng tập kiểm thử trong các nghiên cứu tiếp theo.
+3. **Ứng viên cho bước đóng gói**: Checkpoint `fatformer_anchored_v2_best.pth` đang được đóng gói; chưa có so sánh đủ để xếp hạng tốt nhất hoặc Pareto tối ưu. Task 7.15 đã khôi phục calibration đúng 400 ảnh và đóng gói lại sau hậu kiểm. Run 7.14 này vẫn giữ nguyên operating point baseline tham chiếu; kết quả không bị thay bằng số chấm sau sửa calibration.
 
 ---
 

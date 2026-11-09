@@ -1,0 +1,72 @@
+{
+  "schema": "task_7.15_artifact_manifest/v1",
+  "status": "recovered_package; G7.3 pending",
+  "artifacts": [
+    {
+      "path": "DATASET/checkpoints/phase7/unified_fatformer_v2.pth",
+      "sha256": "5d8961d06c0490c70ef7b5463ba4acad172b42ffeda909565813ef53aed66306",
+      "bytes": 1972729775
+    },
+    {
+      "path": "DATASET/checkpoints/phase7/metadata.json",
+      "sha256": "8f3a62ae8e8c11db88ec202a98d2dc8e1cc10c65334f15b48ea07fda7a7d959c",
+      "bytes": 4752
+    },
+    {
+      "path": "DATASET/logs/phase7/calibration/anchored_v2.json",
+      "sha256": "7d9a41a1ab626e648d672d95d11394133d0585a2526a98870b4d4f8b413674eb",
+      "bytes": 2781
+    },
+    {
+      "path": "DATASET/logs/phase7/calibration/anchored_v2_reliability.png",
+      "sha256": "e746624c1c0ae2a702a95329dca6607248da2f83b84e02e78d731b0c264191b8",
+      "bytes": 96192
+    },
+    {
+      "path": "DATASET/logs/phase7/calibration/summary.md",
+      "sha256": "723c206113f3f7665b604c8910041e20a5ea34c49f199d74ee95cf4cb7047218",
+      "bytes": 900
+    },
+    {
+      "path": "DATASET/logs/phase7/latency_phase7.json",
+      "sha256": "e7fe4b5610a5a714f66f220dc1d30765f2f992df9da35bf16f1a79fad0978012",
+      "bytes": 1213
+    },
+    {
+      "path": "DATASET\\logs\\phase7\\task_7.15_recovery\\logits_anchored_v2_calibration_400.npz",
+      "sha256": "9b7651fe88dd5d7a07dfbc39a55870bb981049c978d71ef817f8bf4944da89ad",
+      "bytes": 11448
+    },
+    {
+      "path": "DATASET\\logs\\phase7\\task_7.15_recovery\\partition_audit.json",
+      "sha256": "cc7b370fa0a6689846394dee5e312b1f0ae001f23b84b55c58e72425c0e680dc",
+      "bytes": 1283
+    },
+    {
+      "path": "DATASET\\logs\\phase7\\task_7.15_recovery\\package_verification.json",
+      "sha256": "86ee1516ec2ed2b52ff46de81498fbcbd420692752a28f1f17b5547e27920169",
+      "bytes": 601
+    }
+  ],
+  "code_sha256": {
+    "tools/calibration_data.py": "da05faafa06d6efee6c2d16a8098f25bf8216555cff77d44501fd1b54da9fe8c",
+    "tools/recover_calibration_split.py": "43c93ea711b2e914b98e797f503af5f9df9ca1b3ad18cea05eaadbdcd7d8402b",
+    "tools/calibrate_and_select.py": "23fc73f7bc4dc7d555cc10aad37a3761fe6f8ca25adab335e1e287970438f159",
+    "tools/extract_calibration_logits.py": "dcf72e9982e47f204555d53dd0e6bd23342cfcbf1d1b52e228910884cae44629",
+    "tools/package_unified_fatformer.py": "80915512787df9d84e3a97e9684c378b3ec70fa7f7178455d3cc27823c8d7d7a",
+    "tools/infer_unified.py": "c2ba97090cb6a7ecf6eddc4dbd4be161994341451026cc055d8f1b97b527a8b5",
+    "tools/verify_unified_package.py": "4314d6f8d0fc4f27fef37648a56df6ac9203e84901b583330c49ee2e0fb49dc2",
+    "tools/run_locked_benchmark_phase7.py": "3cd2f49e5030161504579ef4837039f0a962f3bc005c316c4dfaa726286ad3b1"
+  },
+  "notebooks_preserved": {
+    "notebooks\\task\\task_7.14\\task_7.14_locked_benchmark_colab.ipynb": "cc431f24ab6876fb4f19378161365a3b1a853f76606fd75f2ba0a747e068d40e",
+    "notebooks\\task\\task_7.15\\task_7.15_unified_packaging_colab.ipynb": "3cc61470d57cc510f5686f8cba86b4ec0f9969b50ae0e7b1be5b95bf8eb6e6ba"
+  },
+  "limitations": [
+    "Original training checkpoint hash inherited, source file on Drive not rehashed.",
+    "One synthetic CPU smoke passed; 20 real-image acceptance pending.",
+    "Condition comparison and T4 measurement pending.",
+    "Recovered calibration excludes evaluation by frozen IDs; post-hoc recovery, not a fresh blind test."
+  ],
+  "hardware_requirement_current": "any compatible CUDA GPU with sufficient memory; user clarification 2026-11-09"
+}

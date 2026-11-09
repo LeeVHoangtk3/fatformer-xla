@@ -1,0 +1,16 @@
+{
+  "schema": "unified_package_verification/v1",
+  "checkpoint_sha256": "5d8961d06c0490c70ef7b5463ba4acad172b42ffeda909565813ef53aed66306",
+  "reference_sha256": "3d0c880ff57e8dfcb0024b0c02952db2f879b95ca4f95d4d18ad32dbfe2927a9",
+  "n_tensors": 1200,
+  "tensors_equal": true,
+  "prediction_status": "passed_synthetic_smoke",
+  "real_image_acceptance": false,
+  "g73_status": "pending_condition_comparison_and_T4",
+  "n_images": 1,
+  "input_kind": "synthetic",
+  "max_probability_error": 0.0,
+  "device": "cpu",
+  "precision": "FP32",
+  "standalone_clip_path": "NON_EXISTENT_CLIP.pt"
+}

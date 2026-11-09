@@ -260,9 +260,10 @@ def evaluate_master_gates(
     fake_at_real90_clean = float(cfe_clean_metrics.get("fake_at_real90") or 0.0)
     auc_q30 = float(cfe_q30_metrics.get("auc") or 0.0)
     fake_at_real90_q30 = float(cfe_q30_metrics.get("fake_at_real90") or 0.0)
-    ece_raw = float(cfe_q30_metrics.get("ece") or 0.0)
+    ece_raw = cfe_q30_metrics.get("ece")
     # Chuẩn hóa ECE (nếu evaluator xuất 10.79% -> 0.1079)
-    ece_val = ece_raw / 100.0 if ece_raw > 1.0 else ece_raw
+    # eval v3 stores ECE in percent, even when its value is below 1%.
+    ece_val = float(ece_raw) / 100.0 if ece_raw is not None else None
 
     # Tìm worst-subset fake acc trên CFE Clean (chỉ xét các subset có mẫu fake hợp lệ)
     valid_fake_accs = [
@@ -283,13 +284,18 @@ def evaluate_master_gates(
     c4 = fake_at_real90_q30 >= g72_cfg.get("fake_at_real90_q30_min", 40.0)
     c5 = macro_acc_indist >= g72_cfg.get("macro_acc_indist_min", 90.0)
     c6 = real_acc_indist >= g72_cfg.get("real_acc_indist_min", 90.0)
-    c7 = worst_subset_fake_acc >= g72_cfg.get("worst_subset_fake_acc_min", 45.0)
-    c8 = ece_val <= g72_cfg.get("ece_post_calib_max", 0.08)
+    expected_subsets = {"1_commercial", "2_latent_diffusion", "3_pixel_diffusion",
+                        "4_modern_gans", "5_other_autoregressive"}
+    subset_complete = (set(cfe_subsets_clean) == expected_subsets
+                       and len(valid_fake_accs) == len(expected_subsets))
+    c7 = subset_complete and worst_subset_fake_acc >= g72_cfg.get("worst_subset_fake_acc_min", 45.0)
+    c8 = ece_val is not None and ece_val <= g72_cfg.get("ece_post_calib_max", 0.08)
 
     g72_pass = bool(c1 and c2 and c3 and c4 and c5 and c6 and c7 and c8)
 
     # G7.3 tiêu chuẩn (Không viết cứng pass=True khi chưa đo overhead và đối đầu delta)
-    lat_pass = gpu_latency_ms < g73_cfg.get("latency_gpu_ms_max", 5.0) if gpu_latency_ms > 0 else False
+    # This runner times the bare backbone, not additional wrapper latency on the allocated GPU.
+    lat_pass = False
     delta_pass = False  # Chưa đo đối đầu trực tiếp trên cùng tập dữ liệu
     g73_pass = bool(lat_pass and delta_pass and g73_cfg.get("single_checkpoint_forward", True))
 
@@ -304,16 +310,16 @@ def evaluate_master_gates(
                 "CFE_Q30_Fake@Real90": {"value": fake_at_real90_q30, "target": ">=40.0%", "pass": bool(c4)},
                 "InDist_Macro_ACC": {"value": macro_acc_indist, "target": ">=90.0%", "pass": bool(c5)},
                 "InDist_Real_ACC": {"value": real_acc_indist, "target": ">=90.0% (cứng)", "pass": bool(c6)},
-                "Worst_Subset_Fake_ACC": {"value": worst_subset_fake_acc, "target": ">=45.0%", "pass": bool(c7)},
-                "ECE_Post_Calibration": {"value": round(ece_val, 4), "target": "<=0.08", "pass": bool(c8)}
+                "Worst_Subset_Fake_ACC": {"value": worst_subset_fake_acc, "target": ">=45.0%", "pass": bool(c7), "complete": subset_complete},
+                "ECE_Post_Calibration": {"value": round(ece_val, 4) if ece_val is not None else None, "target": "<=0.08", "pass": bool(c8)}
             }
         },
         "G7.3": {
             "pass": g73_pass,
             "verdict": "PASS" if g73_pass else "CHƯA ĐẠT (Độ trễ overhead và delta chưa được kiểm chứng đầy đủ)",
             "criteria": {
-                "Single_Checkpoint_Forward": {"value": True, "target": "True", "pass": True},
-                "GPU_Latency_ms_per_image": {"value": round(gpu_latency_ms, 2) if gpu_latency_ms > 0 else "Chưa đo GPU", "target": "<5.0 ms", "pass": bool(lat_pass)},
+                "Single_Checkpoint_Forward": {"value": None, "target": "one packaged checkpoint/forward", "pass": False, "status": "pending_package_verification"},
+                "GPU_Latency_ms_per_image": {"value": None, "target": "wrapper overhead <5.0 ms on the reported CUDA GPU", "pass": False, "status": "pending", "backbone_total_ms": gpu_latency_ms if gpu_latency_ms > 0 else None},
                 "Delta_vs_Best_Condition": {"value": "Chưa đánh giá (cần đối đầu trực tiếp)", "target": "<=1.5 pp", "pass": False}
             }
         }
@@ -373,6 +379,11 @@ def main():
             shutil.copy2(src_locked, locked_cfg_path)
     with open(locked_cfg_path, "r", encoding="utf-8") as f:
         locked_cfg = json.load(f)
+    with open(args.calibration, "r", encoding="utf-8") as f:
+        calibration_record = json.load(f)
+    actual_threshold = calibration_record.get("T_star_default", calibration_record.get("T_star"))
+    if isinstance(actual_threshold, dict):
+        actual_threshold = actual_threshold["0.05"]
 
     # 2. ĐO LATENCY GPU ĐỂ NGHIỆM THU G7.3
     gpu_latency_ms = 0.0
@@ -504,8 +515,11 @@ def main():
         },
         "calibration": {
             "source": args.calibration,
-            "T": locked_cfg.get("calibration", {}).get("T", 1.6402),
-            "T_star": locked_cfg.get("calibration", {}).get("T_star_default", 0.9127)
+            "sha256": sha256_file(args.calibration),
+            "T": calibration_record["T"],
+            "T_star": actual_threshold,
+            "calibration_checkpoint_sha256": calibration_record.get("checkpoint", {}).get("sha256"),
+            "mode": "checkpoint_calibrated" if calibration_record.get("checkpoint", {}).get("sha256") == ckpt_sha else "frozen_reference_operating_point"
         },
         "gates": master_gates,
         "indist_summary": indist_data.get("indist", {}),
@@ -528,7 +542,7 @@ def main():
 > **Mã nhiệm vụ**: Task 7.14 (Phase 7 — D9–D10)  
 > **Phiên bản báo cáo**: `report_schema: v3` (Evidence: {final_payload['evidence_level']})  
 > **Đối tượng chấm**: `{os.path.basename(args.checkpoint)}` (SHA-256: `{ckpt_sha[:16]}...`)  
-> **Chế độ suy luận**: Calibrated Fixed Fallback ($T = {final_payload['calibration']['T']}$, $T^* = {final_payload['calibration']['T_star']}$)  
+> **Operating point**: {final_payload['calibration']['mode']} ($T = {final_payload['calibration']['T']}$, $T^* = {final_payload['calibration']['T_star']}$)
 
 ---
 
@@ -550,7 +564,7 @@ def main():
 
 ### 🚧 Cổng G7.3 — Hợp Nhất & Hiệu Năng Vận Hành
 - Phán quyết: **{master_gates['G7.3']['verdict']}**
-- **Độ trễ suy luận trên GPU**: `{gpu_latency_ms:.2f} ms/ảnh` (Mục tiêu: $< 5.0$ ms/ảnh)
+- **Độ trễ backbone trên GPU**: `{gpu_latency_ms:.2f} ms/ảnh`; chưa đo overhead package trên GPU thực tế, không dùng số này để chấm mục tiêu độ trễ thêm.
 - **Kiến trúc mô hình**: Một checkpoint duy nhất, một lần `forward()`, không cần metadata điều kiện ngoại vi.
 
 ---
@@ -576,16 +590,16 @@ def main():
 ---
 
 ## 4. Ba Câu Kết Luận Chung Cuộc
-1. **Mô hình có tốt hơn Baseline có ý nghĩa thống kê không?** Mô hình giữ vững độ chính xác xuất sắc trên miền ảnh sạch in-distribution phòng lab (Macro ACC 90.46%, Real ACC 90.67%) và kiểm soát tỷ lệ báo oan tốt dưới ngưỡng hiệu chuẩn tham chiếu baseline.
+1. **Mô hình có tốt hơn Baseline có ý nghĩa thống kê không?** Chưa có đối chiếu paired cùng protocol đủ để kết luận. Số đo hiện tại và operating point được ghi ở trên; không suy diễn ưu thế thống kê từ một lần chạy.
 2. **Miền dữ liệu nào còn yếu nhất?** Nén JPEG sâu chất lượng thấp ($Q=30$) và các mô hình sinh hình ảnh khuếch tán mới lạ ngoài miền huấn luyện (OOD) vẫn là thử thách lớn nhất.
-3. **Có đạt chuẩn G7.2 / G7.3 không?** Cổng G7.2 tuân thủ chặt chẽ nguyên tắc liêm chính học thuật (Điều khoản kết quả âm: ghi nhận trung thực các chỉ tiêu chưa đạt). Cổng G7.3 đạt về cấu trúc suy luận một lượt; độ trễ overhead và chênh lệch delta được chuyển giao kiểm chứng trong Task 7.15.
+3. **Có đạt chuẩn G7.2 / G7.3 không?** Xem từng tiêu chí và phán quyết trong JSON. G7.3 còn chờ kiểm chứng package, overhead trên GPU thực tế và delta theo điều kiện. Điều khoản kết quả âm không thay cho kiểm chứng phương pháp.
 """
     with open(final_report_md, "w", encoding="utf-8") as f:
         f.write(md_content)
     print(f"[✓] Đã xuất báo cáo Markdown hoàn chỉnh ra: {final_report_md}")
 
     print("\n" + "=" * 96)
-    print("HOÀN THÀNH TOÀN DIỆN MASTER RUNNER TASK 7.14 (ZERO-DEFECT BENCHMARK)!")
+    print("ĐÃ XUẤT BÁO CÁO TASK 7.14; XEM TỪNG GATE VÀ CÁC KIỂM CHỨNG CÒN THIẾU.")
     print("=" * 96)
 
 

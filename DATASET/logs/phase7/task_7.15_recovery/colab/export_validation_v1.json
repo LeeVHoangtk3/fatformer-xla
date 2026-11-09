@@ -1,0 +1,15 @@
+{
+  "status": "passed_local_export_validation",
+  "preflight_stdout": "{\"contract\": \"phase7-corrected-20261109-v1\", \"sha256\": \"273c7681020b0a690945943f696fb670e054a3b8466456fdf872b087c981d482\", \"n_verified_files\": 138, \"source\": {\"base_git_commit\": \"9d798f5e9459723331f3a53609f7af830ae25312\", \"working_tree_dirty\": true, \"method\": \"snapshot of actual working files; not GitHub HEAD\"}}\n{\"status\": \"verified_disjoint_ids\", \"identity_unit\": \"subset/class/filename; content duplicates not audited\", \"n_calibration\": 400, \"n_evaluation\": 1600, \"overlap\": 0, \"calibration_split_sha256\": \"128176bd4f914ce188be05ef964e05a81802cbf41b140bc99200a4d59646b70c\", \"evaluation_split_sha256\": \"ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9\", \"sample_ids_sha256\": \"5ae613da819d065b93225b901a7d06d3309ad27e8cdbb9a441cf4df43d7552fb\"}\n",
+  "test_stdout": "...........                                                              [100%]\n============================== warnings summary ===============================\ntests/test_phase7_corrected.py::test_actual_predict_is_captured_once_and_metrics_are_finite\n  D:\\GIT REPO\\.nam4\\fatformer-xla\\scratch\\exported-phase7-5865e2df1c3d44d1b4e305724d66fe38\\src\\models\\unified_fatformer.py:165: RuntimeWarning: [WARN] router disabled: no validated held-out win; calibrated fixed fallback\n    warnings.warn(\"[WARN] router disabled: no validated held-out win; calibrated fixed fallback\", RuntimeWarning)\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n11 passed, 1 warning in 6.22s\n",
+  "gpu_run_performed": false,
+  "exported_root_has_git": false,
+  "git_search_disabled_above_export": true,
+  "actual_git_commit_probe": "unknown_commit",
+  "tested_bundle_sha256": "3e0d438a2c842cc10a97d178c21cbb984a17811128ec5f71e9fc87af1b9ea874",
+  "bundle_bytes": 1927940,
+  "original_notebooks_unchanged": {
+    "notebooks\\task\\task_7.14\\task_7.14_locked_benchmark_colab.ipynb": "0b24fd2b2005b92a5680269838cdf5444d2ca5b19e686578beee615201585f23",
+    "notebooks\\task\\task_7.15\\task_7.15_unified_packaging_colab.ipynb": "8b6daba36b85c6624f091928d78409a9aca941d183350e327d9a344b1e86e107"
+  }
+}

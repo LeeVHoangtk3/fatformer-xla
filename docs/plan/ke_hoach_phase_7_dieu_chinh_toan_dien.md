@@ -150,7 +150,9 @@ Chấm tại **điểm vận hành FPR = 10%** trên CFE clean (2.000 ảnh):
 #### 🚧 G7.3 — Cổng hợp nhất (Ngày 11)
 - [ ] **Một** file `.pth` + `router_params.json`; một `forward(x) → P(fake), ŷ`; không cờ điều kiện.
 - [ ] Trong **1,5 pp** so với kết quả tốt nhất theo từng điều kiện (clean và Q30) ⇒ không hy sinh chế độ nào.
-- [ ] Độ trễ thêm < 5 ms/ảnh trên T4; không cần metadata ngoài ảnh.
+- [ ] Độ trễ thêm < 5 ms/ảnh trên GPU CUDA thực tế có đủ dung lượng; báo cáo GPU/VRAM/batch/precision, không cần metadata ngoài ảnh.
+
+> Cập nhật phần cứng theo yêu cầu người dùng ngày 09/11/2026: không bắt buộc T4. T4 trong phiên bản kế hoạch ban đầu là tham chiếu lịch sử; số đo trên GPU khác được ghi và đánh giá trên chính GPU đó, không suy diễn thành số đo T4.
 
 > **Điều khoản kết quả âm (bắt buộc tôn trọng):** nếu G7.2 trượt, Phase 7 vẫn được coi là **hoàn thành hợp lệ** khi bàn giao: (a) checkpoint Pareto tốt nhất, (b) ma trận ablation chỉ rõ đòn bẩy nào thất bại, (c) mục "Hạn chế" viết rõ trong báo cáo. Không được nâng số.
 
