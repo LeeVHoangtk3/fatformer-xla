@@ -1,0 +1,11 @@
+{
+  "source_commit": "977b282852120a7c5d1cb5d3cc110955edf00ce7",
+  "source_fingerprint": "b73de377c5407d096593e08205b98d7c9a09c6f712ede6d295548507dc7ffb3e",
+  "plan_sha256": "ca658db9838013c76638412a96da375792a8e5858b6dd2a43886f66584ce47d3",
+  "gpu": "NVIDIA L4",
+  "torch": "2.14.1+cu130",
+  "cuda": "13.0",
+  "precision": "fp16",
+  "max_batch_size": 16,
+  "staging_sha256": "53a782be6263ee5ab240d8552c4f60ac46aeb73b158c0b1f7d16c3bbd1f831d1"
+}

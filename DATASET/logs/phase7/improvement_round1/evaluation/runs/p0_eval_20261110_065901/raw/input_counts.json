@@ -1,0 +1,6 @@
+{
+  "calibration": 400,
+  "evaluation": 1600,
+  "indist_records": 82003,
+  "note": "Identity/count check; no claim that all in-dist records are independent image contents."
+}

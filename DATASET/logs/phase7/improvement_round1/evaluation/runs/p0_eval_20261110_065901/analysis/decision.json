@@ -1,0 +1,23 @@
+{
+  "schema": "phase7-pilot-evaluation-decision/v1",
+  "evaluation_run": "p0_eval_20261110_065901",
+  "selected_training_checkpoint": "p0_legacy_full",
+  "candidate_accepted": false,
+  "deployment_replaced": false,
+  "retained_package_sha256": "248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0",
+  "G72": {
+    "candidate_p0": {
+      "pass_gate": false,
+      "criteria_passed": 4,
+      "criteria_total": 8
+    },
+    "incumbent_refit": {
+      "pass_gate": false,
+      "criteria_passed": 6,
+      "criteria_total": 8
+    }
+  },
+  "G73": "pending_verified_best_by_condition_reference",
+  "reason": "P0 misses four predefined G7.2 criteria; refitted incumbent misses two. No demonstrated improvement sufficient to replace the incumbent.",
+  "next_step": "Close round1 as a negative result. Before new GPU training, define a new hypothesis on training/validation data; do not tune to the inspected CFE test or lower acceptance gates."
+}

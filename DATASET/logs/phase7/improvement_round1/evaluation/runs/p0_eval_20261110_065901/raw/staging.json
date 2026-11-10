@@ -1,0 +1,8 @@
+{
+  "schema": "phase7-eval-staging/v1",
+  "archives": {
+    "test_communityforensics.tar": "159b47e501686295be8f0edf879fb1a3070a0cf5b85c8157b0abd6bd5744f059",
+    "test_benchmark_gans.tar": "460eed863629b13ed7b574e5857c6a9afe848c45453a34c2defb7f3400a7539a",
+    "test_benchmark_diffusion.tar": "7938bd7d90ca1d63c2d36fb0d80280ad0a5f77b8b7db6b468555e3f752820726"
+  }
+}

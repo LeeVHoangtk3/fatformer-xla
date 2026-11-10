@@ -2,10 +2,15 @@
   "schema": "phase7-pilot-index/v1",
   "current_run": "pilot_20261109_182359",
   "path": "DATASET/logs/phase7/improvement_round1/runs/pilot_20261109_182359",
-  "state": "training_completed_logs_audited",
+  "state": "training_and_evaluation_audited_negative_result",
   "selected": "p0_legacy_full",
   "selected_sha256": "9d97613c5f271801a30ff514326557f262a372abeb4d52ce864c78f20fc1069b",
   "final_model_replaced": false,
   "G72": "unchanged: FAIL 6/8",
-  "G73": "unchanged: pending matched reference"
+  "G73": "unchanged: pending verified best-by-condition reference",
+  "latest_evaluation_run": "p0_eval_20261110_065901",
+  "evaluation_path": "DATASET/logs/phase7/improvement_round1/evaluation/runs/p0_eval_20261110_065901",
+  "candidate_G72": "FAIL 4/8",
+  "incumbent_refit_G72": "FAIL 6/8",
+  "candidate_accepted_for_deployment": false
 }

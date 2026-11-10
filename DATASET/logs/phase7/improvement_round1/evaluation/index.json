@@ -1,0 +1,10 @@
+{
+  "schema": "phase7-pilot-evaluation-index/v1",
+  "current_run": "p0_eval_20261110_065901",
+  "path": "DATASET/logs/phase7/improvement_round1/evaluation/runs/p0_eval_20261110_065901",
+  "state": "completed_and_audited_negative_result",
+  "deployment_replaced": false,
+  "candidate_G72": "FAIL 4/8",
+  "incumbent_G72": "FAIL 6/8",
+  "G73": "pending_verified_best_by_condition_reference"
+}

@@ -1,0 +1,7 @@
+{
+  "batch_size": 16,
+  "precision": "fp16",
+  "probability_device": "cuda",
+  "same_for_both_models": true,
+  "automatic_midrun_batch_change": false
+}

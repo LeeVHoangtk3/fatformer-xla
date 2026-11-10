@@ -1,0 +1,17 @@
+{
+  "signature": "220db2ddcb6bfc15811ef7d29e4554050433e4e6b38dae1f2b876fff968c341d",
+  "files": {
+    "candidate_p0/benchmark/predictions_cfe_q75.npz": "9927eeab09af196316e26e2814a7eae87843bfbd2944841c685b6f2e25c03428",
+    "candidate_p0/benchmark/predictions_cfe_blur15.npz": "3ead99b09b36cfd9147003e9dba30f11692dee5275e0ebaee0c22a72129fae02",
+    "candidate_p0/benchmark/roc.png": "fd527a5e92ee8e53d26abb2d02c667ac955b6baf795598993e049529b026ec6f",
+    "candidate_p0/benchmark/predictions_cfe_q50.npz": "542e485b82c55a4e40a2e7ee128fa8628c3d08653491c543ae35aa20877c53c4",
+    "candidate_p0/benchmark/preflight.json": "ad3df58958ad28612049ec10a6889a8ce412489f0ccc4db3ea9753c63c36e255",
+    "candidate_p0/benchmark/predictions_cfe_downup05.npz": "447dec2d17dce7a601461f423a16ec945f5f751d2fc56b29ef3c484adbcb6f88",
+    "candidate_p0/benchmark/predictions_indist.npz": "d3fc59e486bc6e0fb2999c0d27dd9ad67a9fab55e35295ce2cb17ec0e751ecfc",
+    "candidate_p0/benchmark/final_report.json": "59c111839f1f26e1eca5c99d5d19f54bb1c8362fc0c3ff5ea7755f4c15ddb5e8",
+    "candidate_p0/benchmark/predictions_cfe_clean.npz": "e47eb681b209ab0dd694129ae3a8044fa657b5c31d8b39257839851d1b8c8828",
+    "candidate_p0/benchmark/predictions_cfe_webp40.npz": "d165678086138bb29c4b9d121d73060ceb1838a162037b74904fc19e5f11b3a1",
+    "candidate_p0/benchmark/predictions_cfe_q30.npz": "e2ece9d7bc8dd103c224ae08240a22450efc941f1f4477d46370db1aca0803ed",
+    "candidate_p0/benchmark/per_subset_cfe.csv": "590b123be0f2c49705687d9d894c3747e94c7affd945597bcac82a7de39d08e8"
+  }
+}

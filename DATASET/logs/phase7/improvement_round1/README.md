@@ -1,16 +1,18 @@
 # Phase 7 — vòng cải thiện 1, lấy code từ Git nhánh `hoang`
 
-Cập nhật 10/11/2026. **Pilot đã chạy đủ hai nhánh × 5 epoch trên L4 và được hậu kiểm; chọn `p0_legacy_full` theo validation.** Chưa có phép đo test/đóng gói cho model mới. Kết quả ở `../task_7.15/current/` giữ nguyên: G7.2 FAIL 6/8, G7.3 pending reference.
+Cập nhật 10/11/2026. **Đã hậu kiểm pilot train và matched evaluation trên L4. P0 chưa cải thiện đủ để thay model: G7.2 FAIL 4/8, đối chứng cũ hiệu chuẩn lại FAIL 6/8.** Kết quả ở `../task_7.15/current/` giữ nguyên: G7.2 FAIL 6/8, G7.3 pending verified best-by-condition reference.
 
 ## Kết quả mới nhất
 
-Run [`pilot_20261109_182359`](runs/pilot_20261109_182359/README.md), source commit `2665014`: P0 worst-group **42,00%**, P1 **35,33%**; cả hai chọn epoch 5. Kết quả seed này chưa hỗ trợ giả thuyết đổi preprocessing train sang CLIP sẽ tốt hơn. P0 là ứng viên cho calibration/evaluation tiếp, chưa thay model deployment hiện hành.
+Evaluation [`p0_eval_20261110_065901`](evaluation/runs/p0_eval_20261110_065901/README.md), source commit `977b282`: notebook chạy hoàn tất, đã nhập 90 file nguyên byte và bản sao notebook. Chỉ số/từng subset, 17 step markers và paired bootstrap tái lập; 2.446 phép kiểm tra dữ liệu đạt. Clean Fake@Real90 P0 61,00% so với 64,125% của đối chứng; Q30 38,875% so với 42,625%; macro in-dist 89,6794% so với 90,1018%. P0 có một số chỉ số phụ tốt hơn, nhưng không đạt mục tiêu thay thế. Dự đoán của đối chứng refit giống hoàn toàn arrays deployment cũ; hash gói refit khác nên không thay package hiện hành. Xem [quyết định](evaluation/runs/p0_eval_20261110_065901/analysis/decision.json).
+
+Pilot train [`pilot_20261109_182359`](runs/pilot_20261109_182359/README.md), source commit `2665014`: P0 worst-group **42,00%**, P1 **35,33%**; cả hai chọn epoch 5. P0 được chọn đúng theo validation và đã được đánh giá tiếp. Kết quả seed này chưa hỗ trợ giả thuyết đổi preprocessing train sang CLIP sẽ tốt hơn; worst-group validation không thay chỉ số test ở đoạn trên.
 
 Đã nhập 27 file từ `wait` vào `runs/<run_id>/raw/`, lưu notebook đã chạy vào `evidence/`, tái tính số cập nhật từ 3.830 record train và đối chiếu 146 source hashes. Có 28.832 phép kiểm tra dữ liệu đạt, không phải số lượng unit test. P0 bỏ qua 1 update, P1 bỏ qua 2; không có update áp dụng norm không hữu hạn. Weights không có trong gói nộp, nên chưa được băm lại hoặc forward tại local.
 
 Xem [hậu kiểm chi tiết](runs/pilot_20261109_182359/README.md), [JSON kiểm tra](runs/pilot_20261109_182359/analysis/verification.json), [tham chiếu model được chọn](runs/pilot_20261109_182359/candidate_reference.json). Các mục dưới đây giữ thiết kế và hướng dẫn chạy; không cần train lại chỉ để hoàn thiện hồ sơ vòng này.
 
-Bước tiếp đã có [hướng dẫn calibration/benchmark P0 và incumbent cùng protocol](../../../../notebooks/task/phase7_pilot_evaluation/README.md), lấy code từ Git nhánh `hoang`. Đây là luồng đánh giá riêng; chưa có kết quả test mới tại thời điểm chuẩn bị.
+[Hướng dẫn calibration/benchmark P0 và incumbent cùng protocol](../../../../notebooks/task/phase7_pilot_evaluation/README.md) là hồ sơ cách chạy đã dùng. Không cần chạy lại cùng thí nghiệm để chốt vòng này. Muốn nghiên cứu tiếp cần giả thuyết và thiết kế mới trên train/validation; G7.3 vẫn cần baseline từng điều kiện có bằng chứng hợp lệ. Phần hướng dẫn bên dưới là thiết kế và lịch sử chạy, không phải yêu cầu chạy lại.
 
 ## 1. Những vấn đề đã xác định
 

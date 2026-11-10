@@ -1,0 +1,6 @@
+{
+  "signature": "dccc4a900cb5b531919d74bd245408375875cffeadff1457fe52fb328ca75c5a",
+  "files": {
+    "candidate_p0/calibration/logits_calib.npz": "30ec624751907ca0857bd1c4b342a6568a7441b2958273e1c6d159a35a086135"
+  }
+}

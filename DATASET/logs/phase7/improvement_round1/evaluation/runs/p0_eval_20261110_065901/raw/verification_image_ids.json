@@ -1,0 +1,102 @@
+[
+  {
+    "sample_id": "1_commercial/0/real_0002_coco.png",
+    "target": 0,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "1_commercial/0/real_0006_laion.png",
+    "target": 0,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "1_commercial/1/fake_0013_MidjourneyV5_2.png",
+    "target": 1,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "1_commercial/1/fake_0016_MidjourneyV5_2.png",
+    "target": 1,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "2_latent_diffusion/0/real_0002_laion.png",
+    "target": 0,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "2_latent_diffusion/0/real_0006_laion.png",
+    "target": 0,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "2_latent_diffusion/1/fake_0000_LCM_lora_sdxl.png",
+    "target": 1,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "2_latent_diffusion/1/fake_0002_LCM_lora_sdxl.png",
+    "target": 1,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "3_pixel_diffusion/0/real_0005_raise.png",
+    "target": 0,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "3_pixel_diffusion/0/real_0008_raise.png",
+    "target": 0,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "3_pixel_diffusion/1/fake_0003_Hourglass.png",
+    "target": 1,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "3_pixel_diffusion/1/fake_0004_Hourglass.png",
+    "target": 1,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "4_modern_gans/0/real_0005_ffhq.png",
+    "target": 0,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "4_modern_gans/0/real_0006_ffhq.png",
+    "target": 0,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "4_modern_gans/1/fake_0005_DFGAN.png",
+    "target": 1,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "4_modern_gans/1/fake_0026_DFGAN.png",
+    "target": 1,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "5_other_autoregressive/0/real_0000_laion.png",
+    "target": 0,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "5_other_autoregressive/0/real_0003_laion.png",
+    "target": 0,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "5_other_autoregressive/1/fake_0002_stable_cascade.png",
+    "target": 1,
+    "source": "calibration; functional equivalence only"
+  },
+  {
+    "sample_id": "5_other_autoregressive/1/fake_0004_stable_cascade.png",
+    "target": 1,
+    "source": "calibration; functional equivalence only"
+  }
+]

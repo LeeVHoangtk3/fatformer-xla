@@ -1,0 +1,56 @@
+{
+  "old_package_sha256": "248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0",
+  "refit_package_sha256": "de36061f4cc10e8b5a7b599842c160bfc5109e2a29bef2d659cf77388aaf1a5e",
+  "populations": {
+    "predictions_cfe_blur15": {
+      "n": 1600,
+      "max_probability_error": 0.0,
+      "label_disagreements": 0,
+      "logits_identical": true
+    },
+    "predictions_cfe_clean": {
+      "n": 1600,
+      "max_probability_error": 0.0,
+      "label_disagreements": 0,
+      "logits_identical": true
+    },
+    "predictions_cfe_downup05": {
+      "n": 1600,
+      "max_probability_error": 0.0,
+      "label_disagreements": 0,
+      "logits_identical": true
+    },
+    "predictions_cfe_q30": {
+      "n": 1600,
+      "max_probability_error": 0.0,
+      "label_disagreements": 0,
+      "logits_identical": true
+    },
+    "predictions_cfe_q50": {
+      "n": 1600,
+      "max_probability_error": 0.0,
+      "label_disagreements": 0,
+      "logits_identical": true
+    },
+    "predictions_cfe_q75": {
+      "n": 1600,
+      "max_probability_error": 0.0,
+      "label_disagreements": 0,
+      "logits_identical": true
+    },
+    "predictions_cfe_webp40": {
+      "n": 1600,
+      "max_probability_error": 0.0,
+      "label_disagreements": 0,
+      "logits_identical": true
+    },
+    "predictions_indist": {
+      "n": 82003,
+      "max_probability_error": 0.0,
+      "label_disagreements": 0,
+      "logits_identical": true
+    }
+  },
+  "all_predictions_identical": true,
+  "scope": "Comparison of submitted predictions, not reloading either missing PTH package locally."
+}

@@ -1,0 +1,70 @@
+{
+  "schema": "phase7_corrected_acceptance/v1",
+  "package_sha256": "de36061f4cc10e8b5a7b599842c160bfc5109e2a29bef2d659cf77388aaf1a5e",
+  "report_integrity": "verified",
+  "scientific_status": "post_hoc_confirmation",
+  "G72": {
+    "pass": false,
+    "verdict": "FAIL (H\u1ee3p l\u1ec7 theo \u0110i\u1ec1u kho\u1ea3n k\u1ebft qu\u1ea3 \u00e2m \u00a7II.3)",
+    "criteria": {
+      "CFE_clean_Fake@Real90": {
+        "value": 64.12,
+        "target": ">=65.0%",
+        "pass": false
+      },
+      "CFE_clean_AUC": {
+        "value": 88.66,
+        "target": ">=78.0%",
+        "pass": true
+      },
+      "CFE_Q30_AUC": {
+        "value": 79.88,
+        "target": ">=60.0%",
+        "pass": true
+      },
+      "CFE_Q30_Fake@Real90": {
+        "value": 42.62,
+        "target": ">=40.0%",
+        "pass": true
+      },
+      "InDist_Macro_ACC": {
+        "value": 90.10184712075026,
+        "target": ">=90.0%",
+        "pass": true
+      },
+      "InDist_Real_ACC": {
+        "value": 90.41,
+        "target": ">=90.0% (c\u1ee9ng)",
+        "pass": true
+      },
+      "Worst_Subset_Fake_ACC": {
+        "value": 30.86,
+        "target": ">=45.0%",
+        "pass": false,
+        "complete": true
+      },
+      "ECE_Post_Calibration": {
+        "value": 0.0508,
+        "target": "<=0.08",
+        "pass": true
+      }
+    }
+  },
+  "G73": {
+    "status": "pending",
+    "one_checkpoint_forward": true,
+    "real_image_equivalence": true,
+    "hardware_protocol": "any_compatible_cuda_gpu_with_sufficient_memory",
+    "allocated_gpu_overhead": "pass",
+    "original_t4_reference": "not_measured_on_T4",
+    "observed_gpu": "NVIDIA L4",
+    "observed_overhead_ms": 0.20514300013019238,
+    "condition_best_comparison": "pending_verified_reference",
+    "note": "No claim of G7.3 PASS without the best-by-condition comparison."
+  },
+  "source_reports": {
+    "/content/phase7_p0_evaluation/p0_eval_20261110_065901/incumbent_refit/benchmark/final_report.json": "7817e62c88163d28fb048ba2887da2c09b81bc3c139ddd2ff1217fe51c4ec82b",
+    "/content/phase7_p0_evaluation/p0_eval_20261110_065901/incumbent_refit/verification.json": "7e26cd0a101199e9088182210bc37f5aa1c426673634531221b1e171ca2d6481",
+    "/content/phase7_p0_evaluation/p0_eval_20261110_065901/incumbent_refit/latency.json": "c6c5ebe0778fdfdaf8ba30f30e6e0fcb0d35888c41a4bf84ccab37726e9cdf2a"
+  }
+}

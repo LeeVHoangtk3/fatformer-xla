@@ -1,0 +1,17 @@
+arm,criterion,value,target,pass,complete
+candidate_p0,CFE_clean_Fake@Real90,61.0,>=65.0%,False,
+candidate_p0,CFE_clean_AUC,87.96,>=78.0%,True,
+candidate_p0,CFE_Q30_AUC,79.02,>=60.0%,True,
+candidate_p0,CFE_Q30_Fake@Real90,38.88,>=40.0%,False,
+candidate_p0,InDist_Macro_ACC,89.679381989995,>=90.0%,False,
+candidate_p0,InDist_Real_ACC,90.36,>=90.0% (cứng),True,
+candidate_p0,Worst_Subset_Fake_ACC,25.93,>=45.0%,False,True
+candidate_p0,ECE_Post_Calibration,0.0617,<=0.08,True,
+incumbent_refit,CFE_clean_Fake@Real90,64.12,>=65.0%,False,
+incumbent_refit,CFE_clean_AUC,88.66,>=78.0%,True,
+incumbent_refit,CFE_Q30_AUC,79.88,>=60.0%,True,
+incumbent_refit,CFE_Q30_Fake@Real90,42.62,>=40.0%,True,
+incumbent_refit,InDist_Macro_ACC,90.10184712075026,>=90.0%,True,
+incumbent_refit,InDist_Real_ACC,90.41,>=90.0% (cứng),True,
+incumbent_refit,Worst_Subset_Fake_ACC,30.86,>=45.0%,False,True
+incumbent_refit,ECE_Post_Calibration,0.0508,<=0.08,True,

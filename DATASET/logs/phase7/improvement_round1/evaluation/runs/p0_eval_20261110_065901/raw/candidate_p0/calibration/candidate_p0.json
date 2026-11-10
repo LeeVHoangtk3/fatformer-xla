@@ -1,0 +1,69 @@
+{
+  "schema": "calibration/v1",
+  "evidence_level": "measured",
+  "model": "candidate_p0",
+  "checkpoint": {
+    "path": "/content/phase7_p0_evaluation/p0_eval_20261110_065901/references/candidate_p0.pth",
+    "sha256": "9d97613c5f271801a30ff514326557f262a372abeb4d52ce864c78f20fc1069b",
+    "verification": "hashed_source_file"
+  },
+  "calibration_source": "/content/phase7_p0_evaluation/p0_eval_20261110_065901/candidate_p0/calibration/logits_calib.npz",
+  "calibration_source_sha256": "30ec624751907ca0857bd1c4b342a6568a7441b2958273e1c6d159a35a086135",
+  "n_calib": 400,
+  "class_balance": {
+    "real": 200,
+    "fake": 200
+  },
+  "T": 3.09498929977417,
+  "T_raw": 3.09498929977417,
+  "temperature_optimization": {
+    "method": "bounded_inverse_temperature_bisection/v1",
+    "converged": true,
+    "status": "interior_converged",
+    "iterations": 35,
+    "temperature_bounds": [
+      0.05,
+      10.0
+    ],
+    "gradient_beta": 2.767928808822262e-08,
+    "scaled_kkt_residual": 5.428496378717007e-09,
+    "nll_at_T1": 0.7300207802703141,
+    "nll_at_fitted_T": 0.43899569721849985,
+    "objective_dtype": "float64",
+    "deployed_temperature_dtype": "float32"
+  },
+  "T_star": {
+    "0.01": 0.8313633799552917,
+    "0.05": 0.7651896476745605,
+    "0.10": 0.6894738078117371
+  },
+  "T_star_default": 0.7651896476745605,
+  "fpr_target": 0.05,
+  "probability_device": "cuda",
+  "probability_batch_size": 16,
+  "fpr_measured": {
+    "0.01": 0.01,
+    "0.05": 0.05,
+    "0.10": 0.1
+  },
+  "real_acc": 95.0,
+  "fake_acc": 58.0,
+  "ece_before": 16.95,
+  "ece_after": 8.78,
+  "nll_before": 0.73,
+  "nll_after": 0.439,
+  "cv": null,
+  "partition_validation": {
+    "status": "verified_disjoint_ids",
+    "identity_unit": "subset/class/filename; content duplicates not audited",
+    "n_calibration": 400,
+    "n_evaluation": 1600,
+    "overlap": 0,
+    "calibration_split_sha256": "26960ff6adb78737c7aa872e2ed43e18378735b45de9a945f40134496d01521d",
+    "evaluation_split_sha256": "b8b5b60051ab4f8016e90291d2e86b47c7b9f843b79621e42380aaa0b56822f8",
+    "sample_ids_sha256": "5ae613da819d065b93225b901a7d06d3309ad27e8cdbb9a441cf4df43d7552fb"
+  },
+  "inference_precision": "fp16",
+  "extraction_batch_size": 16,
+  "extraction_torch_version": "2.14.1+cu130"
+}

@@ -1,0 +1,7 @@
+{
+  "schema": "phase7-p0-evaluation-status/v1",
+  "status": "completed",
+  "stage": "full",
+  "source_commit": "977b282852120a7c5d1cb5d3cc110955edf00ce7",
+  "deployment_replaced": false
+}

@@ -1,0 +1,351 @@
+{
+  "passed": true,
+  "comparison": {
+    "schema": "phase7-p0-matched-comparison/v1",
+    "status": "completed",
+    "source_checkpoint_hashes": {
+      "candidate_p0": "9d97613c5f271801a30ff514326557f262a372abeb4d52ce864c78f20fc1069b",
+      "incumbent_refit": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c"
+    },
+    "package_hashes": {
+      "candidate_p0": "e26a16273d3da6f851a4fe41c994307b585339e9f5f7f9ac58c58a3621c863e2",
+      "incumbent_refit": "de36061f4cc10e8b5a7b599842c160bfc5109e2a29bef2d659cf77388aaf1a5e"
+    },
+    "reference_scope": "incumbent WEIGHTS recalibrated, not an exact replay of deployed package 24869052; original deployment remains unchanged.",
+    "scientific_status": "post-hoc evaluation; these test IDs have been inspected before; no new blind-test claim.",
+    "CFE": {
+      "clean": {
+        "candidate": {
+          "auc": 87.958828125,
+          "fake_at_real90": 61.0
+        },
+        "reference": {
+          "auc": 88.66226562499999,
+          "fake_at_real90": 64.125
+        },
+        "candidate_minus_reference_pp": {
+          "auc": -0.7034374999999926,
+          "fake_at_real90": -3.125
+        },
+        "paired_ci95_pp": {
+          "auc": [
+            -1.1033125000000088,
+            -0.3034550781249891
+          ],
+          "fake_at_real90": [
+            -6.128125000000007,
+            0.5
+          ]
+        },
+        "correctness": {
+          "both_correct": 1130,
+          "candidate_only_correct": 16,
+          "reference_only_correct": 60,
+          "both_wrong": 394
+        }
+      },
+      "q30": {
+        "candidate": {
+          "auc": 79.02156250000002,
+          "fake_at_real90": 38.875
+        },
+        "reference": {
+          "auc": 79.8790625,
+          "fake_at_real90": 42.625
+        },
+        "candidate_minus_reference_pp": {
+          "auc": -0.8574999999999875,
+          "fake_at_real90": -3.75
+        },
+        "paired_ci95_pp": {
+          "auc": [
+            -1.4258398437500002,
+            -0.29160937499998746
+          ],
+          "fake_at_real90": [
+            -6.5,
+            1.375
+          ]
+        },
+        "correctness": {
+          "both_correct": 997,
+          "candidate_only_correct": 28,
+          "reference_only_correct": 56,
+          "both_wrong": 519
+        }
+      },
+      "q50": {
+        "candidate": {
+          "auc": 80.978515625,
+          "fake_at_real90": 43.125
+        },
+        "reference": {
+          "auc": 81.556953125,
+          "fake_at_real90": 47.5
+        },
+        "candidate_minus_reference_pp": {
+          "auc": -0.5784375000000068,
+          "fake_at_real90": -4.375
+        },
+        "paired_ci95_pp": {
+          "auc": [
+            -1.160570312499993,
+            -0.019730468750018947
+          ],
+          "fake_at_real90": [
+            -8.5,
+            -0.25
+          ]
+        },
+        "correctness": {
+          "both_correct": 1008,
+          "candidate_only_correct": 34,
+          "reference_only_correct": 56,
+          "both_wrong": 502
+        }
+      },
+      "q75": {
+        "candidate": {
+          "auc": 82.37976562499999,
+          "fake_at_real90": 46.375
+        },
+        "reference": {
+          "auc": 83.324296875,
+          "fake_at_real90": 48.625
+        },
+        "candidate_minus_reference_pp": {
+          "auc": -0.9445312500000114,
+          "fake_at_real90": -2.25
+        },
+        "paired_ci95_pp": {
+          "auc": [
+            -1.5192265624999937,
+            -0.3963281249999984
+          ],
+          "fake_at_real90": [
+            -6.003125000000007,
+            1.503125000000004
+          ]
+        },
+        "correctness": {
+          "both_correct": 1016,
+          "candidate_only_correct": 35,
+          "reference_only_correct": 47,
+          "both_wrong": 502
+        }
+      },
+      "webp40": {
+        "candidate": {
+          "auc": 78.18453125,
+          "fake_at_real90": 40.875
+        },
+        "reference": {
+          "auc": 79.00890625,
+          "fake_at_real90": 41.75
+        },
+        "candidate_minus_reference_pp": {
+          "auc": -0.8243749999999892,
+          "fake_at_real90": -0.875
+        },
+        "paired_ci95_pp": {
+          "auc": [
+            -1.3979140624999882,
+            -0.2576699218750054
+          ],
+          "fake_at_real90": [
+            -4.0,
+            2.625
+          ]
+        },
+        "correctness": {
+          "both_correct": 1011,
+          "candidate_only_correct": 35,
+          "reference_only_correct": 50,
+          "both_wrong": 504
+        }
+      },
+      "blur15": {
+        "candidate": {
+          "auc": 83.79992187500001,
+          "fake_at_real90": 46.5
+        },
+        "reference": {
+          "auc": 84.21484375,
+          "fake_at_real90": 50.74999999999999
+        },
+        "candidate_minus_reference_pp": {
+          "auc": -0.41492187499999034,
+          "fake_at_real90": -4.249999999999993
+        },
+        "paired_ci95_pp": {
+          "auc": [
+            -0.8965917968749878,
+            0.06337890624998925
+          ],
+          "fake_at_real90": [
+            -7.625,
+            -0.12187500000000284
+          ]
+        },
+        "correctness": {
+          "both_correct": 1069,
+          "candidate_only_correct": 30,
+          "reference_only_correct": 68,
+          "both_wrong": 433
+        }
+      },
+      "downup05": {
+        "candidate": {
+          "auc": 86.268671875,
+          "fake_at_real90": 57.875
+        },
+        "reference": {
+          "auc": 86.98796875000001,
+          "fake_at_real90": 64.875
+        },
+        "candidate_minus_reference_pp": {
+          "auc": -0.7192968750000119,
+          "fake_at_real90": -7.0
+        },
+        "paired_ci95_pp": {
+          "auc": [
+            -1.1520312499999936,
+            -0.28654492187501945
+          ],
+          "fake_at_real90": [
+            -8.875,
+            -1.8750000000000069
+          ]
+        },
+        "correctness": {
+          "both_correct": 1173,
+          "candidate_only_correct": 23,
+          "reference_only_correct": 68,
+          "both_wrong": 336
+        }
+      }
+    },
+    "paired_bootstrap": {
+      "n": 1000,
+      "seed": 42,
+      "stratified_by_label": true,
+      "unit": "image",
+      "note": "Same indices for both frozen models; conditional on one training seed. No multiple-comparison correction; generator dependence is not captured."
+    },
+    "indist": {
+      "candidate_macro": 89.679381989995,
+      "reference_macro": 90.10184712075026,
+      "macro_delta_pp": -0.4224651307552555,
+      "diagnostic_paired_subset_ci95_pp": [
+        -0.8463931249770622,
+        0.03245031195032105
+      ],
+      "diagnostic_unit": "18 datasets; shared real reference dependence remains; this is not a replacement gate rule",
+      "pooled_real_delta_pp": -0.04999999999999716
+    },
+    "G72": {
+      "candidate_p0": {
+        "pass": false,
+        "verdict": "FAIL (H\u1ee3p l\u1ec7 theo \u0110i\u1ec1u kho\u1ea3n k\u1ebft qu\u1ea3 \u00e2m \u00a7II.3)",
+        "criteria": {
+          "CFE_clean_Fake@Real90": {
+            "value": 61.0,
+            "target": ">=65.0%",
+            "pass": false
+          },
+          "CFE_clean_AUC": {
+            "value": 87.96,
+            "target": ">=78.0%",
+            "pass": true
+          },
+          "CFE_Q30_AUC": {
+            "value": 79.02,
+            "target": ">=60.0%",
+            "pass": true
+          },
+          "CFE_Q30_Fake@Real90": {
+            "value": 38.88,
+            "target": ">=40.0%",
+            "pass": false
+          },
+          "InDist_Macro_ACC": {
+            "value": 89.679381989995,
+            "target": ">=90.0%",
+            "pass": false
+          },
+          "InDist_Real_ACC": {
+            "value": 90.36,
+            "target": ">=90.0% (c\u1ee9ng)",
+            "pass": true
+          },
+          "Worst_Subset_Fake_ACC": {
+            "value": 25.93,
+            "target": ">=45.0%",
+            "pass": false,
+            "complete": true
+          },
+          "ECE_Post_Calibration": {
+            "value": 0.0617,
+            "target": "<=0.08",
+            "pass": true
+          }
+        }
+      },
+      "incumbent_refit": {
+        "pass": false,
+        "verdict": "FAIL (H\u1ee3p l\u1ec7 theo \u0110i\u1ec1u kho\u1ea3n k\u1ebft qu\u1ea3 \u00e2m \u00a7II.3)",
+        "criteria": {
+          "CFE_clean_Fake@Real90": {
+            "value": 64.12,
+            "target": ">=65.0%",
+            "pass": false
+          },
+          "CFE_clean_AUC": {
+            "value": 88.66,
+            "target": ">=78.0%",
+            "pass": true
+          },
+          "CFE_Q30_AUC": {
+            "value": 79.88,
+            "target": ">=60.0%",
+            "pass": true
+          },
+          "CFE_Q30_Fake@Real90": {
+            "value": 42.62,
+            "target": ">=40.0%",
+            "pass": true
+          },
+          "InDist_Macro_ACC": {
+            "value": 90.10184712075026,
+            "target": ">=90.0%",
+            "pass": true
+          },
+          "InDist_Real_ACC": {
+            "value": 90.41,
+            "target": ">=90.0% (c\u1ee9ng)",
+            "pass": true
+          },
+          "Worst_Subset_Fake_ACC": {
+            "value": 30.86,
+            "target": ">=45.0%",
+            "pass": false,
+            "complete": true
+          },
+          "ECE_Post_Calibration": {
+            "value": 0.0508,
+            "target": "<=0.08",
+            "pass": true
+          }
+        }
+      }
+    },
+    "G73": {
+      "status": "pending",
+      "matched_incumbent_comparison": "completed",
+      "best_by_condition_reference": "not_established"
+    },
+    "training_selection": "P0 was frozen by val_select before this run; no model/epoch/threshold selected from evaluation.",
+    "deployment_replaced": false
+  },
+  "scope": "All paired CFE image-bootstrap CIs (1000 per condition) and diagnostic macro subset CI (10000) recomputed. Per-arm marginal bootstrap CIs are source reports, not independently rerun here."
+}
