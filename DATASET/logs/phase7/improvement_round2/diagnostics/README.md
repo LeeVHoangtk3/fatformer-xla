@@ -4,6 +4,8 @@ Cập nhật 10/11/2026. **Đã hậu kiểm chẩn đoán validation GPU**, run
 
 Bản tóm tắt gửi kèm có số gộp đúng nhưng vài suy diễn sai: recall khớp không phải bit-exact logits, SD v1.5 P0 Q30 là 33,33%, DiT đã thấp ở clean; ngưỡng 0,9127 không phải ngưỡng P0 dùng khi chấm CFE. Xem [đính chính và bước tiếp theo](runs/val_diag_20261110_142828/README.md), [index hiện hành](index.json). Các mục kiểm kê/chuẩn bị dưới đây giữ lịch sử trước run; kết quả mới được lưu riêng, không ghi đè preparation hoặc notebook.
 
+Phép đối chứng tiếp theo đã được chuẩn bị tại [`../calibration_transfer/`](../calibration_transfer/README.md): code/controls/notebook mới, chưa chạy GPU calibration, chưa train hoặc thay model. Không cần chạy lại notebook diagnostics chỉ để bắt đầu bước này.
+
 ## 1. Những gì đã xác nhận
 
 Manifest v2 có 14.400 record: train 12.240 (6.683 real/5.557 fake), `val_calib` 1.080 và `val_select` 1.080; mỗi tập validation gồm 590 real/490 fake. Paths và SHA-256 trong manifest đều duy nhất, không có trùng byte-exact ID giữa split; nhãn metadata nhất quán với family real/fake. Đây không phải kiểm duyệt ngữ nghĩa nhãn qua ảnh. Hậu kiểm isolation trước đó gắn đúng hash manifest và báo pass/0 vi phạm; chưa lặp lại kiểm tra pixel/content tại local.

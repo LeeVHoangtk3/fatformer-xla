@@ -1,0 +1,20 @@
+{
+  "schema": "phase7-calibration-transfer-notebook-check/v1",
+  "source_commit": "253942a5262432fbed7ce7ca8b12b4e455bfc2ce",
+  "notebook_valid": true,
+  "unexecuted_code_cells": 3,
+  "mocked_wrapper_cells_passed": 3,
+  "real_GPU_run": false,
+  "protected_files_unchanged": 365,
+  "local_links_checked": 62,
+  "files": {
+    "notebooks/task/phase7_calibration_transfer/phase7_calibration_transfer_colab.ipynb": "ff2519838d1ff9e22fe09041751b7daf8b7bfa998b43f2dde6f8cae0ab1059a6",
+    "notebooks/task/phase7_calibration_transfer/README.md": "50e66d4c793818fa57bbe9c3a7a4e6a015c18be35de43ca321aa7853fd31ab39",
+    "DATASET/logs/phase7/improvement_round2/calibration_transfer/README.md": "5360c4cfd3b798e797db4689c81c811f6d26c4cedd5c3ca51227a2567df78632",
+    "docs/plan/ke_hoach_calibration_transfer_phase7_round2.md": "93508796621292e07c987a46b43637fe73510b110f1e02fde4da46beec8ec404",
+    "docs/plan/ke_hoach_cai_thien_phase7_sau_vong1.md": "14ad11d84f199d22c717e9cad2bb35cbf3dceb852a6633eed02e80bfcbf1eb8a",
+    "docs/bao_cao/C/bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md": "f96bd215228d207a86892bb3c88e1f8327f727ae378f5515fe7279a0c290dc7c",
+    "DATASET/logs/phase7/improvement_round2/diagnostics/README.md": "50bfa132ffa31ffee471239f5d325b082a29f98fb891ac03fd26413a2c26eb72"
+  },
+  "scope": "Notebook schema/syntax and mocked wrapper only. Existing 30 CPU tests do not claim actual GPU calibration or quality gain."
+}
