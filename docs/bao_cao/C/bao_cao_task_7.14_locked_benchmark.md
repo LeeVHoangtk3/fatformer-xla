@@ -36,3 +36,7 @@ Một số real reference có tên tương đối và logits trùng giữa các 
 G7.3 còn pending phép so sánh với reference tốt nhất theo từng điều kiện. Kiểm chứng20ảnh và overhead L4 đã có trong hồ sơ7.15. Model `.pth` nằm trên Drive, ZIP kết quả không kèm weights; hậu kiểm local không băm lại file model hoặc source checkpoint.
 
 Run baseline-operating-point trước đó vẫn được giữ ở [hồ sơ lịch sử7.14](../../../DATASET/logs/phase7/task_7.14/runs/locked_benchmark_phase7_20261109_074134/analysis/README.md); không ghi đè dữ liệu gốc và không ghép metric giữa các hash package.
+
+## Bổ sung 10/11/2026 — phép đối chứng P0 sau vòng train mới
+
+Matched run `p0_eval_20261110_065901` chấm P0 và incumbent weights hiệu chuẩn lại: P0 G7.2 FAIL 4/8, incumbent refit FAIL 6/8. Clean Fake@Real90 61% so với 64,125%; Q30 38,875% so với 42,625%; macro 89,6794% so với 90,1018%. Arrays của incumbent refit trùng logits/xác suất/nhãn với kết quả current trên cả 8 quần thể, nhưng package refit hash khác. Không thay raw hay nguồn số liệu chính của báo cáo này bằng gói refit/P0. Xem [báo cáo vòng 1 và chẩn đoán vòng 2](bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md). Notebook mới chỉ đo validation để tìm hướng cải thiện, chưa chạy GPU và không phải lần chấm CFE tiếp theo.

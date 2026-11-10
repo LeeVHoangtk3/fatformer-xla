@@ -1,7 +1,7 @@
 # KẾ HOẠCH TRIỂN KHAI ĐỒ ÁN: TỐI ƯU HÓA ĐỘ BỀN VỮNG PHÁP Y CHO FATFORMER TRÊN MÁY CHỦ KAGGLE SERVER (GPU RTX 6000 BLACKWELL) & GOOGLE COLAB PRO
 
 <!-- PHASE7_CURRENT_BEGIN -->
-## Kết quả Phase 7 hiện hành — 09/11/2026
+## Kết quả Phase 7 hiện hành — cập nhật 10/11/2026
 
 Run `corrected_20261109_102954_3d28ad`, package `248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0`. Số liệu hiện hành: [hậu kiểm chi tiết](../../DATASET/logs/phase7/task_7.15/current/analysis/README.md), [view JSON v3 cho tài liệu](../../DATASET/logs/phase7/task_7.16/final_phase7_report.json) và [bảng nguồn số cũ → mới](../bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md). View v3 được tổng hợp từ raw corrected schema v1, **không phải một phép đo mới**.
 
@@ -42,6 +42,12 @@ Hoàn tất đo/biên soạn không có nghĩa đạt tất cả mục tiêu. Kh
 - Router v1 thiếu bằng chứng measured: hệ số/số synthetic bị thu hồi, bản hiện hành dùng fixed fallback.
 - Bộ fit T từng dừng sớm: đã sửa hội tụ; benchmark GPU mới thống nhất FP16/CUDA/batch 16.
 - G7.2 còn thiếu hai tiêu chí, G7.3 thiếu best-reference; chưa có căn cứ gọi checkpoint Pareto tối ưu toàn bộ hoặc nghiệm thu cuối.
+
+### Bổ sung ngày 10/11/2026 — vòng cải thiện 1 và chẩn đoán vòng 2
+
+Pilot `pilot_20261109_182359` đã train hai nhánh mới ×5 epoch/seed42, chọn P0 bằng `val_select`: worst-group P0 42%, P1 35,33%. Matched evaluation `p0_eval_20261110_065901` sau đó cho P0 **G7.2 FAIL, đạt 4/8 tiêu chí**, incumbent refit **FAIL, đạt 6/8**. Vòng 1 chưa tìm được model thay thế; package `24869052…` và kết quả corrected hiện hành được giữ nguyên. Worst-group validation khác worst-subset CFE; pilot này không thay ablation bốn nhánh 7.12.
+
+[Nhật ký và báo cáo mới](../bao_cao/C/bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md) phân biệt weights nguồn, package deployment, package refit và giới hạn CI. [Kế hoạch tiếp theo](ke_hoach_cai_thien_phase7_sau_vong1.md) bắt đầu bằng [notebook chẩn đoán validation](../../notebooks/task/phase7_validation_diagnostics/phase7_validation_diagnostics_colab.ipynb), khóa code `0dabd72`, đo 1.080 ảnh clean/Q30 trên hai checkpoint. **Notebook đã chuẩn bị, chưa chạy GPU và chưa train vòng 2**; không chấm CFE hoặc thay deployment trong bước chẩn đoán. G7.3 vẫn thiếu verified best-by-condition reference; chữ ký/cross-review không được xác nhận tự động.
 
 <!-- PHASE7_CURRENT_END -->
 

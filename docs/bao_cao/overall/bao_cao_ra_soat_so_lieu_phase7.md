@@ -35,3 +35,14 @@ Pooled accuracy, macro balanced accuracy và mean-subset Real ACC là ba đại 
 AST ghi nhận 20 vị trí `strict` không hằng True; không phải tất cả đều là lỗi checkpoint trong đường báo cáo. [strict_loading_review.json](../../../DATASET/logs/phase7/task_7.16/strict_loading_review.json) phân biệt initialization, diagnostic và legacy. Không xóa chuỗi grep hoặc đổi source loader để làm đẹp DoD. E1–E6 trong pipeline hiện hành được đối chiếu cụ thể ở phụ lục A.9 của kế hoạch CFE.
 
 Kiểm thử mục tiêu hiện tại: **103 test pipeline + 53 test thành phần = 156 passed, 0 failed/error/skipped**, trên 9 file riêng biệt; phạm vi ghi trong [targeted_tests.json](../../../DATASET/logs/phase7/task_7.16/validation/targeted_tests.json). Không tuyên bố đã chạy xanh toàn bộ repository. Cross-review và chữ ký A/B/C vẫn chờ người thật.
+
+## Bổ sung ngày 10/11/2026 — nguồn số vòng cải thiện, không thay current
+
+Catalog Task 7.16 phía trên tiếp tục mô tả run corrected/primary package `24869052…`. Các số sau thuộc thí nghiệm bổ sung và không ghi đè catalog hoặc raw hiện hành:
+
+- Pilot train `pilot_20261109_182359`: P0/P1 worst-group validation 42%/35,3333%, đều epoch 5, source P0 `9d97613c…`. Nguồn [selection.json](../../../DATASET/logs/phase7/improvement_round1/runs/pilot_20261109_182359/raw/selection.json) `/arms`. Đây không phải Fake@Real90 hoặc worst-subset CFE.
+- Matched evaluation `p0_eval_20261110_065901`: P0/incumbent refit Clean Fake@Real90 61%/64,125%, Q30 38,875%/42,625%; macro 89,67938199%/90,10184712%. Nguồn [paired verification](../../../DATASET/logs/phase7/improvement_round1/evaluation/runs/p0_eval_20261110_065901/analysis/paired_verification.json) `/comparison/CFE`, `/comparison/indist`. Bản nguồn raw có thể làm tròn 64,12 và 42,62; không coi đó là số của một run khác.
+- Phán quyết P0 FAIL 4/8, incumbent refit FAIL 6/8; deployment không đổi. Nguồn [decision.json](../../../DATASET/logs/phase7/improvement_round1/evaluation/runs/p0_eval_20261110_065901/analysis/decision.json). Refit package `de36061f…` khác current `24869052…`; không đổi latency hoặc danh tính model báo cáo dù arrays đối chứng trùng kết quả cũ.
+- Chuẩn bị chẩn đoán vòng 2: [audit.json](../../../DATASET/logs/phase7/improvement_round2/diagnostics/preparation/audit.json) và [plan](../../../configs/phase7_validation_diagnostics/plan.json). Có 41 test CPU/code cho workflow này; không cộng chồng vào 156 test lịch sử như thể là một full-suite mới. Notebook mới chưa chạy GPU, chưa có kết quả/model vòng 2.
+
+Xem [báo cáo bổ sung](../C/bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md) và [kế hoạch tiếp theo](../../plan/ke_hoach_cai_thien_phase7_sau_vong1.md). G7.0–G7.3 và chữ ký/cross-review giữ trạng thái như nguồn hiện hành, không suy ra PASS từ số unit test hoặc việc hoàn thành tài liệu.

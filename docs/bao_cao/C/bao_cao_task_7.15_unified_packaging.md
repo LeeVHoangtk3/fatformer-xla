@@ -40,3 +40,7 @@ Không cần chạy lại y nguyên toàn bộ notebook vì lỗi kỹ thuật t
 Chất lượng hiện được xác minh ở FP16/CUDA/batch 16. CLI ảnh thông thường trong code nộp mặc định FP32; nếu triển khai kênh đó cần kiểm chứng protocol tương ứng. Có 1 mẫu Q50 và 5 mẫu in-dist đổi nhãn khi tính softmax trên CPU do sát ngưỡng, chênh xác suất ≤3×10⁻⁷. Giữ dự đoán GPU làm nguồn cho báo cáo CUDA, không thay bằng nhãn CPU.
 
 Xem [phân tích công tâm đầy đủ](../../../DATASET/logs/phase7/task_7.15/current/analysis/README.md) và [báo cáo 7.14](bao_cao_task_7.14_locked_benchmark.md). Đây là post-hoc confirmation, không phải kiểm thử mù mới và không chứng minh FPR ≤5% cho mọi miền.
+
+## Bổ sung 10/11/2026 — không đổi package sau vòng cải thiện 1
+
+Matched evaluation mới tạo package P0 `e26a1627…` và incumbent refit `de36061f…`. P0 chỉ đạt 4/8 tiêu chí G7.2, không được chọn thay deployment. Incumbent refit có dự đoán trùng kết quả current nhưng vẫn là binary package khác. Vì vậy package báo cáo tiếp tục là **`24869052…`**, giữ nguyên T/ngưỡng và latency của run corrected nêu trên; không thay overhead 0,188055 bằng 0,151093 của P0 hoặc 0,205143 của refit. G7.3 vẫn thiếu verified best-by-condition reference. Xem [báo cáo vòng cải thiện và trạng thái chẩn đoán mới](bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md).

@@ -29,7 +29,7 @@ Cả hai nhánh vẫn cải thiện worst-group từ epoch 4 sang 5: P0 37,33%�
 
 ## 3. Phép đo đã chuẩn bị
 
-Xem [hướng dẫn ba cell Colab](../../../../../notebooks/task/phase7_validation_diagnostics/README.md). Code Git nhánh `hoang`; kế hoạch khóa tại [`configs/phase7_validation_diagnostics/plan.json`](../../../../../configs/phase7_validation_diagnostics/plan.json), công cụ [`tools/phase7_validation_diagnostics.py`](../../../../../tools/phase7_validation_diagnostics.py).
+Mở [notebook Colab đã tạo](../../../../../notebooks/task/phase7_validation_diagnostics/phase7_validation_diagnostics_colab.ipynb), có sẵn ba code cell và khóa code `0dabd72`; xem [hướng dẫn chi tiết](../../../../../notebooks/task/phase7_validation_diagnostics/README.md). Code Git nhánh `hoang`; kế hoạch khóa tại [`configs/phase7_validation_diagnostics/plan.json`](../../../../../configs/phase7_validation_diagnostics/plan.json), công cụ [`tools/phase7_validation_diagnostics.py`](../../../../../tools/phase7_validation_diagnostics.py). Notebook mới chưa thực thi GPU. [Kế hoạch tổng hợp các giai đoạn](../../../../../docs/plan/ke_hoach_cai_thien_phase7_sau_vong1.md) và [báo cáo vòng cải thiện](../../../../../docs/bao_cao/C/bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md) đã được cập nhật riêng; không sửa raw lịch sử.
 
 Đo P0 và incumbent trên cùng 1.080 ảnh `val_select`, clean và Q30 sau crop, cùng FP16/batch/GPU. Xuất arrays có danh tính/hashes, recall từng family/generator, AUC/AP, phân bố điểm và danh sách ảnh lỗi. Giữ riêng Q30 lịch sử 300 ảnh và operating point cũ để đối chiếu. Không đổi split, hiệu chuẩn lại hoặc đọc ảnh benchmark test. Probe bộ nhớ có thể dùng tensor tổng hợp; tensor này chỉ phục vụ kiểm tra dung lượng, không đưa vào số liệu chất lượng.
 

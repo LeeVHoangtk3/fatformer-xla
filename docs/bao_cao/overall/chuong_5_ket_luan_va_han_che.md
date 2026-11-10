@@ -58,3 +58,11 @@ Nhưng chưa thể trả lời rằng artifact này đạt chất lượng tốt
 3. **Tái lập và nghiệm thu:** đưa đúng weights cùng hash vào bàn giao, xử lý hoặc phân loại loader legacy, giải thích gradient telemetry và reconcile metadata; thu thập cross-review/chữ ký thật. Router chỉ được bật sau fit/evaluation held-out hợp lệ, không từ số synthetic hoặc unit test.
 
 Hồ sơ này cho phép báo cáo một kết quả thực nghiệm có kiểm chứng và các mục chưa đạt, không tuyên bố toàn bộ Phase 7 đã PASS. Các nguồn chi tiết, số cũ→mới và kiểm tra tự động nằm ở [bao_cao_ra_soat_so_lieu_phase7.md](bao_cao_ra_soat_so_lieu_phase7.md).
+
+## 5.5. Bổ sung 10/11/2026 — kiểm chứng một hướng cải thiện và kết quả âm
+
+Pilot preprocessing vòng 1 train mới P0 legacy và P1 CLIP, cùng validation CLIP, dữ liệu/loss/batch/seed 42 và 5 epoch. P0 worst-group validation 42% so với 35,33% của P1, được chọn trước khi chấm CFE. Matched evaluation sau đó cho P0 Clean Fake@Real90 61%, Q30 38,875%, macro in-dist 89,6794%, thấp hơn điểm tương ứng 64,125%/42,625%/90,1018% của incumbent refit. P0 chỉ đạt 4/8 tiêu chí G7.2; incumbent giữ 6/8. Model báo cáo `24869052…` không thay đổi.
+
+Kết quả này chưa hỗ trợ hướng đổi preprocessing train trong phạm vi pilot một seed, không chứng minh mọi CLIP preprocessing hoặc mọi thí nghiệm train mới đều thất bại. Paired CI của delta recall clean/Q30 còn chứa 0; không coi tất cả chênh lệch là có ý nghĩa thống kê. P0 có lợi thế ở một số chỉ số phụ như Q30 TPR tại FPR thấp và in-dist ECE/NLL; tiêu chí chọn model đã định vẫn chưa đạt. [Báo cáo đầy đủ](../C/bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md) cung cấp hashes, CI và các giới hạn.
+
+Kiểm kê tiếp cho thấy ba họ fake chỉ có một generator và tất cả generator validation đã có trong train. Đây là giới hạn thiết kế, chưa xác định nguyên nhân nhân quả của lỗi CFE. [Notebook chẩn đoán mới](../../../notebooks/task/phase7_validation_diagnostics/phase7_validation_diagnostics_colab.ipynb) sẽ đo logits/lỗi theo ảnh trên 1.080 validation clean/Q30, giữ riêng Q30 lịch sử, trước khi khóa can thiệp tiếp. Notebook đã tạo nhưng chưa chạy GPU; không có kết quả vòng 2 hoặc model tốt hơn để báo cáo tại thời điểm cập nhật.

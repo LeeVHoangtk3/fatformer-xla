@@ -2,11 +2,13 @@
 
 ## Anchored Recovery v2 — run `anchored_v2_run1`
 
-> **Ngày cập nhật**: 05/11/2026.  
-> **Trạng thái**: `[~] Đã có log 5 epoch; chưa đủ bằng chứng nghiệm thu toàn bộ DoD. G7.2 chưa được kết luận.`  
+> **Ngày cập nhật**: 10/11/2026; phần log train bên dưới là hồ sơ gốc ngày 05/11.
+> **Trạng thái**: `[~] Có log 5 epoch; source Anchored v2 sau đó được đóng gói/đo ở run corrected 09/11: G7.2 FAIL 6/8, G7.3 pending. Không đồng nghĩa toàn bộ DoD train đã đóng.`
 > **Phạm vi**: Đối chiếu hiện vật đã lưu trong repo; không phải kết quả chạy lại huấn luyện hoặc nạp lại checkpoint trên Drive.
 
 ## 1. Nguồn bằng chứng và giới hạn xác minh
+
+Cập nhật sau huấn luyện: package hiện hành nguồn `5cd49252…` là `24869052…`, xem [báo cáo 7.15](bao_cao_task_7.15_unified_packaging.md). Pilot preprocessing mới ngày 09/11 chọn P0 epoch 5 nhưng matched evaluation ngày 10/11 chỉ đạt 4/8 tiêu chí; không thay checkpoint/report hiện hành. [Báo cáo vòng cải thiện](bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md) giữ riêng log mới có optimizer trace và log cũ có NaN; không suy ngược telemetry cũ hoặc coi pilot là huấn luyện lại chính run này.
 
 Bộ hiện vật tại [`DATASET/logs/anchored_v2_run1/`](../../../DATASET/logs/anchored_v2_run1/) gồm 9 tệp:
 
@@ -20,7 +22,7 @@ Bộ hiện vật tại [`DATASET/logs/anchored_v2_run1/`](../../../DATASET/logs
 - [`checkpoint_latest.pth.sha256`](../../../DATASET/logs/anchored_v2_run1/checkpoint_latest.pth.sha256): chuỗi checksum của latest; không kèm tệp `.pth` trong bộ hiện vật này.
 - [`task_7.11_train_anchored_v2_colab.ipynb`](../../../DATASET/logs/anchored_v2_run1/task_7.11_train_anchored_v2_colab.ipynb): notebook có output chọn L4, resume và bảng validation. Output subprocess chi tiết của preflight/training không được lưu đầy đủ trong notebook.
 
-Theo `run_config.yaml`, nơi backup dự kiến là `/content/drive/MyDrive/Fatformer/checkpoint/phase7/anchored_v2_run1/`, tên best là `fatformer_anchored_v2_best.pth`. Chưa trực tiếp xác minh tệp best/latest trên Drive, kích thước, nội dung hay checksum đối chiếu với tệp thực. Sidecar checksum riêng lẻ không thay cho kiểm chứng checkpoint.
+Theo `run_config.yaml`, nơi backup là `/content/drive/MyDrive/Fatformer/checkpoint/phase7/anchored_v2_run1/`, tên best là `fatformer_anchored_v2_best.pth`. Bộ hiện vật train ngày 05/11 riêng lẻ chưa xác minh nội dung best/latest. Các run GPU corrected/matched sau đó ràng buộc source best SHA `5cd49252…`, canonical load và package verification; local vẫn không có file source để băm/forward lại. Sidecar checksum riêng lẻ không thay cho kiểm chứng checkpoint.
 
 ## 2. Cấu hình thực tế đã lưu
 

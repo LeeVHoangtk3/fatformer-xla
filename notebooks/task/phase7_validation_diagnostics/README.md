@@ -1,6 +1,8 @@
 # Chẩn đoán validation trước vòng train tiếp theo
 
-Trạng thái 10/11/2026: đã kiểm kê dữ liệu và chuẩn bị code; **chưa chạy forward chẩn đoán trên GPU**. Không cần sửa hoặc chạy lại notebook P0 evaluation cũ. Mở một notebook Colab mới để giữ nguyên bằng chứng đã chạy.
+Trạng thái 10/11/2026: đã kiểm kê dữ liệu, chuẩn bị code và tạo [notebook Colab chạy sẵn ba cell](phase7_validation_diagnostics_colab.ipynb); **chưa chạy forward chẩn đoán trên GPU**. Tải notebook này lên Colab và chạy lần lượt; không cần tự chép cell hoặc sửa notebook P0 evaluation cũ.
+
+[Mở notebook trực tiếp trên Google Colab từ nhánh hoang](https://colab.research.google.com/github/LeeVHoangtk3/fatformer-xla/blob/hoang/notebooks/task/phase7_validation_diagnostics/phase7_validation_diagnostics_colab.ipynb).
 
 Luồng này lấy code trực tiếp từ Git nhánh `hoang`, không cần ZIP code. Nó chỉ đo hai checkpoint đã đóng băng trên `val_select`, không train, không hiệu chuẩn lại, không đọc ảnh CFE/test benchmark và không thay gói deployment.
 
@@ -15,7 +17,9 @@ MyDrive/Fatformer/
 
 Hash được khóa trong [`configs/phase7_validation_diagnostics/plan.json`](../../../configs/phase7_validation_diagnostics/plan.json). Không đổi tên model khác để lấp vào các đường dẫn này. Checkpoint có đầy đủ backbone nên không yêu cầu tải lại `ViT-L-14.pt` riêng.
 
-## 2. Chạy ba cell trên runtime Colab mới
+## 2. Mở notebook đã tạo trên runtime Colab mới
+
+File: `notebooks/task/phase7_validation_diagnostics/phase7_validation_diagnostics_colab.ipynb`. Notebook khóa code tại commit `0dabd725e5b7a351514a9b7ee34f4bd6014b584f` thuộc nhánh `hoang`, đã kiểm thử 41 test CPU/code. Ba cell dưới đây là bản hướng dẫn tương ứng, không phải yêu cầu tạo thêm notebook khác.
 
 Chọn GPU CUDA đủ bộ nhớ; có thể là T4, L4, A100 hoặc GPU CUDA tương thích khác. Runner probe cả hai model, chốt batch chung trước khi đo; không tự giảm batch giữa chừng.
 
@@ -34,15 +38,19 @@ from pathlib import Path
 import subprocess
 
 REPO = Path('/content/fatformer-xla')
+PINNED_COMMIT = '0dabd725e5b7a351514a9b7ee34f4bd6014b584f'
 assert not REPO.exists(), 'Dùng runtime mới để không ghi đè repo hoặc thay đổi chưa lưu'
 subprocess.run([
     'git', 'clone', '--branch', 'hoang', '--single-branch',
     'https://github.com/LeeVHoangtk3/fatformer-xla.git', str(REPO)
 ], check=True)
+subprocess.run(['git', 'checkout', '--detach', PINNED_COMMIT], cwd=REPO, check=True)
+subprocess.run(['git', 'merge-base', '--is-ancestor', PINNED_COMMIT, 'origin/hoang'], cwd=REPO, check=True)
 assert (REPO / 'notebooks/task/phase7_validation_diagnostics/start_colab.py').is_file(), 'Nhánh Git chưa có code chẩn đoán'
 DIAG_COMMIT = subprocess.check_output(
     ['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True
 ).strip()
+assert DIAG_COMMIT == PINNED_COMMIT
 print('Commit đã khóa cho phiên này:', DIAG_COMMIT)
 ```
 
@@ -52,7 +60,7 @@ print('Commit đã khóa cho phiên này:', DIAG_COMMIT)
 DIAG_REPO = str(REPO)
 DIAG_MAX_BATCH = 16
 exec(compile(
-    (REPO / 'notebooks/task/phase7_validation_diagnostics/start_colab.py').read_text(),
+    (REPO / 'notebooks/task/phase7_validation_diagnostics/start_colab.py').read_text(encoding='utf-8'),
     'start_colab.py', 'exec'
 ))
 ```

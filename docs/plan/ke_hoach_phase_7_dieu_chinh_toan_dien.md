@@ -1,7 +1,7 @@
 # KẾ HOẠCH PHASE 7 — TÁI LẬP ĐO LƯỜNG & HỢP NHẤT MÔ HÌNH FATFORMER-XLA
 
 <!-- PHASE7_CURRENT_BEGIN -->
-## Trạng thái thực tế ngày 09/11/2026
+## Trạng thái thực tế cập nhật ngày 10/11/2026
 
 Task 7.16 đã biên soạn 11/11 tài liệu, Chương 5, slide 6 trang và hồ sơ nghiệm thu. **Chờ cross-review và chữ ký thật A/B/C**; không xác nhận thay con người.
 
@@ -13,6 +13,12 @@ Task 7.16 đã biên soạn 11/11 tài liệu, Chương 5, slide 6 trang và h�
 | G7.3 | **PENDING** | 20 ảnh và overhead L4 0,188055 ms/ảnh đạt; thiếu reference tốt nhất theo điều kiện. |
 
 Hồ sơ: [biên bản và checklist](../milestones/milestone_phase7_acceptance.md) và [bảng số cũ → mới → nguồn](../bao_cao/overall/bao_cao_ra_soat_so_lieu_phase7.md). GPU có thể là bất kỳ CUDA GPU đủ VRAM; kết quả latency hiện có chỉ được đo trên L4/FP16. Các mốc và số liệu cũ phía dưới là kế hoạch/hồ sơ lịch sử, không thay phán quyết hiện hành.
+### Bổ sung ngày 10/11/2026 — vòng cải thiện 1 và chẩn đoán vòng 2
+
+Pilot `pilot_20261109_182359` đã train hai nhánh mới ×5 epoch/seed42, chọn P0 bằng `val_select`: worst-group P0 42%, P1 35,33%. Matched evaluation `p0_eval_20261110_065901` sau đó cho P0 **G7.2 FAIL, đạt 4/8 tiêu chí**, incumbent refit **FAIL, đạt 6/8**. Vòng 1 chưa tìm được model thay thế; package `24869052…` và kết quả corrected hiện hành được giữ nguyên. Worst-group validation khác worst-subset CFE; pilot này không thay ablation bốn nhánh 7.12.
+
+[Nhật ký và báo cáo mới](../bao_cao/C/bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md) phân biệt weights nguồn, package deployment, package refit và giới hạn CI. [Kế hoạch tiếp theo](ke_hoach_cai_thien_phase7_sau_vong1.md) bắt đầu bằng [notebook chẩn đoán validation](../../notebooks/task/phase7_validation_diagnostics/phase7_validation_diagnostics_colab.ipynb), khóa code `0dabd72`, đo 1.080 ảnh clean/Q30 trên hai checkpoint. **Notebook đã chuẩn bị, chưa chạy GPU và chưa train vòng 2**; không chấm CFE hoặc thay deployment trong bước chẩn đoán. G7.3 vẫn thiếu verified best-by-condition reference; chữ ký/cross-review không được xác nhận tự động.
+
 <!-- PHASE7_CURRENT_END -->
 
 
@@ -47,7 +53,7 @@ Thứ tự bắt buộc: **(1) sửa cho đúng thước đo → (2) thắng nha
 ### 0.2 Ba câu chốt
 
 1. **Số liệu WiSE-FT đang lưu hành (CFE 52.05% / Fake 4.10%, và cả in-dist 96.58%) không dùng được** cho tới khi đo lại ở Task 7.1 & 7.6. Anchored và Baseline thì hợp lệ. — *(chỉ để tham khảo lịch sử; không phải số hiện hành)*
-2. **Nút thắt thật của OOD không phải kiến trúc, mà là (a) ngưỡng/hiệu chuẩn, (b) vùng dữ liệu huấn luyện quá hẹp, (c) tín hiệu tần số bị bỏ phí.** Kiến trúc tự định tuyến chỉ có nghĩa sau khi 3 điểm trên được xử lý.
+2. **Các giả thuyết cần kiểm tra về OOD gồm ngưỡng/hiệu chuẩn, độ phủ dữ liệu và cách dùng tín hiệu tần số.** Chưa có ablation nhân quả đủ để loại trừ kiến trúc hoặc xác định nguyên nhân chính. Pilot vòng 1 không tạo model thay thế tốt hơn; [chẩn đoán validation vòng 2](ke_hoach_cai_thien_phase7_sau_vong1.md) sẽ bổ sung bằng chứng trước khi chọn can thiệp tiếp.
 3. **Mọi con số phải kèm điều kiện vận hành** `TPR@FPR` và một tập hiệu chuẩn tách rời. Bỏ "overall accuracy" làm chỉ số chính.
 
 ---
@@ -84,7 +90,7 @@ Hệ quả: `n=3 → {7,15,23}`, `n=8 → {2,5,8,11,14,17,20,23}`, `n=6 → {3,7
 | **F1** | WiSE-FT Gen 1 không biểu diễn được bằng kiến trúc hiện tại (10 khối). | Phải tái tạo Gen 2; số liệu cũ bị đánh dấu `invalid_layout`. |
 | **F2** | Tại `7,15,23`, Gen 1 mất nhánh SRM/Gating (66 vs 94 tensor/khối). | Không thể "phục hồi" Gen 1; chỉ dùng để so sánh "nếu nạp `n=8`". |
 | **F3** | Anchored hợp lệ và **thực sự** báo oan: Real 48,1% (clean) tại `T*=0.40`, AUC Q30 = 50,07. | Vấn đề của Anchored là ngưỡng + shortcut, xử lý được bằng Task 7.4 + 7.9. |
-| **F4** | Dữ liệu huấn luyện: 3.600 ảnh, 3.060/540, `generator ∈ {real, stable_diffusion, midjourney}`, `source = diffusion_staging` duy nhất. CFE có 4.803 bộ sinh. | Khoảng trống phủ dữ liệu là nguyên nhân gốc số 1 của OOD ⇒ Task 7.7 bắt buộc. |
+| **F4** | Dữ liệu xuất phát: 3.600 ảnh, 3.060/540, `generator ∈ {real, stable_diffusion, midjourney}`, `source = diffusion_staging` duy nhất. CFE có 4.803 bộ sinh. | Giới hạn độ phủ là giả thuyết cần kiểm chứng ⇒ Task 7.7 mở rộng dữ liệu. Chưa có thí nghiệm đủ để gán là nguyên nhân gốc số 1; kho v2 và pilot sau đó phải được đánh giá riêng. |
 | **F5** | Tín hiệu pháp y bị bỏ phí: `CLIPModel.srm = None`, `gating = None`; SRM chỉ tiêm trong adapter với hệ số `0.1`. | Task 7.9 + 7.13 phải định tuyến lại vai trò nhánh tần số. |
 | **F6** | Tiêu chí chọn checkpoint chỉ dựa composite 540 ảnh sạch, không có nhóm OOD/suy biến. | Task 7.10 đổi sang worst-group + ràng buộc Real. |
 

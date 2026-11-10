@@ -1,6 +1,8 @@
 # BÁO CÁO KẾT QUẢ THỰC NGHIỆM: TASK 7.12
 ## Ablation Guard / Feature trên dữ liệu v2 — seed 42
 
+**Bổ sung 10/11/2026:** pilot preprocessing P0/P1 sau đó là thí nghiệm hai nhánh khác, không thay ablation A1–A4 trong báo cáo này. P0 được chọn theo validation nhưng chỉ đạt 4/8 tiêu chí G7.2 trong matched evaluation; incumbent hiện hành giữ 6/8 và G7.3 pending. Chưa có bằng chứng mới để quy kết Guard/Feature là nguyên nhân chính. Xem [báo cáo vòng cải thiện và chẩn đoán tiếp](bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md).
+
 > **Cập nhật**: 07/11/2026.
 >
 > **Run**: `ablation_v2_fixed_run1`, commit `7f1c5868ef7582c6d5f1f5a4abef1daef9476b75`.
