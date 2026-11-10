@@ -1,0 +1,42 @@
+{
+  "schema": "phase7-pilot-evaluation-plan/v1",
+  "source_pilot": "pilot_20261109_182359",
+  "selected_on": "val_select only, before this evaluation",
+  "models": {
+    "candidate_p0": {
+      "drive_path": "phase7/improvement_round1/pilot_20261109_182359/p0_legacy_full/best.pth",
+      "sha256": "9d97613c5f271801a30ff514326557f262a372abeb4d52ce864c78f20fc1069b"
+    },
+    "incumbent_refit": {
+      "drive_path": "checkpoint/phase7/anchored_v2_run1/fatformer_anchored_v2_best.pth",
+      "sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c"
+    }
+  },
+  "partitions": {
+    "calibration": {
+      "file": "configs/phase7_pilot_eval/calibration_split.json",
+      "sha256": "26960ff6adb78737c7aa872e2ed43e18378735b45de9a945f40134496d01521d",
+      "n": 400,
+      "real": 200,
+      "fake": 200
+    },
+    "evaluation": {
+      "file": "configs/phase7_pilot_eval/evaluation_split.json",
+      "sha256": "b8b5b60051ab4f8016e90291d2e86b47c7b9f843b79621e42380aaa0b56822f8",
+      "n": 1600,
+      "real": 800,
+      "fake": 800
+    }
+  },
+  "precision": "fp16",
+  "max_batch_size": 16,
+  "calibration_policy": "Both source checkpoints recalibrated independently on the same frozen 400 IDs, same GPU/batch/backend and converged optimizer.",
+  "reference_scope": "incumbent WEIGHTS recalibrated, not an exact replay of deployed package 24869052; original deployment remains unchanged.",
+  "scientific_status": "post-hoc evaluation; these test IDs have been inspected before; no new blind-test claim.",
+  "G73": "pending verified best-by-condition references even if matched-incumbent comparison passes",
+  "archives": {
+    "test_communityforensics.tar": "159b47e501686295be8f0edf879fb1a3070a0cf5b85c8157b0abd6bd5744f059",
+    "test_benchmark_gans.tar": "460eed863629b13ed7b574e5857c6a9afe848c45453a34c2defb7f3400a7539a",
+    "test_benchmark_diffusion.tar": "7938bd7d90ca1d63c2d36fb0d80280ad0a5f77b8b7db6b468555e3f752820726"
+  }
+}

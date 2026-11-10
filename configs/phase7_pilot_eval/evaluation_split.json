@@ -1,0 +1,6410 @@
+{
+  "split": "evaluation",
+  "samples": [
+    {
+      "sample_id": "1_commercial/0/real_0000_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0001_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0003_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0004_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0005_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0008_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0009_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0010_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0012_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0013_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0014_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0015_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0016_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0017_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0018_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0019_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0020_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0022_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0023_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0024_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0026_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0027_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0028_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0029_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0030_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0031_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0032_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0033_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0034_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0037_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0039_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0040_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0041_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0042_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0043_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0044_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0046_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0047_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0048_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0049_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0050_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0052_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0053_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0054_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0056_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0057_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0058_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0059_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0060_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0062_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0063_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0064_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0065_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0067_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0068_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0069_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0070_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0071_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0072_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0073_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0074_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0075_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0076_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0077_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0078_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0080_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0081_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0084_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0085_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0087_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0089_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0090_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0091_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0092_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0093_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0094_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0095_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0097_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0099_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0101_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0102_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0103_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0104_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0105_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0106_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0107_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0108_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0109_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0110_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0111_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0112_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0113_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0114_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0115_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0117_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0118_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0119_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0120_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0121_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0122_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0123_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0124_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0126_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0132_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0133_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0134_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0137_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0138_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0139_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0140_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0141_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0144_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0145_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0148_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0149_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0153_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0154_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0155_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0156_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0157_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0158_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0159_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0160_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0161_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0162_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0163_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0164_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0165_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0167_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0168_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0169_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0170_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0172_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0173_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0174_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0175_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0176_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0177_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0178_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0181_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0182_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0183_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0184_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0185_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0186_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0187_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0188_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0189_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0190_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0191_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0192_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0194_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0195_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0196_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0198_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0200_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0201_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0202_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0204_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0205_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0206_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0207_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0208_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0209_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0210_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0211_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0212_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0213_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0214_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0215_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0216_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0217_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0219_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0220_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0221_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0223_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0225_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0226_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0227_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0228_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0229_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0231_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0233_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0234_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0235_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0237_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0240_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0241_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0242_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0243_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0244_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0245_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0246_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0247_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0249_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0251_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0254_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0255_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0256_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0257_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0258_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0259_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0261_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0262_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0263_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0264_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0265_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0266_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0267_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0269_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0270_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0271_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0272_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0273_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0274_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0275_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0277_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0278_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0279_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0280_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0281_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0282_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0283_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0284_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0286_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0287_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0288_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0289_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0290_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0291_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0292_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0293_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0294_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0295_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0296_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0298_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/0/real_0299_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0000_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0001_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0002_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0003_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0004_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0005_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0006_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0007_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0008_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0009_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0010_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0011_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0012_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0014_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0015_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0017_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0018_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0019_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0020_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0021_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0022_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0023_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0025_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0026_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0027_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0029_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0030_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0031_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0032_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0033_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0035_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0036_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0037_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0038_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0039_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0040_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0041_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0042_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0043_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0044_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0045_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0046_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0049_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0050_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0051_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0052_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0053_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0054_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0055_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0056_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0057_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0059_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0060_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0061_MidjourneyV5_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0062_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0063_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0066_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0067_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0068_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0069_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0071_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0072_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0073_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0074_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0076_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0077_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0078_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0079_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0081_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0083_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0084_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0085_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0086_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0087_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0088_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0089_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0090_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0091_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0093_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0094_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0095_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0096_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0097_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0098_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0099_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0100_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0101_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0103_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0104_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0105_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0106_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0108_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0109_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0110_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0112_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0113_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0115_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0116_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0117_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0118_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0119_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0120_Firefly_Image3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0122_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0123_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0126_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0127_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0128_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0129_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0130_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0131_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0132_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0133_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0134_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0135_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0136_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0137_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0138_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0139_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0141_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0142_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0143_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0144_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0145_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0147_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0148_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0149_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0151_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0153_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0154_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0155_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0156_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0157_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0158_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0159_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0160_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0161_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0162_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0163_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0164_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0165_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0167_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0168_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0169_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0171_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0172_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0173_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0176_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0177_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0178_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0179_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0181_Firefly_Image2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0182_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0183_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0185_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0186_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0187_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0188_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0189_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0191_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0192_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0193_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0195_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0197_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0200_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0201_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0203_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0204_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0205_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0206_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0207_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0209_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0210_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0211_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0212_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0213_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0215_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0216_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0217_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0218_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0219_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0220_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0222_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0224_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0225_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0226_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0227_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0228_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0229_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0230_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0231_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0232_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0233_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0236_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0237_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0238_MidjourneyV6_1.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0240_Dalle2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0241_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0243_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0244_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0245_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0246_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0247_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0248_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0249_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0251_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0253_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0254_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0256_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0258_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0259_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0262_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0264_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0265_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0266_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0267_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0268_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0269_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0270_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0271_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0272_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0273_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0274_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0276_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0277_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0278_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0279_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0281_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0284_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0286_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0287_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0290_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0291_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0292_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0293_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0295_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0296_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "1_commercial/1/fake_0299_Dalle3.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0000_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0001_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0003_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0004_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0005_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0007_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0008_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0009_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0011_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0012_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0013_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0014_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0016_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0017_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0018_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0019_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0020_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0021_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0022_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0023_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0025_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0026_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0027_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0028_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0029_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0030_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0031_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0032_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0033_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0034_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0035_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0036_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0037_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0038_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0039_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0041_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0042_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0044_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0045_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0047_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0048_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0049_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0050_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0051_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0052_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0053_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0054_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0055_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0056_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0057_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0058_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0059_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0060_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0061_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0062_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0063_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0064_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0065_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0066_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0067_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0068_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0069_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0070_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0072_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0074_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0075_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0076_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0077_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0078_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0079_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0080_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0082_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0083_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0084_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0085_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0086_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0088_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0089_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0091_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0092_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0093_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0094_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0095_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0096_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0097_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0098_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0099_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0100_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0101_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0102_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0103_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0104_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0105_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0106_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0107_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0109_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0110_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0111_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0112_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0114_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0115_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0116_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0118_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0119_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0120_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0122_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0123_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0124_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0128_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0129_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0130_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0131_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0132_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0136_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0137_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0138_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0140_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0141_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0142_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0143_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0144_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0146_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0147_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0148_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0149_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0150_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0151_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0152_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0153_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0155_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0156_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0158_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0159_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0160_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0161_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0162_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0163_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0164_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0165_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0166_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0169_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0171_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0172_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0173_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0175_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0176_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0177_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0178_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0179_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0180_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0181_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0182_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0183_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0184_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0185_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0186_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0187_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0188_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0189_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0190_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0191_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0192_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0194_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0195_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0196_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0197_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0199_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0200_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0201_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0202_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0203_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0204_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0205_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0206_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0207_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0208_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0209_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0210_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0211_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0212_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0215_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0216_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0217_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0218_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0219_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0220_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0221_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0222_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0223_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0224_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0225_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0226_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0227_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0228_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0229_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0230_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0231_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0232_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0233_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0234_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0235_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0236_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0237_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0238_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0239_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0240_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0241_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0242_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0243_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0246_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0247_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0248_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0249_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0250_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0253_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0255_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0256_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0259_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0260_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0261_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0262_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0264_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0265_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0266_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0267_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0268_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0269_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0270_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0271_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0272_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0273_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0274_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0275_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0276_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0277_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0278_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0280_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0281_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0283_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0284_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0285_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0286_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0287_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0288_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0289_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0290_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0291_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0294_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0296_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0297_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/0/real_0299_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0001_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0003_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0005_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0006_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0007_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0008_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0009_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0010_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0011_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0012_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0013_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0014_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0015_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0016_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0017_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0018_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0019_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0020_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0021_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0022_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0023_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0024_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0025_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0029_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0030_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0031_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0032_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0033_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0034_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0035_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0036_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0037_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0038_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0039_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0040_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0042_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0044_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0046_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0047_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0048_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0049_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0051_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0052_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0053_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0054_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0055_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0056_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0057_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0058_LCM_lora_sdxl.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0060_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0062_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0063_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0064_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0066_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0067_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0068_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0069_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0070_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0071_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0072_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0073_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0074_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0075_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0076_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0077_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0078_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0080_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0082_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0083_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0084_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0087_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0088_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0089_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0091_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0092_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0093_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0094_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0095_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0096_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0097_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0098_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0099_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0100_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0101_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0102_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0103_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0105_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0107_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0108_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0110_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0111_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0114_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0116_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0118_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0119_kvikontent_midjourney_v6.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0120_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0121_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0122_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0123_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0124_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0125_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0126_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0127_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0129_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0130_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0131_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0132_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0133_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0134_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0136_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0137_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0138_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0139_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0141_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0143_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0144_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0145_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0146_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0147_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0148_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0149_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0150_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0151_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0152_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0153_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0155_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0156_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0157_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0158_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0160_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0161_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0162_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0164_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0165_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0166_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0167_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0168_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0169_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0171_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0173_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0174_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0175_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0177_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0178_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0179_LCM_lora_sdv15.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0180_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0182_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0183_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0184_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0185_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0188_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0189_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0190_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0191_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0192_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0193_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0194_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0195_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0196_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0197_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0198_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0199_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0200_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0201_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0203_DeciDiffusionV2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0204_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0205_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0206_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0207_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0208_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0209_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0211_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0212_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0213_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0214_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0215_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0217_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0219_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0220_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0221_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0222_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0223_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0224_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0225_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0227_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0228_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0229_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0230_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0231_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0232_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0233_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0234_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0235_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0236_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0237_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0239_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0240_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0241_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0243_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0245_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0246_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0248_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0250_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0251_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0252_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0253_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0254_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0255_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0256_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0257_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0258_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0259_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0262_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0263_kandinsky_2_2.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0264_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0265_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0266_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0267_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0268_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0269_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0270_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0271_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0273_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0274_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0275_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0276_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0278_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0280_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0281_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0282_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0283_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0284_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0287_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0288_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0289_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0290_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0292_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0294_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0295_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0296_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "2_latent_diffusion/1/fake_0299_LCM_lora_ssd1b.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0000_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0001_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0002_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0003_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0004_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0006_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0007_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0009_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0010_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0011_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0012_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0014_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0015_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0016_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0017_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0018_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0019_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0021_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0022_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0025_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0027_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0028_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0031_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0032_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0033_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0034_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0036_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0037_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0039_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0040_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0041_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0042_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0043_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0044_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0045_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0046_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0047_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0048_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0049_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0051_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0053_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0054_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0055_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0056_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0057_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0058_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0059_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0061_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0063_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0065_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0066_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0067_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0068_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0069_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0070_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0072_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0075_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0076_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0077_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0078_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0079_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0080_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0081_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0082_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0083_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0084_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0085_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0086_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0087_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0088_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0089_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0090_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0091_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0092_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0093_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0094_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0095_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0096_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0098_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0099_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0100_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0102_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0104_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0105_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0106_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0107_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0109_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0111_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0112_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0113_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0114_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0115_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0116_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0117_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0118_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0119_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0120_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0121_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0122_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0123_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0125_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0127_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0128_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0129_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0130_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0131_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0132_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0133_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0134_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0135_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0136_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0137_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0138_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0139_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0140_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0141_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0142_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0143_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0144_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0145_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0147_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0148_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0149_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0152_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0154_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0155_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0157_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0159_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0160_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0161_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0162_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0163_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0165_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0166_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0168_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0169_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0170_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0172_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0174_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0175_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0176_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0177_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0178_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0179_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0180_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0182_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0183_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0184_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0185_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0186_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0188_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0190_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0191_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0192_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0193_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0194_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0195_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0196_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0198_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/0/real_0199_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0000_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0001_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0002_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0005_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0006_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0007_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0008_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0009_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0010_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0011_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0014_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0015_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0016_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0017_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0018_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0019_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0020_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0021_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0022_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0023_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0024_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0025_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0026_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0027_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0028_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0029_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0030_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0031_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0032_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0033_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0034_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0035_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0036_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0038_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0040_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0041_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0042_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0043_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0046_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0047_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0048_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0049_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0051_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0052_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0053_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0055_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0057_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0058_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0059_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0060_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0061_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0062_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0063_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0064_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0065_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0067_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0068_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0070_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0071_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0072_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0073_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0075_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0076_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0077_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0078_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0079_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0080_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0081_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0082_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0084_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0085_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0086_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0087_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0088_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0089_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0090_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0091_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0092_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0094_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0095_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0096_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0099_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0100_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0102_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0103_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0104_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0105_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0106_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0110_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0111_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0114_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0115_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0116_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0117_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0118_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0119_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0120_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0121_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0123_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0124_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0125_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0126_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0128_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0129_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0130_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0131_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0132_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0134_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0135_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0136_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0137_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0139_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0140_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0141_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0142_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0144_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0145_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0146_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0147_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0149_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0150_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0152_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0153_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0156_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0157_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0158_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0159_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0160_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0161_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0162_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0163_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0164_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0166_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0168_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0169_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0170_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0172_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0173_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0174_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0175_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0176_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0177_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0178_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0180_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0182_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0186_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0187_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0188_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0189_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0190_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0191_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0192_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0193_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0195_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0196_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0197_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0198_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "3_pixel_diffusion/1/fake_0199_Hourglass.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0000_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0001_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0002_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0003_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0004_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0007_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0008_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0009_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0011_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0012_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0013_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0015_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0016_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0017_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0018_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0019_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0020_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0021_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0022_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0023_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0024_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0025_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0026_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0027_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0028_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0029_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0031_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0032_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0033_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0034_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0036_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0037_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0038_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0040_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0041_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0042_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0043_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0044_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0045_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0046_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0047_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0049_ffhq.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0050_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0051_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0052_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0054_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0055_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0058_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0061_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0062_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0063_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0064_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0066_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0068_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0069_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0070_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0071_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0072_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0073_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0074_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0075_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0076_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0077_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0078_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0079_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0080_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0082_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0083_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0084_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0086_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0087_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0088_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0090_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0093_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0094_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0095_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0097_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/0/real_0099_coco.png",
+      "target": 0
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0000_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0001_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0002_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0003_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0004_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0006_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0007_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0008_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0009_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0010_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0011_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0012_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0013_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0014_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0015_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0016_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0017_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0018_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0019_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0020_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0021_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0022_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0023_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0024_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0025_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0027_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0028_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0029_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0031_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0032_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0033_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0034_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0035_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0036_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0039_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0040_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0044_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0045_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0046_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0047_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0048_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0049_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0050_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0051_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0052_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0054_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0056_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0057_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0058_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0059_DFGAN.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0060_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0061_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0062_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0063_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0064_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0065_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0066_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0067_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0068_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0069_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0071_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0072_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0073_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0076_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0078_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0079_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0080_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0081_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0083_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0084_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0085_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0086_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0087_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0088_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0089_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0090_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0091_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0093_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0094_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0095_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0096_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0098_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "4_modern_gans/1/fake_0099_GALIP.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0001_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0002_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0005_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0006_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0007_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0008_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0009_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0010_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0011_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0012_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0013_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0015_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0017_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0018_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0019_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0020_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0022_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0023_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0024_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0025_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0026_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0027_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0028_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0029_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0030_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0032_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0035_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0036_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0037_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0038_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0039_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0040_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0042_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0043_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0044_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0047_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0048_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0049_laion.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0051_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0052_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0053_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0054_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0055_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0056_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0057_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0058_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0059_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0061_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0062_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0064_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0065_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0066_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0067_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0068_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0069_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0070_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0071_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0073_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0074_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0075_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0077_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0079_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0081_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0082_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0083_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0084_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0085_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0086_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0088_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0089_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0092_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0097_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0098_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/0/real_0099_raise.png",
+      "target": 0
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0000_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0001_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0003_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0006_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0007_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0008_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0009_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0010_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0012_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0013_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0014_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0015_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0016_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0017_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0018_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0019_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0020_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0021_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0022_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0023_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0024_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0025_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0026_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0027_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0028_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0029_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0030_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0031_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0032_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0033_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0034_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0037_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0038_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0039_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0040_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0041_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0042_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0044_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0045_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0046_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0047_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0048_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0049_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0050_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0051_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0052_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0053_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0055_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0056_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0058_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0059_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0060_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0061_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0062_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0063_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0064_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0065_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0066_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0067_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0068_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0069_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0070_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0071_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0074_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0075_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0076_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0077_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0078_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0080_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0081_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0083_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0086_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0087_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0088_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0089_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0092_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0093_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0094_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0095_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0096_stable_cascade.png",
+      "target": 1
+    },
+    {
+      "sample_id": "5_other_autoregressive/1/fake_0098_stable_cascade.png",
+      "target": 1
+    }
+  ],
+  "provenance": {
+    "original_npz": "DATASET/logs/phase7/wise_ft_sweep/logits_baseline_clean_eval_split.npz",
+    "original_npz_sha256": "ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9",
+    "note": "IDs and labels only, unchanged order; no logits or model scores exported."
+  }
+}

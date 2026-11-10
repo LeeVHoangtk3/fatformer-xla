@@ -31,10 +31,10 @@ def select_fitting_batch(attempt,candidates):
     raise RuntimeError('No batch fits, including batch 1; free VRAM or use a GPU with more memory')
 
 
-def probe(checkpoint,output,max_batch_size=16):
+def probe(checkpoint,output,max_batch_size=16,expected_checkpoint_sha=TRAINING_SHA):
     if max_batch_size<1:raise ValueError('max_batch_size must be positive')
     if not torch.cuda.is_available():raise RuntimeError('A compatible CUDA GPU is required')
-    if sha256_file(checkpoint)!=TRAINING_SHA:raise ValueError('Wrong training checkpoint')
+    if sha256_file(checkpoint)!=expected_checkpoint_sha:raise ValueError('Wrong training checkpoint')
     device=torch.device('cuda')
     free,total=torch.cuda.mem_get_info(device)
     report=dict(schema='phase7_gpu_memory_probe/v1',status='running',gpu_name=torch.cuda.get_device_name(device),
@@ -47,7 +47,8 @@ def probe(checkpoint,output,max_batch_size=16):
                          use_srm=True,use_gating=True,num_vit_adapter=3,num_context_embedding=8)
     torch.backends.cuda.matmul.allow_tf32=False
     torch.backends.cudnn.allow_tf32=False
-    model,_=load_canonical(checkpoint,args)
+    model,load_report=load_canonical(checkpoint,args)
+    report['canonical_load']={key:load_report[key] for key in ['sha256','missing','unexpected','layout','n_keys']}
     model=model.to(device).eval()
     def attempt(batch):
         torch.cuda.reset_peak_memory_stats(device)
@@ -71,6 +72,7 @@ def main():
     parser.add_argument('--checkpoint',required=True)
     parser.add_argument('--output',required=True)
     parser.add_argument('--max_batch_size',type=int,default=16)
+    parser.add_argument('--expected_checkpoint_sha',default=TRAINING_SHA)
     args=parser.parse_args()
     try:
         print(probe(**vars(args)))

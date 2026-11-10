@@ -41,6 +41,15 @@ def test_generated_logs_do_not_make_training_source_dirty(repo):
     assert git_source_identity(repo)['commit']==git(repo,'rev-parse','HEAD')
 
 
+def test_executed_notebook_outputs_are_evidence_not_executable_source(repo):
+    folder=repo/'notebooks/task/phase7_improvement_round1';folder.mkdir(parents=True)
+    (folder/'executed.ipynb').write_text('{"outputs": ["new output"]}')
+    proof=git_source_identity(repo)
+    assert proof['commit']==git(repo,'rev-parse','HEAD')
+    (folder/'start_colab.py').write_text('print("uncommitted code")')
+    with pytest.raises(ValueError,match='differ from the recorded commit'):git_source_identity(repo)
+
+
 def test_wrong_branch_is_rejected(repo):
     git(repo,'switch','-c','other')
     with pytest.raises(ValueError,match='Require branch hoang'):git_source_identity(repo)

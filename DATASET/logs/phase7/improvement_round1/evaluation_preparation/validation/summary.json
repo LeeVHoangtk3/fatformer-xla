@@ -1,0 +1,29 @@
+{
+  "status": "prepared_local_checks_passed_gpu_evaluation_not_run",
+  "unique_tests": 66,
+  "test_files": 6,
+  "runs": [
+    {
+      "file": "evaluation_tests.xml",
+      "cases": 64,
+      "sha256": "1278bab39efb7a966c9ea352442ff8c637c1a3a3803ee0f15073c889f1186c91"
+    },
+    {
+      "file": "orchestration_tests.xml",
+      "cases": 28,
+      "sha256": "603318e7b463bb823b9a468cca9094add142734b18da05453f4bbc0e706f9a7e"
+    },
+    {
+      "file": "final_tests.xml",
+      "cases": 29,
+      "sha256": "f6f12e2f3b16429c9cd5a747bb10c057bead23f9e640587b48c94f8e9ea3f8c7"
+    }
+  ],
+  "deselected_historical_template_test": 1,
+  "deselection_reason": "The old phase7_corrected notebook is executed evidence; do not erase its outputs to satisfy a blank-template assertion.",
+  "old_protected_files_preserved": 87,
+  "submitted_pilot_notebook_unchanged": true,
+  "gpu_evaluation": "not_run",
+  "source_delivery": "Git hoang",
+  "quality_numbers_generated": false
+}

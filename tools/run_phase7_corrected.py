@@ -21,6 +21,8 @@ from tools.infer_unified import load_unified_model
 from tools.phase7_corrected import (CONDITIONS, StrictImageDataset, resolve_cfe, resolve_indist,
                                    validate_inputs, verify_bundle, write_json)
 from tools.run_locked_benchmark_phase7 import evaluate_master_gates
+from tools.phase7_corrected import TRAINING_SHA
+from tools.phase7_git_source import git_source_identity
 
 
 def metrics(probabilities, targets, threshold):
@@ -102,9 +104,10 @@ def run(args):
     if output.exists() and any(output.iterdir()):
         raise ValueError("Use a new empty output directory; do not mix or overwrite runs")
     output.mkdir(parents=True,exist_ok=True)
-    bundle = verify_bundle(args.bundle_root)
+    bundle = git_source_identity(Path(__file__).resolve().parents[1]) if getattr(args,'git_source',False) else verify_bundle(args.bundle_root)
     preflight = validate_inputs(args.reference_checkpoint,args.calibration,args.calibration_logits,
-                                args.calibration_split,args.evaluation_split)
+                                args.calibration_split,args.evaluation_split,
+                                expected_checkpoint=getattr(args,'expected_checkpoint_sha',None) or TRAINING_SHA)
     if preflight['inference_precision']!=args.precision or preflight['extraction_batch_size']!=args.batch_size:
         raise ValueError('Calibration extraction precision/batch must match the benchmark protocol')
     if preflight['probability_device']!=torch.device(args.device).type or preflight['probability_batch_size']!=args.batch_size:
@@ -220,6 +223,8 @@ def main():
     parser.add_argument('--precision',choices=['fp16','fp32'],default='fp16')
     parser.add_argument('--batch_size',type=int,default=8)
     parser.add_argument('--num_workers',type=int,default=2)
+    parser.add_argument('--git_source',action='store_true',help='Verify clean hoang Git checkout instead of the historical ZIP manifest')
+    parser.add_argument('--expected_checkpoint_sha',default=TRAINING_SHA,help='Explicit expected source hash; historical default is preserved')
     args=parser.parse_args()
     if args.batch_size<1 or args.num_workers<0:parser.error('Invalid batch/workers')
     if Path(args.output_dir).exists() and any(Path(args.output_dir).iterdir()):
