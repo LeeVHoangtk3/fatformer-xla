@@ -1,0 +1,39 @@
+{
+  "schema": "phase7-next-experiment-decision-plan/v1",
+  "status": "awaiting_per_image_validation_diagnostics",
+  "training_started": false,
+  "training_arm_locked": false,
+  "deployment_replaced": false,
+  "retained_deployment_sha256": "248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0",
+  "next_measurement": "Frozen P0 and incumbent on 1080 val_select images, clean and Q30 post-crop, with separate historical 300-image Q30 membership.",
+  "required_evidence": [
+    "Matched per-image IDs, labels and checkpoint/manifest/source hashes",
+    "Family/generator recall, image score distributions and pooled ranking metrics",
+    "Historical operating-point results kept separate from diagnostic Real90",
+    "Review of erroneous real images before declaring semantic label defects"
+  ],
+  "conditional_hypotheses": [
+    {
+      "observation": "Ranking remains strong but fixed historical threshold misses fake images",
+      "candidate_hypothesis": "Calibration/operating-point transfer limits recall",
+      "constraint": "Fit only on independent val_calib; preserve Real/FPR constraints; validation-derived Real90 thresholds are not deployment artifacts."
+    },
+    {
+      "observation": "Errors/ranking concentrate in a poorly covered generator/family",
+      "candidate_hypothesis": "Training coverage or label/source issues limit representation",
+      "constraint": "Review train/validation images and re-audit isolation before any added data; no test-image reuse."
+    },
+    {
+      "observation": "Clean ranking is adequate but degrades under post-crop Q30",
+      "candidate_hypothesis": "Degradation robustness needs a controlled intervention",
+      "constraint": "Change one main factor; do not simultaneously change loss, preprocessing, data and training budget."
+    }
+  ],
+  "prohibitions": [
+    "No training launch based solely on existing aggregate recalls",
+    "No model/epoch/seed selection using the inspected CFE test",
+    "No claim of blind test or unseen-generator validation",
+    "No G7.2/G7.3 PASS from a completed diagnostic forward",
+    "No overwrite of historical notebooks, raw logs or incumbent package"
+  ]
+}
