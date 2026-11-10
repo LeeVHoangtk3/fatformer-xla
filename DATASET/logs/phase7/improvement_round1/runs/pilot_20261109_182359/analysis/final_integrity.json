@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "raw_files_identical": 27,
+  "source_bytes_preserved": 1433242,
+  "submitted_notebook_unchanged": true,
+  "notebook_evidence_identical": true,
+  "old_protected_files_preserved": 87,
+  "negative_audit_cases_rejected": 4,
+  "new_auditor_unit_tests_passed": 6,
+  "deployed_model_replaced": false
+}

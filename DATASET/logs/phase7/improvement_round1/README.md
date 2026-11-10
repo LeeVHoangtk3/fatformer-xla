@@ -1,6 +1,16 @@
 # Phase 7 — vòng cải thiện 1, lấy code từ Git nhánh `hoang`
 
-Cập nhật 10/11/2026 theo yêu cầu dùng Git. **Không cần ZIP code. Chưa có lần smoke GPU/train mới hoặc kết quả cải thiện chất lượng.** Kết quả cũ ở `../task_7.15/current/` giữ nguyên: G7.2 FAIL 6/8, G7.3 pending reference.
+Cập nhật 10/11/2026. **Pilot đã chạy đủ hai nhánh × 5 epoch trên L4 và được hậu kiểm; chọn `p0_legacy_full` theo validation.** Chưa có phép đo test/đóng gói cho model mới. Kết quả ở `../task_7.15/current/` giữ nguyên: G7.2 FAIL 6/8, G7.3 pending reference.
+
+## Kết quả mới nhất
+
+Run [`pilot_20261109_182359`](runs/pilot_20261109_182359/README.md), source commit `2665014`: P0 worst-group **42,00%**, P1 **35,33%**; cả hai chọn epoch 5. Kết quả seed này chưa hỗ trợ giả thuyết đổi preprocessing train sang CLIP sẽ tốt hơn. P0 là ứng viên cho calibration/evaluation tiếp, chưa thay model deployment hiện hành.
+
+Đã nhập 27 file từ `wait` vào `runs/<run_id>/raw/`, lưu notebook đã chạy vào `evidence/`, tái tính số cập nhật từ 3.830 record train và đối chiếu 146 source hashes. Có 28.832 phép kiểm tra dữ liệu đạt, không phải số lượng unit test. P0 bỏ qua 1 update, P1 bỏ qua 2; không có update áp dụng norm không hữu hạn. Weights không có trong gói nộp, nên chưa được băm lại hoặc forward tại local.
+
+Xem [hậu kiểm chi tiết](runs/pilot_20261109_182359/README.md), [JSON kiểm tra](runs/pilot_20261109_182359/analysis/verification.json), [tham chiếu model được chọn](runs/pilot_20261109_182359/candidate_reference.json). Các mục dưới đây giữ thiết kế và hướng dẫn chạy; không cần train lại chỉ để hoàn thiện hồ sơ vòng này.
+
+Bước tiếp đã có [hướng dẫn calibration/benchmark P0 và incumbent cùng protocol](../../../../notebooks/task/phase7_pilot_evaluation/README.md), lấy code từ Git nhánh `hoang`. Đây là luồng đánh giá riêng; chưa có kết quả test mới tại thời điểm chuẩn bị.
 
 ## 1. Những vấn đề đã xác định
 

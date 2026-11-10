@@ -1,0 +1,7 @@
+epoch,clean_r,clean_f,q30_r,q30_f,worst,best_effort,threshold,temperature,calibration_source,n_eval_clean,n_eval_q30,q30_source
+0,0.9593220338983051,0.42653061224489797,1.0,0.0,0.0,False,0.9127,1.6402,/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json,1080,300,in_memory_jpeg30_post_resize
+1,0.9779661016949153,0.3979591836734694,1.0,0.03333333333333333,0.03333333333333333,False,0.9127,1.6402,/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json,1080,300,in_memory_jpeg30_post_resize
+2,0.9847457627118644,0.4489795918367347,0.9933333333333333,0.11333333333333333,0.11333333333333333,False,0.9127,1.6402,/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json,1080,300,in_memory_jpeg30_post_resize
+3,0.988135593220339,0.5673469387755102,0.9733333333333334,0.32,0.32,False,0.9127,1.6402,/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json,1080,300,in_memory_jpeg30_post_resize
+4,0.9949152542372881,0.6,0.98,0.37333333333333335,0.37333333333333335,False,0.9127,1.6402,/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json,1080,300,in_memory_jpeg30_post_resize
+5,0.9932203389830508,0.6040816326530613,0.98,0.42,0.42,False,0.9127,1.6402,/content/fatformer-xla/DATASET/logs/phase7/calibration/baseline.json,1080,300,in_memory_jpeg30_post_resize

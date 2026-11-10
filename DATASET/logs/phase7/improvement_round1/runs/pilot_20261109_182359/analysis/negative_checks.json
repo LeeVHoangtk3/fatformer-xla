@@ -1,0 +1,26 @@
+{
+  "cases": [
+    {
+      "case": "wrong_selection",
+      "rejected": true,
+      "reason": "Pilot evidence audit failed: [{\"check\": \"winner_recomputed\", \"detail\": \"\"}]"
+    },
+    {
+      "case": "altered_csv",
+      "rejected": true,
+      "reason": "Pilot evidence audit failed: [{\"check\": \"remote_verification_csv_hash\", \"detail\": \"p0_legacy_full/train_history.csv\"}, {\"check\": \"epoch_loss_decomposition\", \"detail\": \"\"}]"
+    },
+    {
+      "case": "hidden_update",
+      "rejected": true,
+      "reason": "Pilot evidence audit failed: [{\"check\": \"trace_no_applied_nonfinite\", \"detail\": \"\"}, {\"check\": \"epoch_counter_matches_trace\", \"detail\": \"p0_legacy_full/1/optimizer_steps_applied\"}, {\"check\": \"epoch_counter_matches_trace\", \"detail\": \"p0_legacy_full/1/optimizer_steps_skipped\"}]"
+    },
+    {
+      "case": "false_source_hash",
+      "rejected": true,
+      "reason": "Pilot evidence audit failed: [{\"check\": \"git_file_hash\", \"detail\": \"src/training/train_crossdomain.py\"}, {\"check\": \"git_fingerprint\", \"detail\": \"\"}, {\"check\": \"identity_context\", \"detail\": \"\"}, {\"check\": \"identity_context\", \"detail\": \"\"}]"
+    }
+  ],
+  "all_rejected": true,
+  "note": "Tamper checks on temporary copies; submitted originals were never changed."
+}

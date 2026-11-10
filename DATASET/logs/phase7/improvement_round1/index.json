@@ -1,0 +1,11 @@
+{
+  "schema": "phase7-pilot-index/v1",
+  "current_run": "pilot_20261109_182359",
+  "path": "DATASET/logs/phase7/improvement_round1/runs/pilot_20261109_182359",
+  "state": "training_completed_logs_audited",
+  "selected": "p0_legacy_full",
+  "selected_sha256": "9d97613c5f271801a30ff514326557f262a372abeb4d52ce864c78f20fc1069b",
+  "final_model_replaced": false,
+  "G72": "unchanged: FAIL 6/8",
+  "G73": "unchanged: pending matched reference"
+}

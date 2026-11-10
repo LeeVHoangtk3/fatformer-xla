@@ -1,0 +1,19 @@
+{
+  "schema": "phase7-pilot-candidate-reference/v1",
+  "run_id": "pilot_20261109_182359",
+  "arm": "p0_legacy_full",
+  "epoch": 5,
+  "path": "/content/drive/MyDrive/Fatformer/phase7/improvement_round1/pilot_20261109_182359/p0_legacy_full/best.pth",
+  "sha256": "9d97613c5f271801a30ff514326557f262a372abeb4d52ce864c78f20fc1069b",
+  "locally_supplied": false,
+  "evidence": "GPU run_verification reported this hash; local bytes were not supplied, so no local model reload/forward was performed.",
+  "state": "validation_selected; calibration and locked benchmark pending; not a deployment replacement",
+  "deployed_incumbent": "DATASET/logs/phase7/task_7.15/current",
+  "required_next_steps": [
+    "Verify actual weight bytes and canonical load",
+    "Fit checkpoint-specific calibration on frozen 400 IDs",
+    "Evaluate frozen 1600 IDs and 18 in-dist sets",
+    "Matched incumbent/best-reference comparison",
+    "Package/verify same new checkpoint"
+  ]
+}

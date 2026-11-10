@@ -1,0 +1,52 @@
+{
+  "schema": "phase7-preflight/v2",
+  "mode": "train",
+  "ready_to_train": true,
+  "created_at_utc": "2026-11-09T18:59:49.713955+00:00",
+  "config": "/content/phase7_pilot_runs/pilot_20261109_182359/p1_clip_full/run_config.yaml",
+  "config_sha256": "936dc5be06f782c38019ead0075f6e767a61f23107258d354387da3489b9a09e",
+  "data_root": "/content/phase7_pilot_data",
+  "source_sha256": "66d8ca85683359d1c39ab827887ed366b248d34ffaa8c38dd78f3973adfa5921",
+  "preflight_tool_sha256": "c2aa53c0e950ae9b69d883e500cb673493e49da5dd61804e6d4ce1089e16b20a",
+  "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+  "torch": "2.14.1+cu130",
+  "cuda_runtime": "13.0",
+  "checks": {
+    "manifest_and_staged_images": {
+      "status": "PASS",
+      "message": "14400 staged images decoded and matched manifest SHA256"
+    },
+    "bound_isolation_audit": {
+      "status": "PASS",
+      "message": "Passing audit bound to exact manifest and original data config; external reference digests recorded"
+    },
+    "degradation_and_calibration": {
+      "status": "PASS",
+      "message": "v2 clean_prob=.60; manifest val_select; measured frozen calibration is valid"
+    },
+    "loss_tests": {
+      "status": "PASS",
+      "message": "..........................                                               [100%]\n26 passed in 5.09s"
+    },
+    "selection_tests": {
+      "status": "PASS",
+      "message": "...............................                                          [100%]\n31 passed in 9.54s"
+    },
+    "update_evidence_tests": {
+      "status": "PASS",
+      "message": ".........................                                                [100%]\n25 passed in 4.59s"
+    },
+    "baseline_canonical": {
+      "status": "PASS",
+      "message": "Strict canonical load 0/0; baseline_sha256=3b904401ad4ce7d0bc33661e83742ec4b659850c076b73cd544e87e26d8cb3db"
+    },
+    "split_path_and_hash_isolation": {
+      "status": "PASS",
+      "message": "{'train': 12240, 'val_calib': 1080, 'val_select': 1080}; disjoint paths and SHA256"
+    },
+    "gpu_memory_availability": {
+      "status": "PASS",
+      "message": "NVIDIA L4: 21.84 GiB free"
+    }
+  }
+}

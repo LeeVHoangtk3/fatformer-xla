@@ -1,0 +1,29 @@
+{
+  "schema": "phase7-training-pilot-selection/v1",
+  "selection_split": "val_select",
+  "validation_preprocessing": "clip",
+  "arms": {
+    "p0_legacy_full": {
+      "epoch": 5,
+      "clean_r": 0.9932203389830508,
+      "clean_f": 0.6040816326530613,
+      "q30_r": 0.98,
+      "q30_f": 0.42,
+      "worst_group": 0.42,
+      "sha256": "9d97613c5f271801a30ff514326557f262a372abeb4d52ce864c78f20fc1069b"
+    },
+    "p1_clip_full": {
+      "epoch": 5,
+      "clean_r": 0.9983050847457627,
+      "clean_f": 0.5387755102040817,
+      "q30_r": 0.98,
+      "q30_f": 0.35333333333333333,
+      "worst_group": 0.35333333333333333,
+      "sha256": "10b34bb45bac24be93553d8874ac4805ee871bf884119c75dbeabda33c790429"
+    }
+  },
+  "selected": "p0_legacy_full",
+  "tie_break": "p0_legacy_full",
+  "quality_claim": "validation-only; G7.2/G7.3 not evaluated or passed",
+  "next_step": "Freeze selection before new calibration and locked evaluation; use a new unseen test for a generalization claim."
+}

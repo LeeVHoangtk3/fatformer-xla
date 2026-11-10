@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "policy": {
+    "optimizer_steps_expected": 50,
+    "optimizer_steps_attempted": 50,
+    "optimizer_steps_applied": 49,
+    "optimizer_steps_skipped": 1,
+    "nonfinite_grad_events": 1,
+    "grad_norm_finite_count": 49,
+    "skip_fraction": 0.02,
+    "policy_max_skip_fraction": 0.05
+  },
+  "smoke_sha256": "a40e4d7ecc6e9c7fb78ccc53d6aa62687146f86453a7057b65a7152d49d8e10b",
+  "trace_sha256": "f9d7686f27290f7474005d2a30b0d7d68569600d7c73b18fa4639287bd7e233f",
+  "warmup_excluded": true,
+  "quality_claim": null
+}
