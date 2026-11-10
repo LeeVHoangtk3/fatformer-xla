@@ -1,0 +1,3 @@
+# Controls are frozen calibration evidence; preserve their exact bytes.
+controls/*.json -text
+plan.json -text

@@ -7,6 +7,7 @@ import subprocess
 SOURCE_PATHS = ['src','tools','tests','configs','notebooks/task/phase7_improvement_round1/*.py',
     'notebooks/task/phase7_pilot_evaluation/*.py',
     'notebooks/task/phase7_validation_diagnostics/*.py',
+    'notebooks/task/phase7_calibration_transfer/*.py',
     'DATASET/logs/phase7/calibration/baseline.json',
     'DATASET/logs/phase7/improvement_round1/preparation/expected_inputs.json',
     'DATASET/logs/phase7/improvement_round1/preparation/protocol.json']
