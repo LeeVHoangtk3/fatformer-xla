@@ -1,0 +1,6 @@
+{
+  "batch_size": 16,
+  "precision": "fp16",
+  "same_for_both_models": true,
+  "automatic_midrun_batch_change": false
+}

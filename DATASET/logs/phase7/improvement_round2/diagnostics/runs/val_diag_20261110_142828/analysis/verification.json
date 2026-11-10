@@ -1,0 +1,32 @@
+{
+  "schema": "phase7-validation-diagnostic-audit/v1",
+  "passed": true,
+  "run_id": "val_diag_20261110_142828",
+  "source_commit": "0dabd725e5b7a351514a9b7ee34f4bd6014b584f",
+  "source_files_checked": 159,
+  "raw_files_checked": 16,
+  "raw_bytes": 607637,
+  "prediction_arrays": 4,
+  "prediction_records": 4320,
+  "group_rows_recomputed": 112,
+  "error_rows_recomputed": 933,
+  "aggregate_and_csv_reports_reproduced": true,
+  "historical_aggregate_recall_differences": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "historical_logits_bit_exact_established": false,
+  "notebook_sha256": "4fd74f6e5f70e9f4b9ce032087ea67b9bcf34a9eb08e5093c6e878517b20f359",
+  "notebook_execution_counts": [
+    1,
+    2,
+    3
+  ],
+  "notebook_wall_minutes": 11.913966666666667,
+  "gpu_reported": "NVIDIA L4",
+  "batch_size": 16,
+  "local_model_forward_performed": false,
+  "scope": "Local verification from committed code and submitted arrays; missing PTH and full image archives prevent independent model forward or image-label semantic review."
+}

@@ -1,0 +1,10 @@
+{
+  "schema": "phase7-validation-diagnostic-index/v1",
+  "current_run": "val_diag_20261110_142828",
+  "path": "DATASET/logs/phase7/improvement_round2/diagnostics/runs/val_diag_20261110_142828",
+  "status": "completed_audited",
+  "training_started": false,
+  "deployment_replaced": false,
+  "retained_package_sha256": "248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0",
+  "next_step": "Design controlled independent-calibration comparison first; targeted robustness is a separate hypothesis. No CFE-causal or bit-exact claim."
+}

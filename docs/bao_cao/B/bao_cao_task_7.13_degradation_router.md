@@ -2,7 +2,7 @@
 
 Ngày cập nhật: 10/11/2026. Trạng thái: **code đã kiểm thử; chọn calibrated fixed fallback; hoãn thực nghiệm router; chưa nghiệm thu toàn bộ Task 7.13**. Task 7.15 sau đó đã đóng gói/đo fixed fallback trên GPU, không đồng nghĩa router đã được nghiệm thu.
 
-Package báo cáo vẫn là `24869052…`, router tắt, G7.2 FAIL 6/8 và G7.3 pending. Pilot P0/P1 và matched evaluation bổ sung chưa tạo model thay thế; notebook chẩn đoán validation mới chưa chạy GPU và không thu thập bằng chứng router. Xem [báo cáo các giai đoạn tiếp theo](../C/bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md). Phần implementation/hủy số synthetic bên dưới giữ phạm vi hậu kiểm từ 08/11, không được diễn giải thành kết quả thực nghiệm mới.
+Package báo cáo vẫn là `24869052…`, router tắt, G7.2 FAIL/đạt 6/8 và G7.3 pending. Pilot P0/P1 và matched evaluation bổ sung chưa tạo model thay thế. Run chẩn đoán validation `val_diag_20261110_142828` đã hoàn tất/hậu kiểm nhưng không thu thập bằng chứng router. Xem [báo cáo các giai đoạn tiếp theo](../C/bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md). Phần implementation/hủy số synthetic bên dưới giữ phạm vi hậu kiểm từ 08/11, không được diễn giải thành thí nghiệm router mới.
 
 ## 1. Hủy bằng chứng không hợp lệ
 

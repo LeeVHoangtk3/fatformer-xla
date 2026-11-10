@@ -1,6 +1,6 @@
 # Chẩn đoán validation trước vòng train tiếp theo
 
-Trạng thái 10/11/2026: đã kiểm kê dữ liệu, chuẩn bị code và tạo [notebook Colab chạy sẵn ba cell](phase7_validation_diagnostics_colab.ipynb); **chưa chạy forward chẩn đoán trên GPU**. Tải notebook này lên Colab và chạy lần lượt; không cần tự chép cell hoặc sửa notebook P0 evaluation cũ.
+Trạng thái 10/11/2026: đã tiếp nhận notebook thực thi và **hậu kiểm thành công run `val_diag_20261110_142828`** trên L4/FP16/batch16, source `0dabd72`. Xem [kết quả và các kết luận cần sửa](../../../DATASET/logs/phase7/improvement_round2/diagnostics/runs/val_diag_20261110_142828/README.md). Không cần chạy lại notebook này; hướng dẫn bên dưới giữ để tái lập trên runtime mới. Không sửa notebook người dùng đã chạy hoặc notebook P0 evaluation cũ.
 
 [Mở notebook trực tiếp trên Google Colab từ nhánh hoang](https://colab.research.google.com/github/LeeVHoangtk3/fatformer-xla/blob/hoang/notebooks/task/phase7_validation_diagnostics/phase7_validation_diagnostics_colab.ipynb).
 

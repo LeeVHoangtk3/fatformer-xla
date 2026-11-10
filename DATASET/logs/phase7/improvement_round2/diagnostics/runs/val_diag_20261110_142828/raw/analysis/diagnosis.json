@@ -1,0 +1,156 @@
+{
+  "schema": "phase7-per-image-validation-diagnostics/v1",
+  "status": "completed",
+  "metrics": {
+    "candidate_p0": {
+      "clean": {
+        "n": 1080,
+        "n_real": 590,
+        "n_fake": 490,
+        "accuracy_pct": 81.66666666666667,
+        "real_recall_pct": 99.32203389830508,
+        "fake_recall_pct": 60.40816326530612,
+        "probability_quantiles": [
+          0.009130812250077724,
+          0.10675159096717834,
+          0.99411900639534
+        ],
+        "auc_pct": 96.36959529574541,
+        "ap_pct": 96.17005625935671,
+        "fake_at_real90_diagnostic_pct": 88.9795918367347,
+        "diagnostic_only": "Real90 is estimated on this already-used validation split; not an exported deployment threshold."
+      },
+      "q30_post_crop": {
+        "n": 1080,
+        "n_real": 590,
+        "n_fake": 490,
+        "accuracy_pct": 75.0,
+        "real_recall_pct": 98.30508474576271,
+        "fake_recall_pct": 46.93877551020408,
+        "probability_quantiles": [
+          0.016346695832908154,
+          0.18684916198253632,
+          0.9715348839759826
+        ],
+        "auc_pct": 92.13472846765825,
+        "ap_pct": 90.34071276594146,
+        "fake_at_real90_diagnostic_pct": 76.73469387755102,
+        "diagnostic_only": "Real90 is estimated on this already-used validation split; not an exported deployment threshold.",
+        "historical_300": {
+          "n": 300,
+          "n_real": 150,
+          "n_fake": 150,
+          "accuracy_pct": 70.0,
+          "real_recall_pct": 98.0,
+          "fake_recall_pct": 42.0,
+          "probability_quantiles": [
+            0.019703884795308116,
+            0.21225574612617493,
+            0.9688000619411469
+          ],
+          "auc_pct": 91.41555555555556,
+          "ap_pct": 90.92702209297315,
+          "fake_at_real90_diagnostic_pct": 74.0,
+          "diagnostic_only": "Real90 is estimated on this already-used validation split; not an exported deployment threshold."
+        }
+      }
+    },
+    "incumbent": {
+      "clean": {
+        "n": 1080,
+        "n_real": 590,
+        "n_fake": 490,
+        "accuracy_pct": 82.31481481481482,
+        "real_recall_pct": 98.98305084745763,
+        "fake_recall_pct": 62.244897959183675,
+        "probability_quantiles": [
+          0.011390320025384426,
+          0.15040871500968933,
+          0.9947072088718414
+        ],
+        "auc_pct": 96.43618125216187,
+        "ap_pct": 96.18018623207814,
+        "fake_at_real90_diagnostic_pct": 90.61224489795919,
+        "diagnostic_only": "Real90 is estimated on this already-used validation split; not an exported deployment threshold."
+      },
+      "q30_post_crop": {
+        "n": 1080,
+        "n_real": 590,
+        "n_fake": 490,
+        "accuracy_pct": 74.62962962962963,
+        "real_recall_pct": 97.28813559322033,
+        "fake_recall_pct": 47.3469387755102,
+        "probability_quantiles": [
+          0.020469367876648905,
+          0.29988740384578705,
+          0.9682190835475921
+        ],
+        "auc_pct": 91.80456589415428,
+        "ap_pct": 89.69477517078582,
+        "fake_at_real90_diagnostic_pct": 75.91836734693878,
+        "diagnostic_only": "Real90 is estimated on this already-used validation split; not an exported deployment threshold.",
+        "historical_300": {
+          "n": 300,
+          "n_real": 150,
+          "n_fake": 150,
+          "accuracy_pct": 70.0,
+          "real_recall_pct": 97.33333333333334,
+          "fake_recall_pct": 42.66666666666667,
+          "probability_quantiles": [
+            0.024397879466414453,
+            0.3085072189569473,
+            0.9654445588588715
+          ],
+          "auc_pct": 90.86222222222223,
+          "ap_pct": 89.48254293391513,
+          "fake_at_real90_diagnostic_pct": 76.0,
+          "diagnostic_only": "Real90 is estimated on this already-used validation split; not an exported deployment threshold."
+        }
+      }
+    }
+  },
+  "matched_correctness": {
+    "clean": {
+      "both_correct": 870,
+      "candidate_only_correct": 12,
+      "incumbent_only_correct": 19,
+      "both_wrong": 179
+    },
+    "q30_post_crop": {
+      "both_correct": 783,
+      "candidate_only_correct": 27,
+      "incumbent_only_correct": 23,
+      "both_wrong": 247
+    }
+  },
+  "historical_p0_comparison": {
+    "expected": {
+      "p0_clean_real_expected": 0.9932203389830508,
+      "p0_clean_fake_expected": 0.6040816326530613,
+      "p0_q30_real_expected": 0.98,
+      "p0_q30_fake_expected": 0.42
+    },
+    "observed": [
+      0.9932203389830508,
+      0.6040816326530613,
+      0.98,
+      0.42
+    ],
+    "absolute_differences": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "note": "Different GPU/batch/library versions can change FP16 decisions. Investigate discrepancies; do not replace historical CSVs."
+  },
+  "interpretation": "Diagnostic only. Group recalls do not prove causal effects; ranking and fixed-threshold performance are reported separately. No threshold, checkpoint or training arm selected for deployment.",
+  "training_started": false,
+  "deployment_replaced": false,
+  "scientific_limits": [
+    "val_select was already used to select P0; this is diagnostic data, not a fresh holdout.",
+    "Generator names and labels come from the manifest; semantic correctness needs image review.",
+    "No threshold estimated on validation is exported for deployment.",
+    "No new training arm is selected until per-image validation diagnosis is available."
+  ]
+}

@@ -1,6 +1,6 @@
 # Báo cáo Phase 7 — pilot vòng 1, matched evaluation và chuẩn bị chẩn đoán vòng 2
 
-Ngày cập nhật **10/11/2026**. Kết luận hiện hành: **chưa chọn được model thay thế incumbent; vòng cải thiện 1 là kết quả âm.** Model báo cáo vẫn là package `24869052…`, G7.2 FAIL 6/8, G7.3 pending. Notebook chẩn đoán vòng 2 đã tạo, chưa chạy GPU và chưa train thêm.
+Ngày cập nhật **10/11/2026**. Kết luận hiện hành: **chưa chọn được model thay thế incumbent; vòng cải thiện 1 là kết quả âm.** Model báo cáo vẫn là package `24869052…`, G7.2 FAIL/đạt 6/8, G7.3 pending. Chẩn đoán validation vòng 2 đã chạy GPU và được hậu kiểm; chưa fit calibration hoặc train mới.
 
 ## 1. Lịch sử và phạm vi bằng chứng
 
@@ -61,12 +61,22 @@ Dự đoán refit giống hoàn toàn arrays deployment cũ trên 7 điều ki�
 
 Primary deployment đo L4 batch1 tổng **44,98 ms/ảnh**, overhead **0,188055 ms/ảnh**. Vòng matched mới: P0 tổng **44,53 ms/ảnh**, overhead **0,151093**; refit tổng **45,82**, overhead **0,205143**. Không lấy số mới thay latency của package cũ hoặc suy ra kiến trúc nhanh hơn. Overhead và tổng inference khác nhau. G7.3 vẫn thiếu verified best-by-condition reference; một incumbent không mặc nhiên là tốt nhất từng điều kiện.
 
-## 6. Chẩn đoán vòng 2 — đã chuẩn bị, chưa có kết quả GPU
+## 6. Giai đoạn chuẩn bị chẩn đoán vòng 2 — hồ sơ trước khi chạy
 
 Manifest 14.400 ảnh có 17 generator fake: autoregressive/commercial/pixel diffusion mỗi họ 1, GAN 6, latent diffusion 8. Tất cả generator `val_select` đã có trong train. Metadata labels/family nhất quán và SHA/path không trùng giữa split; ngữ nghĩa nhãn cần xem ảnh. Local chưa có 14.400 ảnh v2 hoặc logits từng ảnh validation; chưa biết lỗi cụ thể của từng generator.
 
 P0 tại operating point chọn model lịch sử T=1,6402, ngưỡng=0,9127 giữ 586/590 real nhưng chỉ nhận ra 296/490 fake clean; Q30 lịch sử 147/150 real và 63/150 fake. Đây là lý do cần đo ranking/phân bố điểm trước khi train tiếp, không phải bằng chứng chỉ cần hạ ngưỡng. Các ngưỡng này khác calibration deployment nêu ở mục 5.
 
-Đã chuẩn bị runner tại commit **`0dabd72`**, 41 test CPU/code đạt; tạo notebook mới [`phase7_validation_diagnostics_colab.ipynb`](../../../notebooks/task/phase7_validation_diagnostics/phase7_validation_diagnostics_colab.ipynb). Notebook có ba code cell, chưa thực thi, không có outputs giả. Đo hai model trên cùng 1.080 `val_select` clean/Q30; giữ riêng Q30 300 ảnh lịch sử, kiểm hash ảnh, không train và không chấm test.
+Trước khi chạy, đã chuẩn bị runner tại commit **`0dabd72`**, 41 test CPU/code đạt và tạo [`notebook ba code cell`](../../../notebooks/task/phase7_validation_diagnostics/phase7_validation_diagnostics_colab.ipynb) không có outputs giả. Thiết kế đo hai model trên cùng 1.080 `val_select` clean/Q30, giữ riêng Q30 300 ảnh lịch sử, kiểm hash ảnh, không train và không chấm test. Notebook thực thi sau đó được người dùng cập nhật; kết quả mới ở mục 7.
 
 Sau khi có dữ liệu mới mới quyết định thử calibration transfer, độ phủ dữ liệu/nhãn hoặc robustness Q30; chưa khóa nhánh train. Kế hoạch và vị trí file/Drive: [kế hoạch sau vòng 1](../../plan/ke_hoach_cai_thien_phase7_sau_vong1.md). Giữ package hiện hành và các gate chưa đạt khi viết báo cáo; không coi việc tạo notebook hoặc hoàn thành tài liệu là model đã tốt hơn.
+
+## 7. Kết quả chẩn đoán đã hậu kiểm — run `val_diag_20261110_142828`
+
+Ba cell hoàn tất L4/FP16/batch16, source `0dabd72`, cell đo khoảng 11,914 phút. Đã nhập 16 file nguyên byte, 607.637 byte; đối chiếu 159 source hashes, tái tính 4.320 lượt dự đoán, 112 dòng group metrics và 933 dòng lỗi. Bản sao notebook thực thi được giữ riêng, không sửa bản người dùng. [Verification](../../../DATASET/logs/phase7/improvement_round2/diagnostics/runs/val_diag_20261110_142828/analysis/verification.json) ghi giới hạn không có weights/ảnh gốc tại local. Có 25 test CPU cho hậu kiểm/workflow liên quan đạt, không phải một full-suite hoặc phép đo GPU mới.
+
+P0/incumbent clean AUC **96,3696%/96,4362%**, Fake recall tại điểm lịch sử **60,4082%/62,2449%**; Q30 AUC **92,1347%/91,8046%**, Fake recall **46,9388%/47,3469%**. CI paired delta AUC P0−incumbent clean **[−0,3976;+0,2675] pp**, Q30 **[−0,2079;+0,8311] pp**, đều chứa 0; không kết luận tương đương hoặc ưu thế chỉ từ điểm gần nhau.
+
+Bốn recall lịch sử P0 khớp chính xác, không có logits từng ảnh cũ để chứng minh bit-exact. DiT recall **3/13=23,08%** ở cả clean/Q30; SD v1.5 **42/90→30/90=33,33%**, không phải 43,3% Q30. CIPS **10/12→1/12** và AUC **99,60%→78,60%** là tín hiệu robustness đáng kiểm tra, chưa chứng minh biểu diễn nội tại sụp đổ. COCO FPR **0,88%→4,39%**, FFHQ **0,88%→1,75%**, ImageNet replay **1,49%→1,49%**. Median real clean là 0,01885 nhưng chỉ 51,86% real dưới 0,02; phân bố fake cũng không tập trung phần lớn trong [0,80;0,90].
+
+Quan trọng: ngưỡng 0,9127/T1,6402 chỉ là điểm chẩn đoán lịch sử. CFE trước đó đã dùng calibration riêng cho P0 T3,0949893/ngưỡng0,76518965. Dữ liệu này chưa xác lập nguyên nhân CFE hoặc loại trừ thiếu năng lực biểu diễn ở miền ngoài. Đề xuất thử calibration trên `val_calib` v2 độc lập với weights cố định trước, robustness augmentation là thí nghiệm riêng; chưa chạy hai bước đó. [Hậu kiểm và đính chính đầy đủ](../../../DATASET/logs/phase7/improvement_round2/diagnostics/runs/val_diag_20261110_142828/README.md) và [kế hoạch tiếp theo](../../plan/ke_hoach_cai_thien_phase7_sau_vong1.md) giữ model/gate hiện hành không đổi.

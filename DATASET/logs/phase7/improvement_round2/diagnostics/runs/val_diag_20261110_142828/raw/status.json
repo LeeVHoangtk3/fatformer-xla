@@ -1,0 +1,22 @@
+{
+  "status": "completed",
+  "training_started": false,
+  "deployment_replaced": false,
+  "files": {
+    "commands.log": "80d3d29b06f735532c66086401285bbbd7795622a4ab073f3e3d636243f1711a",
+    "plan.json": "69ca89ec9440501e780ab21b571dfa464d29ad020b9efeeef444f321598be10d",
+    "identity.json": "8bbd5f750ad0194d025591cc982171ef7e3777241c4a36d0a859264092133db6",
+    "batch_contract.json": "9c14b91789ec1d196a10487179ded8b1113ed93700165d83b63ae8c3e64191d7",
+    "analysis/diagnosis.json": "576207479a96a9351f081a5d77426231000dd02b6b20e04f2f0203479cf6a1bf",
+    "analysis/errors.csv": "a351f1c3f9cccb6e2c20faf15819dd3e4c20540a68ac9f9e447a959dfd27e75d",
+    "analysis/group_metrics.csv": "da78b3e31aeac422b4b3ee4d07393d7e2ffa4725e76111909118bf9867758971",
+    "incumbent/predictions_q30_post_crop.npz": "ee33310dfd1efe460ce677b427abc3f53b9e427c86f6ddfd284ae4e896a96071",
+    "incumbent/predictions_clean.npz": "1b5f44da4ec1836325e74a5e676da3e57062659f166bb2c0b28bc2da1ed53401",
+    "incumbent/probe.json": "e6e6889b404c21fa3eeae0f520f65d1163eadf95daa2395743ad4d47fa56b22a",
+    "incumbent/canonical_load.json": "852535bf1c55509121d090fcaed0314095efb34cac700c69e1735c6b9d2ecd89",
+    "candidate_p0/predictions_q30_post_crop.npz": "d61491036a7e38eb42da77a47d01d23cbf5c75d55555ad3d73f326c91b348772",
+    "candidate_p0/predictions_clean.npz": "b07244b1a717b629c4ad158e0292f4b9614f6d46af4537b6db52cc372497650b",
+    "candidate_p0/probe.json": "3f735c073149c742834da9ffd1be3f751473f2dafed734d3059b4efc68332955",
+    "candidate_p0/canonical_load.json": "ed97e487358a2f842d8804871f629fd40ad1b6e36dd34f98c93706dd4556fa05"
+  }
+}

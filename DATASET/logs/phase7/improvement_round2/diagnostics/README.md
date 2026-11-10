@@ -1,6 +1,8 @@
 # Vòng cải thiện 2 — chẩn đoán trước khi train
 
-Cập nhật 10/11/2026. **Đã hoàn thành kiểm kê metadata/log validation và chuẩn bị phép đo bổ sung. Chưa có dự đoán validation từng ảnh mới, chưa train vòng 2.** Model báo cáo hiện hành vẫn là gói `24869052…`; G7.2 FAIL 6/8, G7.3 pending verified best-by-condition reference.
+Cập nhật 10/11/2026. **Đã hậu kiểm chẩn đoán validation GPU**, run [`val_diag_20261110_142828`](runs/val_diag_20261110_142828/README.md): 4.320 lượt dự đoán, 112 dòng chỉ số nhóm, 933 dòng lỗi tái lập. Chưa fit calibration hoặc train mới. Model báo cáo vẫn là `24869052…`; G7.2 FAIL/đạt 6/8, G7.3 pending verified best-by-condition reference.
+
+Bản tóm tắt gửi kèm có số gộp đúng nhưng vài suy diễn sai: recall khớp không phải bit-exact logits, SD v1.5 P0 Q30 là 33,33%, DiT đã thấp ở clean; ngưỡng 0,9127 không phải ngưỡng P0 dùng khi chấm CFE. Xem [đính chính và bước tiếp theo](runs/val_diag_20261110_142828/README.md), [index hiện hành](index.json). Các mục kiểm kê/chuẩn bị dưới đây giữ lịch sử trước run; kết quả mới được lưu riêng, không ghi đè preparation hoặc notebook.
 
 ## 1. Những gì đã xác nhận
 
@@ -25,11 +27,11 @@ Ngưỡng lịch sử tương đương yêu cầu raw logit margin fake−real k
 
 Cả hai nhánh vẫn cải thiện worst-group từ epoch 4 sang 5: P0 37,33%→42%; P1 34%→35,33%. Điều này không đủ để bảo đảm tăng epoch sẽ cải thiện benchmark. Chưa có bằng chứng để chọn tăng epoch, giảm guard/KD hoặc bổ sung dữ liệu làm cách sửa chính thức.
 
-Đã quét các đường dẫn ảnh v2 ở local: **0/14.400 ảnh hiện diện**. Gói log pilot không lưu logits từng ảnh validation. Vì vậy không bịa AUC theo generator hoặc suy ngược các ảnh sai từ CSV tổng hợp; cần forward bổ sung bằng checkpoint trên Drive.
+Ở bước chuẩn bị, đã quét các đường dẫn ảnh v2 ở local: **0/14.400 ảnh hiện diện**, gói log pilot không lưu logits validation. Run mới đã cung cấp logits/IDs để hậu kiểm AUC và lỗi theo nhóm; vẫn thiếu ảnh gốc ở local để xem ngữ nghĩa nhãn. Các file `preparation/` phản ánh trạng thái trước run, không dùng thay index/kết quả mới.
 
 ## 3. Phép đo đã chuẩn bị
 
-Mở [notebook Colab đã tạo](../../../../../notebooks/task/phase7_validation_diagnostics/phase7_validation_diagnostics_colab.ipynb), có sẵn ba code cell và khóa code `0dabd72`; xem [hướng dẫn chi tiết](../../../../../notebooks/task/phase7_validation_diagnostics/README.md). Code Git nhánh `hoang`; kế hoạch khóa tại [`configs/phase7_validation_diagnostics/plan.json`](../../../../../configs/phase7_validation_diagnostics/plan.json), công cụ [`tools/phase7_validation_diagnostics.py`](../../../../../tools/phase7_validation_diagnostics.py). Notebook mới chưa thực thi GPU. [Kế hoạch tổng hợp các giai đoạn](../../../../../docs/plan/ke_hoach_cai_thien_phase7_sau_vong1.md) và [báo cáo vòng cải thiện](../../../../../docs/bao_cao/C/bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md) đã được cập nhật riêng; không sửa raw lịch sử.
+Run mới đã thực thi [notebook](../../../../../notebooks/task/phase7_validation_diagnostics/phase7_validation_diagnostics_colab.ipynb), ba cell nguồn `0dabd72`, L4/FP16/batch16, cell đo khoảng 11,914 phút. [Hướng dẫn](../../../../../notebooks/task/phase7_validation_diagnostics/README.md), [plan nguồn](../../../../../configs/phase7_validation_diagnostics/plan.json) và [collector](../../../../../tools/phase7_validation_diagnostics.py) giữ quy trình tái lập, không yêu cầu chạy lại y nguyên. [Kế hoạch tổng hợp](../../../../../docs/plan/ke_hoach_cai_thien_phase7_sau_vong1.md) và [báo cáo](../../../../../docs/bao_cao/C/bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md) đã ghi kết quả mới; raw và notebook giữ nguyên.
 
 Đo P0 và incumbent trên cùng 1.080 ảnh `val_select`, clean và Q30 sau crop, cùng FP16/batch/GPU. Xuất arrays có danh tính/hashes, recall từng family/generator, AUC/AP, phân bố điểm và danh sách ảnh lỗi. Giữ riêng Q30 lịch sử 300 ảnh và operating point cũ để đối chiếu. Không đổi split, hiệu chuẩn lại hoặc đọc ảnh benchmark test. Probe bộ nhớ có thể dùng tensor tổng hợp; tensor này chỉ phục vụ kiểm tra dung lượng, không đưa vào số liệu chất lượng.
 
@@ -37,7 +39,7 @@ Mở [notebook Colab đã tạo](../../../../../notebooks/task/phase7_validation
 
 ## 4. Quyết định sau khi có dữ liệu
 
-Đã chuẩn bị [`preparation/next_steps.json`](preparation/next_steps.json). Chưa khóa nhánh train vì chưa có bằng chứng chẩn đoán cần thiết:
+[`preparation/next_steps.json`](preparation/next_steps.json) là kế hoạch trước run. Kế hoạch hậu kiểm hiện hành nằm ở [`post_diagnosis_plan.json`](runs/val_diag_20261110_142828/analysis/post_diagnosis_plan.json): ưu tiên so sánh calibration độc lập với weights cố định; robustness Q30 là giả thuyết riêng. Chưa train hoặc fit calibration mới. Các nhánh cân nhắc ban đầu được giữ để truy vết:
 
 1. Nếu AUC/ranking còn tốt nhưng recall tại ngưỡng lịch sử thấp: kiểm tra chuyển miền calibration/operating point. Một thí nghiệm calibration phải fit trên `val_calib` độc lập; không lấy ngưỡng từ `val_select` để xuất deployment. So sánh FPR và recall, không chỉ tối đa recall.
 2. Nếu lỗi/xếp hạng yếu tập trung ở family/generator: kiểm tra nhãn bằng ảnh thật và độ phủ train trước. Nếu bổ sung dữ liệu, phải audit isolation/denylist lại, không lấy ảnh test vào train hoặc mặc định lấy generator test làm mục tiêu.
