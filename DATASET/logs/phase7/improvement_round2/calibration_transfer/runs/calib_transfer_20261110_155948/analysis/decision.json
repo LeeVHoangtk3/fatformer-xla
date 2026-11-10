@@ -1,0 +1,9 @@
+{
+  "status": "experimental_clean_only_calibration_not_accepted",
+  "deployment_replaced": false,
+  "reason": "Both clean-fitted points fail the preregistered Q30 Real recall guard of 90%, despite improved fake recall and confidence metrics.",
+  "retained_package_sha256": "248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0",
+  "G72": "unchanged FAIL 6/8",
+  "G73": "unchanged pending best-by-condition reference",
+  "next_hypothesis": "Separate condition-robust calibration on independent val_calib clean/Q30 with one shared conservative threshold, or controlled robustness training if ranking gates are the priority. No tuning from val_select or CFE evaluation."
+}

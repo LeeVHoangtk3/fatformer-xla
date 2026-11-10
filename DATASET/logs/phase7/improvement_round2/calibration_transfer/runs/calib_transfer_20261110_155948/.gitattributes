@@ -1,0 +1,3 @@
+# Keep submitted artifacts byte-identical, including original CSV line endings.
+raw/** -text whitespace=cr-at-eol
+analysis/recomputed/**/*.csv -text whitespace=cr-at-eol

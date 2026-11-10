@@ -1,0 +1,43 @@
+{
+  "missing_keys": [],
+  "unexpected_keys": [],
+  "shape_mismatch": [],
+  "dropped_alias_keys": [],
+  "dropped_top_level_keys": [],
+  "missing": 0,
+  "unexpected": 0,
+  "adapter_blocks": [
+    7,
+    15,
+    23
+  ],
+  "adapter_index": {
+    "block_7": [
+      "clip_model.visual.transformer.resblocks.7.",
+      "image_encoder.transformer.resblocks.7."
+    ],
+    "block_15": [
+      "clip_model.visual.transformer.resblocks.15.",
+      "image_encoder.transformer.resblocks.15."
+    ],
+    "block_23": [
+      "clip_model.visual.transformer.resblocks.23.",
+      "image_encoder.transformer.resblocks.23."
+    ]
+  },
+  "layout": {
+    "n": 3,
+    "indices": [
+      7,
+      15,
+      23
+    ],
+    "dropped": [],
+    "missing": [],
+    "partial": false,
+    "expressible": true
+  },
+  "n_keys": 1200,
+  "path": "/content/phase7_calibration_transfer/checkpoint_cache/9d97613c5f271801a30ff514326557f262a372abeb4d52ce864c78f20fc1069b.pth",
+  "sha256": "9d97613c5f271801a30ff514326557f262a372abeb4d52ce864c78f20fc1069b"
+}

@@ -1,0 +1,61 @@
+{
+  "schema": "phase7-validation-diagnostics-plan/v1",
+  "purpose": "Diagnose train/val_select only before defining another training experiment; no training, model selection, recalibration or CFE/test benchmark.",
+  "manifest": {
+    "file": "DATASET/manifests/data_manifest_v2.json",
+    "sha256": "c1e883fed2e0fdd55ad9732ddc3bd44e1d21438b009100134f91788cf6af218a"
+  },
+  "val_manifest": {
+    "file": "DATASET/manifests/data_manifest_v2_val_select.json",
+    "sha256": "d2bea3f9395fbdb6b8dd66acec385eb4321c91e2eee6139a40dbabb0b2e5c169"
+  },
+  "operating_point": {
+    "file": "DATASET/logs/phase7/calibration/baseline.json",
+    "sha256": "4ba4cf620b5b85c2534591be9391a70853845d4c0defedabee8c3aac59be8854",
+    "T": 1.6402,
+    "threshold": 0.9127,
+    "scope": "Historical training selection point, applied identically to both checkpoints for diagnosis; not their deployment calibration."
+  },
+  "archive": {
+    "drive_path": "phase7/train_crossdomain_v2.tar",
+    "sha256": "16e5952892035ea0058cc6e996be191c43f6b3af608a6c92fb0a75ebc0a78dff"
+  },
+  "models": {
+    "candidate_p0": {
+      "drive_path": "phase7/improvement_round1/pilot_20261109_182359/p0_legacy_full/best.pth",
+      "sha256": "9d97613c5f271801a30ff514326557f262a372abeb4d52ce864c78f20fc1069b"
+    },
+    "incumbent": {
+      "drive_path": "checkpoint/phase7/anchored_v2_run1/fatformer_anchored_v2_best.pth",
+      "sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c"
+    }
+  },
+  "protocol": {
+    "split": "val_select",
+    "n": 1080,
+    "n_real": 590,
+    "n_fake": 490,
+    "preprocessing": "clip",
+    "resize_short_edge": 224,
+    "center_crop": 224,
+    "conditions": [
+      "clean",
+      "q30_post_crop"
+    ],
+    "jpeg_quality": 30,
+    "historical_q30_max_samples": 300,
+    "historical_q30_seed": 42,
+    "precision": "fp16",
+    "tf32": false,
+    "default_max_batch_size": 16,
+    "automatic_midrun_batch_change": false,
+    "q30_order": "historical balanced 300 first, then remaining validation records in manifest order; identifies the historical slice explicitly",
+    "scope": "Every validation image measured under both conditions; historical Q30 slice also reported separately. No guarantee of bitwise historical replay across different GPUs or batch sizes."
+  },
+  "scientific_limits": [
+    "val_select was already used to select P0; this is diagnostic data, not a fresh holdout.",
+    "Generator names and labels come from the manifest; semantic correctness needs image review.",
+    "No threshold estimated on validation is exported for deployment.",
+    "No new training arm is selected until per-image validation diagnosis is available."
+  ]
+}

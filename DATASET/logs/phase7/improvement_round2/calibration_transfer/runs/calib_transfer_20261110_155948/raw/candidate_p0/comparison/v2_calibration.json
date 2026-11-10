@@ -1,0 +1,44 @@
+{
+  "schema": "phase7-calibration-transfer-fit/v1",
+  "deployable": false,
+  "evidence_level": "measured",
+  "split": "val_calib",
+  "condition": "clean",
+  "checkpoint_sha256": "9d97613c5f271801a30ff514326557f262a372abeb4d52ce864c78f20fc1069b",
+  "manifest_sha256": "c1e883fed2e0fdd55ad9732ddc3bd44e1d21438b009100134f91788cf6af218a",
+  "plan_sha256": "3e6553557f31edf8235a83d43e10cf6d6f4279895ed52769d602978f2cbe9220",
+  "n": 1080,
+  "n_real": 590,
+  "n_fake": 490,
+  "calibration_ids_sha256": "054bef8f50960d34cc0caab323a71cf4352ae01880356e5be465c1428418c859",
+  "T": 1.9718821048736572,
+  "threshold": 0.3712310194969177,
+  "comparison_operator": ">=",
+  "probability_device": "cuda",
+  "probability_dtype": "float32",
+  "batch_size": 16,
+  "false_positive_budget": 29,
+  "false_positives": 29,
+  "empirical_fpr": 0.04915254237288136,
+  "temperature_optimization": {
+    "method": "bounded_inverse_temperature_bisection/v1",
+    "converged": true,
+    "status": "interior_converged",
+    "iterations": 33,
+    "temperature_bounds": [
+      0.05,
+      10.0
+    ],
+    "gradient_beta": 1.1323101218791905e-08,
+    "scaled_kkt_residual": 1.9744818233155837e-09,
+    "nll_at_T1": 0.3227065265487898,
+    "nll_at_fitted_T": 0.24739592522069465,
+    "objective_dtype": "float64",
+    "deployed_temperature_dtype": "float32"
+  },
+  "fit_only_metrics": {
+    "nll": 0.24739592491903648,
+    "confidence_ece_pct": 2.7916258132016236
+  },
+  "scope": "Research schema, not calibration/v1. One clean-fitted threshold used for both conditions; no validation labels used to fit parameters."
+}

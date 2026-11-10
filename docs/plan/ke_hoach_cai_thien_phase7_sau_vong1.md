@@ -71,8 +71,14 @@ Thí nghiệm đầu tiên được đề xuất: giữ nguyên từng checkpoin
 
 Nếu ranking/robustness Q30 vẫn là giới hạn thì làm một thí nghiệm augmentation riêng, có control phù hợp; không đồng thời đổi calibration và train rồi gán nguyên nhân. [Kế hoạch có cấu trúc](../../DATASET/logs/phase7/improvement_round2/diagnostics/runs/val_diag_20261110_142828/analysis/post_diagnosis_plan.json) và [đính chính chi tiết](../../DATASET/logs/phase7/improvement_round2/diagnostics/runs/val_diag_20261110_142828/README.md) ghi phạm vi chấp nhận, giới hạn và trạng thái chưa train.
 
-## 6. Đã triển khai code cho phép đối chứng calibration — chưa chạy GPU
+## 6. Giai đoạn chuẩn bị code calibration transfer — hồ sơ trước run
 
 [Kế hoạch calibration transfer vòng 2](ke_hoach_calibration_transfer_phase7_round2.md) đã khóa hai point trên mỗi checkpoint: calibration CFE có sẵn và calibration fit chỉ trên clean `val_calib` v2. [Notebook/hướng dẫn](../../notebooks/task/phase7_calibration_transfer/README.md) lấy source Git `hoang`; runner chỉ reuse validation logits khi inference source/GPU/Torch/CUDA/batch khớp, còn lại đo lại cả hai model theo cùng protocol. Kết quả nghiên cứu chưa được dùng thay model/gate hiện hành.
 
-[Preparation](../../DATASET/logs/phase7/improvement_round2/calibration_transfer/README.md) có 30 test CPU/code đạt và đã thử staging đủ 16 reference files từ folder/ZIP thật. Chưa trích xuất `val_calib` trên GPU, chưa có T/ngưỡng hoặc metric mới để báo cáo. Thí nghiệm này thay domain/cỡ mẫu/tỷ lệ lớp calibration đồng thời, nên không tách nguyên nhân riêng từng yếu tố. Sau khi người dùng chạy mới hậu kiểm và cân nhắc robustness tiếp.
+[Preparation](../../DATASET/logs/phase7/improvement_round2/calibration_transfer/README.md) có 30 test CPU/code đạt và đã thử staging đủ 16 reference files từ folder/ZIP thật. Đây là trạng thái trước run; kết quả đã được cập nhật ở mục 7. Thí nghiệm thay domain/cỡ mẫu/tỷ lệ lớp calibration đồng thời, không tách nguyên nhân riêng từng yếu tố.
+
+## 7. Calibration transfer đã hoàn tất nhưng point mới không đạt guard
+
+[Run `calib_transfer_20261110_155948`](../../DATASET/logs/phase7/improvement_round2/calibration_transfer/runs/calib_transfer_20261110_155948/README.md) được hậu kiểm đủ 56 file/170 source hashes, 8.640 scored decisions; metrics/CSV/paired CI khớp. Fit chỉ trên `val_calib`, đúng 29 FP/590 real mỗi model. P0 Fake recall clean62,04→84,69%, Q30 49,18→80%; incumbent clean63,06→84,49%, Q30 49,18→78,78%. Đổi lại Real Q30 chỉ86,95%/87,29%, dưới guard90 đã khai báo. Không chấp nhận point clean-only mới; current package/G7.2/G7.3 giữ nguyên.
+
+Phân biệt mục tiêu tiếp: calibration robust clean/Q30 một ngưỡng chung là thử nghiệm operating point riêng; tăng ranking/Fake@Real90 của G7.2 cần can thiệp weights/data/robustness có control. Không dùng `val_select` hoặc CFE evaluation để chọn ngưỡng sau khi thấy kết quả. Chưa khởi chạy thí nghiệm sau run này. Notebook calibration trong repo vẫn là template, chưa có bản thực thi; hậu kiểm hiện dựa vào arrays/metadata/source, không tự xác nhận các cell đã chạy từ notebook chưa nộp.

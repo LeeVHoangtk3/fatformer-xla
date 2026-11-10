@@ -1,10 +1,10 @@
 # Vòng cải thiện 2 — chẩn đoán trước khi train
 
-Cập nhật 10/11/2026. **Đã hậu kiểm chẩn đoán validation GPU**, run [`val_diag_20261110_142828`](runs/val_diag_20261110_142828/README.md): 4.320 lượt dự đoán, 112 dòng chỉ số nhóm, 933 dòng lỗi tái lập. Chưa fit calibration hoặc train mới. Model báo cáo vẫn là `24869052…`; G7.2 FAIL/đạt 6/8, G7.3 pending verified best-by-condition reference.
+Cập nhật 10/11/2026. **Đã hậu kiểm chẩn đoán validation GPU**, run [`val_diag_20261110_142828`](runs/val_diag_20261110_142828/README.md): 4.320 lượt dự đoán, 112 dòng chỉ số nhóm, 933 dòng lỗi tái lập. Calibration transfer sau đó cũng đã hoàn tất, point clean-only mới không đạt guard Q30 và không được dùng thay deployment; chưa train mới. Model báo cáo vẫn là `24869052…`; G7.2 FAIL/đạt 6/8, G7.3 pending verified best-by-condition reference.
 
 Bản tóm tắt gửi kèm có số gộp đúng nhưng vài suy diễn sai: recall khớp không phải bit-exact logits, SD v1.5 P0 Q30 là 33,33%, DiT đã thấp ở clean; ngưỡng 0,9127 không phải ngưỡng P0 dùng khi chấm CFE. Xem [đính chính và bước tiếp theo](runs/val_diag_20261110_142828/README.md), [index hiện hành](index.json). Các mục kiểm kê/chuẩn bị dưới đây giữ lịch sử trước run; kết quả mới được lưu riêng, không ghi đè preparation hoặc notebook.
 
-Phép đối chứng tiếp theo đã được chuẩn bị tại [`../calibration_transfer/`](../calibration_transfer/README.md): code/controls/notebook mới, chưa chạy GPU calibration, chưa train hoặc thay model. Không cần chạy lại notebook diagnostics chỉ để bắt đầu bước này.
+Phép đối chứng tiếp theo đã hoàn tất tại [`../calibration_transfer/`](../calibration_transfer/README.md): Fake recall tăng nhưng Real Q30 xuống dưới90%, hai point mới không được chọn. Không cần chạy lại notebook diagnostics hoặc calibration y nguyên; bước nghiên cứu tiếp cần tách operating point robust khỏi cải thiện ranking/weights.
 
 ## 1. Những gì đã xác nhận
 

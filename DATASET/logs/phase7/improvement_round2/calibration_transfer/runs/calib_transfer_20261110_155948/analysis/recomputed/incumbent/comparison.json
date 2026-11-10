@@ -1,0 +1,180 @@
+{
+  "schema": "phase7-calibration-transfer-comparison/v1",
+  "model": "incumbent",
+  "points": {
+    "cfe_control": {
+      "T": 2.7832491397857666,
+      "threshold": 0.7918508648872375,
+      "source_sha256": "7ff282ba1624308b977540358844c5c364c3a6128f01db796b422412ba7bece8"
+    },
+    "v2_clean_fit": {
+      "T": 1.7667391300201416,
+      "threshold": 0.5055273175239563,
+      "source_sha256": "aa4b1d66360132a3a54e68ecacaab8cb7f3eab7c0d3d6e680e1b5d78795c310e"
+    }
+  },
+  "validation": {
+    "clean": {
+      "cfe_control": {
+        "n": 1080,
+        "n_real": 590,
+        "n_fake": 490,
+        "accuracy_pct": 82.68518518518519,
+        "real_recall_pct": 98.98305084745763,
+        "fake_recall_pct": 63.06122448979592,
+        "probability_quantiles": [
+          0.06720660924911499,
+          0.26496243476867676,
+          0.9562989950180054
+        ],
+        "auc_pct": 96.43531649948113,
+        "ap_pct": 96.1799903335979,
+        "fake_at_real90_diagnostic_pct": 90.61224489795919,
+        "diagnostic_only": "Real90 is estimated on this already-used validation split; not an exported deployment threshold.",
+        "fpr_pct": 1.0169491525423728,
+        "nll": 0.271393277266746,
+        "confidence_ece_argmax_pct": 5.5375690095954475
+      },
+      "v2_clean_fit": {
+        "n": 1080,
+        "n_real": 590,
+        "n_fake": 490,
+        "accuracy_pct": 90.0925925925926,
+        "real_recall_pct": 94.74576271186442,
+        "fake_recall_pct": 84.48979591836735,
+        "probability_quantiles": [
+          0.015614072978496553,
+          0.16695109754800797,
+          0.9923174202442169
+        ],
+        "auc_pct": 96.43462469733656,
+        "ap_pct": 96.17955150300878,
+        "fake_at_real90_diagnostic_pct": 90.61224489795919,
+        "diagnostic_only": "Real90 is estimated on this already-used validation split; not an exported deployment threshold.",
+        "fpr_pct": 5.2542372881355925,
+        "nll": 0.24835102000423162,
+        "confidence_ece_argmax_pct": 2.3233967302022127
+      }
+    },
+    "q30_post_crop": {
+      "cfe_control": {
+        "n": 1080,
+        "n_real": 590,
+        "n_fake": 490,
+        "accuracy_pct": 75.46296296296296,
+        "real_recall_pct": 97.28813559322033,
+        "fake_recall_pct": 49.183673469387756,
+        "probability_quantiles": [
+          0.0928315944969654,
+          0.3776252865791321,
+          0.8822007477283478
+        ],
+        "auc_pct": 91.80352819093739,
+        "ap_pct": 89.6935748519191,
+        "fake_at_real90_diagnostic_pct": 75.91836734693878,
+        "diagnostic_only": "Real90 is estimated on this already-used validation split; not an exported deployment threshold.",
+        "fpr_pct": 2.711864406779661,
+        "nll": 0.3822100192931379,
+        "confidence_ece_argmax_pct": 5.488648773343475
+      },
+      "v2_clean_fit": {
+        "n": 1080,
+        "n_real": 590,
+        "n_fake": 490,
+        "accuracy_pct": 83.42592592592592,
+        "real_recall_pct": 87.28813559322035,
+        "fake_recall_pct": 78.77551020408163,
+        "probability_quantiles": [
+          0.026828473806381228,
+          0.3127894848585129,
+          0.959762465953827
+        ],
+        "auc_pct": 91.80249048772052,
+        "ap_pct": 89.69357472281322,
+        "fake_at_real90_diagnostic_pct": 75.91836734693878,
+        "diagnostic_only": "Real90 is estimated on this already-used validation split; not an exported deployment threshold.",
+        "fpr_pct": 12.711864406779661,
+        "nll": 0.36975539160997234,
+        "confidence_ece_argmax_pct": 3.385730656208816
+      }
+    }
+  },
+  "rank_from_frozen_logits": {
+    "clean": {
+      "raw_margin_auc_pct": 96.4347976478727,
+      "raw_margin_ap_pct": 96.17730307284774,
+      "scope": "Identical raw logits for both points; temperature cannot create a learned ranking gain. Score AUC can differ through float32 ties."
+    },
+    "q30_post_crop": {
+      "raw_margin_auc_pct": 91.80491179522656,
+      "raw_margin_ap_pct": 89.69060169560605,
+      "scope": "Identical raw logits for both points; temperature cannot create a learned ranking gain. Score AUC can differ through float32 ties."
+    }
+  },
+  "paired": {
+    "clean": {
+      "new_minus_control": {
+        "real_recall_pp": -4.237288135593218,
+        "fake_recall_pp": 21.42857142857143,
+        "nll": -0.023042257262514382
+      },
+      "ci95": {
+        "real_recall_pp": [
+          -5.762711864406779,
+          -2.711864406779661
+        ],
+        "fake_recall_pp": [
+          17.755102040816325,
+          25.30612244897959
+        ],
+        "nll": [
+          -0.03452841754798776,
+          -0.01029758564649348
+        ]
+      },
+      "labels_changed": 130
+    },
+    "q30_post_crop": {
+      "new_minus_control": {
+        "real_recall_pp": -9.999999999999986,
+        "fake_recall_pp": 29.59183673469387,
+        "nll": -0.012454627683165576
+      },
+      "ci95": {
+        "real_recall_pp": [
+          -12.54237288135593,
+          -7.622881355932208
+        ],
+        "fake_recall_pp": [
+          25.510204081632654,
+          33.6734693877551
+        ],
+        "nll": [
+          -0.025217994696106277,
+          0.001007500110158303
+        ]
+      },
+      "labels_changed": 204
+    }
+  },
+  "both_conditions_real_guard": {
+    "cfe_control": true,
+    "v2_clean_fit": false
+  },
+  "experimental_point_only": true,
+  "calibration_fit_split": "val_calib",
+  "validation_split": "val_select",
+  "training_started": false,
+  "deployment_replaced": false,
+  "G72": "unchanged",
+  "G73": "unchanged pending",
+  "limits": [
+    "val_select has already selected P0 and been inspected; not a blind test.",
+    "Empirical FPR on calibration does not guarantee FPR elsewhere.",
+    "Calibration does not improve raw logit ranking; float32 score ties can alter score-based AUC numerically.",
+    "Bootstrap conditions on one calibration fit and one training seed; does not cover fitting uncertainty or generator dependence.",
+    "Guard summaries are research diagnostics, not G7.2/G7.3 acceptance.",
+    "Research calibration schema is not a deployable calibration/v1 artifact.",
+    "This contrast changes calibration domain, sample size and class balance jointly; it does not isolate which factor caused a difference."
+  ]
+}

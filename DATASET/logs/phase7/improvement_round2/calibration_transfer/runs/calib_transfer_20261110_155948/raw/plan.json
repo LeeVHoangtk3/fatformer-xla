@@ -1,0 +1,163 @@
+{
+  "schema": "phase7-calibration-transfer-plan/v1",
+  "purpose": "Controlled independent v2 calibration experiment on frozen weights; no training, no CFE evaluation, no deployment promotion.",
+  "manifest": {
+    "file": "DATASET/manifests/data_manifest_v2.json",
+    "sha256": "c1e883fed2e0fdd55ad9732ddc3bd44e1d21438b009100134f91788cf6af218a"
+  },
+  "calibration_manifest": {
+    "file": "DATASET/manifests/data_manifest_v2_val_calib.json",
+    "sha256": "8a639fa25b13560dcf652e4242ea3385b84e618295cbc15695e04d53471b56b9"
+  },
+  "validation_manifest": {
+    "file": "DATASET/manifests/data_manifest_v2_val_select.json",
+    "sha256": "d2bea3f9395fbdb6b8dd66acec385eb4321c91e2eee6139a40dbabb0b2e5c169"
+  },
+  "archive": {
+    "drive_path": "phase7/train_crossdomain_v2.tar",
+    "sha256": "16e5952892035ea0058cc6e996be191c43f6b3af608a6c92fb0a75ebc0a78dff"
+  },
+  "models": {
+    "candidate_p0": {
+      "drive_path": "phase7/improvement_round1/pilot_20261109_182359/p0_legacy_full/best.pth",
+      "sha256": "9d97613c5f271801a30ff514326557f262a372abeb4d52ce864c78f20fc1069b"
+    },
+    "incumbent": {
+      "drive_path": "checkpoint/phase7/anchored_v2_run1/fatformer_anchored_v2_best.pth",
+      "sha256": "5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c"
+    }
+  },
+  "controls": {
+    "candidate_p0": {
+      "file": "configs/phase7_calibration_transfer/controls/candidate_p0.json",
+      "sha256": "2a30e936ef73c07c3939a529f36604320b33b2d8620bf5e378670bca932878da",
+      "source_file": "DATASET/logs/phase7/improvement_round1/evaluation/runs/p0_eval_20261110_065901/raw/candidate_p0/calibration/candidate_p0.json",
+      "scope": "Frozen existing CFE calibration parameters; control only, not refit."
+    },
+    "incumbent": {
+      "file": "configs/phase7_calibration_transfer/controls/incumbent.json",
+      "sha256": "7ff282ba1624308b977540358844c5c364c3a6128f01db796b422412ba7bece8",
+      "source_file": "DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json",
+      "scope": "Frozen existing CFE calibration parameters; control only, not refit."
+    }
+  },
+  "diagnostic_reference": {
+    "run_id": "val_diag_20261110_142828",
+    "drive_path": "phase7/improvement_round2/diagnostics/val_diag_20261110_142828",
+    "source_commit": "0dabd725e5b7a351514a9b7ee34f4bd6014b584f",
+    "files": {
+      "analysis/diagnosis.json": {
+        "sha256": "576207479a96a9351f081a5d77426231000dd02b6b20e04f2f0203479cf6a1bf",
+        "bytes": 5456
+      },
+      "analysis/errors.csv": {
+        "sha256": "a351f1c3f9cccb6e2c20faf15819dd3e4c20540a68ac9f9e447a959dfd27e75d",
+        "bytes": 192458
+      },
+      "analysis/group_metrics.csv": {
+        "sha256": "da78b3e31aeac422b4b3ee4d07393d7e2ffa4725e76111909118bf9867758971",
+        "bytes": 17136
+      },
+      "batch_contract.json": {
+        "sha256": "9c14b91789ec1d196a10487179ded8b1113ed93700165d83b63ae8c3e64191d7",
+        "bytes": 120
+      },
+      "candidate_p0/canonical_load.json": {
+        "sha256": "ed97e487358a2f842d8804871f629fd40ad1b6e36dd34f98c93706dd4556fa05",
+        "bytes": 1021
+      },
+      "candidate_p0/predictions_clean.npz": {
+        "sha256": "b07244b1a717b629c4ad158e0292f4b9614f6d46af4537b6db52cc372497650b",
+        "bytes": 90025
+      },
+      "candidate_p0/predictions_q30_post_crop.npz": {
+        "sha256": "d61491036a7e38eb42da77a47d01d23cbf5c75d55555ad3d73f326c91b348772",
+        "bytes": 92091
+      },
+      "candidate_p0/probe.json": {
+        "sha256": "3f735c073149c742834da9ffd1be3f751473f2dafed734d3059b4efc68332955",
+        "bytes": 883
+      },
+      "commands.log": {
+        "sha256": "80d3d29b06f735532c66086401285bbbd7795622a4ab073f3e3d636243f1711a",
+        "bytes": 2301
+      },
+      "identity.json": {
+        "sha256": "8bbd5f750ad0194d025591cc982171ef7e3777241c4a36d0a859264092133db6",
+        "bytes": 17978
+      },
+      "incumbent/canonical_load.json": {
+        "sha256": "852535bf1c55509121d090fcaed0314095efb34cac700c69e1735c6b9d2ecd89",
+        "bytes": 1021
+      },
+      "incumbent/predictions_clean.npz": {
+        "sha256": "1b5f44da4ec1836325e74a5e676da3e57062659f166bb2c0b28bc2da1ed53401",
+        "bytes": 89968
+      },
+      "incumbent/predictions_q30_post_crop.npz": {
+        "sha256": "ee33310dfd1efe460ce677b427abc3f53b9e427c86f6ddfd284ae4e896a96071",
+        "bytes": 92011
+      },
+      "incumbent/probe.json": {
+        "sha256": "e6e6889b404c21fa3eeae0f520f65d1163eadf95daa2395743ad4d47fa56b22a",
+        "bytes": 883
+      },
+      "plan.json": {
+        "sha256": "69ca89ec9440501e780ab21b571dfa464d29ad020b9efeeef444f321598be10d",
+        "bytes": 2668
+      },
+      "status.json": {
+        "sha256": "9957005d3166493cf3e9016fb62e86dcdc869a03917f1c3a877a8f1eb7c5bc77",
+        "bytes": 1617
+      }
+    }
+  },
+  "protocol": {
+    "calibration_split": "val_calib",
+    "calibration_condition": "clean",
+    "calibration_count": 1080,
+    "real": 590,
+    "fake": 490,
+    "evaluation_split": "val_select",
+    "evaluation_count": 1080,
+    "conditions": [
+      "clean",
+      "q30_post_crop"
+    ],
+    "preprocessing": "clip_short_edge224_center_crop224",
+    "precision": "fp16",
+    "probability_dtype": "float32",
+    "tf32": false,
+    "fpr_target": 0.05,
+    "false_positive_budget": 29,
+    "comparison_operator": ">=",
+    "temperature_bounds": [
+      0.05,
+      10.0
+    ],
+    "temperature_max_iter": 100,
+    "max_batch_size": 16,
+    "same_batch_for_models_and_points": true,
+    "automatic_midrun_batch_change": false,
+    "validation_mode": "reuse frozen logits only when inference source hashes, GPU name, torch, CUDA and batch match; otherwise remeasure both models and both validation conditions before rescoring",
+    "operating_point": "one clean-fitted fixed threshold for clean and Q30; no condition router",
+    "bootstrap": {
+      "n": 1000,
+      "seed": 42,
+      "stratified_by_label": true,
+      "unit": "image",
+      "conditional_on_single_calibration_fit": true
+    },
+    "diagnostic_real_guard": 0.9
+  },
+  "limits": [
+    "val_select has already selected P0 and been inspected; not a blind test.",
+    "Empirical FPR on calibration does not guarantee FPR elsewhere.",
+    "Calibration does not improve raw logit ranking; float32 score ties can alter score-based AUC numerically.",
+    "Bootstrap conditions on one calibration fit and one training seed; does not cover fitting uncertainty or generator dependence.",
+    "Guard summaries are research diagnostics, not G7.2/G7.3 acceptance.",
+    "Research calibration schema is not a deployable calibration/v1 artifact.",
+    "This contrast changes calibration domain, sample size and class balance jointly; it does not isolate which factor caused a difference."
+  ],
+  "retained_package_sha256": "248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0"
+}

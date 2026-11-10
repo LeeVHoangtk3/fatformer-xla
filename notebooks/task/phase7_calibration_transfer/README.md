@@ -1,6 +1,6 @@
 # Calibration transfer — vòng cải thiện 2
 
-Trạng thái 10/11/2026: **đã chuẩn bị code và notebook, chưa chạy calibration mới trên GPU**. Đây là thí nghiệm operating point trên weights đã khóa; không train, không chấm CFE evaluation, không thay package `24869052…`.
+Trạng thái 10/11/2026: **đã hậu kiểm run `calib_transfer_20261110_155948`**; fit đúng split/budget nhưng hai point clean-only mới không đạt guard Real Q30≥90%. Xem [kết quả](../../../DATASET/logs/phase7/improvement_round2/calibration_transfer/runs/calib_transfer_20261110_155948/README.md). Không cần chạy lại y nguyên. File notebook trong repo vẫn là template; chưa có bản thực thi để đối chiếu output. Các hướng dẫn dưới đây giữ để tái lập, không phải yêu cầu train hoặc thay package `24869052…`.
 
 Mở [notebook đã tạo](phase7_calibration_transfer_colab.ipynb) trên Colab, chọn GPU CUDA đủ bộ nhớ và chạy ba code cell theo thứ tự. Dùng runtime mới để giữ repo/run cũ nguyên vẹn. Notebook lấy code Git nhánh `hoang` và khóa source đã kiểm thử **`253942a5262432fbed7ce7ca8b12b4e455bfc2ce`**; không cần ZIP code hoặc sửa notebook diagnostics đã chạy.
 

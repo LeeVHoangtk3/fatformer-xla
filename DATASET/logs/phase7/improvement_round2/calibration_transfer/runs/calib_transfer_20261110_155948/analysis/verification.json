@@ -1,0 +1,87 @@
+{
+  "schema": "phase7-calibration-transfer-audit/v1",
+  "passed": true,
+  "run_id": "calib_transfer_20261110_155948",
+  "source_commit": "253942a5262432fbed7ce7ca8b12b4e455bfc2ce",
+  "source_files_checked": 170,
+  "raw_files": 56,
+  "raw_bytes": 2199957,
+  "new_calibration_records": 2160,
+  "frozen_validation_records": 4320,
+  "scored_records": 8640,
+  "validation_mode": "reuse_frozen_logits",
+  "group_rows": 224,
+  "error_rows": 1471,
+  "reports_and_paired_ci_reproduced": true,
+  "numerics": {
+    "candidate_p0": {
+      "independent_temperature": {
+        "T_float64": 1.971882141036708,
+        "T_float32": 1.9718821048736572,
+        "nll": 0.24739592522069462,
+        "gradient_beta": 5.2632795241488905e-17
+      },
+      "cpu_refit_T": 1.9718821048736572,
+      "gpu_threshold": 0.3712310194969177,
+      "cpu_refit_threshold": 0.37123093008995056,
+      "calibration_fp_reproduced": 29,
+      "validation_numerics": {
+        "clean/cfe_control": {
+          "cpu_max_probability_error": 1.7881393432617188e-07,
+          "cpu_label_disagreements": 0
+        },
+        "clean/v2_clean_fit": {
+          "cpu_max_probability_error": 2.682209014892578e-07,
+          "cpu_label_disagreements": 0
+        },
+        "q30_post_crop/cfe_control": {
+          "cpu_max_probability_error": 1.7881393432617188e-07,
+          "cpu_label_disagreements": 0
+        },
+        "q30_post_crop/v2_clean_fit": {
+          "cpu_max_probability_error": 2.384185791015625e-07,
+          "cpu_label_disagreements": 0
+        }
+      },
+      "group_rows": 112,
+      "error_rows": 733,
+      "cached_raw_logits_bit_identical": true
+    },
+    "incumbent": {
+      "independent_temperature": {
+        "T_float64": 1.7667391758408788,
+        "T_float32": 1.7667391300201416,
+        "nll": 0.2331610032236193,
+        "gradient_beta": -4.605369583630279e-17
+      },
+      "cpu_refit_T": 1.7667391300201416,
+      "gpu_threshold": 0.5055273175239563,
+      "cpu_refit_threshold": 0.5055273175239563,
+      "calibration_fp_reproduced": 29,
+      "validation_numerics": {
+        "clean/cfe_control": {
+          "cpu_max_probability_error": 2.086162567138672e-07,
+          "cpu_label_disagreements": 0
+        },
+        "clean/v2_clean_fit": {
+          "cpu_max_probability_error": 2.980232238769531e-07,
+          "cpu_label_disagreements": 0
+        },
+        "q30_post_crop/cfe_control": {
+          "cpu_max_probability_error": 2.384185791015625e-07,
+          "cpu_label_disagreements": 0
+        },
+        "q30_post_crop/v2_clean_fit": {
+          "cpu_max_probability_error": 2.384185791015625e-07,
+          "cpu_label_disagreements": 0
+        }
+      },
+      "group_rows": 112,
+      "error_rows": 738,
+      "cached_raw_logits_bit_identical": true
+    }
+  },
+  "executed_notebook_available": false,
+  "local_model_forward_performed": false,
+  "scope": "Saved GPU scores/labels are authoritative; CPU scoring is diagnostic only. No weights/full image archive at local, and current notebook is a template if execution counts are null."
+}

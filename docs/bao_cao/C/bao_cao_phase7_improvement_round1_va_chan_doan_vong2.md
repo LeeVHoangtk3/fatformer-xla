@@ -1,6 +1,6 @@
 # Báo cáo Phase 7 — pilot vòng 1, matched evaluation và chuẩn bị chẩn đoán vòng 2
 
-Ngày cập nhật **10/11/2026**. Kết luận hiện hành: **chưa chọn được model thay thế incumbent; vòng cải thiện 1 là kết quả âm.** Model báo cáo vẫn là package `24869052…`, G7.2 FAIL/đạt 6/8, G7.3 pending. Chẩn đoán validation vòng 2 đã chạy GPU và được hậu kiểm; chưa fit calibration hoặc train mới.
+Ngày cập nhật **10/11/2026**. Kết luận hiện hành: **chưa chọn được model thay thế incumbent; vòng cải thiện 1 là kết quả âm.** Model báo cáo vẫn là package `24869052…`, G7.2 FAIL/đạt 6/8, G7.3 pending. Diagnostics và calibration transfer vòng 2 đã hậu kiểm; point clean-only mới trượt guard Real Q30 nên không được dùng thay deployment. Chưa train mới.
 
 ## 1. Lịch sử và phạm vi bằng chứng
 
@@ -81,8 +81,20 @@ Bốn recall lịch sử P0 khớp chính xác, không có logits từng ảnh c
 
 Quan trọng: ngưỡng 0,9127/T1,6402 chỉ là điểm chẩn đoán lịch sử. CFE trước đó đã dùng calibration riêng cho P0 T3,0949893/ngưỡng0,76518965. Dữ liệu này chưa xác lập nguyên nhân CFE hoặc loại trừ thiếu năng lực biểu diễn ở miền ngoài. Đề xuất thử calibration trên `val_calib` v2 độc lập với weights cố định trước, robustness augmentation là thí nghiệm riêng; chưa chạy hai bước đó. [Hậu kiểm và đính chính đầy đủ](../../../DATASET/logs/phase7/improvement_round2/diagnostics/runs/val_diag_20261110_142828/README.md) và [kế hoạch tiếp theo](../../plan/ke_hoach_cai_thien_phase7_sau_vong1.md) giữ model/gate hiện hành không đổi.
 
-## 8. Chuẩn bị calibration transfer có đối chứng
+## 8. Chuẩn bị calibration transfer có đối chứng — hồ sơ trước run
 
 Đã triển khai [runner](../../../tools/phase7_calibration_transfer.py), frozen inputs/controls và [hướng dẫn notebook](../../../notebooks/task/phase7_calibration_transfer/README.md) theo [kế hoạch riêng](../../plan/ke_hoach_calibration_transfer_phase7_round2.md). Fit chỉ trên 1.080 clean `val_calib` v2, FPR≤5% tức tối đa 29/590 real false positives; một threshold dùng chung clean/Q30 validation. Cả hai point của mỗi model dùng cùng raw validation logits; khác môi trường/source/batch thì đo lại validation cho cả hai, không đổi weights hoặc train.
 
-30 test CPU/code đạt (22 transfer +8 Git), gồm tách split, ties/FPR, cache source/environment, failed runs và không đóng gói weights. Staging reference từ folder và ZIP đã được thử với 16 file diagnostics thật. Các kiểm tra đó không phải phép đo model/calibration GPU mới. **Thí nghiệm chưa chạy GPU, chưa có metric hoặc T/ngưỡng mới, deployment giữ nguyên.** Artifact mới dùng research schema và `deployable=false`; không tự nghiệm thu G7.2/G7.3 từ kết quả calibration.
+30 test CPU/code preparation đạt (22 transfer +8 Git), gồm tách split, ties/FPR, cache source/environment, failed runs và không đóng gói weights. Staging reference từ folder và ZIP đã được thử với 16 file diagnostics thật. Đây là trạng thái trước khi chạy; kết quả cập nhật ở mục 9. Artifact dùng research schema và `deployable=false`; không tự nghiệm thu G7.2/G7.3 từ calibration.
+
+## 9. Calibration transfer đã đo — lợi recall nhưng trượt Real guard
+
+[Run `calib_transfer_20261110_155948`](../../../DATASET/logs/phase7/improvement_round2/calibration_transfer/runs/calib_transfer_20261110_155948/README.md), source `253942a`, L4/FP16/batch16, đã hậu kiểm 56 file/170 source hashes. 2.160 calibration records mới và 4.320 frozen validation records cho 8.640 scored decisions; 224 dòng nhóm/1.471 dòng lỗi, báo cáo và paired CI tái lập. Bốn validation logits arrays tái dùng đúng bit, không phải validation forward mới. Notebook trong repo vẫn là template; chưa có bản thực thi để đối chiếu outputs, local không có weights/full ảnh.
+
+P0 fit **T=1,9718821, threshold=0,3712310**; incumbent **T=1,7667391, threshold=0,5055273**. Cả hai đạt **29/590 FP=4,9153%** trên clean `val_calib`, T hội tụ và kiểm tra độc lập khớp. Ngưỡng CPU/GPU P0 sai khác khoảng8,94e−8, replay tại GPU threshold vẫn đúng29FP; không sửa số GPU bằng số CPU.
+
+P0 so calibration CFE cũ→v2 mới: clean Fake **62,04→84,69%**, Real **99,32→94,41%**, FPR **0,68→5,59%**; Q30 Fake **49,18→80%**, Real **98,14→86,95%**, FPR **1,86→13,05%**. Incumbent: clean Fake **63,06→84,49%**, Real **98,98→94,75%**, FPR **1,02→5,25%**; Q30 Fake **49,18→78,78%**, Real **97,29→87,29%**, FPR **2,71→12,71%**. Cả hai point mới **không đạt guard≥90% Real ở cả clean/Q30**; không tự hạ guard sau khi thấy kết quả.
+
+NLL/ECE điểm tốt hơn trên validation, nhưng ECE confidence/argmax0,5 không bảo đảm FPR ở operating point; CI delta Q30 NLL incumbent còn chứa0. Raw ranking không đổi, chênh score AUC nhỏ do float32 ties. Đây là thay đổi điểm vận hành, không tạo weights/biểu diễn mới hoặc tăng CFE Fake@Real90. Nguồn: [verification](../../../DATASET/logs/phase7/improvement_round2/calibration_transfer/runs/calib_transfer_20261110_155948/analysis/verification.json), [decision](../../../DATASET/logs/phase7/improvement_round2/calibration_transfer/runs/calib_transfer_20261110_155948/analysis/decision.json).
+
+30 test audit/transfer đạt lần này (8 audit mới +22 transfer); có trùng với 30 test preparation, không cộng thành full-suite60. Giữ package/gates hiện hành. Operating point robust có thể thử riêng trên clean/Q30 `val_calib` với một ngưỡng chung bảo thủ; để nâng ranking/G7.2 cần weights/data/robustness có control. Không fit theo `val_select` hoặc CFE evaluation; chưa khởi chạy bước tiếp.

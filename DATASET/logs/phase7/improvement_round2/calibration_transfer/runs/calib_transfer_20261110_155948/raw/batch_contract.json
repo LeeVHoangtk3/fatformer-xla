@@ -1,0 +1,8 @@
+{
+  "batch_size": 16,
+  "precision": "fp16",
+  "probability_device": "cuda",
+  "same_for_both_models_and_points": true,
+  "automatic_midrun_batch_change": false,
+  "validation_mode": "reuse_frozen_logits"
+}

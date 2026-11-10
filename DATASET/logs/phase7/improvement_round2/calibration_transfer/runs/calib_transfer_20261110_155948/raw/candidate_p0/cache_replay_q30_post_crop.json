@@ -1,0 +1,5 @@
+{
+  "max_probability_error": 0.0,
+  "label_disagreements": 0,
+  "scope": "Replay of historical baseline scores from frozen logits, not a new backbone forward or deployment acceptance."
+}

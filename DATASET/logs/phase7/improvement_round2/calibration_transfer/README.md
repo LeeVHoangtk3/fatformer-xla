@@ -1,10 +1,10 @@
 # Vòng 2 — chuẩn bị phép đối chứng calibration transfer
 
-Cập nhật 10/11/2026. **Prepared, chưa chạy GPU calibration mới, chưa train và chưa thay model.** Đây là bước tiếp sau [diagnostics đã hậu kiểm](../diagnostics/runs/val_diag_20261110_142828/README.md), không phải kết quả chất lượng mới. Primary package `24869052…`, G7.2 FAIL/đạt 6/8, G7.3 pending giữ nguyên.
+Cập nhật 10/11/2026. **Đã hậu kiểm run `calib_transfer_20261110_155948`; điểm calibration clean-only mới không đạt guard Real Q30≥90%.** Fake recall tăng, nhưng FPR Q30 lên 13,05% P0/12,71% incumbent. Không chọn điểm mới, chưa train hoặc thay model; primary package `24869052…`, G7.2 FAIL/đạt 6/8, G7.3 pending giữ nguyên. Xem [kết quả và quyết định](runs/calib_transfer_20261110_155948/README.md), [index hiện hành](index.json).
 
 Code: [`tools/phase7_calibration_transfer.py`](../../../../../tools/phase7_calibration_transfer.py). Protocol và controls: [`configs/phase7_calibration_transfer/plan.json`](../../../../../configs/phase7_calibration_transfer/plan.json). Notebook/hướng dẫn: [`notebooks/task/phase7_calibration_transfer/README.md`](../../../../../notebooks/task/phase7_calibration_transfer/README.md).
 
-Chạy [notebook ba code cell đã tạo](../../../../../notebooks/task/phase7_calibration_transfer/phase7_calibration_transfer_colab.ipynb), source khóa `253942a5262432fbed7ce7ca8b12b4e455bfc2ce`. Notebook chưa thực thi; bản người dùng chạy sau đó nên lưu tên `phase7_calibration_transfer_executed.ipynb` để giữ template và các notebook cũ.
+Run đã hoàn tất từ source `253942a5262432fbed7ce7ca8b12b4e455bfc2ce`; không cần chạy lại y nguyên. [Notebook trong repo](../../../../../notebooks/task/phase7_calibration_transfer/phase7_calibration_transfer_colab.ipynb) vẫn là template không outputs; chưa có notebook thực thi để đối chiếu cell. Hậu kiểm dựa trên source, metadata và arrays đã nộp. Các mục thiết kế/preparation bên dưới là hồ sơ trước run, không thay kết quả hiện hành.
 
 ## Thiết kế đã khóa trước phép đo
 
@@ -21,4 +21,4 @@ So sánh này gộp thay đổi domain/cỡ mẫu/tỷ lệ lớp calibration; k
 - **30 test CPU/code đạt**: 22 test transfer +8 test Git workflow. Có mock CUDA để thử luồng success/failure, cache reuse/remeasure và ZIP không chứa weights; không coi đó là đo GPU thật. Xem [`preparation/validation/local_tests.xml`](preparation/validation/local_tests.xml).
 - [`preparation/readiness.json`](preparation/readiness.json) ghi `prepared_not_gpu_run`. [`preparation/preservation.json`](preparation/preservation.json) bảo vệ 365 file bằng chứng/notebook cũ, gồm notebook diagnostics người dùng vừa cập nhật. Không sửa hoặc xóa outputs của notebook cũ.
 
-Sau khi chạy Colab, đưa kết quả vào `wait/calibration_transfer_without_weights/`; nguồn Drive là `MyDrive/Fatformer/phase7/improvement_round2/calibration_transfer/<TRANSFER_RUN_ID>/`. Log tại đây hiện chỉ có preparation, không có T/ngưỡng hoặc số đo validation mới từ GPU.
+Kết quả nhận từ `wait/calibration_transfer_without_weights/`; nguồn Drive là `MyDrive/Fatformer/phase7/improvement_round2/calibration_transfer/calib_transfer_20261110_155948/`. Log run mới nằm tại `runs/calib_transfer_20261110_155948/`, có T/ngưỡng, scores và hậu kiểm riêng. `preparation/` giữ trạng thái trước khi chạy, không được sửa thành kết quả mới.
