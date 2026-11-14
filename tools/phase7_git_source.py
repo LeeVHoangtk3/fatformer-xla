@@ -13,8 +13,11 @@ SOURCE_PATHS = ['src','tools','tests','configs','notebooks/task/phase7_improveme
     'DATASET/logs/phase7/improvement_round1/preparation/protocol.json']
 
 
-def git_source_identity(root):
+def git_source_identity(root, source_paths=None):
     root=Path(root).resolve()
+    source_paths = SOURCE_PATHS if source_paths is None else list(source_paths)
+    if not source_paths:
+        raise ValueError('Source paths must not be empty')
     def git(*args):
         return subprocess.check_output(['git',*args],cwd=root,text=True,encoding='utf-8',errors='strict').strip()
     try:
@@ -30,10 +33,10 @@ def git_source_identity(root):
                        cwd=root,check=True,capture_output=True)
     elif branch!='hoang':
         raise ValueError(f'Require branch hoang or its pinned commit; got {branch}')
-    dirty=git('status','--porcelain','--untracked-files=all','--',*SOURCE_PATHS)
+    dirty=git('status','--porcelain','--untracked-files=all','--',*source_paths)
     if dirty:
         raise ValueError('Source/config/input files differ from the recorded commit; commit them or use a fresh checkout:\n'+dirty)
-    paths=git('ls-files','-z','--',*SOURCE_PATHS).split('\0')
+    paths=git('ls-files','-z','--',*source_paths).split('\0')
     files={name:hashlib.sha256((root/name).read_bytes()).hexdigest() for name in paths if name}
     if not files:raise ValueError('Git checkout has no tracked pilot sources')
     fingerprint=hashlib.sha256(json.dumps(files,sort_keys=True,separators=(',',':')).encode()).hexdigest()

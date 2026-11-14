@@ -61,3 +61,22 @@ def test_pinned_detached_commit_is_accepted_when_reachable_from_origin_hoang(rep
     git(repo,'checkout','--detach',commit)
     proof=git_source_identity(repo)
     assert proof['commit']==commit and proof['branch']=='hoang'
+
+
+def test_custom_source_paths_include_frozen_inputs_and_notebook(repo):
+    (repo/'configs').mkdir()
+    (repo/'configs/split.json').write_text('{"samples": []}')
+    (repo/'notebooks').mkdir()
+    (repo/'notebooks/audit.ipynb').write_text('{"cells": []}')
+    git(repo,'add','configs','notebooks')
+    git(repo,'-c','user.name=Test','-c','user.email=test@example.invalid','commit','-m','audit inputs')
+    proof=git_source_identity(repo, source_paths=['src','configs','notebooks/audit.ipynb'])
+    assert 'configs/split.json' in proof['files'] and 'notebooks/audit.ipynb' in proof['files']
+    (repo/'configs/split.json').write_text('{"samples": [1]}')
+    with pytest.raises(ValueError,match='differ from the recorded commit'):
+        git_source_identity(repo, source_paths=['src','configs','notebooks/audit.ipynb'])
+
+
+def test_empty_source_scope_cannot_bypass_clean_check(repo):
+    with pytest.raises(ValueError,match='must not be empty'):
+        git_source_identity(repo, source_paths=[])
