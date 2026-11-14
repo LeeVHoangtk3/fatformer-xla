@@ -3,6 +3,8 @@ import hashlib
 import io
 import json
 import sqlite3
+import subprocess
+import sys
 import tarfile
 from pathlib import Path
 
@@ -13,7 +15,8 @@ from PIL import Image
 
 from src.models.unified_fatformer import UnifiedFatFormerXLA
 from tools.master_data_audit import (audit_archive, catalog, check_overlap, evaluate_archive,
-    extract_audited, final_metrics, identify, jobs_for, open_inventory, safe_member, summarize_predictions)
+    audit_catalog, restore_audit_inventory, extract_audited, final_metrics, identify, jobs_for,
+    open_inventory, safe_member, summarize_predictions)
 from tools.calibration_data import sha256_file
 
 
@@ -52,7 +55,7 @@ def test_actual_bytes_are_decoded_hashed_extracted_and_counted(tmp_path, fixture
     connection.close()
 
 
-@pytest.mark.parametrize("bad", ["../../escape.png", "/absolute.png", "C:/escape.png", "a\\escape.png"])
+@pytest.mark.parametrize("bad", ["../../escape.png", "/absolute.png", "C:/escape.png", "C:escape.png", "a\\escape.png", "a/\x00x.png"])
 def test_unsafe_archive_names_are_rejected(bad):
     with pytest.raises(ValueError, match="Unsafe"):
         safe_member(bad)
@@ -150,7 +153,7 @@ def test_notebook_is_executable_source_without_historical_metric_tables():
             assert not cell["outputs"] and cell["execution_count"] is None
             source.append("".join(cell["source"]))
     joined = "\n".join(source)
-    assert "audit_archive(" in joined and "evaluate_archive(" in joined and "load_unified_model(" in joined
+    assert "audit_catalog(" in joined and "evaluate_archive(" in joined and "load_unified_model(" in joined
     assert "cfe_summary_data" not in joined and "indist_summary_data" not in joined
     assert "checkpoint['model']" not in joined and "PASS IN PACKAGING" not in joined
     assert "bootstrap" in joined and "content_overlap" in joined
@@ -208,3 +211,130 @@ def test_git_tracked_json_partitions_preserve_frozen_counts_and_labels():
                                 ('evaluation','ed5af91047320147517c7a2a1283e242aaecb0cf9a91351a469902158b8bc4e9')]:
         payload = json.loads((root/f'configs/master_audit/{split}_split.json').read_text(encoding='utf-8'))
         assert payload['source_npz_sha256'] == expected_sha
+
+
+def test_reported_cyclegan_timestamp_filename_audits_and_extracts(tmp_path):
+    member = 'test/cyclegan/summer/1_fake/2015-12-31 17:23:30_fake.png'
+    assert safe_member(member).as_posix() == member
+    archive = tmp_path/'timestamps.tar'
+    make_archive(archive, [(member, image_bytes('blue')),
+                          ('test/cyclegan/summer/0_real/real.png', image_bytes('red'))])
+    spec = dict(name='colon_fixture', path=str(archive), kind='test', expected_images=2)
+    connection = open_inventory(tmp_path/'inventory.sqlite')
+    report = audit_archive(spec, connection, {}, tmp_path/'audit.json')
+    assert report['status'] == 'completed' and report['by_subset'] == dict(cyclegan=2)
+    records = extract_audited(spec, connection, tmp_path/'stage')
+    fake = next(row for row in records if row['label'] == 1)
+    assert fake['member'] == member and Path(fake['path']).is_file()
+    assert Path(fake['path']).read_bytes() == image_bytes('blue')
+    connection.close()
+
+
+def input_proof(commit):
+    return dict(commit=commit, files={name:'a'*64 for name in [
+        'configs/master_audit/calibration_split.json', 'configs/master_audit/evaluation_split.json',
+        'DATASET/manifests/data_manifest.json', 'DATASET/manifests/data_manifest_v2.json']})
+
+
+def test_resume_keeps_completed_audits_and_restarts_only_partial_archive(tmp_path, fixture_archive, monkeypatch):
+    import tools.master_data_audit as audit
+    previous = tmp_path/'previous'
+    previous.mkdir()
+    old = open_inventory(previous/'image_inventory.sqlite')
+    report = audit_archive(fixture_archive, old, {}, previous/'sample_audit.json')
+    old.execute('INSERT INTO images VALUES (?,?,?,?,?,?,?,?)', ('partial','old.png','old-hash',0,'train','x','old-id',3))
+    old.commit()
+    (previous/'git_source.json').write_text(json.dumps(input_proof('a'*40)))
+    output = tmp_path/'new'
+    output.mkdir()
+    current = open_inventory(output/'image_inventory.sqlite')
+    restored = restore_audit_inventory(previous, output, current, input_proof('b'*40))
+    assert restored['previous_source']['commit'] == 'a'*40
+    called = []
+    original = audit.audit_archive
+    def measured(spec, *args):
+        called.append(spec['name'])
+        return original(spec, *args)
+    monkeypatch.setattr(audit, 'audit_archive', measured)
+    partial = dict(fixture_archive, name='partial')
+    result = audit_catalog([fixture_archive, partial], current, {}, output, reuse_completed=True)
+    assert called == ['partial']
+    assert result[0]['reused_completed_audit'] is True and result[0]['archive_sha256'] == report['archive_sha256']
+    assert current.execute('SELECT count(*) FROM images').fetchone()[0] == 4
+    assert old.execute('SELECT count(*) FROM images').fetchone()[0] == 3
+    assert json.loads((previous/'sample_audit.json').read_text()).get('reused_completed_audit') is None
+    current.close()
+    old.close()
+
+
+@pytest.mark.parametrize('mode', ['changed_archive', 'changed_inventory'])
+def test_resume_rejects_changed_completed_evidence(tmp_path, fixture_archive, mode):
+    connection = open_inventory(tmp_path/'inventory.sqlite')
+    audit_archive(fixture_archive, connection, {}, tmp_path/'sample_audit.json')
+    if mode == 'changed_archive':
+        with open(fixture_archive['path'], 'ab') as stream:
+            stream.write(b'changed')
+    else:
+        connection.execute('DELETE FROM images WHERE label=1')
+        connection.commit()
+    with pytest.raises(ValueError, match='cache changed/inconsistent'):
+        audit_catalog([fixture_archive], connection, {}, tmp_path, reuse_completed=True)
+    connection.close()
+
+
+def test_resume_rejects_changed_frozen_inputs_before_copying_inventory(tmp_path):
+    previous, output = tmp_path/'previous', tmp_path/'new'
+    previous.mkdir()
+    output.mkdir()
+    old = open_inventory(previous/'image_inventory.sqlite')
+    (previous/'git_source.json').write_text(json.dumps(input_proof('a'*40)))
+    current = open_inventory(output/'image_inventory.sqlite')
+    proof = input_proof('b'*40)
+    proof['files']['configs/master_audit/calibration_split.json'] = 'c'*64
+    with pytest.raises(ValueError, match='manifests/frozen splits differ'):
+        restore_audit_inventory(previous, output, current, proof)
+    assert current.execute('SELECT count(*) FROM images').fetchone()[0] == 0
+    old.close()
+    current.close()
+
+
+def test_recovery_driver_uses_pinned_git_notebook_in_a_new_run(tmp_path):
+    remote, checkout = tmp_path/'origin', tmp_path/'checkout'
+    remote.mkdir()
+    subprocess.run(['git','init','-b','hoang'], cwd=remote, check=True, capture_output=True)
+    notebook = dict(cells=[dict(cell_type='code', source=[source]) for source in [
+        "state = {'steps': []}; OUTPUT = NEW_OUTPUT; events.append('fresh_run')",
+        "GIT_COMMIT = ''; events.append(('commit', GIT_COMMIT))",
+        "events.append(('resume_from', RESUME_AUDIT_FROM))"]])
+    (remote/'notebooks').mkdir()
+    (remote/'notebooks/master_full_data_audit_colab.ipynb').write_text(json.dumps(notebook))
+    subprocess.run(['git','add','.'], cwd=remote, check=True)
+    subprocess.run(['git','-c','user.name=Test','-c','user.email=test@example.invalid',
+                    'commit','-m','recovery fixture'], cwd=remote, check=True, capture_output=True)
+    commit = subprocess.check_output(['git','rev-parse','HEAD'], cwd=remote, text=True).strip()
+    subprocess.run(['git','clone',str(remote),str(checkout)], check=True, capture_output=True)
+    previous = tmp_path/'previous'
+    previous.mkdir()
+    connection = open_inventory(previous/'image_inventory.sqlite')
+    connection.close()
+    driver = Path(__file__).resolve().parents[1]/'notebooks/resume_master_data_audit_colab.py'
+    program = '\n'.join([
+        'import json, runpy, sqlite3', 'from pathlib import Path',
+        f"function = runpy.run_path({str(driver)!r})['resume_before_inference']",
+        f"namespace = dict(OUTPUT=Path({str(previous)!r}), REPO=Path({str(checkout)!r}),",
+        "state={'steps':[{'name':'all_archive_content_audit','status':'failed'}]}, events=[],",
+        f"db=sqlite3.connect({str(previous/'image_inventory.sqlite')!r}), NEW_OUTPUT=Path({str(tmp_path/'new')!r}),",
+        f"REPAIR_SOURCE_COMMIT={commit!r})", 'function(namespace)',
+        "print(json.dumps({'events':namespace['events'], 'state':namespace['state']}))"])
+    output = subprocess.check_output([sys.executable, '-c', program], text=True, encoding='utf-8')
+    result = json.loads(output.splitlines()[-1])
+    assert result['events'] == ['fresh_run', ['commit', commit], ['resume_from', str(previous.resolve())]]
+    assert result['state']['recovery_driver_commit'] == commit
+
+
+def test_recovery_driver_rejects_runs_that_already_loaded_model(tmp_path):
+    import runpy
+    driver = Path(__file__).resolve().parents[1]/'notebooks/resume_master_data_audit_colab.py'
+    function = runpy.run_path(str(driver))['resume_before_inference']
+    with pytest.raises(ValueError, match='before model loading'):
+        function(dict(OUTPUT=tmp_path, REPO=tmp_path, state=dict(steps=[dict(name='model_load', status='completed')])))

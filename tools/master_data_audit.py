@@ -3,11 +3,12 @@ import csv
 import hashlib
 import io
 import json
+import os
 import shutil
 import sqlite3
 import tarfile
 from collections import Counter
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 import numpy as np
 from PIL import Image
@@ -74,9 +75,67 @@ def manifest_maps(root):
 
 def safe_member(name):
     path = PurePosixPath(name)
-    if not name or path.is_absolute() or ".." in path.parts or "\\" in name or ":" in name:
+    if not name or '\x00' in name or path.is_absolute() or PureWindowsPath(name).drive or ".." in path.parts or "\\" in name:
         raise ValueError(f"Unsafe archive member: {name}")
     return path
+
+
+def restore_audit_inventory(previous, output, connection, source_proof):
+    """Copy a previous local inventory snapshot into a NEW run, keeping source provenance."""
+    previous, output = Path(previous).resolve(), Path(output).resolve()
+    if previous == output or not (previous/'image_inventory.sqlite').is_file():
+        raise ValueError('Resume needs a different existing results directory with an inventory')
+    if connection.execute('SELECT count(*) FROM images').fetchone()[0]:
+        raise ValueError('Resume destination inventory must be empty')
+    proof = json.loads((previous/'git_source.json').read_text(encoding='utf-8'))
+    required = ['configs/master_audit/calibration_split.json', 'configs/master_audit/evaluation_split.json',
+                'DATASET/manifests/data_manifest.json', 'DATASET/manifests/data_manifest_v2.json']
+    if any(not proof.get('files', {}).get(name) or proof['files'][name] != source_proof['files'].get(name) for name in required):
+        raise ValueError('Resume input manifests/frozen splits differ from the previous run')
+    source = sqlite3.connect((previous/'image_inventory.sqlite').as_uri()+'?mode=ro', uri=True)
+    try:
+        source.backup(connection)
+    finally:
+        source.close()
+    for path in previous.glob('*_audit.json'):
+        if json.loads(path.read_text(encoding='utf-8')).get('status') == 'completed':
+            shutil.copy2(path, output/path.name)
+    record = dict(previous_results=str(previous), previous_source=proof, current_commit=source_proof['commit'],
+                  note='Reuse only completed archive content audits after hash/count checks; predictions are not reused.')
+    write_json(output/'audit_resume.json', record)
+    return record
+
+
+def audit_catalog(archives, connection, maps, output, reuse_completed=False):
+    """Reuse validated completed archives; restart only a partial archive from its beginning."""
+    connection.rollback()
+    output = Path(output)
+    audits = []
+    for spec in archives:
+        path = output/(spec['name']+'_audit.json')
+        report = json.loads(path.read_text(encoding='utf-8')) if path.is_file() else {}
+        if reuse_completed and report.get('status') == 'completed':
+            count, size = connection.execute('SELECT count(*),coalesce(sum(bytes),0) FROM images WHERE archive=?', (spec['name'],)).fetchone()
+            def counts(column):
+                return {str(key): value for key,value in connection.execute(
+                    f'SELECT {column},count(*) FROM images WHERE archive=? GROUP BY {column}', (spec['name'],))}
+            if (report.get('name') != spec['name'] or count != spec['expected_images'] or count != report.get('images')
+                    or size != report.get('image_bytes') or counts('split') != report.get('by_split')
+                    or counts('subset') != report.get('by_subset') or counts('label') != report.get('by_label')
+                    or ('expected_labels' in spec and [counts('label').get(str(k), 0) for k in (0,1)] != spec['expected_labels'])
+                    or sha256_file(spec['path']) != report.get('archive_sha256')):
+                raise ValueError(f'Completed audit cache changed/inconsistent: {spec["name"]}; use a fresh run')
+            report['reused_completed_audit'] = True
+            write_json(path, report)
+            print(f'{spec["name"]}: reused completed content audit ({count} images)', flush=True)
+        else:
+            # Delete only partial rows in this run's inventory; keep completed archives and old run intact.
+            connection.execute('DELETE FROM images WHERE archive=?', (spec['name'],))
+            connection.commit()
+            report = audit_archive(spec, connection, maps, path)
+        spec['audited_sha256'] = report['archive_sha256']
+        audits.append(report)
+    return audits
 
 
 def class_label(parts):
@@ -223,6 +282,12 @@ def check_overlap(connection, output):
 
 def extract_audited(spec, connection, destination):
     destination = Path(destination).resolve()
+    def storage_path(member):
+        if os.name == 'nt':
+            # POSIX timestamps contain ':'; avoid Windows alternate streams/invalid names on staging only.
+            digest = hashlib.sha256(member.encode('utf-8')).hexdigest()
+            return destination/digest[:2]/(digest+PurePosixPath(member).suffix)
+        return destination/member
     rows = connection.execute("SELECT member,sha256,label,split,subset,sample_id,bytes FROM images WHERE archive=? ORDER BY member", (spec["name"],)).fetchall()
     required = {row[0]: row for row in rows}
     total_bytes = sum(row[-1] for row in rows)
@@ -243,14 +308,14 @@ def extract_audited(spec, connection, destination):
                 data = stream.read()
             if hashlib.sha256(data).hexdigest() != required[member_name][1]:
                 raise ValueError("Archive image changed after audit")
-            target = (destination/member_name).resolve()
+            target = storage_path(member_name).resolve()
             if not target.is_relative_to(destination):
                 raise ValueError("Extraction escapes staging directory")
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
     if seen != set(required):
         raise ValueError("Archive images missing after audit")
-    return [dict(path=str(destination/member), member=member, label=label, split=split, subset=subset,
+    return [dict(path=str(storage_path(member)), member=member, label=label, split=split, subset=subset,
                  sample_id=sid) for member, _, label, split, subset, sid, _ in rows]
 
 

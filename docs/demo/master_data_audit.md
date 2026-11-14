@@ -65,3 +65,28 @@ Cần chạy notebook trên runtime Colab có đủ dữ liệu để có bằng
 - Một test nguồn notebook lịch sử trước đây đòi output rỗng đã được sửa để chấp nhận output bằng chứng không có error. Notebook có kết quả lịch sử được giữ nguyên, không xóa output để làm test qua.
 
 Chưa có lượt thực thi mới trên toàn kho Drive/Colab, chưa có số đo GPU mới và chưa chạy pHash toàn kho. Vì vậy chỉ xác nhận bản sửa đã qua kiểm tra local nêu trên; trạng thái full-run thực tế vẫn chờ notebook chạy trên dữ liệu đầy đủ.
+
+## Khôi phục lỗi tên ảnh có dấu giờ
+
+Log Colab tại bước audit dừng ở `test/cyclegan/summer/1_fake/2015-12-31 17:23:30_fake.png`. Đây là lỗi bộ lọc đường dẫn cũ chặn mọi dấu `:`, không phải lỗi dữ liệu hoặc model. Bản sửa nhận tên POSIX hợp lệ nhưng vẫn từ chối đường dẫn tuyệt đối, ổ đĩa Windows, `..`, backslash và NUL. Khi staging trên Windows, tên lưu tạm được ánh xạ bằng hash để tránh alternate stream/tên không hợp lệ; tên archive gốc vẫn giữ trong inventory và dự đoán.
+
+Nếu runtime lỗi **vẫn còn hoạt động**, thêm một code cell bên dưới lỗi và chạy:
+
+```python
+import subprocess
+subprocess.run(['git', 'fetch', 'origin', 'hoang'], cwd=REPO, check=True)
+REPAIR_SOURCE_COMMIT = subprocess.check_output(
+    ['git', 'rev-parse', 'origin/hoang'], cwd=REPO, text=True).strip()
+repair = subprocess.check_output(
+    ['git', 'show', REPAIR_SOURCE_COMMIT+':notebooks/resume_master_data_audit_colab.py'],
+    cwd=REPO, text=True, encoding='utf-8')
+exec(compile(repair, 'resume_master_data_audit_colab.py', 'exec'), globals())
+```
+
+Script chỉ dùng cho lỗi audit trước khi nạp model: chốt commit Git mới, xóa cache module Python cũ, tạo run mới, snapshot SQLite đã commit và giữ provenance run trước. Nó kiểm frozen input hashes không đổi; chỉ tái sử dụng archive content audit có report `completed` cùng SHA archive, count/nhãn/split/subset và tổng byte khớp SQLite. Archive dở bị audit lại từ đầu trong inventory mới; run cũ không bị ghi đè. Các phép dự đoán vẫn chạy mới, không tái sử dụng metric/NPZ.
+
+Với log trên, năm archive đầu đã đi qua bước hoàn tất; nếu kiểm chứng cache đạt, không cần giải mã lại ProGAN train/val, staging, data v2 và CFE. `test_gans` sẽ chạy lại từ đầu. Việc tính lại hash archive vẫn cần đọc bytes trên Drive. `audit_resume.json` ghi source/run trước và commit đang chạy.
+
+Không restart runtime nếu muốn dùng inventory còn trên `/content`. Nếu runtime đã mất, đường khôi phục này không có dữ liệu local để tiếp tục; chạy run mới hoặc phục hồi evidence riêng trước. Notebook mới cũng có `RESUME_AUDIT_FROM` để chỉ định một thư mục results cũ còn tồn tại. Không bỏ kiểm tra hash/nhãn hoặc xóa dấu giờ trong dataset để làm pipeline chạy qua.
+
+Bản sửa đã qua **48 test liên quan**, kiểm tên file đúng như log, audit/extract ảnh chứa dấu giờ trên staging Windows an toàn, tái sử dụng archive hoàn tất, khởi động lại archive dở và từ chối cache/input đã đổi. Driver recovery được chạy thử bằng Git repository fixture trong subprocess, xác nhận chốt đúng commit notebook và tạo run mới với provenance cũ; không phải lượt khôi phục thật trên Colab của người dùng.
