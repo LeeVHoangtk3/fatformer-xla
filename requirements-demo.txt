@@ -1,0 +1,7 @@
+# Install a compatible torch/torchvision pair separately for the target CPU/CUDA.
+# Existing Windows pair verified: torch 2.10.0+cpu / torchvision 0.25.0+cpu.
+gradio==6.32.0
+numpy>=1.26,<3
+pillow>=10,<14
+regex>=2023.0
+tqdm>=4.66,<5

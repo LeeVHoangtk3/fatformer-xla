@@ -247,3 +247,5 @@ DATASET/logs/phase7/improvement_round1/preparation/validation/summary.json
 scratch/
 wait/
 artifacts/
+.venv-demo/
+logs/demo/
