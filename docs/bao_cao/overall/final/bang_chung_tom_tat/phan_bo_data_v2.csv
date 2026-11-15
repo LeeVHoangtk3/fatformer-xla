@@ -1,0 +1,4 @@
+﻿split,total,real,fake
+train,12240,6683,5557
+val_select,1080,590,490
+val_calib,1080,590,490

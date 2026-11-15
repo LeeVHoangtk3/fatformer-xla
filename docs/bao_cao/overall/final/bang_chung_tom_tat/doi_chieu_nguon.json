@@ -1,0 +1,61 @@
+{
+  "purpose": "Bằng chứng tóm tắt đi kèm hai báo cáo; không thay thế dữ liệu gốc hoặc kiểm thử độc lập.",
+  "manifest_sha256": "eb753b58627645c321ac91010b689cc74cac491e85ec608d9702df2cfa46d7ca",
+  "package_sha256": "248690528f6e7ecadb06717fafbdb64ca5c101cb966ad3f06f8c00994c9245d0",
+  "sources": [
+    {
+      "name": "CFE clean",
+      "source": "DATASET/logs/phase7/master_audit/runs/master_audit_20261115_040751_7beca5/raw/predictions/cfe__evaluation__clean.npz",
+      "sha256": "1697cfde6e174d61d86e3d21ea211dc89a0e61072e19963b0f9e00e2c9f22d44",
+      "n": 1600,
+      "auc_percent": 88.66226562500002
+    },
+    {
+      "name": "CFE q30",
+      "source": "DATASET/logs/phase7/master_audit/runs/master_audit_20261115_040751_7beca5/raw/predictions/cfe__evaluation__q30.npz",
+      "sha256": "9c939b87a7933ae93fd9230e78b34186eec4c31c95744b9e6416157409681fb8",
+      "n": 1600,
+      "auc_percent": 79.8790625
+    },
+    {
+      "name": "CFE q50",
+      "source": "DATASET/logs/phase7/master_audit/runs/master_audit_20261115_040751_7beca5/raw/predictions/cfe__evaluation__q50.npz",
+      "sha256": "0a5ea726f06a2f0ac30d2c152094257f239ff48e8275d336fb9b90077a939734",
+      "n": 1600,
+      "auc_percent": 81.55695312499999
+    },
+    {
+      "name": "CFE q75",
+      "source": "DATASET/logs/phase7/master_audit/runs/master_audit_20261115_040751_7beca5/raw/predictions/cfe__evaluation__q75.npz",
+      "sha256": "40361db3010026694b7b0a07483af5fb005292e18e2fa53152d116be35fd861b",
+      "n": 1600,
+      "auc_percent": 83.324296875
+    },
+    {
+      "name": "CFE webp40",
+      "source": "DATASET/logs/phase7/master_audit/runs/master_audit_20261115_040751_7beca5/raw/predictions/cfe__evaluation__webp40.npz",
+      "sha256": "1ffe0c818828e680472dc5df34f79114a577c624af933ba4f0ed18b85061f114",
+      "n": 1600,
+      "auc_percent": 79.00890625
+    },
+    {
+      "name": "CFE blur15",
+      "source": "DATASET/logs/phase7/master_audit/runs/master_audit_20261115_040751_7beca5/raw/predictions/cfe__evaluation__blur15.npz",
+      "sha256": "5047db08f182b489f77bb3aadb4aa98f5e1c6a1b306a0ca1d1e522336762c149",
+      "n": 1600,
+      "auc_percent": 84.21484375
+    },
+    {
+      "name": "CFE downup05",
+      "source": "DATASET/logs/phase7/master_audit/runs/master_audit_20261115_040751_7beca5/raw/predictions/cfe__evaluation__downup05.npz",
+      "sha256": "005a12eba986a2fd3192904a329ea152e7f71bcfbf57ee7daa20d49c4bbdb012",
+      "n": 1600,
+      "auc_percent": 86.98796875
+    }
+  ],
+  "limits": [
+    "Không kèm ảnh gốc hay trọng số",
+    "Chưa chạy ablation tách SRM gating KD",
+    "Nguồn nội bộ chưa được xác nhận đã công bố công khai"
+  ]
+}

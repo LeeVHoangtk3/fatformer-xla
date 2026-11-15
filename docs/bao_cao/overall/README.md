@@ -1,10 +1,18 @@
 # FatFormer-XLA: Master Architectural & Project Blueprint
 
-## Hai báo cáo cuối cùng cập nhật ngày 15/11/2026
+## Hai báo cáo cuối cùng
 
-[Báo cáo tổng thể](final/Bao_Cao_Tong_The_Mo_Hinh_FatFormer_XLA.docx) và [bản thảo paper hai cột](final/Paper_FatFormer_XLA_CVPR_Format.docx) được sắp xếp theo thứ tự: giới thiệu dự án và mục đích → nền tảng FatFormer gốc → phần triển khai FatFormer XLA, dữ liệu, thí nghiệm và kết quả. Phần bài gốc trình bày FAA/LGA, dữ liệu ProGAN, preprocessing, huấn luyện và ACC/AP do tác giả công bố; các số này được phân biệt với số đo của dự án.
+[Báo cáo tổng thể](final/Bao_Cao_Tong_The_Mo_Hinh_FatFormer_XLA.docx) và [bản thảo paper hai cột](final/Paper_FatFormer_XLA_CVPR_Format.docx) có chung tám phần chính: giới thiệu và mục tiêu → nền tảng FatFormer và phạm vi kế thừa → quá trình phát triển → phương pháp → thiết lập thực nghiệm → kết quả và phân tích → thảo luận → kết luận và hướng phát triển. Phần bài gốc trình bày FAA/LGA, dữ liệu ProGAN, xử lý ảnh, huấn luyện và ACC/AP do tác giả công bố; các số này được phân biệt với mô hình nền tái hiện và số đo của FatFormer XLA.
 
-Quy trình phát triển đã bổ sung cả lịch sử trước đợt chuẩn hóa cuối, trình bày theo **bảy giai đoạn nghiên cứu**: chuẩn bị dữ liệu và mô hình nền; khảo sát baseline và suy thoái; phát triển SRM/gating và huấn luyện ban đầu; fine-tune mở rộng; thích ứng đa miền và phục hồi ảnh thật; chuẩn hóa giao thức và đối chứng; đánh giá cải tiến và kiểm chuẩn bàn giao. Nội dung chính không còn kể theo mã task; mã và đường dẫn công việc chỉ giữ ở danh mục nguồn truy vết.
+Hai bản có tóm tắt 219 từ đứng riêng trước Giới thiệu, nêu kết quả chính, giới hạn lớn nhất và quyết định dùng mô hình cho demo nghiên cứu. Bảng thuật ngữ giải thích các tên gọi lịch sử; tên **XLA được chọn** được dùng trong bảng đối chứng. Phần dữ liệu bổ sung phân bố Real/Fake, 17 bộ sinh, nguồn ảnh thật và quan hệ giữa train với tập chọn mô hình. Data v2 thực giữ 2.991 ảnh replay, khác kho bổ sung ban đầu 3.600 ảnh.
+
+Nội dung ngoài tiêu đề thống nhất cỡ chữ 13, gồm bảng, chú thích, công thức, đầu/chân trang và tài liệu tham khảo. Hai báo cáo không hiển thị ngày biên soạn hoặc ngày của các đợt chạy. Giới thiệu tập trung vào bài toán và mục tiêu; tóm tắt có số liệu theo yêu cầu biên tập mới. Ý chính và câu chốt kết luận được in đậm.
+
+Bản tổng thể có bốn biểu đồ định lượng mới; paper có ba biểu đồ mới, gồm ROC tính từ xác suất từng ảnh CFE. Các bảng kết quả cũ được bảo toàn về số liệu; thêm bốn bảng ở mỗi tài liệu, tổng cộng 19 bảng tổng thể và 14 bảng paper. Các số AUC CFE tính lại khớp kết quả đã lưu. [Bằng chứng tóm tắt](final/bang_chung_tom_tat/README.md) kèm phân bố dữ liệu, nguồn ảnh, bảng điều kiện, tọa độ ROC, danh sách dự đoán sai và mã kiểm tra nguồn. Đây là dữ liệu trích để đối chiếu; chưa thay cho một lần tái lập từ ảnh và trọng số gốc.
+
+Kết luận so sánh được giới hạn rõ: XLA cải thiện so với baseline nội bộ đã lưu, **chưa chứng minh vượt FatFormer gốc**. Nguyên nhân baseline CFE thấp chưa được xác định đầy đủ. Ablation hiện có chỉ đổi trọng số Feature và Guard; ablation tách SRM/gating/KD được mô tả là công việc cần chạy, không phải kết quả đã có. Chưa đưa ảnh lỗi hoặc Grad-CAM khi thiếu ảnh gốc của mẫu tương ứng. Hai bản đã được kiểm tra nội dung và trực quan qua Microsoft Word, gồm 26 trang tổng thể và 17 trang paper.
+
+Quy trình phát triển đã bổ sung cả lịch sử trước đợt chuẩn hóa cuối, trình bày theo **bảy giai đoạn nghiên cứu**: chuẩn bị dữ liệu và mô hình nền; khảo sát baseline và suy thoái; phát triển SRM/gating và huấn luyện ban đầu; fine-tune mở rộng; thích ứng đa miền và phục hồi ảnh thật; chuẩn hóa giao thức và đối chứng; đánh giá cải tiến và kiểm chuẩn bàn giao. Hai báo cáo dùng tên mô hình, tên dữ liệu và tên báo cáo dễ đọc thay cho mã thư mục, mã lần chạy, mã kiểm tra dài và đường dẫn mã nguồn. Danh mục tài liệu đối chiếu giữ liên kết dưới tên từng báo cáo để mở bằng chứng khi cần; số liệu, công thức và kết luận đánh giá được giữ nguyên.
 
 Hai báo cáo đã bổ sung [master full-data audit](../../../DATASET/logs/phase7/master_audit/README.md): 8 archive, 37 job, 1.618.061 lượt dự đoán; cập nhật latency L4 mới và phạm vi kiểm chứng. Package không đổi; **G7.2 FAIL 6/8, G7.3 PENDING**. Các khối ngày 10/11 và tài liệu lịch sử bên dưới giữ ngữ cảnh của thời điểm lập, không thay số đo master audit ngày 15/11.
 
