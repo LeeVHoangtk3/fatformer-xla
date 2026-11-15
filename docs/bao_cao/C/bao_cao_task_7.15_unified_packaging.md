@@ -44,3 +44,7 @@ Xem [phân tích công tâm đầy đủ](../../../DATASET/logs/phase7/task_7.15
 ## Bổ sung 10/11/2026 — không đổi package sau vòng cải thiện 1
 
 Matched evaluation mới tạo package P0 `e26a1627…` và incumbent refit `de36061f…`. P0 chỉ đạt 4/8 tiêu chí G7.2, không được chọn thay deployment. Incumbent refit có dự đoán trùng kết quả current nhưng vẫn là binary package khác. Vì vậy package báo cáo tiếp tục là **`24869052…`**, giữ nguyên T/ngưỡng và latency của run corrected nêu trên; không thay overhead 0,188055 bằng 0,151093 của P0 hoặc 0,205143 của refit. G7.3 vẫn thiếu verified best-by-condition reference. Xem [báo cáo vòng cải thiện và trạng thái chẩn đoán mới](bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md).
+
+## Bổ sung 15/11/2026 — full data audit, giữ nguyên model
+
+Run `master_audit_20261115_040751_7beca5`, source `1f39ca8…`, đã hoàn tất 8 archive và 37 job, tổng 1.618.061 lượt dự đoán trên L4/FP16/batch16/TF32-off, cùng package `24869052…`. Hậu kiểm source hash, SQLite, NPZ và metric không phát hiện mâu thuẫn; score/nhãn CFE ở cả 7 điều kiện trùng run corrected trước đó. G7.2 vẫn FAIL 6/8, G7.3 pending. Số đo latency mới batch1 là 46,15 ms/ảnh, overhead 0,227768 ms/ảnh; giữ riêng hai run, không ghi đè latency lịch sử. Chi tiết phạm vi, các split train/val/test, core18 degraded, 204 test liên quan và giới hạn tại [báo cáo full data audit](bao_cao_master_full_data_audit_20261115.md).

@@ -1,6 +1,10 @@
 # Đánh giá hai báo cáo Word và kết quả model ngày 13 11 2026
 
-**Cập nhật sau hiệu chỉnh ngày 13/11/2026:** Hai file Word hiện hành đã được sửa theo yêu cầu người dùng, đối chiếu 150 kiểm tra nội dung/số liệu đạt và kiểm tra trực quan bản render Word gồm 10 trang báo cáo, 5 trang paper. Các nhận xét và SHA-256 bên dưới mô tả **bản gốc trước sửa**, được giữ để truy vết; không phải lỗi còn tồn tại trong hai bản đã hiệu chỉnh. Việc sửa tài liệu không thay đổi model, calibration hoặc trạng thái gate.
+**Bổ sung quy trình theo giai đoạn ngày 15/11/2026:** Hai báo cáo đã bổ sung lịch sử từ chuẩn bị hạ tầng, baseline, SRM/gating và curriculum ban đầu, Plan A, thích ứng đa miền/phục hồi đến chuẩn hóa và kiểm chuẩn cuối. Quy trình được viết theo bảy giai đoạn có mục đích, cách làm và kết quả; loại cách kể theo task khỏi phần chính, giữ mã trong nguồn để truy vết. Các bảng định lượng, sáu dòng công thức và ảnh kiến trúc được kiểm tra không thay đổi so với bản trước; thêm chín nguồn lịch sử, tổng 29 liên kết local hợp lệ. **52 kiểm tra biên tập đạt; rà trực quan bản render Word gồm 14 trang tổng thể và 7 trang paper.** Đây là kiểm tra tài liệu, không phải unit test model hoặc phép đo mới. Các lần hiệu chỉnh trước dưới đây được giữ làm lịch sử.
+
+**Cập nhật ngày 15/11/2026:** [Báo cáo tổng thể](Bao_Cao_Tong_The_Mo_Hinh_FatFormer_XLA.docx) và [paper hai cột](Paper_FatFormer_XLA_CVPR_Format.docx) đã được sắp xếp lại theo yêu cầu: giới thiệu dự án và mục đích → nền tảng FatFormer gốc → phần triển khai FatFormer XLA. Phần bài gốc có FAA/LGA, dữ liệu ProGAN và 18 cấu hình kiểm thử, preprocessing/huấn luyện, ACC/AP do tác giả công bố và giới hạn so sánh với dự án. Bổ sung master audit 8 archive/37 job/1.618.061 lượt dự đoán, cập nhật latency và kiểm exact SHA; G7.2 vẫn FAIL 6/8, G7.3 PENDING. Đối chiếu **201 kiểm tra nội dung/số liệu đạt**, kiểm tra trực quan đủ **13 trang báo cáo và 6 trang paper** bằng ảnh trang Microsoft Word 16 qua `Page.EnhMetaFileBits` và Windows GDI. Renderer LibreOffice không có executable trong môi trường; bộ xuất PDF Word bị chờ nên không dùng PDF làm bằng chứng QA. Không train, đổi model/calibration hoặc xác nhận nghiệm thu thay con người.
+
+**Lịch sử hiệu chỉnh ngày 13/11/2026:** Hai file Word khi đó đã được sửa, đối chiếu 150 kiểm tra nội dung/số liệu đạt và kiểm tra trực quan bản render Word gồm 10 trang báo cáo, 5 trang paper. Các nhận xét và SHA-256 bên dưới mô tả **bản gốc trước sửa**, được giữ để truy vết; không phải danh sách lỗi còn tồn tại trong bản cập nhật ngày 15/11. Việc sửa tài liệu không thay đổi model, calibration hoặc trạng thái gate.
 
 Kết luận: **giữ model incumbent Task 7.15 làm bản chuẩn theo bằng chứng hiện có; cả hai file Word cần sửa lớn trước khi dùng làm báo cáo chính thức.** Nhiều metric chính của model đúng, nhưng bảng số liệu có ô sai, paper mô tả sai công thức gating và Guard Loss, kết luận ablation trái với log, và trạng thái phát hành/nghiệm thu được diễn giải quá mức.
 
@@ -19,7 +23,7 @@ Hai bản được đánh giá:
 
 Ba JSON được acceptance tham chiếu có working-tree CRLF nên hash bytes hiện tại khác nguồn LF. `git ls-files --eol` xác nhận index LF/working tree CRLF; sau chuẩn hóa CRLF→LF cả ba khớp hash nguồn. Không sửa raw để làm khớp hash, không gọi working-tree là bản nguyên byte nguồn.
 
-Model hiện hành không được nộp weights tại local theo [package reference](../../../DATASET/logs/phase7/task_7.15/current/artifacts/package_reference.json). Lần rà soát này không forward lại model, không băm lại actual `.pth`, không train hay bootstrap lại toàn bộ CI. Bản runtime Windows không có LibreOffice và không tìm thấy renderer native; chưa render/kiểm tra trực quan từng trang. Các nhận xét hình/cột bên dưới dựa trên cấu trúc OOXML, không khẳng định chất lượng dàn trang toàn tài liệu.
+Model hiện hành không được nộp weights tại local theo [package reference](../../../../DATASET/logs/phase7/task_7.15/current/artifacts/package_reference.json). Lần rà soát này không forward lại model, không băm lại actual `.pth`, không train hay bootstrap lại toàn bộ CI. Bản runtime Windows không có LibreOffice và không tìm thấy renderer native; chưa render/kiểm tra trực quan từng trang. Các nhận xét hình/cột bên dưới dựa trên cấu trúc OOXML, không khẳng định chất lượng dàn trang toàn tài liệu.
 
 ## 2 Kết quả model được giữ làm chuẩn
 
@@ -29,7 +33,7 @@ Package: `unified_fatformer_v2.pth`, SHA-256 `248690528f6e7ecadb06717fafbdb64ca5
 
 Weights nguồn Anchored v2: `5cd49252ae94189734cee324f9543aa93f462028c879ac259cc16864b609bd3c`, chọn epoch 4 của Task 7.11. Không đồng nhất file này với checkpoint A4 của thí nghiệm ablation Task 7.12 chỉ vì dùng cấu hình loss đầy đủ.
 
-Calibration hiện hành: **T=2,7832491397857666**, **threshold=0,7918508648872375**. Router deployment tắt, dùng calibrated fixed fallback. Nguồn: [metadata](../../../DATASET/logs/phase7/task_7.15/current/artifacts/metadata.json), [calibration](../../../DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json).
+Calibration hiện hành: **T=2,7832491397857666**, **threshold=0,7918508648872375**. Router deployment tắt, dùng calibrated fixed fallback. Nguồn: [metadata](../../../../DATASET/logs/phase7/task_7.15/current/artifacts/metadata.json), [calibration](../../../../DATASET/logs/phase7/task_7.15/current/calibration/anchored_v2.json).
 
 Các số nên trích dẫn, đơn vị %:
 
@@ -39,9 +43,9 @@ Các số nên trích dẫn, đơn vị %:
 - **18 tập in-dist:** macro balanced accuracy 90,1018; pooled accuracy 93,4649; pooled AUC 98,4105; pooled Fake 96,5241; pooled Real 90,4063.
 - **Worst-subset CFE clean:** `5_other_autoregressive`, Fake đúng 25/81=30,8642%.
 
-Nguồn: [final report](../../../DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json), [condition summary](../../../DATASET/logs/phase7/task_7.15/current/analysis/condition_summary.csv), [gate summary](../../../DATASET/logs/phase7/task_7.15/current/analysis/gate_summary.csv).
+Nguồn: [final report](../../../../DATASET/logs/phase7/task_7.15/current/raw/benchmark/final_report.json), [condition summary](../../../../DATASET/logs/phase7/task_7.15/current/analysis/condition_summary.csv), [gate summary](../../../../DATASET/logs/phase7/task_7.15/current/analysis/gate_summary.csv).
 
-Độ trễ **package** trên L4/FP16: batch1 44,9796 ms/ảnh, 22,2323 FPS; batch8 104,1807 FPS; batch16 104,0881 FPS; batch32 **96,3539 FPS**. Overhead batch1 **0,188055 ms/ảnh** là median chênh lệch cặp đo giữa wrapper package và backbone FatFormer được bọc; không phải tổng thời gian inference hay chi phí cộng toàn bộ SRM/gating/FAA vào vanilla CLIP. Phép đo loại I/O và tiền xử lý. Nguồn: [latency JSON](../../../DATASET/logs/phase7/task_7.15/current/raw/latency_phase7.json), [mã đo](../../../tools/infer_unified.py).
+Độ trễ **package** trên L4/FP16: batch1 44,9796 ms/ảnh, 22,2323 FPS; batch8 104,1807 FPS; batch16 104,0881 FPS; batch32 **96,3539 FPS**. Overhead batch1 **0,188055 ms/ảnh** là median chênh lệch cặp đo giữa wrapper package và backbone FatFormer được bọc; không phải tổng thời gian inference hay chi phí cộng toàn bộ SRM/gating/FAA vào vanilla CLIP. Phép đo loại I/O và tiền xử lý. Nguồn: [latency JSON](../../../../DATASET/logs/phase7/task_7.15/current/raw/latency_phase7.json), [mã đo](../../../../tools/infer_unified.py).
 
 Trạng thái nghiệm thu cần giữ:
 
@@ -51,9 +55,9 @@ Trạng thái nghiệm thu cần giữ:
 - **G7.3 PENDING:** packaging/equivalence/overhead đã có phần đạt; còn thiếu verified best-by-condition comparison.
 - Cross-review/chữ ký A/B/C vẫn chờ. Điều khoản kết quả âm không tự biến thành nghiệm thu toàn bộ.
 
-Nguồn: [acceptance gốc](../../../DATASET/logs/phase7/task_7.15/current/raw/acceptance.json), [biên bản](../../milestones/milestone_phase7_acceptance.md), [human signoff](../../../DATASET/logs/phase7/task_7.16/human_signoff.json).
+Nguồn: [acceptance gốc](../../../../DATASET/logs/phase7/task_7.15/current/raw/acceptance.json), [biên bản](../../../milestones/milestone_phase7_acceptance.md), [human signoff](../../../../DATASET/logs/phase7/task_7.16/human_signoff.json).
 
-P0 và calibration clean-v2 chưa cung cấp căn cứ thay incumbent. Matched evaluation dùng incumbent **refit** package `de36061f…`, khác package deployment `24869052…`; arrays tái lập kết quả deployment nhưng danh tính file và latency phải tách riêng. Không kết luận incumbent tối ưu toàn cục từ các thử nghiệm này. Nguồn: [báo cáo vòng cải thiện](../C/bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md).
+P0 và calibration clean-v2 chưa cung cấp căn cứ thay incumbent. Matched evaluation dùng incumbent **refit** package `de36061f…`, khác package deployment `24869052…`; arrays tái lập kết quả deployment nhưng danh tính file và latency phải tách riêng. Không kết luận incumbent tối ưu toàn cục từ các thử nghiệm này. Nguồn: [báo cáo vòng cải thiện](../../C/bao_cao_phase7_improvement_round1_va_chan_doan_vong2.md).
 
 ## 3 Các lỗi số liệu cần sửa trong cả hai tài liệu
 
@@ -67,7 +71,7 @@ Vị trí: báo cáo tổng thể §5.1; paper Bảng 1.
 - **ECE baseline/Gen 2 18,25%; 17,50%; khoảng 34%; khoảng 33,5%:** chưa tìm thấy nguồn đúng protocol xác nhận các ô này. Vì vậy các delta ECE −13,86 pp/−28,92 pp cũng chưa đủ căn cứ. Xóa hoặc ghi chưa có số cùng protocol; chỉ điền lại khi có nguồn truy vết.
 - **WebP AUC incumbent 83,05%:** sai; số đúng **79,01%**. P0 **82,37%** cũng sai nếu gắn WebP40; số đúng **78,18%**. P0 khoảng 82,38% thuộc Q75, không phải WebP40.
 
-Nguồn: [bảng nguồn số cũ](bao_cao_ra_soat_so_lieu_phase7.md), [ma trận Task 7.6](../../../DATASET/logs/phase7/wise_ft_sweep/cfe_v3_baseline_matrix.json), [current condition summary](../../../DATASET/logs/phase7/task_7.15/current/analysis/condition_summary.csv), [matched comparison](../../../DATASET/logs/phase7/improvement_round1/evaluation/runs/p0_eval_20261110_065901/analysis/comparison.csv).
+Nguồn: [bảng nguồn số cũ](../bao_cao_ra_soat_so_lieu_phase7.md), [ma trận Task 7.6](../../../../DATASET/logs/phase7/wise_ft_sweep/cfe_v3_baseline_matrix.json), [current condition summary](../../../../DATASET/logs/phase7/task_7.15/current/analysis/condition_summary.csv), [matched comparison](../../../../DATASET/logs/phase7/improvement_round1/evaluation/runs/p0_eval_20261110_065901/analysis/comparison.csv).
 
 Các cặp AUC/Fake@Real90 baseline→incumbent Clean và Q30 về cơ bản đúng nguồn lịch sử; +37,55 pp AUC Q30 và khoảng +27,75 pp Fake@Real90 Q30 có thể trình bày là chênh lệch với mốc đó. **+27,74 pp** trong Word là trừ hai số đã làm tròn 42,62−14,88; nên thống nhất cách làm tròn và không dùng chênh lệch lịch sử như bằng chứng nhân quả cho từng module.
 
@@ -79,11 +83,11 @@ Fake@Real90 là metric sử dụng ngưỡng suy từ phân bố Real của tậ
 
 ### 3.3 Kết quả nội miền đúng nhưng cần giới hạn diễn giải
 
-Các số 90,10%, 93,46%, 98,41%, 96,52%, 90,41% khớp arrays. Các số Task 5.1 67,34%, 70,37%, 73,57%, 47,00%, 93,73% có trong [CSV lịch sử](../../../DATASET/logs/m4_full_benchmark/task_5.1_clean_results.csv). Tuy nhiên đó là so sánh hai hệ thống/operating point khác nhau, chưa cô lập đóng góp SRM/gating/Guard.
+Các số 90,10%, 93,46%, 98,41%, 96,52%, 90,41% khớp arrays. Các số Task 5.1 67,34%, 70,37%, 73,57%, 47,00%, 93,73% có trong [CSV lịch sử](../../../../DATASET/logs/m4_full_benchmark/task_5.1_clean_results.csv). Tuy nhiên đó là so sánh hai hệ thống/operating point khác nhau, chưa cô lập đóng góp SRM/gating/Guard.
 
 Pooled Real 90,41% **không bảo đảm từng tập đạt 90%**: 9/18 tập dưới 90%; DALL-E/GLIDE/LDM có Real 75,8%, deepfake 84,30%, StarGAN 77,19%. CFE WebP/blur/downup cũng dưới Real90. Không dùng các số pooled để viết Guard bảo đảm Real>=90% mọi miền.
 
-82.003 là số lượt ảnh/record test, chưa được chứng minh là 82.003 nội dung ảnh độc lập. [Distribution cautions](../../../DATASET/logs/phase7/task_7.15/current/analysis/distribution_cautions.json) ghi các nhóm Real có thể dùng chung reference; chưa có bytes để kiểm chứng trùng nội dung.
+82.003 là số lượt ảnh/record test, chưa được chứng minh là 82.003 nội dung ảnh độc lập. [Distribution cautions](../../../../DATASET/logs/phase7/task_7.15/current/analysis/distribution_cautions.json) ghi các nhóm Real có thể dùng chung reference; chưa có bytes để kiểm chứng trùng nội dung.
 
 ## 4 Các lỗi phương pháp nghiêm trọng trong paper
 
@@ -99,7 +103,7 @@ adapter(x,I) = spatial_adapter(x) + 0.1 * SRM_tokens(I)
                + freq_scale * lambda(x) * DWT_branch(x)
 ```
 
-Gating nhận token feature; không nhận concatenation CLIP/SRM trong công thức Word, không thực hiện convex mixture hai nhánh đó. Lambda có khoảng lý thuyết [0,2], khởi tạo bằng 1; SRM được cộng vào nhánh spatial, gating điều tiết nhánh DWT. Không tự khẳng định lambda tăng/giảm đơn điệu theo độ nén nếu chưa có phân tích đo tương ứng. Nguồn: [gating.py](../../../src/models/gating.py), [adapter forward](../../../src/models/clip/model.py), [srm.py](../../../src/models/srm.py).
+Gating nhận token feature; không nhận concatenation CLIP/SRM trong công thức Word, không thực hiện convex mixture hai nhánh đó. Lambda có khoảng lý thuyết [0,2], khởi tạo bằng 1; SRM được cộng vào nhánh spatial, gating điều tiết nhánh DWT. Không tự khẳng định lambda tăng/giảm đơn điệu theo độ nén nếu chưa có phân tích đo tương ứng. Nguồn: [gating.py](../../../../src/models/gating.py), [adapter forward](../../../../src/models/clip/model.py), [srm.py](../../../../src/models/srm.py).
 
 SRM là lọc vết dư **không gian**; nhánh phân tích sóng con DWT cần được mô tả riêng. Câu “tín hiệu không thể bị triệt tiêu bởi JPEG” không có bằng chứng bất biến; đổi thành mục tiêu khai thác thêm tín hiệu vết dư.
 
@@ -112,7 +116,7 @@ L_guard = mean_real( ReLU(z_student_degraded,fake
                          - stopgrad(z_teacher_clean,fake)) ** 2 )
 ```
 
-Hệ số 0,5 trong tổng loss là **trọng số loss**, không phải triplet margin hay “Real Anchor >=50%”. Đây là penalty một phía trên fake logit của mẫu Real, không phải bảo đảm toán học Real recall>=90%. Nguồn: `RealGuardLoss` trong [loss.py](../../../src/training/loss.py).
+Hệ số 0,5 trong tổng loss là **trọng số loss**, không phải triplet margin hay “Real Anchor >=50%”. Đây là penalty một phía trên fake logit của mẫu Real, không phải bảo đảm toán học Real recall>=90%. Nguồn: `RealGuardLoss` trong [loss.py](../../../../src/training/loss.py).
 
 ### 4.3 KD và consistency được diễn giải sai
 
@@ -126,7 +130,7 @@ Tổng loss có **sáu số hạng** nếu tính CE clean và CE degraded riêng
 
 Word nói Q cố định {30,50,75}, clean100%→degrade30%→70%, thực hiện RAM/GPU. Cấu hình v2 đã dùng có `clean_prob=0.60`, JPEG Q trong [30,85] với heavy-share, WebP Q [30,70], **double JPEG**, blur sigma [0,5;2,0], down-up ratio [0,5;0,75], composite. Pipeline sử dụng PIL/BytesIO trên CPU; không có bằng chứng GPU augmentation/curriculum ba pha trong run này. Các mức JPEG Q30/Q50/Q75 là điều kiện benchmark, không phải toàn bộ phân bố train.
 
-Nguồn: [degradation config](../../../configs/degradation_v2.yaml), `DegradationPipelineV2` trong [transforms.py](../../../src/datasets/transforms.py), [run config đã lưu](../../../DATASET/logs/phase7/anchored_v2_run1/run_config.yaml).
+Nguồn: [degradation config](../../../../configs/degradation_v2.yaml), `DegradationPipelineV2` trong [transforms.py](../../../../src/datasets/transforms.py), [run config đã lưu](../../../../DATASET/logs/phase7/anchored_v2_run1/run_config.yaml).
 
 ### 4.5 Ablation được kết luận ngược với kết quả
 
@@ -136,7 +140,7 @@ Thí nghiệm bốn nhánh Task 7.12 có worst-group validation: **A1 34,6667%; 
 
 Tên đúng là `a1_data`, `a2_data_guard`, `a3_data_featcons`, `a4_full`. A1 vẫn có SRM/gating, KD và paired consistency; không phải “CE thường” hoặc chưa có gating. Thí nghiệm này thay hai loss Feature/Guard; không cô lập đóng góp của gating.
 
-Phải viết lại: một seed 42, A3 tốt nhất theo worst-group selection; chưa chứng minh Guard+Feature cải thiện tổng quát hoặc phối hợp vượt trội. CI Q30 của các tương phản loss chưa đủ kết luận cải thiện rõ. Nguồn: [CSV gốc](../../../DATASET/logs/phase7/ablation_v2_fixed_run1/ablation_mini_v2.csv), [A1 config](../../../DATASET/logs/phase7/ablation_v2_fixed_run1/a1_data/run_config.yaml), [báo cáo ablation](../C/bao_cao_task_7.12_ablation.md).
+Phải viết lại: một seed 42, A3 tốt nhất theo worst-group selection; chưa chứng minh Guard+Feature cải thiện tổng quát hoặc phối hợp vượt trội. CI Q30 của các tương phản loss chưa đủ kết luận cải thiện rõ. Nguồn: [CSV gốc](../../../../DATASET/logs/phase7/ablation_v2_fixed_run1/ablation_mini_v2.csv), [A1 config](../../../../DATASET/logs/phase7/ablation_v2_fixed_run1/a1_data/run_config.yaml), [báo cáo ablation](../../C/bao_cao_task_7.12_ablation.md).
 
 ## 5 Các lỗi triển khai và đo hiệu năng
 
@@ -144,9 +148,9 @@ Phải viết lại: một seed 42, A3 tốt nhất theo worst-group selection; 
 
 `checkpoint['model']` là **state_dict**, không phải `nn.Module`; gọi `.eval()` sẽ lỗi. Calibration nằm trong `metadata['calibration']`, không ở top-level `temperature`/`optimal_threshold`. `UnifiedFatFormerXLA.forward` trả dictionary `prob_fake`, `label`, `w_deg`, `threshold`, không trả logits để softmax lần nữa. Code còn gọi `.cuda()` vô điều kiện dù có nhánh chọn CPU.
 
-Cần thay toàn bộ ví dụ bằng loader thật `load_unified_model` trong [infer_unified.py](../../../tools/infer_unified.py), transform tương ứng và đọc output dictionary. Phải ghi precision/batch được kiểm chứng: backbone FP16 autocast, logits/softmax FP32, quality benchmark batch16. CLI thường mặc định FP32 khác hợp đồng quality này; không tự gán metric GPU hiện có cho mọi cách chạy.
+Cần thay toàn bộ ví dụ bằng loader thật `load_unified_model` trong [infer_unified.py](../../../../tools/infer_unified.py), transform tương ứng và đọc output dictionary. Phải ghi precision/batch được kiểm chứng: backbone FP16 autocast, logits/softmax FP32, quality benchmark batch16. CLI thường mặc định FP32 khác hợp đồng quality này; không tự gán metric GPU hiện có cho mọi cách chạy.
 
-“Standalone” nghĩa là đủ weights/calibration trong một checkpoint, không cần checkpoint CLIP/calibration ngoài trong đường nạp đã kiểm chứng; vẫn cần code kiến trúc và dependencies. Nguồn cấu trúc package: [package builder](../../../tools/package_unified_fatformer.py); output: [unified model](../../../src/models/unified_fatformer.py).
+“Standalone” nghĩa là đủ weights/calibration trong một checkpoint, không cần checkpoint CLIP/calibration ngoài trong đường nạp đã kiểm chứng; vẫn cần code kiến trúc và dependencies. Nguồn cấu trúc package: [package builder](../../../../tools/package_unified_fatformer.py); output: [unified model](../../../../src/models/unified_fatformer.py).
 
 ### 5.2 Throughput và hệ quy chiếu overhead
 
@@ -176,13 +180,13 @@ Chẩn đoán CIPS 10/12→1/12 là đúng số đếm; nhưng DiT 3/13 và SD v
 
 ### 6.3 Cách ly ID không đồng nghĩa không trùng nội dung
 
-Tổng thể §3.1 viết 400 calibration và 1.600 evaluation CFE “0% trùng SHA-256”. [Preflight](../../../DATASET/logs/phase7/task_7.15/current/raw/input_preflight.json) ghi identity unit là `subset/class/filename`, **content duplicates not audited**. Sửa thành disjoint IDs đúng phạm vi đã kiểm chứng. Không nâng thành bảo đảm mọi loại rò rỉ đã được giải quyết.
+Tổng thể §3.1 viết 400 calibration và 1.600 evaluation CFE “0% trùng SHA-256”. [Preflight](../../../../DATASET/logs/phase7/task_7.15/current/raw/input_preflight.json) ghi identity unit là `subset/class/filename`, **content duplicates not audited**. Sửa thành disjoint IDs đúng phạm vi đã kiểm chứng. Không nâng thành bảo đảm mọi loại rò rỉ đã được giải quyết.
 
 Data v2 14.400 record với chia 12.240/1.080/1.080 là đúng; audit SHA có phạm vi reference riêng. Phải phân biệt `val_calib` v2 1.080 với calibration CFE 400. 186.406 là tổng hai model ×93.203 lượt dự đoán matched, không phải số ảnh độc lập hay số inference riêng của model chuẩn. Nguồn replay 3.600 trong báo cáo Data v2 là `diffusion_staging`/SD-Midjourney, không nên ghi chung thành 3.600 GenImage khi chưa chứng minh thành phần.
 
 ### 6.4 Tiền xử lý P0/P1 và các đường dẫn sản phẩm
 
-Tổng thể §4.1 ghi P0 Resize256/RandomCrop224; implementation profile legacy dùng resize vuông rồi CenterCrop, còn profile CLIP dùng short-side bicubic rồi CenterCrop. Phải lấy kích thước/profile từ config runtime và [preprocessing.py](../../../src/datasets/preprocessing.py), không điền mô tả augmentation quen thuộc.
+Tổng thể §4.1 ghi P0 Resize256/RandomCrop224; implementation profile legacy dùng resize vuông rồi CenterCrop, còn profile CLIP dùng short-side bicubic rồi CenterCrop. Phải lấy kích thước/profile từ config runtime và [preprocessing.py](../../../../src/datasets/preprocessing.py), không điền mô tả augmentation quen thuộc.
 
 Các tên sản phẩm `degradation_pipeline.py`, `loss_v2_anchored.py` trong bảng Task không trỏ đến implementation hiện hành; các lớp nằm trong `src/datasets/transforms.py` và `src/training/loss.py`. Tách tên dự kiến/khái niệm khỏi đường dẫn file thực.
 

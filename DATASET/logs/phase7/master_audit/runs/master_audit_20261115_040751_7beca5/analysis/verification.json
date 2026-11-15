@@ -1,0 +1,323 @@
+{
+  "run_id": "master_audit_20261115_040751_7beca5",
+  "status": "verified",
+  "checks": 19935,
+  "failures": [],
+  "source_commit": "1f39ca8fdc11890fa1daed8cf885506c4b79eba8",
+  "source_files": 179,
+  "source_mismatches": [],
+  "archives": 8,
+  "inventory_records": 944327,
+  "distinct_byte_hashes": 815689,
+  "jobs": 37,
+  "prediction_records": 1618061,
+  "tests": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "204",
+    "time": "125.179",
+    "timestamp": "2026-11-15T04:08:12.810090+00:00",
+    "hostname": "37ef32019f46"
+  },
+  "job_checks": [
+    {
+      "file": "progan_train__train__clean.npz",
+      "n": 144024,
+      "max_calibrated_probability_error": 2.4597910486257035e-07,
+      "cpu_float64_label_differences": 44
+    },
+    {
+      "file": "progan_val__validation__clean.npz",
+      "n": 8000,
+      "max_calibrated_probability_error": 1.8400008727770256e-07,
+      "cpu_float64_label_differences": 3
+    },
+    {
+      "file": "diffusion_staging__train__clean.npz",
+      "n": 3060,
+      "max_calibrated_probability_error": 1.8713302751827143e-07,
+      "cpu_float64_label_differences": 1
+    },
+    {
+      "file": "diffusion_staging__val__clean.npz",
+      "n": 540,
+      "max_calibrated_probability_error": 1.5925389518223199e-07,
+      "cpu_float64_label_differences": 0
+    },
+    {
+      "file": "data_v2__train__clean.npz",
+      "n": 12240,
+      "max_calibrated_probability_error": 2.0935638539443246e-07,
+      "cpu_float64_label_differences": 4
+    },
+    {
+      "file": "data_v2__val_calib__clean.npz",
+      "n": 1080,
+      "max_calibrated_probability_error": 1.6899561661176676e-07,
+      "cpu_float64_label_differences": 1
+    },
+    {
+      "file": "data_v2__val_calib__q30.npz",
+      "n": 1080,
+      "max_calibrated_probability_error": 1.7090340975745022e-07,
+      "cpu_float64_label_differences": 1
+    },
+    {
+      "file": "data_v2__val_select__clean.npz",
+      "n": 1080,
+      "max_calibrated_probability_error": 1.5925389518223199e-07,
+      "cpu_float64_label_differences": 1
+    },
+    {
+      "file": "data_v2__val_select__q30.npz",
+      "n": 1080,
+      "max_calibrated_probability_error": 1.5471212166939807e-07,
+      "cpu_float64_label_differences": 0
+    },
+    {
+      "file": "cfe__calibration__clean.npz",
+      "n": 400,
+      "max_calibrated_probability_error": 1.2739738919353982e-07,
+      "cpu_float64_label_differences": 1
+    },
+    {
+      "file": "cfe__evaluation__clean.npz",
+      "n": 1600,
+      "max_calibrated_probability_error": 1.1912845770956082e-07,
+      "cpu_float64_label_differences": 0
+    },
+    {
+      "file": "cfe__evaluation__q30.npz",
+      "n": 1600,
+      "max_calibrated_probability_error": 1.6652971707165065e-07,
+      "cpu_float64_label_differences": 0
+    },
+    {
+      "file": "cfe__evaluation__q50.npz",
+      "n": 1600,
+      "max_calibrated_probability_error": 1.6899561700034482e-07,
+      "cpu_float64_label_differences": 1
+    },
+    {
+      "file": "cfe__evaluation__q75.npz",
+      "n": 1600,
+      "max_calibrated_probability_error": 2.0344602114086285e-07,
+      "cpu_float64_label_differences": 1
+    },
+    {
+      "file": "cfe__evaluation__webp40.npz",
+      "n": 1600,
+      "max_calibrated_probability_error": 1.7116289435792353e-07,
+      "cpu_float64_label_differences": 0
+    },
+    {
+      "file": "cfe__evaluation__blur15.npz",
+      "n": 1600,
+      "max_calibrated_probability_error": 1.445058500637586e-07,
+      "cpu_float64_label_differences": 0
+    },
+    {
+      "file": "cfe__evaluation__downup05.npz",
+      "n": 1600,
+      "max_calibrated_probability_error": 2.0748026996475488e-07,
+      "cpu_float64_label_differences": 3
+    },
+    {
+      "file": "test_gans__test__clean.npz",
+      "n": 90329,
+      "max_calibrated_probability_error": 2.4597910486257035e-07,
+      "cpu_float64_label_differences": 28
+    },
+    {
+      "file": "test_gans__test__q30.npz",
+      "n": 90329,
+      "max_calibrated_probability_error": 2.4597910486257035e-07,
+      "cpu_float64_label_differences": 59
+    },
+    {
+      "file": "test_gans__test__q50.npz",
+      "n": 90329,
+      "max_calibrated_probability_error": 2.4597910486257035e-07,
+      "cpu_float64_label_differences": 45
+    },
+    {
+      "file": "test_gans__test__q75.npz",
+      "n": 90329,
+      "max_calibrated_probability_error": 2.360827430214485e-07,
+      "cpu_float64_label_differences": 51
+    },
+    {
+      "file": "test_gans__test__webp40.npz",
+      "n": 90329,
+      "max_calibrated_probability_error": 2.3553116301755495e-07,
+      "cpu_float64_label_differences": 45
+    },
+    {
+      "file": "test_gans__test__blur15.npz",
+      "n": 90329,
+      "max_calibrated_probability_error": 2.4597910486257035e-07,
+      "cpu_float64_label_differences": 59
+    },
+    {
+      "file": "test_gans__test__downup05.npz",
+      "n": 90329,
+      "max_calibrated_probability_error": 2.400473885222354e-07,
+      "cpu_float64_label_differences": 56
+    },
+    {
+      "file": "test_diffusion__test__clean.npz",
+      "n": 20000,
+      "max_calibrated_probability_error": 2.305207624786476e-07,
+      "cpu_float64_label_differences": 14
+    },
+    {
+      "file": "test_diffusion__test__q30.npz",
+      "n": 20000,
+      "max_calibrated_probability_error": 1.987023464655735e-07,
+      "cpu_float64_label_differences": 22
+    },
+    {
+      "file": "test_diffusion__test__q50.npz",
+      "n": 20000,
+      "max_calibrated_probability_error": 1.9163852299497464e-07,
+      "cpu_float64_label_differences": 5
+    },
+    {
+      "file": "test_diffusion__test__q75.npz",
+      "n": 20000,
+      "max_calibrated_probability_error": 2.0634464875657343e-07,
+      "cpu_float64_label_differences": 12
+    },
+    {
+      "file": "test_diffusion__test__webp40.npz",
+      "n": 20000,
+      "max_calibrated_probability_error": 1.9615103497017117e-07,
+      "cpu_float64_label_differences": 23
+    },
+    {
+      "file": "test_diffusion__test__blur15.npz",
+      "n": 20000,
+      "max_calibrated_probability_error": 2.3550216610157548e-07,
+      "cpu_float64_label_differences": 11
+    },
+    {
+      "file": "test_diffusion__test__downup05.npz",
+      "n": 20000,
+      "max_calibrated_probability_error": 1.9218047248026338e-07,
+      "cpu_float64_label_differences": 23
+    },
+    {
+      "file": "test_degraded__blur_s1__clean.npz",
+      "n": 110329,
+      "max_calibrated_probability_error": 2.4597910441848114e-07,
+      "cpu_float64_label_differences": 53
+    },
+    {
+      "file": "test_degraded__blur_s2__clean.npz",
+      "n": 110329,
+      "max_calibrated_probability_error": 2.4597910441848114e-07,
+      "cpu_float64_label_differences": 65
+    },
+    {
+      "file": "test_degraded__down_up__clean.npz",
+      "n": 110329,
+      "max_calibrated_probability_error": 2.4052248626116324e-07,
+      "cpu_float64_label_differences": 49
+    },
+    {
+      "file": "test_degraded__jpeg_q30__clean.npz",
+      "n": 110329,
+      "max_calibrated_probability_error": 2.4052248670525245e-07,
+      "cpu_float64_label_differences": 75
+    },
+    {
+      "file": "test_degraded__jpeg_q50__clean.npz",
+      "n": 110329,
+      "max_calibrated_probability_error": 2.2205985633627634e-07,
+      "cpu_float64_label_differences": 82
+    },
+    {
+      "file": "test_degraded__jpeg_q70__clean.npz",
+      "n": 110329,
+      "max_calibrated_probability_error": 2.3833774748238667e-07,
+      "cpu_float64_label_differences": 53
+    }
+  ],
+  "cfe_vs_previous": [
+    {
+      "condition": "clean",
+      "max_probability_delta": 0.0,
+      "changed_labels": 0
+    },
+    {
+      "condition": "q30",
+      "max_probability_delta": 0.0,
+      "changed_labels": 0
+    },
+    {
+      "condition": "q50",
+      "max_probability_delta": 0.0,
+      "changed_labels": 0
+    },
+    {
+      "condition": "q75",
+      "max_probability_delta": 0.0,
+      "changed_labels": 0
+    },
+    {
+      "condition": "webp40",
+      "max_probability_delta": 0.0,
+      "changed_labels": 0
+    },
+    {
+      "condition": "blur15",
+      "max_probability_delta": 0.0,
+      "changed_labels": 0
+    },
+    {
+      "condition": "downup05",
+      "max_probability_delta": 0.0,
+      "changed_labels": 0
+    }
+  ],
+  "latency": [
+    {
+      "batch": 1,
+      "per_image_ms": 46.148756497132126,
+      "overhead_ms": 0.22776799960411154,
+      "fps": 21.669056241247674
+    },
+    {
+      "batch": 8,
+      "per_image_ms": 9.620499500215374,
+      "overhead_ms": -0.006121375008660834,
+      "fps": 103.94470681876892
+    },
+    {
+      "batch": 16,
+      "per_image_ms": 9.78381759387048,
+      "overhead_ms": -0.007637875114596682,
+      "fps": 102.20959154292652
+    },
+    {
+      "batch": 32,
+      "per_image_ms": 10.637844156235587,
+      "overhead_ms": 0.00377896878944739,
+      "fps": 94.00400920649226
+    }
+  ],
+  "limits": [
+    "Read-only audit of received artifacts; no local re-forward of raw archives",
+    "Archive byte hashes are recorded evidence; raw Drive archives not re-read locally",
+    "Confidence intervals not bootstrapped again in this verification",
+    "Not full repository tests, not blind evaluation, no perceptual duplicate or best-reference completion"
+  ],
+  "additional_checks": {
+    "csv_rows_match": 175,
+    "input_manifest_hashes_match_git_proof": true,
+    "latency_model_sha_matches": true
+  },
+  "cpu_float64_recomputed_label_differences_total": 891
+}

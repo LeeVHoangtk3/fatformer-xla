@@ -1,0 +1,2 @@
+# Keep large received evidence locally; import_manifest.json records every hash.
+runs/*/raw/image_inventory.sqlite

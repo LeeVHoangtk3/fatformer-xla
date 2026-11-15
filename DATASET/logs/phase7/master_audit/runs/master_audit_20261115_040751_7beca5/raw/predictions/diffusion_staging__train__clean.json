@@ -1,0 +1,53 @@
+{
+  "archive": "diffusion_staging",
+  "split": "train",
+  "condition": "clean",
+  "prediction_file": "diffusion_staging__train__clean.npz",
+  "prediction_sha256": "8e7ff3bd74705234904f88e1d968c2a53089c82e3d5e9e374502048e8b835ad4",
+  "evidence_level": "measured",
+  "archive_sha256": "c37abd0c7a0b2dc1bd68e3a70737ce9d84ef91989455504d3ab534d04944a1d3",
+  "protocol": "canonical resize/crop -> condition -> normalize",
+  "role": "diagnostic_only_no_refit",
+  "pooled": {
+    "macro_acc": 72.84,
+    "real_acc": 98.56,
+    "fake_acc": 47.12,
+    "fake_at_real90": 79.93,
+    "auc": 92.54,
+    "ap": 92.88,
+    "tpr_at_fpr": {
+      "0.01": 38.43,
+      "0.05": 72.39,
+      "0.10": 79.93
+    },
+    "ece": 2.76,
+    "nll": 0.3823,
+    "total_samples": 3060,
+    "accuracy": 72.84313725490196,
+    "balanced_acc": 72.84313725490196,
+    "n_real": 1530,
+    "n_fake": 1530
+  },
+  "per_subset": {
+    "diffusion_staging": {
+      "macro_acc": 72.84,
+      "real_acc": 98.56,
+      "fake_acc": 47.12,
+      "fake_at_real90": 79.93,
+      "auc": 92.54,
+      "ap": 92.88,
+      "tpr_at_fpr": {
+        "0.01": 38.43,
+        "0.05": 72.39,
+        "0.10": 79.93
+      },
+      "ece": 2.76,
+      "nll": 0.3823,
+      "total_samples": 3060,
+      "accuracy": 72.84313725490196,
+      "balanced_acc": 72.84313725490196,
+      "n_real": 1530,
+      "n_fake": 1530
+    }
+  }
+}

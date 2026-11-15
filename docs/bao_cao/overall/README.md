@@ -1,5 +1,13 @@
 # FatFormer-XLA: Master Architectural & Project Blueprint
 
+## Hai báo cáo cuối cùng cập nhật ngày 15/11/2026
+
+[Báo cáo tổng thể](final/Bao_Cao_Tong_The_Mo_Hinh_FatFormer_XLA.docx) và [bản thảo paper hai cột](final/Paper_FatFormer_XLA_CVPR_Format.docx) được sắp xếp theo thứ tự: giới thiệu dự án và mục đích → nền tảng FatFormer gốc → phần triển khai FatFormer XLA, dữ liệu, thí nghiệm và kết quả. Phần bài gốc trình bày FAA/LGA, dữ liệu ProGAN, preprocessing, huấn luyện và ACC/AP do tác giả công bố; các số này được phân biệt với số đo của dự án.
+
+Quy trình phát triển đã bổ sung cả lịch sử trước đợt chuẩn hóa cuối, trình bày theo **bảy giai đoạn nghiên cứu**: chuẩn bị dữ liệu và mô hình nền; khảo sát baseline và suy thoái; phát triển SRM/gating và huấn luyện ban đầu; fine-tune mở rộng; thích ứng đa miền và phục hồi ảnh thật; chuẩn hóa giao thức và đối chứng; đánh giá cải tiến và kiểm chuẩn bàn giao. Nội dung chính không còn kể theo mã task; mã và đường dẫn công việc chỉ giữ ở danh mục nguồn truy vết.
+
+Hai báo cáo đã bổ sung [master full-data audit](../../../DATASET/logs/phase7/master_audit/README.md): 8 archive, 37 job, 1.618.061 lượt dự đoán; cập nhật latency L4 mới và phạm vi kiểm chứng. Package không đổi; **G7.2 FAIL 6/8, G7.3 PENDING**. Các khối ngày 10/11 và tài liệu lịch sử bên dưới giữ ngữ cảnh của thời điểm lập, không thay số đo master audit ngày 15/11.
+
 <!-- PHASE7_CURRENT_BEGIN -->
 ## Kết quả Phase 7 hiện hành — cập nhật 10/11/2026
 

@@ -1,0 +1,12 @@
+........................................................................ [ 35%]
+........................................................................ [ 70%]
+............................................................             [100%]
+=============================== warnings summary ===============================
+tests/test_master_data_audit.py::test_measured_predictions_are_saved_and_metrics_recomputed
+tests/test_phase7_corrected.py::test_actual_predict_is_captured_once_and_metrics_are_finite
+  /content/master_audit_20261115_040751_7beca5/code/src/models/unified_fatformer.py:165: RuntimeWarning: [WARN] router disabled: no validated held-out win; calibrated fixed fallback
+    warnings.warn("[WARN] router disabled: no validated held-out win; calibrated fixed fallback", RuntimeWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /content/master_audit_20261115_040751_7beca5/results/tests.xml -
+204 passed, 2 warnings in 125.18s (0:02:05)

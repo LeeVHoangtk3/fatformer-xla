@@ -1,0 +1,19 @@
+{
+  "name": "progan_train",
+  "path": "/content/drive/MyDrive/Fatformer/datasets/progan_train.tar",
+  "archive_sha256": "0d9f3760eb82caf7d8b99c1852c52ee860717bd69df9196fd2673e78854972d0",
+  "status": "completed",
+  "images": 144024,
+  "image_bytes": 14810861626,
+  "ignored_nonimages": 0,
+  "by_split": {
+    "train": 144024
+  },
+  "by_subset": {
+    "progan_train": 144024
+  },
+  "by_label": {
+    "1": 72012,
+    "0": 72012
+  }
+}

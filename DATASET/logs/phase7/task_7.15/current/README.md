@@ -1,5 +1,7 @@
 # Kết quả hiện hành — corrected_20261109_102954_3d28ad
 
+Bổ sung **15/11/2026**: cùng package đã hoàn tất [master full-data audit](../../master_audit/README.md), 8 archive/37 job; CFE 7 điều kiện tái lập dự đoán hiện hành. Xem hồ sơ riêng để lấy độ phủ và latency mới; G7.2 vẫn FAIL 6/8, G7.3 PENDING. Không thay số đo lịch sử của run này bằng số của master audit.
+
 **Đã hoàn tất chạy và hậu kiểm. G7.2: 6/8 tiêu chí, tổng thể FAIL. G7.3: pending vì chưa có đối chiếu với reference tốt nhất theo từng điều kiện.** Đây là kết quả đo package thực, không còn chỉ là bản sửa calibration local.
 
 - [Phân tích và đánh giá công tâm](analysis/README.md)

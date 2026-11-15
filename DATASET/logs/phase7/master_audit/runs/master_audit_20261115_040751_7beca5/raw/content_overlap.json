@@ -1,0 +1,8 @@
+{
+  "exact_v2_vs_test_collisions": [],
+  "v2_cross_split_hashes": [],
+  "cfe_cross_split_hashes": [],
+  "perceptual_audit": "not_run",
+  "conflicting_label_hashes": [],
+  "note": "Legacy/replay/test archives can share content; counts are records, not independent images."
+}

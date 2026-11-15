@@ -1,0 +1,21 @@
+{
+  "name": "data_v2",
+  "path": "/content/drive/MyDrive/Fatformer/phase7/train_crossdomain_v2.tar",
+  "archive_sha256": "16e5952892035ea0058cc6e996be191c43f6b3af608a6c92fb0a75ebc0a78dff",
+  "status": "completed",
+  "images": 14400,
+  "image_bytes": 8107529958,
+  "ignored_nonimages": 7,
+  "by_split": {
+    "train": 12240,
+    "val_calib": 1080,
+    "val_select": 1080
+  },
+  "by_subset": {
+    "data_v2": 14400
+  },
+  "by_label": {
+    "1": 6537,
+    "0": 7863
+  }
+}

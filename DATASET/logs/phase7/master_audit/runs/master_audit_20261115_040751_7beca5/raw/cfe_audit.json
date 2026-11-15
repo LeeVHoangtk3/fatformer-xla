@@ -1,0 +1,24 @@
+{
+  "name": "cfe",
+  "path": "/content/drive/MyDrive/Fatformer/datasets/test_communityforensics.tar",
+  "archive_sha256": "159b47e501686295be8f0edf879fb1a3070a0cf5b85c8157b0abd6bd5744f059",
+  "status": "completed",
+  "images": 2000,
+  "image_bytes": 5214685917,
+  "ignored_nonimages": 1,
+  "by_split": {
+    "evaluation": 1600,
+    "calibration": 400
+  },
+  "by_subset": {
+    "1_commercial": 600,
+    "2_latent_diffusion": 600,
+    "3_pixel_diffusion": 400,
+    "4_modern_gans": 200,
+    "5_other_autoregressive": 200
+  },
+  "by_label": {
+    "0": 1000,
+    "1": 1000
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "archive": "diffusion_staging",
+  "split": "val",
+  "condition": "clean",
+  "prediction_file": "diffusion_staging__val__clean.npz",
+  "prediction_sha256": "9a7adef1a604329d155004ea354f844b18012a040d1719196dd20868ac769bb8",
+  "evidence_level": "measured",
+  "archive_sha256": "c37abd0c7a0b2dc1bd68e3a70737ce9d84ef91989455504d3ab534d04944a1d3",
+  "protocol": "canonical resize/crop -> condition -> normalize",
+  "role": "diagnostic_only_no_refit",
+  "pooled": {
+    "macro_acc": 73.33,
+    "real_acc": 99.26,
+    "fake_acc": 47.41,
+    "fake_at_real90": 81.11,
+    "auc": 93.07,
+    "ap": 93.77,
+    "tpr_at_fpr": {
+      "0.01": 52.59,
+      "0.05": 76.67,
+      "0.10": 81.11
+    },
+    "ece": 3.99,
+    "nll": 0.3681,
+    "total_samples": 540,
+    "accuracy": 73.33333333333333,
+    "balanced_acc": 73.33333333333334,
+    "n_real": 270,
+    "n_fake": 270
+  },
+  "per_subset": {
+    "diffusion_staging": {
+      "macro_acc": 73.33,
+      "real_acc": 99.26,
+      "fake_acc": 47.41,
+      "fake_at_real90": 81.11,
+      "auc": 93.07,
+      "ap": 93.77,
+      "tpr_at_fpr": {
+        "0.01": 52.59,
+        "0.05": 76.67,
+        "0.10": 81.11
+      },
+      "ece": 3.99,
+      "nll": 0.3681,
+      "total_samples": 540,
+      "accuracy": 73.33333333333333,
+      "balanced_acc": 73.33333333333334,
+      "n_real": 270,
+      "n_fake": 270
+    }
+  }
+}

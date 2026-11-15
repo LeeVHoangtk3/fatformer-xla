@@ -1,0 +1,85 @@
+{
+  "archives": [
+    {
+      "name": "progan_train",
+      "path": "/content/drive/MyDrive/Fatformer/datasets/progan_train.tar",
+      "expected_images": 144024,
+      "kind": "train",
+      "expected_labels": [
+        72012,
+        72012
+      ]
+    },
+    {
+      "name": "progan_val",
+      "path": "/content/drive/MyDrive/Fatformer/datasets/progan_val.tar",
+      "expected_images": 8000,
+      "kind": "validation",
+      "expected_labels": [
+        4000,
+        4000
+      ]
+    },
+    {
+      "name": "diffusion_staging",
+      "path": "/content/drive/MyDrive/Fatformer/datasets/diffusion_staging.tar",
+      "expected_images": 3600,
+      "kind": "legacy_manifest",
+      "expected_labels": [
+        1800,
+        1800
+      ]
+    },
+    {
+      "name": "data_v2",
+      "path": "/content/drive/MyDrive/Fatformer/phase7/train_crossdomain_v2.tar",
+      "expected_images": 14400,
+      "kind": "v2_manifest",
+      "expected_labels": [
+        7863,
+        6537
+      ]
+    },
+    {
+      "name": "cfe",
+      "path": "/content/drive/MyDrive/Fatformer/datasets/test_communityforensics.tar",
+      "expected_images": 2000,
+      "kind": "cfe",
+      "expected_labels": [
+        1000,
+        1000
+      ]
+    },
+    {
+      "name": "test_gans",
+      "path": "/content/drive/MyDrive/Fatformer/datasets/test_benchmark_gans.tar",
+      "expected_images": 90329,
+      "kind": "test",
+      "expected_labels": [
+        45169,
+        45160
+      ]
+    },
+    {
+      "name": "test_diffusion",
+      "path": "/content/drive/MyDrive/Fatformer/datasets/test_benchmark_diffusion.tar",
+      "expected_images": 20000,
+      "kind": "test",
+      "expected_labels": [
+        10000,
+        10000
+      ]
+    },
+    {
+      "name": "test_degraded",
+      "path": "/content/drive/MyDrive/Fatformer/datasets/test_degraded.tar",
+      "expected_images": 661974,
+      "kind": "stored_degraded",
+      "expected_labels": [
+        331014,
+        330960
+      ]
+    }
+  ],
+  "missing": []
+}

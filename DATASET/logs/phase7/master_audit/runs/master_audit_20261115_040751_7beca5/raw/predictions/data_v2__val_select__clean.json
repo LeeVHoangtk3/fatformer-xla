@@ -1,0 +1,53 @@
+{
+  "archive": "data_v2",
+  "split": "val_select",
+  "condition": "clean",
+  "prediction_file": "data_v2__val_select__clean.npz",
+  "prediction_sha256": "6d0de1b3ef1cf8b60d5a579e85e3c5bfd657ae6b4f71de68c7422da7f5090045",
+  "evidence_level": "measured",
+  "archive_sha256": "16e5952892035ea0058cc6e996be191c43f6b3af608a6c92fb0a75ebc0a78dff",
+  "protocol": "canonical resize/crop -> condition -> normalize",
+  "role": "diagnostic_only_no_refit",
+  "pooled": {
+    "macro_acc": 82.69,
+    "real_acc": 98.98,
+    "fake_acc": 63.06,
+    "fake_at_real90": 90.61,
+    "auc": 96.44,
+    "ap": 96.18,
+    "tpr_at_fpr": {
+      "0.01": 61.84,
+      "0.05": 84.08,
+      "0.10": 90.61
+    },
+    "ece": 5.54,
+    "nll": 0.2714,
+    "total_samples": 1080,
+    "accuracy": 82.68518518518519,
+    "balanced_acc": 81.02213766862678,
+    "n_real": 590,
+    "n_fake": 490
+  },
+  "per_subset": {
+    "data_v2": {
+      "macro_acc": 82.69,
+      "real_acc": 98.98,
+      "fake_acc": 63.06,
+      "fake_at_real90": 90.61,
+      "auc": 96.44,
+      "ap": 96.18,
+      "tpr_at_fpr": {
+        "0.01": 61.84,
+        "0.05": 84.08,
+        "0.10": 90.61
+      },
+      "ece": 5.54,
+      "nll": 0.2714,
+      "total_samples": 1080,
+      "accuracy": 82.68518518518519,
+      "balanced_acc": 81.02213766862678,
+      "n_real": 590,
+      "n_fake": 490
+    }
+  }
+}

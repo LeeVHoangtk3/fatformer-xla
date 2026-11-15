@@ -1,0 +1,46 @@
+{
+  "name": "test_degraded",
+  "path": "/content/drive/MyDrive/Fatformer/datasets/test_degraded.tar",
+  "archive_sha256": "1f9e29fdb3284e62fe4d2b82e52643e839618ef3226fb3f93bd42cd8f2679b43",
+  "status": "completed",
+  "images": 661974,
+  "image_bytes": 20481759485,
+  "ignored_nonimages": 0,
+  "by_split": {
+    "jpeg_q70": 110329,
+    "jpeg_q30": 110329,
+    "blur_s1": 110329,
+    "down_up": 110329,
+    "blur_s2": 110329,
+    "jpeg_q50": 110329
+  },
+  "by_subset": {
+    "vqdiffusion": 12000,
+    "biggan": 24000,
+    "glide_100_27": 12000,
+    "stargan": 23988,
+    "stylegan": 71892,
+    "ldm_200_cfg": 12000,
+    "cyclegan": 15852,
+    "seeingdark": 2160,
+    "glide_50_27": 12000,
+    "glide_100_10": 12000,
+    "pndm": 12000,
+    "dalle": 12000,
+    "imle": 76584,
+    "ldm_200": 12000,
+    "progan": 48000,
+    "deepfake": 32430,
+    "gaugan": 60000,
+    "stylegan2": 95856,
+    "ldm_100": 12000,
+    "crn": 76584,
+    "san": 2628,
+    "guided": 12000,
+    "whichfaceisreal": 12000
+  },
+  "by_label": {
+    "0": 331014,
+    "1": 330960
+  }
+}

@@ -2,6 +2,8 @@
 > **Dự án**: Nâng cao độ bền vững pháp y cho FatFormer trước biến dạng nén mạng xã hội (FatFormer-XLA)  
 > **Cấu trúc phân loại**: Chuẩn hóa theo các Cột Mốc Chiến Lược & Mã Task Nghiệm Thu  
 
+Hồ sơ mới ngày **15/11/2026**: [Master full-data audit](phase7/master_audit/README.md) — hoàn tất 8 archive, 37 job, 1.618.061 lượt dự đoán; **G7.2 FAIL 6/8, G7.3 PENDING**. Metric, tests, provenance và SHA-256 được lưu riêng, không ghi đè các số đo lịch sử bên dưới.
+
 ---
 
 ## 📂 SƠ ĐỒ PHÂN CẤP THƯ MỤC

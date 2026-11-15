@@ -1,0 +1,20 @@
+{
+  "name": "diffusion_staging",
+  "path": "/content/drive/MyDrive/Fatformer/datasets/diffusion_staging.tar",
+  "archive_sha256": "c37abd0c7a0b2dc1bd68e3a70737ce9d84ef91989455504d3ab534d04944a1d3",
+  "status": "completed",
+  "images": 3600,
+  "image_bytes": 1933602168,
+  "ignored_nonimages": 0,
+  "by_split": {
+    "train": 3060,
+    "val": 540
+  },
+  "by_subset": {
+    "diffusion_staging": 3600
+  },
+  "by_label": {
+    "1": 1800,
+    "0": 1800
+  }
+}

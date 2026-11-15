@@ -1,0 +1,28 @@
+{
+  "name": "test_diffusion",
+  "path": "/content/drive/MyDrive/Fatformer/datasets/test_benchmark_diffusion.tar",
+  "archive_sha256": "7938bd7d90ca1d63c2d36fb0d80280ad0a5f77b8b7db6b468555e3f752820726",
+  "status": "completed",
+  "images": 20000,
+  "image_bytes": 1289533801,
+  "ignored_nonimages": 0,
+  "by_split": {
+    "test": 20000
+  },
+  "by_subset": {
+    "ldm_200": 2000,
+    "glide_100_10": 2000,
+    "ldm_100": 2000,
+    "glide_50_27": 2000,
+    "dalle": 2000,
+    "guided": 2000,
+    "vqdiffusion": 2000,
+    "ldm_200_cfg": 2000,
+    "pndm": 2000,
+    "glide_100_27": 2000
+  },
+  "by_label": {
+    "1": 10000,
+    "0": 10000
+  }
+}

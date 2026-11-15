@@ -1,0 +1,31 @@
+{
+  "name": "test_gans",
+  "path": "/content/drive/MyDrive/Fatformer/datasets/test_benchmark_gans.tar",
+  "archive_sha256": "460eed863629b13ed7b574e5857c6a9afe848c45453a34c2defb7f3400a7539a",
+  "status": "completed",
+  "images": 90329,
+  "image_bytes": 20053944473,
+  "ignored_nonimages": 0,
+  "by_split": {
+    "test": 90329
+  },
+  "by_subset": {
+    "seeingdark": 360,
+    "stargan": 3998,
+    "progan": 8000,
+    "cyclegan": 2642,
+    "whichfaceisreal": 2000,
+    "san": 438,
+    "stylegan2": 15976,
+    "imle": 12764,
+    "crn": 12764,
+    "deepfake": 5405,
+    "gaugan": 10000,
+    "stylegan": 11982,
+    "biggan": 4000
+  },
+  "by_label": {
+    "1": 45160,
+    "0": 45169
+  }
+}

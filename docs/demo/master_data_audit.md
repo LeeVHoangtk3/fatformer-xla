@@ -1,5 +1,7 @@
 # Master full data audit — bản sửa 15/11/2026
 
+Hồ sơ kết quả đã nhận: [DATASET/logs/phase7/master_audit](../../DATASET/logs/phase7/master_audit/README.md), gồm raw, metric, tests, hậu kiểm và manifest SHA-256. SQLite/NPZ có trong hồ sơ local nhưng không được đưa vào Git.
+
 Notebook: [master_full_data_audit_colab.ipynb](../../notebooks/master_full_data_audit_colab.ipynb). Dùng canonical loader, `StrictImageDataset`, `predict_records`, metric và paired latency có sẵn. Mã điều phối: [master_data_audit.py](../../tools/master_data_audit.py).
 
 Bản cũ chỉ ghi bảng số liệu cố định và nạp state dict như model object. Bản sửa bỏ các bảng đó: từng ảnh phải được đọc/giải mã, ghi SHA-256/nhãn/split vào SQLite, sau đó đi qua model. Thiếu dữ liệu hoặc lỗi sẽ dừng và xuất ZIP `failed`; không thay bằng ảnh zero hoặc AUC 50%. Source, weights/calibration và kết quả benchmark lịch sử không bị ghi đè.
@@ -64,7 +66,7 @@ Cần chạy notebook trên runtime Colab có đủ dữ liệu để có bằng
 - Smoke trên package thật, CPU FP32/batch1, hai ảnh dữ liệu thực (một nguồn REAL, một nguồn FAKE): audit archive → canonical load → `predict_records` → NPZ/metric. Điểm từng ảnh khớp log CPU trước đó. Bằng chứng tại `artifacts/master_audit/local_smoke/`; không gọi hai ảnh là full benchmark hoặc bằng chứng CUDA.
 - Một test nguồn notebook lịch sử trước đây đòi output rỗng đã được sửa để chấp nhận output bằng chứng không có error. Notebook có kết quả lịch sử được giữ nguyên, không xóa output để làm test qua.
 
-Chưa có lượt thực thi mới trên toàn kho Drive/Colab, chưa có số đo GPU mới và chưa chạy pHash toàn kho. Vì vậy chỉ xác nhận bản sửa đã qua kiểm tra local nêu trên; trạng thái full-run thực tế vẫn chờ notebook chạy trên dữ liệu đầy đủ.
+Đã nhận và hậu kiểm run **`master_audit_20261115_040751_7beca5`** trên L4, source `1f39ca8…`: đủ 8 archive, 37/37 job, 944.327 bản ghi archive và 1.618.061 lượt dự đoán; 204 test liên quan đạt. Hash/source/inventory/NPZ và metric tái tính nhất quán. **G7.2 vẫn FAIL 6/8, G7.3 PENDING; pHash và full repository test chưa chạy.** Xem [báo cáo hậu kiểm full-run](../bao_cao/C/bao_cao_master_full_data_audit_20261115.md). Full-run này không thay thế nghiệm thu UI Gradio Colab hoặc định vị giả mạo.
 
 ## Khôi phục lỗi tên ảnh có dấu giờ
 

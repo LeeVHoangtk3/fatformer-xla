@@ -1,0 +1,63 @@
+{
+  "G7.0": {
+    "status": "NOT_REEVALUATED",
+    "reason": "Legacy loader/CI DoD needs a separate audit; tests here do not close it."
+  },
+  "G7.1": {
+    "status": "NOT_REEVALUATED",
+    "reason": "Historical Gen2 comparison is not a new measurement of this package."
+  },
+  "G7.2": {
+    "pass": false,
+    "verdict": "FAIL (H\u1ee3p l\u1ec7 theo \u0110i\u1ec1u kho\u1ea3n k\u1ebft qu\u1ea3 \u00e2m \u00a7II.3)",
+    "criteria": {
+      "CFE_clean_Fake@Real90": {
+        "value": 64.12,
+        "target": ">=65.0%",
+        "pass": false
+      },
+      "CFE_clean_AUC": {
+        "value": 88.66,
+        "target": ">=78.0%",
+        "pass": true
+      },
+      "CFE_Q30_AUC": {
+        "value": 79.88,
+        "target": ">=60.0%",
+        "pass": true
+      },
+      "CFE_Q30_Fake@Real90": {
+        "value": 42.62,
+        "target": ">=40.0%",
+        "pass": true
+      },
+      "InDist_Macro_ACC": {
+        "value": 90.10184712075026,
+        "target": ">=90.0%",
+        "pass": true
+      },
+      "InDist_Real_ACC": {
+        "value": 90.41,
+        "target": ">=90.0% (c\u1ee9ng)",
+        "pass": true
+      },
+      "Worst_Subset_Fake_ACC": {
+        "value": 30.86,
+        "target": ">=45.0%",
+        "pass": false,
+        "complete": true
+      },
+      "ECE_Post_Calibration": {
+        "value": 0.0508,
+        "target": "<=0.08",
+        "pass": true
+      }
+    }
+  },
+  "G7.3": {
+    "status": "PENDING",
+    "measured_gpu_overhead": true,
+    "single_backbone_forward_checked": true,
+    "best_by_condition_comparison": "NOT_RUN"
+  }
+}

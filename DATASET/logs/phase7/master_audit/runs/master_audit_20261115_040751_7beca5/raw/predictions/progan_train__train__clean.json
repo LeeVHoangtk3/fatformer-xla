@@ -1,0 +1,53 @@
+{
+  "archive": "progan_train",
+  "split": "train",
+  "condition": "clean",
+  "prediction_file": "progan_train__train__clean.npz",
+  "prediction_sha256": "d12489a472856a3b53416384154e99320e32c71759651007583c1967bd44822a",
+  "evidence_level": "measured",
+  "archive_sha256": "0d9f3760eb82caf7d8b99c1852c52ee860717bd69df9196fd2673e78854972d0",
+  "protocol": "canonical resize/crop -> condition -> normalize",
+  "role": "diagnostic_only_no_refit",
+  "pooled": {
+    "macro_acc": 96.72,
+    "real_acc": 93.44,
+    "fake_acc": 100.0,
+    "fake_at_real90": 100.0,
+    "auc": 99.99,
+    "ap": 99.99,
+    "tpr_at_fpr": {
+      "0.01": 100.0,
+      "0.05": 100.0,
+      "0.10": 100.0
+    },
+    "ece": 7.39,
+    "nll": 0.2883,
+    "total_samples": 144024,
+    "accuracy": 96.72068544131534,
+    "balanced_acc": 96.72068544131534,
+    "n_real": 72012,
+    "n_fake": 72012
+  },
+  "per_subset": {
+    "progan_train": {
+      "macro_acc": 96.72,
+      "real_acc": 93.44,
+      "fake_acc": 100.0,
+      "fake_at_real90": 100.0,
+      "auc": 99.99,
+      "ap": 99.99,
+      "tpr_at_fpr": {
+        "0.01": 100.0,
+        "0.05": 100.0,
+        "0.10": 100.0
+      },
+      "ece": 7.39,
+      "nll": 0.2883,
+      "total_samples": 144024,
+      "accuracy": 96.72068544131534,
+      "balanced_acc": 96.72068544131534,
+      "n_real": 72012,
+      "n_fake": 72012
+    }
+  }
+}
