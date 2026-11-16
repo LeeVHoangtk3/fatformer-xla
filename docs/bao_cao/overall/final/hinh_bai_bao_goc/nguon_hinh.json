@@ -1,0 +1,33 @@
+{
+  "source_url": "https://openaccess.thecvf.com/content/CVPR2024/papers/Liu_Forgery-aware_Adaptive_Transformer_for_Generalizable_Synthetic_Image_Detection_CVPR_2024_paper.pdf",
+  "source_pdf_sha256": "30c9c0515f2cd2c383867ffce63cf975656fbc2ceb5f3a80bff4fdebf81f2c34",
+  "dpi": 300,
+  "figures": [
+    {
+      "file": "fat_former_architecture_cvpr2024.png",
+      "pdf_page": 3,
+      "printed_page": 10772,
+      "original_figure": 3,
+      "crop_points": [
+        48,
+        75,
+        550,
+        209
+      ],
+      "sha256": "1f25b09ee79e9745771e84268f63fe3aa498177b4653f462dedacbd443d0dcef"
+    },
+    {
+      "file": "fat_former_logits_cvpr2024.png",
+      "pdf_page": 2,
+      "printed_page": 10771,
+      "original_figure": 2,
+      "crop_points": [
+        48,
+        73,
+        548,
+        291
+      ],
+      "sha256": "8f69a164e2f26da37d79a9fe226329f991c0a3130c44abeab7706c7be5574820"
+    }
+  ]
+}
