@@ -137,6 +137,11 @@ def package_checkpoint(
             calib_dict = json.load(f)
         
         validate_calibration_against_checkpoint(calib_dict, ckpt_sha)
+        resolution = previous.get("input_resolution", 224)
+        if type(resolution) is not int or resolution not in (224, 336):
+            raise ValueError("Unsupported input resolution")
+        if calib_dict.get("input_resolution", 224) != resolution:
+            raise ValueError("Calibration input resolution differs from checkpoint")
         print("[✓] Xác thực calibration chính chủ: Khớp SHA-256 100%.")
 
     # Đọc và xác thực router (nếu có)
@@ -162,6 +167,7 @@ def package_checkpoint(
 
     metadata = {
         "schema": "unified_fatformer/v1",
+        "input_resolution": previous.get("input_resolution", 224),
         "layout": layout_info,
         "calibration": calib_dict,
         "router": router_dict,

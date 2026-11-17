@@ -60,7 +60,7 @@ class SpatialResidualBlock(nn.Module):
         if self.proj[-1].bias is not None:
             nn.init.zeros_(self.proj[-1].bias)
 
-    def forward(self, x_img):
+    def forward(self, x_img, grid_size=None):
         """
         x_img: Tensor ảnh gốc dạng [B, 3, H, W]
         Trả về: đặc trưng vết dư không gian dạng [256, B, out_dim]
@@ -74,7 +74,12 @@ class SpatialResidualBlock(nn.Module):
         residuals = torch.cat([r1, r2, r3], dim=1)
 
         # Chiếu về không gian đặc trưng: [B, out_dim, 16, 16]
-        feat = self.proj(residuals)
+        if grid_size is None or tuple(grid_size) == (16, 16):
+            feat = self.proj(residuals)
+        else:
+            feat = self.proj[:3](residuals)
+            feat = F.adaptive_avg_pool2d(feat, grid_size)
+            feat = self.proj[-1](feat)
 
         # Reshape sang [256, B, out_dim] để khớp với chuỗi patch tokens của ViT-L/14
         B, C, H, W = feat.shape

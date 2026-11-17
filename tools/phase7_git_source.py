@@ -13,7 +13,7 @@ SOURCE_PATHS = ['src','tools','tests','configs','notebooks/task/phase7_improveme
     'DATASET/logs/phase7/improvement_round1/preparation/protocol.json']
 
 
-def git_source_identity(root, source_paths=None):
+def git_source_identity(root, source_paths=None, expected_branch='hoang'):
     root=Path(root).resolve()
     source_paths = SOURCE_PATHS if source_paths is None else list(source_paths)
     if not source_paths:
@@ -25,14 +25,14 @@ def git_source_identity(root, source_paths=None):
         commit=git('rev-parse','HEAD')
         branch=git('rev-parse','--abbrev-ref','HEAD')
     except (OSError,subprocess.CalledProcessError) as exc:
-        raise ValueError('Pilot requires a Git checkout of branch hoang, not the old source ZIP') from exc
+        raise ValueError(f'Requires a Git checkout of branch {expected_branch}, not a source ZIP') from exc
     if top!=root:
         raise ValueError('Pilot root must be the Git repository root')
     if branch=='HEAD':
-        subprocess.run(['git','merge-base','--is-ancestor',commit,'refs/remotes/origin/hoang'],
+        subprocess.run(['git','merge-base','--is-ancestor',commit,'refs/remotes/origin/'+expected_branch],
                        cwd=root,check=True,capture_output=True)
-    elif branch!='hoang':
-        raise ValueError(f'Require branch hoang or its pinned commit; got {branch}')
+    elif branch!=expected_branch:
+        raise ValueError(f'Require branch {expected_branch} or its pinned commit; got {branch}')
     dirty=git('status','--porcelain','--untracked-files=all','--',*source_paths)
     if dirty:
         raise ValueError('Source/config/input files differ from the recorded commit; commit them or use a fresh checkout:\n'+dirty)
@@ -40,5 +40,5 @@ def git_source_identity(root, source_paths=None):
     files={name:hashlib.sha256((root/name).read_bytes()).hexdigest() for name in paths if name}
     if not files:raise ValueError('Git checkout has no tracked pilot sources')
     fingerprint=hashlib.sha256(json.dumps(files,sort_keys=True,separators=(',',':')).encode()).hexdigest()
-    return dict(schema='phase7-git-source/v1',delivery='git',branch='hoang',commit=commit,
+    return dict(schema='phase7-git-source/v1',delivery='git',branch=expected_branch,commit=commit,
                 tracked_files_fingerprint=fingerprint,files=files)

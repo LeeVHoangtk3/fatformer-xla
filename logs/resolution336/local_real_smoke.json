@@ -1,0 +1,36 @@
+{
+  "schema": "input336-real-compatibility-smoke/v1",
+  "evidence_level": "measured",
+  "scope": "CPU FP32 forward on existing 224-trained checkpoint; not retraining, calibration or benchmark of a 336-trained model",
+  "torch": "2.10.0+cpu",
+  "cuda_available": false,
+  "image_count": 2,
+  "old_224_output_preserved": true,
+  "forward_336_finite": true,
+  "rows": [
+    {
+      "file": "00_real_0002_coco.png",
+      "image_sha256": "6e0005130b6bec460f2ed4bd5052b70d0bc6584feb1bfde8afb82c276bc15ada",
+      "max_224_logit_delta": 0.0,
+      "logits_336": [
+        [
+          -15.272926330566406,
+          -16.207185745239258
+        ]
+      ],
+      "elapsed_seconds": 15.119928200001596
+    },
+    {
+      "file": "02_fake_0013_MidjourneyV5_2.png",
+      "image_sha256": "b4271e98333c29acf17ac5cd62fa56585ee8ecc523264a1216ae694c3e3976a8",
+      "max_224_logit_delta": 0.0,
+      "logits_336": [
+        [
+          -17.159992218017578,
+          -10.475706100463867
+        ]
+      ],
+      "elapsed_seconds": 12.660892399999284
+    }
+  ]
+}

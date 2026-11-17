@@ -1,0 +1,7 @@
+# Frozen inputs are byte-hashed in training and audit protocols.
+DATASET/manifests/data_manifest_v2.json text eol=lf
+DATASET/manifests/data_manifest_v2_val_calib.json text eol=lf
+DATASET/manifests/data_manifest_v2_val_select.json text eol=lf
+DATASET/logs/phase7/calibration/baseline.json text eol=lf
+configs/phase7_pilot_eval/calibration_split.json text eol=lf
+configs/phase7_pilot_eval/evaluation_split.json text eol=lf

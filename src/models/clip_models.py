@@ -118,6 +118,7 @@ class CLIPModel(nn.Module):
 
         self.tokenized_prompts = self.language_guided_alignment.tokenized_prompts
         self.image_encoder = self.clip_model.visual
+        self.image_encoder.input_resolution = getattr(args, "input_resolution", self.image_encoder.input_resolution)
         self.text_encoder = TextEncoder(self.clip_model)
         self.logit_scale = self.clip_model.logit_scale
         # self.dtype được truy xuất qua @property bên dưới để luôn đồng bộ với kiểu tham số thực tế

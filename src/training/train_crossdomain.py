@@ -993,6 +993,7 @@ class CrossDomainTrainer:
             "model": model_sd,
             "metadata": {
                 "epoch": epoch,
+                "input_resolution": self.run_context.get("crop_resolution") or 224,
                 "val_acc": val_metrics.get("val_acc", 0.0) if val_metrics else 0.0,
                 "val_r_acc": val_metrics.get("val_r_acc", 0.0) if val_metrics else 0.0,
                 "val_f_acc": val_metrics.get("val_f_acc", 0.0) if val_metrics else 0.0,
@@ -1147,6 +1148,7 @@ def run_training_pipeline(args):
 
     class VanillaArgs:
         backbone = "CLIP:ViT-L/14"
+        input_resolution = args.crop_resolution
         clip_path = resolved_clip
         num_classes = 2
         num_vit_adapter = 3
@@ -1162,6 +1164,7 @@ def run_training_pipeline(args):
 
     class UpgradedArgs:
         backbone = "CLIP:ViT-L/14"
+        input_resolution = args.crop_resolution
         clip_path = resolved_clip
         num_classes = 2
         num_vit_adapter = 3
@@ -1361,7 +1364,7 @@ def run_training_pipeline(args):
         student.eval()
         teacher.eval()
         with torch.no_grad():
-            x_test = torch.randn(2, 3, 224, 224, device=device)
+            x_test = torch.randn(2, 3, args.crop_resolution, args.crop_resolution, device=device)
             student_logits = student(x_test)
             teacher_logits = teacher(x_test)
             max_logit_diff = (student_logits - teacher_logits).abs().max().item()

@@ -300,6 +300,9 @@ class ForgeryAwareAdapterLayer(nn.Module):
 
     def forward(self, x, x_raw_img=None):
         nq, bs, md = x.shape
+        grid = math.isqrt(nq - 1)
+        if grid * grid != nq - 1 or grid % 2:
+            raise ValueError("Frequency adapter requires an even square patch grid")
         # 1. Frequency branch (Haar DWT)
         img_patchs = x[1:].transpose(0, 1).contiguous().reshape(bs, int(math.sqrt(nq)), int(math.sqrt(nq)), md).permute(0, 3, 1, 2).contiguous()
         dwt_img_l, dwt_img_h = self.dwt_transform(img_patchs)
@@ -321,7 +324,7 @@ class ForgeryAwareAdapterLayer(nn.Module):
 
         # Bổ sung vết dư SRM nếu bật chế độ nâng cấp
         if self.srm_block is not None and x_raw_img is not None:
-            srm_res = self.srm_block(x_raw_img)
+            srm_res = self.srm_block(x_raw_img, grid_size=(grid, grid))
             # Ghép token CLS zê-rô vào đầu chuỗi
             srm_tokens = torch.cat([torch.zeros_like(x[:1]), srm_res], dim=0)
             up = up + srm_tokens * 0.1
@@ -439,11 +442,23 @@ class VisionTransformer(nn.Module):
 
     def forward(self, x: torch.Tensor, return_full=False):
         raw_img = x
+        patch = self.conv1.kernel_size[0]
+        if x.shape[-2] != x.shape[-1] or x.shape[-1] % patch:
+            raise ValueError("Visual input must be square and divisible by the patch size")
         x = self.conv1(x)
+        grid = x.shape[-1]
         x = x.reshape(x.shape[0], x.shape[1], -1)
         x = x.permute(0, 2, 1)
         x = torch.cat([self.class_embedding.to(x.dtype) + torch.zeros(x.shape[0], 1, x.shape[-1], dtype=x.dtype, device=x.device), x], dim=1)
-        x = x + self.positional_embedding.to(x.dtype)
+        position = self.positional_embedding
+        native_grid = math.isqrt(position.shape[0] - 1)
+        if grid != native_grid:
+            patches = position[1:].reshape(native_grid, native_grid, -1).permute(2, 0, 1)
+            patches = F.interpolate(patches.unsqueeze(0).float(), size=(grid, grid),
+                                    mode="bicubic", align_corners=False)
+            patches = patches.squeeze(0).permute(1, 2, 0).reshape(grid * grid, -1)
+            position = torch.cat([position[:1], patches.to(position.dtype)], dim=0)
+        x = x + position.to(x.dtype)
         x = self.ln_pre(x)
 
         x = x.permute(1, 0, 2).contiguous()  # NLD -> LND

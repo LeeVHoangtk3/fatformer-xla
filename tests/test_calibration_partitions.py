@@ -120,6 +120,7 @@ def test_corrupt_frozen_image_does_not_get_silently_skipped(tmp_path, monkeypatc
     folder = tmp_path / 's' / '0_real';folder.mkdir(parents=True)
     (folder / 'cal.png').write_bytes(b'not an image')
     monkeypatch.setattr(extract, 'extract_state_dict', lambda _: {})
+    monkeypatch.setattr(extract.torch, 'load', lambda *_, **__: {"metadata": {}})
     monkeypatch.setattr(extract, 'infer_adapter_blocks', lambda _: {7,15,23})
     monkeypatch.setattr(extract, 'load_canonical', lambda *_: (torch.nn.Identity(), {'sha256':'a'*64}))
     with pytest.raises(ValueError, match='Cannot read frozen'):

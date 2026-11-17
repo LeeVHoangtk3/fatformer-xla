@@ -342,7 +342,13 @@ def summarize_predictions(predictions, threshold, bootstrap=0):
     return dict(pooled=pooled, per_subset=groups)
 
 
-def evaluate_archive(spec, connection, destination, output, model, device, batch_size=16, bootstrap=1000):
+def evaluate_archive(spec, connection, destination, output, model, device, batch_size=16, bootstrap=1000,
+                     package_sha256=None):
+    resolution = getattr(getattr(model.backbone, "image_encoder", None), "input_resolution", 224)
+    if package_sha256 is None:
+        if resolution != 224:
+            raise ValueError("Non-224 audit requires the actual package SHA-256")
+        package_sha256 = PACKAGE_SHA
     archive_sha = sha256_file(spec["path"])
     if archive_sha != spec["audited_sha256"]:
         raise ValueError("Archive bytes changed after audit")
@@ -356,9 +362,11 @@ def evaluate_archive(spec, connection, destination, output, model, device, batch
                                  workers=0, precision="fp16" if device.type == "cuda" else "fp32")
         result["paths"] = np.array([spec["name"]+":"+r["member"] for r in selected])
         path = output/(tag+".npz")
-        np.savez_compressed(path, **result, package_sha256=PACKAGE_SHA, evidence_level="measured",
+        np.savez_compressed(path, **result, package_sha256=package_sha256, input_resolution=resolution, evidence_level="measured",
                             archive_sha256=archive_sha)
         record = dict(archive=spec["name"], split=split, condition=condition, prediction_file=path.name,
+                      package_sha256=package_sha256,
+                      input_resolution=resolution,
                       prediction_sha256=sha256_file(path), evidence_level="measured",
                       archive_sha256=archive_sha)
         record["protocol"] = ("stored degradation -> canonical resize/crop -> normalize; no second degradation"

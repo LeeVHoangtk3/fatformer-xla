@@ -38,8 +38,9 @@ def verify(checkpoint, reference, output, images=None, device="cpu", synthetic_s
         if not synthetic_smoke and len(paths) < 20:
             raise ValueError("Real prediction acceptance requires at least 20 images")
         del a, b, actual, expected
-        model, _ = load_unified_model(checkpoint, clip_path="NON_EXISTENT_CLIP.pt", device=device)
-        transform = get_default_transform()
+        model, metadata = load_unified_model(checkpoint, clip_path="NON_EXISTENT_CLIP.pt", device=device)
+        resolution = metadata.get("input_resolution", 224)
+        transform = get_default_transform(resolution)
         inputs = paths if paths else [None]
         max_error = 0.0
         with torch.inference_mode():
@@ -48,7 +49,7 @@ def verify(checkpoint, reference, output, images=None, device="cpu", synthetic_s
                     with Image.open(path) as image:
                         x = transform(image.convert("RGB")).unsqueeze(0).to(device)
                 else:
-                    x = torch.zeros(1, 3, 224, 224, device=device)
+                    x = torch.zeros(1, 3, resolution, resolution, device=device)
                 with torch.amp.autocast(torch.device(device).type,dtype=torch.float16,
                                         enabled=torch.device(device).type=='cuda' and precision=='fp16'):
                     logits = model.backbone(x).float()

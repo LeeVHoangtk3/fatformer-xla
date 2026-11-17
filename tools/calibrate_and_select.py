@@ -599,6 +599,9 @@ def run_measured_calibration(
             provenance['inference_precision'] = str(payload['precision'])
             provenance['extraction_batch_size'] = int(payload['inference_batch_size'])
             provenance['extraction_torch_version'] = str(payload['torch_version'])
+        if "input_resolution" in payload:
+            provenance['input_resolution'] = int(payload['input_resolution'])
+            provenance['preprocessing'] = str(payload['preprocessing'])
         logits = torch.as_tensor(payload["logits"].copy(), dtype=torch.float32)
         raw_targets = payload["targets"].copy()
         if raw_targets.dtype.kind not in "iu":

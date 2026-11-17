@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tarfile
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -117,23 +118,31 @@ def test_catalog_and_job_roles_do_not_mix_training_into_evaluation():
 
 
 class ToyBackbone(torch.nn.Module):
+    def __init__(self, resolution=224):
+        super().__init__()
+        self.image_encoder = SimpleNamespace(input_resolution=resolution)
+
     def forward(self, x):
+        assert x.shape[-2:] == (self.image_encoder.input_resolution,) * 2
         value = x.mean((1,2,3))
         return torch.stack([-value, value], dim=1)
 
 
-def test_measured_predictions_are_saved_and_metrics_recomputed(tmp_path, fixture_archive):
+@pytest.mark.parametrize("resolution", [224, 336])
+def test_measured_predictions_are_saved_and_metrics_recomputed(tmp_path, fixture_archive, resolution):
     connection = open_inventory(tmp_path/"inventory.sqlite")
     report = audit_archive(fixture_archive, connection, {}, tmp_path/"audit.json")
     fixture_archive["audited_sha256"] = report["archive_sha256"]
     calibration = dict(schema="calibration/v1", T=1.0, T_star=0.7, fpr_target=0.05,
                        evidence_level="measured", checkpoint=dict(sha256="a"*64))
-    model = UnifiedFatFormerXLA(ToyBackbone(), calibration, checkpoint_sha256="a"*64).eval()
+    model = UnifiedFatFormerXLA(ToyBackbone(resolution), calibration, checkpoint_sha256="a"*64).eval()
     reports = evaluate_archive(fixture_archive, connection, tmp_path/"stage", tmp_path/"predictions",
-                               model, torch.device("cpu"), batch_size=1, bootstrap=0)
+                               model, torch.device("cpu"), batch_size=1, bootstrap=0, package_sha256="b"*64)
     assert len(reports) == 1 and reports[0]["role"] == "diagnostic_only_no_refit"
     with np.load(tmp_path/"predictions"/reports[0]["prediction_file"], allow_pickle=False) as values:
         assert len(values["prob_fake"]) == 2
+        assert str(values["package_sha256"]) == reports[0]["package_sha256"] == "b"*64
+        assert int(values["input_resolution"]) == reports[0]["input_resolution"] == resolution
         assert reports[0]["pooled"]["accuracy"] == float((values["labels"] == values["targets"]).mean()*100)
         assert all(str(p).startswith("sample:") for p in values["paths"])
     connection.close()

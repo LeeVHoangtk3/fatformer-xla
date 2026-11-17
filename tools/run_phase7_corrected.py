@@ -43,7 +43,8 @@ def metrics(probabilities, targets, threshold):
 def predict_records(model, records, condition, device, batch_size=8, workers=2, precision='fp16'):
     if model.router_enabled:
         raise ValueError("This corrected fixed-fallback protocol does not approve a fitted router")
-    dataset = StrictImageDataset(records, condition)
+    resolution = getattr(model.backbone.image_encoder, "input_resolution", 224) if hasattr(model.backbone, "image_encoder") else 224
+    dataset = StrictImageDataset(records, condition, input_resolution=resolution)
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=workers,
                         pin_memory=device.type == 'cuda', drop_last=False)
     parts = {k: [] for k in ['logits','prob_fake','labels','thresholds','w_deg','targets']}

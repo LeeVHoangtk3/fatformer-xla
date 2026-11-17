@@ -155,6 +155,23 @@ def test_packaging_matches_weights_and_metadata(dummy_checkpoint_and_calib):
         assert torch.equal(reloaded["model"][k], v)
 
 
+def test_336_package_preserves_resolution_and_requires_matching_calibration(dummy_checkpoint_and_calib):
+    info = dummy_checkpoint_and_calib
+    torch.save({"model": info["state_dict"], "metadata": {"input_resolution": 336}}, info["ckpt_path"])
+    with open(info["calib_path"], encoding="utf-8") as handle:
+        calibration = json.load(handle)
+    calibration["checkpoint"]["sha256"] = compute_file_sha256(info["ckpt_path"])
+    with open(info["calib_path"], "w", encoding="utf-8") as handle:
+        json.dump(calibration, handle)
+    with pytest.raises(ValueError, match="resolution"):
+        package_checkpoint(info["ckpt_path"], info["out_pkg_path"], info["calib_path"])
+    calibration["input_resolution"] = 336
+    with open(info["calib_path"], "w", encoding="utf-8") as handle:
+        json.dump(calibration, handle)
+    metadata = package_checkpoint(info["ckpt_path"], info["out_pkg_path"], info["calib_path"])
+    assert metadata["input_resolution"] == metadata["calibration"]["input_resolution"] == 336
+
+
 def test_packaging_rejects_partial_layout(dummy_checkpoint_and_calib):
     """Kiểm tra từ chối đóng gói layout không đầy đủ (partial=True)."""
     info = dummy_checkpoint_and_calib

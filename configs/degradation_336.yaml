@@ -1,0 +1,51 @@
+seed: 42
+img_resolution: 336
+crop_resolution: 336
+clean_prob: 0.6
+jpeg:
+  prob: 0.55
+  q_range:
+  - 30
+  - 85
+  heavy_share: 0.35
+  heavy_range:
+  - 30
+  - 45
+  light_range:
+  - 45
+  - 85
+webp:
+  prob: 0.15
+  q_range:
+  - 30
+  - 70
+  method: 0
+double_jpeg:
+  prob: 0.15
+  q1_range:
+  - 70
+  - 90
+  q2_range:
+  - 30
+  - 50
+blur:
+  prob: 0.2
+  sigma_range:
+  - 0.5
+  - 2.0
+down_up:
+  prob: 0.2
+  ratio_range:
+  - 0.5
+  - 0.75
+composite:
+  prob: 0.25
+  pairs:
+  - - jpeg
+    - down_up
+  - - jpeg
+    - blur
+  - - webp
+    - down_up
+  - - double_jpeg
+    - blur

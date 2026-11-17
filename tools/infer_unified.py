@@ -32,11 +32,11 @@ from src.models.unified_fatformer import UnifiedFatFormerXLA
 from tools.package_unified_fatformer import validate_calibration_against_checkpoint, compute_file_sha256
 
 
-def get_default_transform():
+def get_default_transform(input_resolution=224):
     """Tạo pipeline tiền xử lý chuẩn CLIP (không augmentation)."""
     return transforms.Compose([
-        transforms.Resize(224, interpolation=transforms.InterpolationMode.BICUBIC),
-        transforms.CenterCrop(224),
+        transforms.Resize(input_resolution, interpolation=transforms.InterpolationMode.BICUBIC),
+        transforms.CenterCrop(input_resolution),
         transforms.ToTensor(),
         transforms.Normalize(
             mean=[0.48145466, 0.4578275, 0.40821073],
@@ -116,6 +116,7 @@ def load_unified_model(
         clip_path=clip_path if os.path.exists(clip_path) else None,
         use_srm=True,
         use_gating=True,
+        input_resolution=metadata.get("input_resolution", 224),
         num_adapter_blocks=layout_n,
         adapter_block_indices=layout_indices
     )
@@ -145,6 +146,11 @@ def load_unified_model(
             f"Không được dùng calibration của baseline cho checkpoint v2!"
         )
     validate_calibration_against_checkpoint(calib_dict, sha256_to_use)
+    resolution = metadata.get("input_resolution", 224)
+    if type(resolution) is not int or resolution not in (224, 336):
+        raise ValueError("Unsupported input resolution")
+    if calib_dict.get("input_resolution", 224) != resolution:
+        raise ValueError("Calibration input resolution differs from checkpoint")
     # The already mapped payload avoids a second multi-GB checkpoint read.
     backbone, load_report = load_canonical(raw_payload, model_args)
     backbone = backbone.to(device).eval()
@@ -207,7 +213,8 @@ def benchmark_latency(
     def measure_batch(b):
         if device.type == 'cuda':
             torch.cuda.reset_peak_memory_stats(device)
-        x = torch.randn(b, 3, 224, 224, device=device)
+        resolution = getattr(getattr(model.backbone, "image_encoder", None), "input_resolution", 224)
+        x = torch.randn(b, 3, resolution, resolution, device=device)
         times_backbone = []
         times_package = []
 
@@ -351,7 +358,7 @@ def main():
         return
 
     print(f"[*] Tìm thấy {len(image_paths)} ảnh hợp lệ. Đang tiến hành suy luận...")
-    transform = get_default_transform()
+    transform = get_default_transform(metadata.get("input_resolution", 224))
     results = []
 
     # Suy luận phân tầng theo batch

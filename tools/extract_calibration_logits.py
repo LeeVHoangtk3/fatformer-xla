@@ -34,10 +34,10 @@ def compute_sha256(filepath: str) -> str:
     return sha.hexdigest()
 
 
-def get_default_transform():
+def get_default_transform(input_resolution=224):
     return transforms.Compose([
-        transforms.Resize(224, interpolation=transforms.InterpolationMode.BICUBIC),
-        transforms.CenterCrop(224),
+        transforms.Resize(input_resolution, interpolation=transforms.InterpolationMode.BICUBIC),
+        transforms.CenterCrop(input_resolution),
         transforms.ToTensor(),
         transforms.Normalize(
             mean=[0.48145466, 0.4578275, 0.40821073],
@@ -78,7 +78,8 @@ def extract_logits(
     batch_size: int = 32,
     test_dummy: bool = False,
     evaluation_split: Optional[str] = None,
-    precision: str = "fp32"
+    precision: str = "fp32",
+    input_resolution: Optional[int] = None,
 ) -> str:
     """Trích xuất logits và lưu file NPZ."""
     ckpt_sha = compute_sha256(checkpoint_path) if os.path.exists(checkpoint_path) else "dummy_sha"
@@ -127,6 +128,11 @@ def extract_logits(
 
     # Nạp checkpoint qua load_canonical
     print(f"[*] Đang nạp checkpoint: {checkpoint_path}")
+    payload = torch.load(checkpoint_path, map_location="cpu", weights_only=True, mmap=True)
+    declared_resolution = payload.get("metadata", {}).get("input_resolution")
+    resolution = input_resolution or declared_resolution or 224
+    if resolution not in (224, 336) or (declared_resolution is not None and resolution != declared_resolution):
+        raise ValueError("Requested input resolution disagrees with checkpoint")
     raw_sd = extract_state_dict(checkpoint_path)
     blocks = infer_adapter_blocks(raw_sd)
     layout = resolve_layout(blocks)
@@ -136,18 +142,19 @@ def extract_logits(
         backbone="CLIP:ViT-L/14",
         num_classes=2,
         clip_path=clip_path if clip_path and os.path.exists(clip_path) else None,
-        use_srm=True,
-        use_gating=True,
+        use_srm=any(".srm_block." in key for key in raw_sd),
+        use_gating=any(".dynamic_gating." in key for key in raw_sd),
+        input_resolution=resolution,
         num_adapter_blocks=layout["n"],
         adapter_block_indices=layout["indices"]
     )
 
-    del raw_sd
+    del raw_sd, payload
     model, report = load_canonical(checkpoint_path, model_args)
     model = model.to(device).eval()
     print("[✓] Nạp mô hình thành công. Đang tiến hành forward trích xuất logits...")
 
-    transform = get_default_transform()
+    transform = get_default_transform(resolution)
     all_logits = []
     all_targets = []
     all_sids = []
@@ -214,7 +221,8 @@ def extract_logits(
         partition_validation=json.dumps(partition, sort_keys=True),
         checkpoint_sha256=report.get("sha256", ckpt_sha),
         manifest_sha256=manifest_sha,
-        preprocessing="Resize(224) -> CenterCrop(224) -> ToTensor() -> Normalize",
+        input_resolution=resolution,
+        preprocessing=f"Resize({resolution}) -> CenterCrop({resolution}) -> ToTensor() -> CLIP Normalize",
         timestamp_utc=datetime.datetime.now(datetime.timezone.utc).isoformat()
     )
     print(f"[✓] Đã xuất {len(final_targets)} logits đo thật ra tệp NPZ: {output_npz}")
@@ -236,6 +244,7 @@ def main():
     parser.add_argument("--test_dummy", action="store_true", help="Chạy chế độ dummy test")
     parser.add_argument("--evaluation_split", help="Frozen evaluation NPZ/JSON; required for measured extraction")
     parser.add_argument("--precision", choices=['fp32','fp16'], default='fp32')
+    parser.add_argument("--input_resolution", type=int, choices=[224, 336])
     args = parser.parse_args()
 
     device = "cuda" if (args.device == "auto" and torch.cuda.is_available()) or args.device == "cuda" else "cpu"
@@ -251,7 +260,8 @@ def main():
             batch_size=args.batch_size,
             test_dummy=args.test_dummy,
             evaluation_split=args.evaluation_split,
-            precision=args.precision
+            precision=args.precision,
+            input_resolution=args.input_resolution,
         )
     except Exception as e:
         print(f"[!] Thất bại trong quá trình trích xuất logits: {e}", file=sys.stderr)
