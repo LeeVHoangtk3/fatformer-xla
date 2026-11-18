@@ -258,27 +258,220 @@ def verify_demo(model, info, report_path):
 
 
 CSS = """
-.gradio-container {max-width:1180px!important; margin:auto!important; background:#f7f8f5!important}
-body {background:#f7f8f5} .demo-header {padding:12px 0 18px; border-bottom:1px solid #d9dfda; margin-bottom:14px}
-.demo-kicker {font:600 11px/1.5 Consolas,monospace;letter-spacing:.14em;color:#527065}
-.demo-header h1 {font-size:32px;letter-spacing:-1px;margin:8px 0;color:#182a24}
-.demo-header p {color:#5c6861;max-width:720px;font-size:15px;margin:6px 0}
-.status {display:inline-block;background:#e8f1ec;color:#1b6248;border-radius:4px;padding:5px 9px;font-size:12px}
-.result-empty {min-height:140px;display:flex;flex-direction:column;justify-content:center;color:#66726b}
-.result-empty b {font-size:23px;color:#263a30}.result {padding:5px 0 12px}
-.result-label {font-size:25px;font-weight:650;color:#1c4b36;margin:2px 0 12px}
-.fake-label {color:#8b3b2a}.score-row {display:flex;justify-content:space-between;align-items:baseline}
-.score-value {font:600 30px Consolas,monospace;color:#182a24}.score-name {font-size:13px;color:#5d6c63}
-.score-track {height:9px;background:#e0e7e1;border-radius:3px;position:relative;margin:12px 0 9px}
-.score-fill {height:100%;background:#2e7860;border-radius:3px}.score-threshold {position:absolute;top:-4px;height:17px;width:2px;background:#202b25}
-.score-note {font-size:12px;color:#68776b}.source-note {padding-top:10px;font-size:12px;color:#55635b}
-.demo-error {border-left:3px solid #b45641;padding:12px 15px;color:#813e2e;background:#fff7f4}
-.decision-reason {padding:10px 12px;background:#edf2ee;border-radius:4px;margin-top:12px;font-size:14px;color:#263a30}
-.decision-reason p {margin:5px 0}.comparison-note {padding:12px;border:1px solid #d9dfda;border-radius:4px;font-size:14px}
-.view-label {font-size:13px!important}.demo-footnote {font-size:12px!important;color:#66746a!important}
-footer {display:none!important}
+/* NỀN TRẮNG TỔNG THỂ */
+body, html, .gradio-container, .dark body, body.dark, .dark .gradio-container, .gradio-container.dark {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+.gradio-container {max-width: 1200px !important; margin: auto !important}
+.demo-header {padding: 14px 18px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03)}
+.demo-kicker {font: 700 11px/1.5 Consolas, monospace; letter-spacing: .12em; color: #000000; text-transform: uppercase}
+.demo-header h1 {font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin: 6px 0; color: #000000}
+.demo-header p {color: #111827; max-width: 820px; font-size: 14px; margin: 4px 0 10px; line-height: 1.45}
+
+/* CHỮ TRẮNG NỀN ĐEN: Status, Primary Button, Block Label Badges */
+.status {
+    display: inline-block;
+    background: #000000 !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.gradio-container button.primary,
+.gradio-container button.primary * {
+    background: #000000 !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    border: 1px solid #000000 !important;
+    fill: #ffffff !important;
+}
+.gradio-container button.primary:hover {
+    background: #1f2937 !important;
+    background-color: #1f2937 !important;
+}
+.gradio-container .block-label,
+.gradio-container span.block-label,
+.gradio-container label.block-label,
+.gradio-container span[data-testid="block-info"],
+.gradio-container .block-label *,
+.gradio-container label.block-label *,
+.gradio-container span[data-testid="block-info"] * {
+    background: #000000 !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    fill: #ffffff !important;
+}
+
+/* CHỮ ĐEN NỀN TRẮNG: Blocks, Upload area, Accordions, Examples, Footnotes */
+.gradio-container .block,
+.gradio-container.dark .block {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+}
+.gradio-container .upload-container,
+.gradio-container [data-testid="file-upload"],
+.gradio-container .empty.file-upload-holder,
+.gradio-container .file-preview {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border: 2px dashed #94a3b8 !important;
+}
+.gradio-container .upload-container *,
+.gradio-container [data-testid="file-upload"] *,
+.gradio-container .empty.file-upload-holder * {
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+.gradio-container .upload-container svg,
+.gradio-container [data-testid="file-upload"] svg {
+    stroke: #000000 !important;
+    fill: #000000 !important;
+}
+.gradio-container .accordion,
+.gradio-container .accordion > .label-wrap,
+.gradio-container details,
+.gradio-container details > summary,
+.gradio-container .label-wrap {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+}
+.gradio-container .accordion > .label-wrap *,
+.gradio-container details > summary *,
+.gradio-container .label-wrap span,
+.gradio-container .label-wrap svg {
+    color: #000000 !important;
+    font-weight: 700 !important;
+    stroke: #000000 !important;
+}
+.gradio-container .examples-title,
+.gradio-container .examples-holder,
+.gradio-container .examples-holder *,
+.gradio-container [data-testid="examples"] *,
+.gradio-container [data-testid="examples"] label span {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+.gradio-container button.gallery-item,
+.gradio-container .examples-table button,
+.gradio-container .table-wrap button {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #94a3b8 !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    padding: 6px 10px !important;
+    text-align: left !important;
+    cursor: pointer !important;
+}
+.gradio-container button.gallery-item:hover,
+.gradio-container .examples-table button:hover,
+.gradio-container .table-wrap button:hover {
+    background: #f1f5f9 !important;
+    border-color: #000000 !important;
+}
+.gradio-container .paginate,
+.gradio-container .paginate button {
+    color: #000000 !important;
+    font-weight: 700 !important;
+}
+.gradio-container fieldset,
+.gradio-container .gr-check-radio,
+.gradio-container .wrap.default,
+.gradio-container .checkbox-group label,
+.gradio-container .radio-group label {
+    background: #ffffff !important;
+    color: #000000 !important;
+}
+.gradio-container fieldset span,
+.gradio-container .checkbox-group span,
+.gradio-container .radio-group span,
+.gradio-container label.checkbox-label span,
+.gradio-container input[type="radio"] + span,
+.gradio-container input[type="checkbox"] + span {
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+.gradio-container p,
+.gradio-container h1,
+.gradio-container h2,
+.gradio-container h3,
+.gradio-container .demo-footnote {
+    color: #000000 !important;
+}
+.gradio-container button.secondary,
+.gradio-container button.secondary * {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #94a3b8 !important;
+    font-weight: 700 !important;
+}
+.gradio-container button.secondary:hover {
+    background: #f1f5f9 !important;
+}
+.result-empty {
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #ffffff !important;
+    border: 2px dashed #94a3b8;
+    border-radius: 8px;
+    padding: 20px;
+    color: #000000 !important;
+    text-align: center;
+}
+.result-empty b {font-size: 18px; color: #000000 !important; margin-bottom: 4px}
+.result-empty p {color: #111827 !important}
+.result {padding: 14px 16px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03)}
+.result-label {font-size: 22px; font-weight: 700; color: #14532d; background: #dcfce7; border: 1px solid #86efac; border-radius: 6px; padding: 6px 12px; margin: 6px 0 12px; display: inline-block}
+.fake-label {color: #7f1d1d !important; background: #fee2e2 !important; border-color: #fca5a5 !important}
+.score-row {display: flex; justify-content: space-between; align-items: baseline}
+.score-value {font: 700 28px Consolas, monospace; color: #000000}
+.score-name {font-size: 13px; font-weight: 700; color: #000000}
+.score-track {height: 10px; background: #e2e8f0; border-radius: 5px; position: relative; margin: 10px 0 8px; border: 1px solid #cbd5e1}
+.score-fill {height: 100%; background: #1d4ed8; border-radius: 4px; transition: width 0.3s ease}
+.fake-fill {background: #b91c1c !important}
+.real-fill {background: #15803d !important}
+.score-threshold {position: absolute; top: -4px; height: 18px; width: 2.5px; background: #000000}
+.score-note {font-size: 12px; font-weight: 600; color: #111827}
+.source-note {padding: 8px 12px; font-size: 12.5px; color: #000000; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 10px}
+.demo-error {border-left: 4px solid #b91c1c; padding: 12px 14px; color: #7f1d1d; background: #fef2f2; border-radius: 4px; font-weight: 500}
+.decision-reason {padding: 10px 12px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 10px; font-size: 13px; color: #000000; line-height: 1.45}
+.decision-reason b {color: #000000}
+.decision-reason p {margin: 4px 0}
+.comparison-note {padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; font-size: 13px; color: #000000; margin-top: 10px}
+.comparison-note b {color: #000000}
+.view-label {font-size: 13px !important; font-weight: 700 !important; color: #000000 !important}
+.demo-footnote {font-size: 12px !important; color: #111827 !important; line-height: 1.4 !important}
+footer {display: none !important}
 """
 EMPTY_RESULT = '<div class="result-empty"><b>Kết quả sẽ xuất hiện ở đây</b><p>Chọn ảnh và bấm Phân tích để chạy model.</p></div>'
+CURATED_EXAMPLE_INDICES = [2, 12, 6, 8, 14, 0, 18, 1, 10, 17]
+CURATED_LABELS = [
+    "[FAKE] Midjourney v5.2 (Thương mại)",
+    "[REAL] Chân dung FFHQ (Ảnh thật)",
+    "[FAKE] SDXL LCM-LoRA (Latent Diffusion)",
+    "[REAL] Máy ảnh RAISE (Ảnh chụp)",
+    "[FAKE] DFGAN (Modern GAN)",
+    "[REAL] Đời sống COCO (Ảnh thật)",
+    "[FAKE] Stable Cascade (Autoregressive)",
+    "[REAL] Đồ vật LAION (Ảnh thật)",
+    "[FAKE] Hourglass (Pixel Diffusion)",
+    "[REAL] Phong cảnh LAION (Ảnh thật)",
+]
 
 
 def result_html(result):
@@ -290,6 +483,7 @@ def result_html(result):
         row = result[key]
         score, mark = row["prob_fake"] * 100, row["threshold"] * 100
         label_class = " fake-label" if row["label"] == "FAKE" else ""
+        fill_class = " fake-fill" if row["label"] == "FAKE" else " real-fill"
         is_fake = row["label"] == "FAKE"
         interpretation = "ảnh tổng hợp theo model" if is_fake else "ảnh thật theo model"
         relation = "≥" if is_fake else "<"
@@ -298,7 +492,7 @@ def result_html(result):
                       f'<div class="result-label{label_class}">Dự đoán {row["label"]} · {interpretation}</div>'
                       f'<div class="score-row"><span class="score-name">Điểm Fake sau calibration</span>'
                       f'<span class="score-value">{score:.2f}%</span></div>'
-                      f'<div class="score-track"><div class="score-fill" style="width:{score:.4f}%"></div>'
+                      f'<div class="score-track"><div class="score-fill{fill_class}" style="width:{score:.4f}%"></div>'
                       f'<span class="score-threshold" style="left:{mark:.4f}%"></span></div>'
                       f'<div class="score-note">Ngưỡng phân loại: {mark:.6f}%</div>'
                       f'<div class="decision-reason"><b>Vì sao có quyết định này?</b>'
@@ -328,7 +522,20 @@ def build_ui(model, info):
             return None, None, None, EMPTY_RESULT, "", None, explanation_markdown(None), {}
         try:
             image = read_image(path)
-            return image, SPATIAL(image), None, EMPTY_RESULT, "", None, explanation_markdown(None), {}
+            digest = compute_file_sha256(str(path))
+            source = next((r for r in example_records() if r["sha256"] == digest), None)
+            if source:
+                target_str = "FAKE (ảnh tổng hợp)" if int(source["target"]) else "REAL (ảnh thật)"
+                preview_note = (
+                    f'<div class="result-empty" style="border: 1px solid #cbd5e1; background: #f8fafc !important;">'
+                    f'<b>Đã nạp ảnh mẫu: {html.escape(source["file"])}</b>'
+                    f'<p style="margin: 6px 0; color: #000000;">Nhãn kiểm định: <b>{target_str}</b> · Nhóm: <code>{html.escape(source["sample_id"].split("/")[0])}</code></p>'
+                    f'<p style="color: #374151; font-size: 13px;">Bấm nút <b>🔍 Phân tích ảnh</b> bên dưới để chạy mô hình FatFormer XLA.</p>'
+                    f'</div>'
+                )
+            else:
+                preview_note = EMPTY_RESULT
+            return image, SPATIAL(image), None, preview_note, "", None, explanation_markdown(None), {}
         except ValueError as exc:
             return None, None, None, '<div class="demo-error">'+html.escape(str(exc))+"</div>", "", None, explanation_markdown(None), {}
 
@@ -336,7 +543,7 @@ def build_ui(model, info):
         try:
             image, views, result = analyze(model, path, info["device"], mode == COMPARE, explain)
             detail = dict(**result, precision=info["precision"], package_sha256=PACKAGE_SHA)
-            timing = (f'Backend **{result["total_backend_ms"]:.0f} ms** · '
+            timing = (f'⏱️ Backend **{result["total_backend_ms"]:.0f} ms** · '
                       f'{info["device"].upper()} / {info["precision"]} · Không gồm thời gian chờ queue/trình duyệt')
             return (image, views["clean"], views.get("q30"), result_html(result), timing,
                     views.get("explanation"), explanation_markdown(result.get("explanation")), detail)
@@ -351,32 +558,42 @@ def build_ui(model, info):
                 'từ vùng ảnh đầu vào đến điểm Fake sau calibration.</p>'
                 f'<span class="status">Model sẵn sàng · {html.escape(info["device"].upper())} · {html.escape(info["precision"])}</span></header>')
         with gr.Row(equal_height=False):
-            with gr.Column(scale=1):
-                file = gr.File(label="Chọn ảnh từ máy", file_types=[".jpg", ".jpeg", ".png", ".webp"], type="filepath")
-                original = gr.Image(label="Ảnh đầu vào", interactive=False, height=310, format="png")
-                mode = gr.Radio([SINGLE, COMPARE], value=SINGLE, label="Chế độ")
+            with gr.Column(scale=5):
+                file = gr.File(label="Tải ảnh lên để phân tích", file_types=[".jpg", ".jpeg", ".png", ".webp"], type="filepath")
+                records = example_records()
+                if records and len(records) >= 20 and all(records[i]["path"].is_file() for i in CURATED_EXAMPLE_INDICES):
+                    curated = [records[i] for i in CURATED_EXAMPLE_INDICES]
+                    gr.Examples(
+                        examples=[[str(r["path"])] for r in curated],
+                        inputs=file,
+                        example_labels=CURATED_LABELS,
+                        label="Ảnh mẫu kiểm định · 5 họ sinh ảnh & 5 nguồn ảnh thật (Click để chọn)",
+                        examples_per_page=5,
+                        cache_examples=False,
+                    )
+                elif records and all(row["path"].is_file() for row in records[:4]):
+                    gr.Examples([[str(r["path"])] for r in records[:4]], inputs=file, label="Ảnh mẫu có nguồn · chạy model khi bấm Phân tích", cache_examples=False)
+                original = gr.Image(label="Ảnh đầu vào (Xem trước)", interactive=False, height=270, format="png")
+                mode = gr.Radio([SINGLE, COMPARE], value=SINGLE, label="Chế độ phân tích")
                 explain = gr.Checkbox(value=False, label="Giải thích vùng ảnh · thêm 16 lượt chạy trên crop gốc")
                 gr.Markdown("Bản đồ cho biết vùng ảnh ảnh hưởng đến điểm Fake khi bị che. "
                             "Chưa xác định được vùng giả mạo; chế độ này chậm hơn, đặc biệt trên CPU.", elem_classes="demo-footnote")
                 with gr.Row():
-                    submit = gr.Button("Phân tích ảnh", variant="primary", scale=3)
-                    clear = gr.Button("Xóa", scale=1)
-                rows = example_records()[:4]
-                if rows and all(row["path"].is_file() for row in rows):
-                    gr.Examples([[str(r["path"])] for r in rows], inputs=file, label="Ảnh mẫu có nguồn · chạy model khi bấm Phân tích", cache_examples=False)
-            with gr.Column(scale=1):
+                    submit = gr.Button("🔍 Phân tích ảnh", variant="primary", scale=3)
+                    clear = gr.Button("Xóa", variant="secondary", scale=1)
+            with gr.Column(scale=6):
                 verdict = gr.HTML(EMPTY_RESULT)
                 with gr.Row():
-                    clean = gr.Image(label="Crop model nhận · 224 × 224", interactive=False, height=230, format="png")
-                    q30 = gr.Image(label="Crop nén JPEG Q30", interactive=False, height=230, format="png")
+                    clean = gr.Image(label="Crop model nhận · 224 × 224", interactive=False, height=220, format="png")
+                    q30 = gr.Image(label="Crop nén JPEG Q30", interactive=False, height=220, format="png")
                 timing = gr.Markdown("")
-                with gr.Accordion("Vùng ảnh ảnh hưởng đến điểm Fake", open=False):
-                    influence = gr.Image(label="Độ nhạy trên crop gốc · không phải mặt nạ giả mạo", interactive=False, height=320, format="png")
+                with gr.Accordion("Vùng ảnh ảnh hưởng đến điểm Fake (Occlusion Sensitivity)", open=False):
+                    influence = gr.Image(label="Độ nhạy trên crop gốc · không phải mặt nạ giả mạo", interactive=False, height=300, format="png")
                     explanation = gr.Markdown(explanation_markdown(None))
                 gr.Markdown("Kết quả là dự đoán của mô hình trên vùng crop hiển thị. "
                             "Điểm Fake không phải độ chính xác của một ảnh cụ thể. "
                             "JPEG Q30 được tạo sau crop để so sánh có kiểm soát.", elem_classes="demo-footnote")
-                with gr.Accordion("Thông số và kết quả chi tiết", open=False):
+                with gr.Accordion("Thông số kỹ thuật và kết quả chi tiết", open=False):
                     gr.JSON(info, label="Phiên model")
                     detail = gr.JSON({}, label="Lần phân tích")
         outputs = [original, clean, q30, verdict, timing, influence, explanation, detail]
@@ -392,11 +609,41 @@ def launch_demo(app, *, host="127.0.0.1", port=7860, share=False, auth=None, pre
     import gradio as gr
     if share and not auth:
         raise ValueError("Link chia sẻ cần tài khoản truy cập cho phiên demo.")
+    theme = gr.themes.Base(
+        font=("Segoe UI", "Arial", "sans-serif"),
+        font_mono=("Consolas", "monospace")
+    ).set(
+        body_background_fill="#ffffff",
+        body_background_fill_dark="#ffffff",
+        body_text_color="#000000",
+        body_text_color_dark="#000000",
+        body_text_color_subdued="#111827",
+        body_text_color_subdued_dark="#111827",
+        block_background_fill="#ffffff",
+        block_background_fill_dark="#ffffff",
+        block_label_background_fill="#000000",
+        block_label_background_fill_dark="#000000",
+        block_label_text_color="#ffffff",
+        block_label_text_color_dark="#ffffff",
+        block_label_text_weight="700",
+        accordion_text_color="#000000",
+        accordion_text_color_dark="#000000",
+        button_primary_background_fill="#000000",
+        button_primary_background_fill_dark="#000000",
+        button_primary_text_color="#ffffff",
+        button_primary_text_color_dark="#ffffff",
+        button_secondary_background_fill="#ffffff",
+        button_secondary_background_fill_dark="#ffffff",
+        button_secondary_text_color="#000000",
+        button_secondary_text_color_dark="#000000",
+        button_secondary_border_color="#94a3b8",
+        button_secondary_border_color_dark="#94a3b8",
+    )
     return app.launch(server_name=host, server_port=port, share=share, auth=auth,
                       prevent_thread_lock=prevent_thread_lock, max_file_size=MAX_BYTES,
                       allowed_paths=[str(EXAMPLE_DIR)],
                       blocked_paths=[str(ROOT / p) for p in (".env", ".git", "DATASET/checkpoints", "wait", ".venv-demo")],
-                      css=CSS, theme=gr.themes.Base(font=("Segoe UI", "Arial", "sans-serif"), font_mono=("Consolas", "monospace")))
+                      css=CSS, theme=theme)
 
 
 def main():
